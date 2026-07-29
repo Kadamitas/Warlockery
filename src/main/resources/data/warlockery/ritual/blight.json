@@ -1,6 +1,6 @@
 {
-  "title": "Hex of Blight",
-  "description": "Destroys crops and flowers and leaves the land barren.",
+  "title": "ritual.warlockery.blight.title",
+  "description": "ritual.warlockery.blight.description",
   "action": "blight",
   "power": 900,
   "radius": 8,

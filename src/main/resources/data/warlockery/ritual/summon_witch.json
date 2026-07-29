@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Summoning: Witch",
-  "description": "Calls a witch to the center of the prepared circle.",
+  "title": "ritual.warlockery.summon_witch.title",
+  "description": "ritual.warlockery.summon_witch.description",
   "action": "summon_entity",
   "power": 1300,
   "radius": 6,

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Sanctity",
-  "description": "Protects beings inside the circle from hostile attack.",
+  "title": "ritual.warlockery.sanctity.title",
+  "description": "ritual.warlockery.sanctity.description",
   "action": "sanctity_ward",
   "power": 800,
   "radius": 6,

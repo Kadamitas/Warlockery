@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Necromancy: Necromantic Stone",
-  "description": "Creates a Necromantic Stone under the night sky.",
+  "title": "ritual.warlockery.necrostone.title",
+  "description": "ritual.warlockery.necrostone.description",
   "action": "summon_item",
   "power": 1900,
   "radius": 6,

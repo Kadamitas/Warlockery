@@ -13,4 +13,8 @@ public enum AdvancedMutationKind {
     public String displayName() {
         return displayName;
     }
+
+    public String translationKey() {
+        return "message.warlockery.advanced_mutation.kind." + name().toLowerCase(java.util.Locale.ROOT);
+    }
 }

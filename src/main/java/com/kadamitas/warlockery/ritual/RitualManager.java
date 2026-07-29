@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.ritual;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.compat.jei.JeiRecipeRefreshSignal;
 import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
 import com.kadamitas.warlockery.item.DollItem;
 import com.kadamitas.warlockery.block.FetishRuntime;
@@ -109,6 +110,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             ))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (_, second) -> second, java.util.LinkedHashMap::new)));
         Warlockery.LOGGER.info("Loaded {} Warlockery rituals", rituals.size());
+        JeiRecipeRefreshSignal.publish();
     }
 
     public Optional<Identifier> activate(final ServerLevel level, final BlockPos center, final Player caster) {
@@ -1728,6 +1730,19 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
 
     public List<Identifier> ids() {
         return List.copyOf(rituals.keySet());
+    }
+
+    public List<Entry> all() {
+        return rituals.entrySet().stream()
+            .map(entry -> new Entry(entry.getKey(), entry.getValue()))
+            .toList();
+    }
+
+    public Optional<Entry> byId(final Identifier id) {
+        return Optional.ofNullable(rituals.get(id)).map(definition -> new Entry(id, definition));
+    }
+
+    public record Entry(Identifier id, RitualDefinition definition) {
     }
 
     public record RitualOption(

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Manifestation",
-  "description": "Temporarily manifests spirit walkers as visible, mobile ghosts.",
+  "title": "ritual.warlockery.manifestation.title",
+  "description": "ritual.warlockery.manifestation.description",
   "action": "manifest",
   "power": 2400,
   "radius": 6,

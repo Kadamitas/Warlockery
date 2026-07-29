@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.world;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
@@ -28,16 +29,31 @@ public final class CreatureWorldIntegration {
     }
 
     public static void tick(final ServerLevel level) {
-        if (level.players().isEmpty() || level.getGameTime() % 200L != 0L) return;
-        final ServerPlayer player = level.players().get(level.getRandom().nextInt(level.players().size()));
-        armNearbyPillagers(level, player);
+        if (level.players().isEmpty()) return;
+        final long gameTime = level.getGameTime();
+        final boolean scanForPillagers = WarlockeryConfig.armPillagers()
+            && scheduled(gameTime, WarlockeryConfig.pillagerScanInterval());
+        final boolean attemptEnclave = WarlockeryConfig.hobgoblinEnclaves()
+            && scheduled(gameTime, WarlockeryConfig.hobgoblinEnclaveInterval());
+        final boolean attemptHunt = WarlockeryConfig.silverHunts()
+            && scheduled(gameTime, WarlockeryConfig.silverHuntInterval());
+        if (!scanForPillagers && !attemptEnclave && !attemptHunt) return;
 
-        if (level.getGameTime() % 2400L == 0L && level.getRandom().nextInt(10) == 0) {
+        final ServerPlayer player = level.players().get(level.getRandom().nextInt(level.players().size()));
+        if (scanForPillagers) armNearbyPillagers(level, player);
+
+        if (attemptEnclave && level.getRandom().nextDouble() < WarlockeryConfig.hobgoblinEnclaveChance()) {
             tryFoundHobgoblinEnclave(level, player);
         }
-        if (level.getGameTime() % 1200L == 0L && level.getRandom().nextInt(14) == 0 && isFullMoonNight(level, player)) {
+        if (attemptHunt
+            && level.getRandom().nextDouble() < WarlockeryConfig.silverHuntChance()
+            && isFullMoonNight(level, player)) {
             spawnSilverHunt(level, player);
         }
+    }
+
+    static boolean scheduled(final long gameTime, final int interval) {
+        return gameTime % interval == 0L;
     }
 
     private static void tryFoundHobgoblinEnclave(final ServerLevel level, final ServerPlayer player) {

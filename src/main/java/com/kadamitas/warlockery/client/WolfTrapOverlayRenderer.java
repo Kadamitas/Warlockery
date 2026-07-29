@@ -68,7 +68,10 @@ public final class WolfTrapOverlayRenderer
         final ArrayList<Component> lines = new ArrayList<>();
         lines.add(Component.translatable("overlay.warlockery.wolftrap.title").withColor(0xDDAAFF));
         if (!display.capturedName().isBlank()) {
-            lines.add(Component.translatable("overlay.warlockery.wolftrap.captured", display.capturedName()).withColor(0x55FF55));
+            lines.add(Component.translatable(
+                "overlay.warlockery.wolftrap.captured",
+                capturedName(display.capturedName())
+            ).withColor(0x55FF55));
             lines.add(Component.translatable("overlay.warlockery.wolftrap.release").withColor(0xAAAAAA));
             return List.copyOf(lines);
         }
@@ -95,6 +98,12 @@ public final class WolfTrapOverlayRenderer
             passed ? "overlay.warlockery.requirement.met" : "overlay.warlockery.requirement.missing",
             Component.translatable(key)
         ).withColor(passed ? 0x55FF55 : 0xFF5555);
+    }
+
+    private static Component capturedName(final String encodedName) {
+        return encodedName.startsWith("@")
+            ? Component.translatable(encodedName.substring(1))
+            : Component.literal(encodedName);
     }
 
     public static final class State extends BlockEntityRenderState {

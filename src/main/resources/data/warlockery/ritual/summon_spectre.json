@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Summoning: Spectre",
-  "description": "Draws a spectre through the veil into the ritual circle.",
+  "title": "ritual.warlockery.summon_spectre.title",
+  "description": "ritual.warlockery.summon_spectre.description",
   "action": "summon_entity",
   "power": 1900,
   "radius": 6,

@@ -1,6 +1,6 @@
 {
-  "title": "Hex of Raining Toads",
-  "description": "Rains poisonous and safely exploding toads into the ritual area.",
+  "title": "ritual.warlockery.rain_of_toads.title",
+  "description": "ritual.warlockery.rain_of_toads.description",
   "action": "toad_rain",
   "power": 1400,
   "radius": 7,

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Hexbreaking: Insanity",
-  "description": "Cleanses insanity from the imprint-bound being.",
+  "title": "ritual.warlockery.cure_insanity.title",
+  "description": "ritual.warlockery.cure_insanity.description",
   "action": "cleanse",
   "power": 2100,
   "radius": 6,

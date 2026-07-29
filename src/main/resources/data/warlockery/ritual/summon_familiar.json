@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Summoning: Familiar",
-  "description": "Summons a cat familiar to aid the witch.",
+  "title": "ritual.warlockery.summon_familiar.title",
+  "description": "ritual.warlockery.summon_familiar.description",
   "action": "summon_entity",
   "power": 1800,
   "radius": 6,

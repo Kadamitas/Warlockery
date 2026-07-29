@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Moving Earth",
-  "description": "Raises a solid column from the circle.",
+  "title": "ritual.warlockery.raise_earth.title",
+  "description": "ritual.warlockery.raise_earth.description",
   "action": "raise_column",
   "power": 1100,
   "radius": 6,

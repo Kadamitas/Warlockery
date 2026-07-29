@@ -1,6 +1,6 @@
 {
-  "title": "Portable Rite of Banishing",
-  "description": "Banishes nearby hostile supernatural creatures from a talisman circle.",
+  "title": "ritual.warlockery.banish_demon_portable.title",
+  "description": "ritual.warlockery.banish_demon_portable.description",
   "action": "banish",
   "power": 1600,
   "radius": 10,

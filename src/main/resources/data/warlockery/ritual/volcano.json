@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Earth's Wrath",
-  "description": "Draws a nearby underground volcanic fluid pool into a contained basalt vent.",
+  "title": "ritual.warlockery.volcano.title",
+  "description": "ritual.warlockery.volcano.description",
   "action": "earths_wrath",
   "power": 3000,
   "radius": 6,

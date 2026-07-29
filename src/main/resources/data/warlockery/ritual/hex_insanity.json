@@ -1,6 +1,6 @@
 {
-  "title": "Hex of Insanity",
-  "description": "Afflicts the imprint-bound being with visions and darkness.",
+  "title": "ritual.warlockery.hex_insanity.title",
+  "description": "ritual.warlockery.hex_insanity.description",
   "action": "hex",
   "power": 1900,
   "radius": 6,

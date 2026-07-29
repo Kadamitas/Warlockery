@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Calling: Familiar",
-  "description": "Calls a familiar back to the witch.",
+  "title": "ritual.warlockery.call_familiar.title",
+  "description": "ritual.warlockery.call_familiar.description",
   "action": "call_familiar",
   "power": 1200,
   "radius": 6,

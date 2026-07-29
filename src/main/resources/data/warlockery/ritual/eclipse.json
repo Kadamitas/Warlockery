@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Total Eclipse",
-  "description": "Darkens the sky and blankets nearby creatures in supernatural darkness.",
+  "title": "ritual.warlockery.eclipse.title",
+  "description": "ritual.warlockery.eclipse.description",
   "action": "eclipse",
   "power": 3200,
   "radius": 6,

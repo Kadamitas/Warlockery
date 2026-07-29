@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Hexbreaking: Sinking",
-  "description": "Lifts the sinking hex from the imprint-bound being.",
+  "title": "ritual.warlockery.cure_sinking.title",
+  "description": "ritual.warlockery.cure_sinking.description",
   "action": "cleanse",
   "power": 2100,
   "radius": 6,

@@ -1,6 +1,6 @@
 {
-  "title": "Portable Rite of Binding: Circle",
-  "description": "Refreshes a circle talisman for use away from a permanent altar.",
+  "title": "ritual.warlockery.bind_circle_portable.title",
+  "description": "ritual.warlockery.bind_circle_portable.description",
   "action": "bind_circle",
   "power": 1200,
   "radius": 6,

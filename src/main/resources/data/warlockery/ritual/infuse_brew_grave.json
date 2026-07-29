@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Brew of the Grave",
-  "description": "Infuses a completed Brew of the Grave.",
+  "title": "ritual.warlockery.infuse_brew_grave.title",
+  "description": "ritual.warlockery.infuse_brew_grave.description",
   "action": "summon_item",
   "power": 1800,
   "radius": 6,

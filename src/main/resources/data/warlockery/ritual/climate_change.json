@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Shifting Seasons",
-  "description": "Calms severe weather and encourages a gentler local climate.",
+  "title": "ritual.warlockery.climate_change.title",
+  "description": "ritual.warlockery.climate_change.description",
   "action": "climate_shift",
   "power": 2600,
   "radius": 6,

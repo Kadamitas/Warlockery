@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion Recharge",
-  "description": "Restores magical reserve to witches standing in the circle.",
+  "title": "ritual.warlockery.recharge_infusion.title",
+  "description": "ritual.warlockery.recharge_infusion.description",
   "action": "recharge_path",
   "power": 4000,
   "radius": 6,

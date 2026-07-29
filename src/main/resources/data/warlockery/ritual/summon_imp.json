@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Summoning: Imp",
-  "description": "Calls a flame imp that can be bound through infernal contracts.",
+  "title": "ritual.warlockery.summon_imp.title",
+  "description": "ritual.warlockery.summon_imp.description",
   "action": "summon_entity",
   "power": 1900,
   "radius": 6,

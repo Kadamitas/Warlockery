@@ -1,6 +1,6 @@
 {
-  "title": "Portable Rite of Total Eclipse",
-  "description": "Darkens the sky from a circle talisman.",
+  "title": "ritual.warlockery.eclipse_portable.title",
+  "description": "ritual.warlockery.eclipse_portable.description",
   "action": "eclipse",
   "power": 3800,
   "radius": 6,

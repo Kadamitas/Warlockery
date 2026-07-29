@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Binding: Waystone",
-  "description": "Binds a waystone to this circle's location.",
+  "title": "ritual.warlockery.bind_waystone.title",
+  "description": "ritual.warlockery.bind_waystone.description",
   "action": "bind_waystone",
   "power": 500,
   "radius": 6,

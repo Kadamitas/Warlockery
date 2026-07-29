@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Broken Earth",
-  "description": "Tears a deep fissure through compatible natural ground in the caster's facing direction.",
+  "title": "ritual.warlockery.part_earth.title",
+  "description": "ritual.warlockery.part_earth.description",
   "action": "broken_earth",
   "power": 2200,
   "radius": 6,

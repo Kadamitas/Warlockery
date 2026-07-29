@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Nature's Power",
-  "description": "Repairs compatible soil and damaged vegetation, then forces natural growth across the area.",
+  "title": "ritual.warlockery.natures_power.title",
+  "description": "ritual.warlockery.natures_power.description",
   "action": "natures_power",
   "power": 2400,
   "radius": 12,

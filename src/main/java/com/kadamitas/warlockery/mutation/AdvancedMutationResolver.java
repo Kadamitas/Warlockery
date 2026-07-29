@@ -13,6 +13,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -46,7 +47,7 @@ public final class AdvancedMutationResolver {
         final MutationContext context = scan(level, center);
         final AdvancedMutationAssessment assessment = AdvancedMutationRules.select(context.snapshot());
         if (!assessment.complete()) {
-            player.sendOverlayMessage(Component.literal(assessment.diagnostic()));
+            player.sendOverlayMessage(missingMessage(assessment));
             return new Outcome(assessment.kind(), false, 0, assessment.diagnostic());
         }
         final int affected = switch (assessment.kind()) {
@@ -54,8 +55,38 @@ public final class AdvancedMutationResolver {
             case MINEDRAKE -> createMinedrakes(level, context);
         };
         final String diagnostic = "\u2713 " + assessment.kind().displayName() + " mutation created " + affected;
-        player.sendOverlayMessage(Component.literal(diagnostic));
+        player.sendOverlayMessage(Component.translatable(
+            "message.warlockery.advanced_mutation.created",
+            Component.translatable(assessment.kind().translationKey()),
+            affected
+        ));
         return new Outcome(assessment.kind(), true, affected, diagnostic);
+    }
+
+    private static Component missingMessage(final AdvancedMutationAssessment assessment) {
+        final MutableComponent details = Component.empty();
+        for (int index = 0; index < assessment.missing().size(); index++) {
+            if (index > 0) {
+                details.append(Component.literal("; "));
+            }
+            final AdvancedMutationAssessment.MissingCondition condition = assessment.missing().get(index);
+            final Component label = Component.translatable(
+                "message.warlockery.advanced_mutation.requirement." + condition.id()
+            );
+            details.append(condition.required() == 1
+                ? label
+                : Component.translatable(
+                    "message.warlockery.advanced_mutation.requirement_count",
+                    label,
+                    condition.present(),
+                    condition.required()
+                ));
+        }
+        return Component.translatable(
+            "message.warlockery.advanced_mutation.missing",
+            Component.translatable(assessment.kind().translationKey()),
+            details
+        );
     }
 
     private static MutationContext scan(final ServerLevel level, final BlockPos center) {

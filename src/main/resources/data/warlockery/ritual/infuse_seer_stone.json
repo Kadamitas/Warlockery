@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Seer Stone",
-  "description": "Infuses a stone for communication among a coven.",
+  "title": "ritual.warlockery.infuse_seer_stone.title",
+  "description": "ritual.warlockery.infuse_seer_stone.description",
   "action": "summon_item",
   "power": 2300,
   "radius": 6,

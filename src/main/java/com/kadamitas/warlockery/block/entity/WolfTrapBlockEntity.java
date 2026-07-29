@@ -189,13 +189,22 @@ public final class WolfTrapBlockEntity extends BlockEntity {
         final int progress = Math.clamp(lureTicks * 100 / LURE_TICKS / 5 * 5, 0, 100);
         final String capturedName = capturedTarget == null
             ? ""
-            : Optional.ofNullable(level.getEntity(capturedTarget)).map(entity -> entity.getName().getString()).orElse("Captured werewolf");
+            : Optional.ofNullable(level.getEntity(capturedTarget))
+                .map(WolfTrapBlockEntity::capturedDisplayName)
+                .orElse("@entity.warlockery.captured_werewolf");
         final TrapDisplay next = new TrapDisplay(armed, fullMoon, altar, bait, progress, luredTarget != null, capturedName);
         if (!next.equals(display)) {
             display = next;
             setChanged();
             level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
         }
+    }
+
+    private static String capturedDisplayName(final Entity entity) {
+        if (entity instanceof Player) {
+            return entity.getName().getString();
+        }
+        return "@" + entity.getType().getDescriptionId();
     }
 
     public TrapDisplay getDisplay() {

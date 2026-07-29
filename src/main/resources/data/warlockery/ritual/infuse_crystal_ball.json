@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Crystal Ball",
-  "description": "Infuses a quartz sphere for divination.",
+  "title": "ritual.warlockery.infuse_crystal_ball.title",
+  "description": "ritual.warlockery.infuse_crystal_ball.description",
   "action": "summon_item",
   "power": 2000,
   "radius": 6,

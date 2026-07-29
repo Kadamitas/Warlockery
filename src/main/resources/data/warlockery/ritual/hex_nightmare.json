@@ -1,6 +1,6 @@
 {
-  "title": "Hex of Waking Nightmare",
-  "description": "Haunts the imprint-bound being with darkness and hunger.",
+  "title": "ritual.warlockery.hex_nightmare.title",
+  "description": "ritual.warlockery.hex_nightmare.description",
   "action": "hex",
   "power": 2600,
   "radius": 6,

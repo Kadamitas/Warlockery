@@ -35,17 +35,19 @@ public final class BoneNeedleItem extends Item {
             target.filter(FetishRuntime::protects).isPresent()
         );
         if (diagnostic != BoneNeedleRules.Diagnostic.READY) {
-            player.sendOverlayMessage(Component.literal("Missing requirement: " + diagnostic.name().toLowerCase()));
+            player.sendOverlayMessage(Component.translatable(
+                "message.warlockery.bone_needle." + diagnostic.name().toLowerCase(java.util.Locale.ROOT)
+            ));
             return InteractionResult.FAIL;
         }
         final LivingEntity victim = target.orElseThrow();
         if (!(victim.level() instanceof ServerLevel victimLevel)
             || !victim.hurtServer(victimLevel, victim.damageSources().magic(), 1.0F)) {
-            player.sendOverlayMessage(Component.literal("The bound target resisted the needle"));
+            player.sendOverlayMessage(Component.translatable("message.warlockery.bone_needle.resisted"));
             return InteractionResult.FAIL;
         }
         player.getItemInHand(hand).consume(1, player);
-        player.sendOverlayMessage(Component.literal("\u2713 The bound target was pricked"));
+        player.sendOverlayMessage(Component.translatable("message.warlockery.bone_needle.success"));
         return InteractionResult.SUCCESS;
     }
 }

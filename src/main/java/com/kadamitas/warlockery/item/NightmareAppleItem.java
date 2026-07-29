@@ -40,7 +40,7 @@ public final class NightmareAppleItem extends Item {
             }
         }
         if (consumer instanceof Player player) {
-            player.sendOverlayMessage(Component.literal("\u2713 A hostile dream has found you"));
+            player.sendOverlayMessage(Component.translatable("message.warlockery.nightmare_apple.triggered"));
         }
         return result;
     }

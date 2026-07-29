@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Summoning: Wither",
-  "description": "Calls forth a Wither; clear the inner circle before beginning.",
+  "title": "ritual.warlockery.summon_wither.title",
+  "description": "ritual.warlockery.summon_wither.description",
   "action": "summon_entity",
   "power": 6000,
   "radius": 6,

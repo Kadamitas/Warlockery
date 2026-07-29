@@ -1,6 +1,6 @@
 {
-  "title": "Hex of the Wolf",
-  "description": "Bestows lycanthropy on the imprint-bound mortal under a full moon with a full coven.",
+  "title": "ritual.warlockery.hex_wolf.title",
+  "description": "ritual.warlockery.hex_wolf.description",
   "action": "transform_werewolf",
   "power": 4200,
   "radius": 6,

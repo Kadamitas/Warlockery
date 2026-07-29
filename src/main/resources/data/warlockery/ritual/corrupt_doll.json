@@ -1,6 +1,6 @@
 {
-  "title": "Hex of the Corrupted Doll",
-  "description": "Damages up to three bound protection dolls unless a Hex Guard or Doll Guard intercepts it.",
+  "title": "ritual.warlockery.corrupt_doll.title",
+  "description": "ritual.warlockery.corrupt_doll.description",
   "action": "hex",
   "power": 2200,
   "radius": 6,

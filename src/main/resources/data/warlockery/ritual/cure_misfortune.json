@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Hexbreaking: Misfortune",
-  "description": "Cleanses misfortune from the imprint-bound being.",
+  "title": "ritual.warlockery.cure_misfortune.title",
+  "description": "ritual.warlockery.cure_misfortune.description",
   "action": "cleanse",
   "power": 1900,
   "radius": 6,

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Hexbreaking: Vampirism",
-  "description": "Cleanses vampirism from the imprint-bound vampire.",
+  "title": "ritual.warlockery.cure_vampire.title",
+  "description": "ritual.warlockery.cure_vampire.description",
   "action": "remove_vampirism",
   "power": 3600,
   "radius": 6,

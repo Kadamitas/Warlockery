@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Banishing",
-  "description": "Banishes hostile supernatural creatures from the ritual area.",
+  "title": "ritual.warlockery.banish_demon.title",
+  "description": "ritual.warlockery.banish_demon.description",
   "action": "banish",
   "power": 1200,
   "radius": 10,

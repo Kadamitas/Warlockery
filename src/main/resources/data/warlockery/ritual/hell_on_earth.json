@@ -1,6 +1,6 @@
 {
-  "title": "Hex of Hell on Earth",
-  "description": "Opens a contained infernal breach that releases tagged demons through a ring of soul fire.",
+  "title": "ritual.warlockery.hell_on_earth.title",
+  "description": "ritual.warlockery.hell_on_earth.description",
   "action": "hell_on_earth",
   "power": 3600,
   "radius": 9,

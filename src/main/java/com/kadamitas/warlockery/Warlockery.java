@@ -32,6 +32,7 @@ import com.kadamitas.warlockery.ritual.hex.HexState;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import com.kadamitas.warlockery.entity.CreatureCombat;
 import com.kadamitas.warlockery.world.CreatureWorldIntegration;
+import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.AddReloadListenerEvent;
@@ -47,6 +48,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
 import org.slf4j.Logger;
 
 @Mod(Warlockery.MOD_ID)
@@ -56,6 +58,7 @@ public final class Warlockery {
 
     public Warlockery(final FMLJavaModLoadingContext context) {
         final var modBus = context.getModBusGroup();
+        context.registerConfig(ModConfig.Type.SERVER, WarlockeryConfig.SPEC);
         ModFluids.TYPES.register(modBus);
         ModFluids.REGISTRY.register(modBus);
         ModEntities.REGISTRY.register(modBus);

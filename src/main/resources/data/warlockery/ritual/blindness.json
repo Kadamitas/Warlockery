@@ -1,6 +1,6 @@
 {
-  "title": "Hex of Blindness",
-  "description": "Blinds creatures caught inside the circle.",
+  "title": "ritual.warlockery.blindness.title",
+  "description": "ritual.warlockery.blindness.description",
   "action": "effect",
   "power": 1000,
   "radius": 6,

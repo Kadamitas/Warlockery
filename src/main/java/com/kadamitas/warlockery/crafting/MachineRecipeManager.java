@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.crafting;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.compat.jei.JeiRecipeRefreshSignal;
 import com.kadamitas.warlockery.util.IngredientAllocator;
 import com.kadamitas.warlockery.util.FluidIngredient;
 import com.kadamitas.warlockery.util.ItemIngredient;
@@ -52,6 +53,7 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
             )));
         revision++;
         Warlockery.LOGGER.info("Loaded {} Warlockery machine recipes", recipes.size());
+        JeiRecipeRefreshSignal.publish();
     }
 
     public Optional<Match> find(final MachineProfile profile, final NonNullList<ItemStack> inventory) {
@@ -275,6 +277,12 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
 
     public Optional<Match> byId(final Identifier id) {
         return Optional.ofNullable(recipes.get(id)).map(recipe -> new Match(id, recipe));
+    }
+
+    public List<Match> all() {
+        return recipes.entrySet().stream()
+            .map(entry -> new Match(entry.getKey(), entry.getValue()))
+            .toList();
     }
 
     public long revision() {

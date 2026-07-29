@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Glyphic Transformation: Infernal",
-  "description": "Transforms the outer glyphs into infernal chalk.",
+  "title": "ritual.warlockery.glyph_to_infernal.title",
+  "description": "ritual.warlockery.glyph_to_infernal.description",
   "action": "glyph_transform",
   "power": 1000,
   "radius": 6,

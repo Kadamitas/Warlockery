@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Mutation: Storm Simian",
-  "description": "Shapes a storm-touched flying familiar that can travel to bound waystones.",
+  "title": "ritual.warlockery.summon_storm_simian.title",
+  "description": "ritual.warlockery.summon_storm_simian.description",
   "action": "summon_entity",
   "target": "warlockery:storm_simian",
   "power": 2600,

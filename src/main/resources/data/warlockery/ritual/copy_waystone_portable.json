@@ -1,6 +1,6 @@
 {
-  "title": "Portable Rite of Binding: Copy Waystone",
-  "description": "Copies a bound location at a talisman-powered circle.",
+  "title": "ritual.warlockery.copy_waystone_portable.title",
+  "description": "ritual.warlockery.copy_waystone_portable.description",
   "action": "copy_waystone",
   "power": 1000,
   "radius": 6,

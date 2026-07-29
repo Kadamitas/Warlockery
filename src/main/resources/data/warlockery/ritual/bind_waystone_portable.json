@@ -1,6 +1,6 @@
 {
-  "title": "Portable Rite of Binding: Waystone",
-  "description": "Binds a waystone at a talisman-powered circle.",
+  "title": "ritual.warlockery.bind_waystone_portable.title",
+  "description": "ritual.warlockery.bind_waystone_portable.description",
   "action": "bind_waystone",
   "power": 750,
   "radius": 6,

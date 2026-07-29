@@ -33,6 +33,14 @@ Create a clean development build with:
 
 The distributable JAR is written to `build/libs`. The `build` directory is generated and should not be committed.
 
+Create a versioned publishing bundle with:
+
+```powershell
+.\gradlew.bat --no-daemon releaseBundle
+```
+
+The task writes the binary JAR, source JAR, license, changelog, and SHA-256 checksum files to `release/<version>`. Upload the binary JAR without the `-sources` suffix to a mod hosting site.
+
 ## Running Minecraft
 
 ForgeGradle provides the development launch tasks:
@@ -75,6 +83,16 @@ Ritual definitions belong in `data/warlockery/ritual`. Machine recipes belong in
 
 When a data format changes, update its Codec, validation, reload listener, and tests together. Invalid data should produce a useful log message instead of failing later during gameplay.
 
+## Localization
+
+English in `assets/warlockery/lang/en_us.json` is the source language. French, Spanish, Brazilian Portuguese, German, Polish, Japanese, and Traditional Chinese for Taiwan use `fr_fr`, `es_es`, `pt_br`, `de_de`, `pl_pl`, `ja_jp`, and `zh_tw` files in the same directory.
+
+Use `Component.translatable` for player-facing Java text. Data-driven rituals store `title_key` and `description_key` values rather than embedded English sentences. Keep every locale's key set identical to `en_us.json`, save files as UTF-8, preserve formatting placeholders such as `%s`, and choose vocabulary by gameplay meaning. Run the localization integrity test after changing any locale:
+
+```powershell
+.\gradlew.bat --no-daemon test --tests com.kadamitas.warlockery.localization.LocalizationIntegrityTest
+```
+
 ## Networking and client code
 
 Server code owns gameplay state. Menus, overlays, and floating diagnostics should display server-provided state instead of duplicating requirement checks on the client.
@@ -89,7 +107,53 @@ Warlockery uses Forge item and fluid capabilities for machine automation. Shared
 
 Altar power is its own gameplay resource, not Forge Energy. Integrating another mod's energy or mana system requires an optional adapter for that specific API.
 
+The optional JEI integration compiles against JEI 30.15.0's common API. It loads only when a compatible Forge JEI runtime is present, so Warlockery remains usable without JEI. Do not use a NeoForge-only JEI file in a Forge installation.
+
 The available material, equipment, creature, machine, and guide-book extension points are documented in [Cross-mod compatibility](docs/CROSS_MOD_COMPATIBILITY.md).
+
+## Server configuration
+
+Warlockery creates `warlockery-server.toml` in a world's `serverconfig` directory. Server owners can enable or disable hobgoblin enclaves, silver hunts, and automatic silver equipment for pillagers. The same file also controls the check intervals and event chances. New worlds use the gameplay defaults defined in `WarlockeryConfig`.
+
+Keep server configuration with the world or modpack configuration. Do not place it in a resource pack or data pack.
+
+## Custom resource packs
+
+Warlockery assets use normal namespaced Minecraft resource locations. A resource pack can replace textures, sounds, translations, item models, block models, and other client resources without changing the mod JAR.
+
+Start with this layout:
+
+```text
+My Warlockery Pack/
+  pack.mcmeta
+  assets/
+    warlockery/
+      sounds.json
+      textures/
+        block/
+        entity/
+        item/
+        gui/
+      models/
+        block/
+        item/
+      lang/
+      sounds/
+```
+
+For Minecraft 26.2, a minimal `pack.mcmeta` is:
+
+```json
+{
+  "pack": {
+    "description": "Custom Warlockery resources",
+    "max_format": 107,
+    "min_format": [107, 1]
+  }
+}
+```
+
+Copy only the assets being replaced and keep their paths and file names identical to the originals in `src/main/resources/assets/warlockery`. Put the custom pack above other packs that replace the same asset. Preserve a texture's companion `.png.mcmeta` file when replacing an animated texture. A pack that introduces custom OGG files must also supply matching entries in `assets/warlockery/sounds.json`. Resource packs can replace creature textures, but creature geometry implemented in Java requires a code-level renderer or model integration.
 
 ## Tests
 
@@ -119,10 +183,13 @@ If a client feature crashes a dedicated server, inspect common classes for impor
 
 ## Preparing a release
 
-1. Update the version in `build.gradle` and the changelog.
-2. Run `clean build`.
+1. Update the version in `build.gradle`, `update.json`, and `changelog.txt`.
+2. Run `clean build` and inspect the JUnit report.
 3. Run `runGameTestServer` for gameplay changes.
-4. Test the built JAR in a clean Forge instance.
-5. Create a matching Git tag and attach the JAR from `build/libs` to the release page.
+4. Run `releaseBundle` to collect the binary JAR, source JAR, license, changelog, and SHA-256 checksums in `release/<version>`.
+5. Test the binary JAR in clean client and dedicated-server Forge instances.
+6. Check both logs for missing translations, models, textures, tags, recipes, and optional-integration errors.
+7. Create a matching Git tag and attach the binary JAR from `release` to the release page.
+8. Upload the same binary JAR and changelog to the supported mod hosting sites with matching game and loader metadata.
 
 Do not publish development caches, local run directories, IDE settings, test worlds, or access tokens.

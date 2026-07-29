@@ -1,6 +1,6 @@
 {
-  "title": "Portable Rite of Fertility",
-  "description": "Grows compatible plants and cures nearby players and zombie villagers from a circle talisman.",
+  "title": "ritual.warlockery.fertility_portable.title",
+  "description": "ritual.warlockery.fertility_portable.description",
   "action": "fertility",
   "power": 2400,
   "radius": 10,

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Sky's Wrath",
-  "description": "Calls a violent thunderstorm and strikes the bound or nearest target with lightning.",
+  "title": "ritual.warlockery.storm.title",
+  "description": "ritual.warlockery.storm.description",
   "action": "skys_wrath",
   "power": 1400,
   "radius": 6,

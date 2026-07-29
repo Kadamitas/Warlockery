@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Earth",
-  "description": "Infuses those in the circle with the endurance of stone.",
+  "title": "ritual.warlockery.infusion_earth.title",
+  "description": "ritual.warlockery.infusion_earth.description",
   "action": "infuse_path",
   "power": 1800,
   "radius": 6,

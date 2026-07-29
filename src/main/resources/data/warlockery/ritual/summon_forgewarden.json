@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Challenge: Forgewarden",
-  "description": "Calls a combat-ready Forgewarden who empowers nearby kobolds.",
+  "title": "ritual.warlockery.summon_forgewarden.title",
+  "description": "ritual.warlockery.summon_forgewarden.description",
   "action": "summon_entity",
   "target": "warlockery:forgewarden",
   "power": 3600,

@@ -1,6 +1,6 @@
 {
-  "title": "Audience of the Crimson Matriarch",
-  "description": "Summons the Crimson Matriarch, whose blood can begin a vampire initiation.",
+  "title": "ritual.warlockery.summon_crimson_matriarch.title",
+  "description": "ritual.warlockery.summon_crimson_matriarch.description",
   "action": "summon_entity",
   "target": "warlockery:crimson_matriarch",
   "count": 1,
@@ -15,10 +15,26 @@
   },
   "requirements": {
     "ingredients": [
-      {"ingredient": "warlockery:ingredient_necro_stone", "count": 1, "consume": true},
-      {"ingredient": "#warlockery:luck_essences", "count": 1, "consume": true},
-      {"ingredient": "minecraft:wither_rose", "count": 1, "consume": true},
-      {"ingredient": "minecraft:ghast_tear", "count": 1, "consume": true}
+      {
+        "ingredient": "warlockery:ingredient_necro_stone",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:luck_essences",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:wither_rose",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:ghast_tear",
+        "count": 1,
+        "consume": true
+      }
     ],
     "full_moon": true,
     "minimum_players": 1

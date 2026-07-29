@@ -3,15 +3,78 @@ plugins {
     id 'java'
     id 'idea'
     id 'eclipse'
-    id 'net.minecraftforge.gradle' version '[7.0.17,8)'
+    id 'net.minecraftforge.gradle' version '7.0.17'
 }
 
-version = '1.0.0-alpha.1'
+abstract class ReleaseBundleTask extends DefaultTask {
+    @InputFiles
+    @PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract ConfigurableFileCollection getArtifacts()
+
+    @InputFile
+    abstract RegularFileProperty getLicenseFile()
+
+    @InputFile
+    abstract RegularFileProperty getChangelogFile()
+
+    @OutputDirectory
+    abstract DirectoryProperty getDestinationDirectory()
+
+    @TaskAction
+    void createBundle() {
+        def destination = destinationDirectory.get().asFile.toPath()
+        java.nio.file.Files.createDirectories(destination)
+
+        [licenseFile.get().asFile, changelogFile.get().asFile].each { source ->
+            java.nio.file.Files.copy(
+                source.toPath(),
+                destination.resolve(source.name),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            )
+        }
+
+        artifacts.files.each { artifact ->
+            java.nio.file.Files.copy(
+                artifact.toPath(),
+                destination.resolve(artifact.name),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            )
+
+            def digest = java.security.MessageDigest.getInstance('SHA-256')
+            artifact.withInputStream { input ->
+                def buffer = new byte[8192]
+                int bytesRead
+                while ((bytesRead = input.read(buffer)) != -1) {
+                    digest.update(buffer, 0, bytesRead)
+                }
+            }
+            def checksum = java.util.HexFormat.of().withUpperCase().formatHex(digest.digest())
+            java.nio.file.Files.writeString(
+                destination.resolve("${artifact.name}.sha256"),
+                "${checksum}  ${artifact.name}${System.lineSeparator()}",
+                java.nio.charset.StandardCharsets.UTF_8
+            )
+        }
+    }
+}
+
+version = '1.0.0'
 group = 'com.kadamitas.warlockery'
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    withSourcesJar()
+}
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+tasks.named('processResources', ProcessResources) {
+    exclude 'assets/warlockery/icon.png'
+    from('src/main/resources/assets/warlockery/icon.png') {
+        into ''
+        rename { 'warlockery-icon.png' }
+    }
+}
 
 sourceSets.test.compileClasspath += sourceSets.main.output
 sourceSets.test.runtimeClasspath += sourceSets.main.output
@@ -45,11 +108,16 @@ repositories {
     minecraft.mavenizer(it)
     maven fg.forgeMaven
     maven fg.minecraftLibsMaven
+    maven {
+        url = 'https://maven.blamejared.com'
+        content { includeGroup 'mezz.jei' }
+    }
     mavenCentral()
 }
 
 dependencies {
     implementation minecraft.dependency('net.minecraftforge:forge:26.2-65.1.0')
+    compileOnly 'mezz.jei:jei-26.2-common-api:30.15.0.104'
     annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.5'
     testImplementation platform('org.junit:junit-bom:6.1.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -66,4 +134,48 @@ tasks.named('test', Test) {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.compilerArgs.addAll(['-Xlint:deprecation', '-Xlint:unchecked'])
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+tasks.withType(Jar).configureEach {
+    from(rootProject.file('LICENSE')) {
+        into 'META-INF'
+        rename { 'LICENSE-Warlockery.txt' }
+    }
+    from(rootProject.file('changelog.txt')) {
+        into 'META-INF'
+        rename { 'CHANGELOG-Warlockery.txt' }
+    }
+}
+
+tasks.named('jar', Jar) {
+    manifest {
+        attributes(
+            'Automatic-Module-Name': 'com.kadamitas.warlockery',
+            'Specification-Title': 'Warlockery',
+            'Specification-Vendor': 'Kadamitas',
+            'Specification-Version': project.version,
+            'Implementation-Title': 'Warlockery',
+            'Implementation-Vendor': 'Kadamitas',
+            'Implementation-Version': project.version,
+            'Implementation-URL': 'https://github.com/Kadamitas/Warlockery'
+        )
+    }
+}
+
+def releaseDirectory = layout.projectDirectory.dir("release/${project.version}")
+
+tasks.register('releaseBundle', ReleaseBundleTask) {
+    group = 'build'
+    description = 'Collects release artifacts and SHA-256 checksums.'
+    dependsOn tasks.named('build')
+    artifacts.from(tasks.named('jar').flatMap { it.archiveFile })
+    artifacts.from(tasks.named('sourcesJar').flatMap { it.archiveFile })
+    licenseFile.set(layout.projectDirectory.file('LICENSE'))
+    changelogFile.set(layout.projectDirectory.file('changelog.txt'))
+    destinationDirectory.set(releaseDirectory)
 }

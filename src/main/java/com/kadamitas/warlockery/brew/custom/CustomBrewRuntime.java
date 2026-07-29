@@ -52,7 +52,10 @@ public final class CustomBrewRuntime {
         output.set(DataComponents.CUSTOM_NAME, Component.translatable("item.warlockery.custom_brew"));
         output.set(DataComponents.LORE, new ItemLore(List.of(
             Component.translatable("tooltip.warlockery.custom_brew.effects", formula.selectedEffects().size()),
-            Component.translatable("tooltip.warlockery.custom_brew.delivery", formula.delivery().id()),
+            Component.translatable(
+                "tooltip.warlockery.custom_brew.delivery",
+                Component.translatable("custom_brew_delivery.warlockery." + formula.delivery().id())
+            ),
             Component.translatable("tooltip.warlockery.custom_brew.power", formula.powerLevel())
         )));
         if (formula.delivery() == CustomBrewDelivery.DRINKABLE) {

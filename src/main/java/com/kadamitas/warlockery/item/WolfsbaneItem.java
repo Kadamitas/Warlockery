@@ -34,9 +34,9 @@ public final class WolfsbaneItem extends Item {
         );
         if (!player.level().isClientSide()) {
             final boolean detected = diagnostic == WolfsbaneRules.Diagnostic.LYCANTHROPY_DETECTED;
-            player.sendOverlayMessage(Component.literal(
-                detected ? "\u2713 Lycanthropy detected" : "No lycanthropy detected"
-            ));
+            player.sendOverlayMessage(Component.translatable(detected
+                ? "message.warlockery.wolfsbane.detected"
+                : "message.warlockery.wolfsbane.clear"));
             if (detected) {
                 target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
                 target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 200, 0));

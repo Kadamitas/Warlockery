@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Hexbreaking: Overheating",
-  "description": "Cools and cleanses the imprint-bound being.",
+  "title": "ritual.warlockery.cure_overheating.title",
+  "description": "ritual.warlockery.cure_overheating.description",
   "action": "cleanse",
   "power": 2400,
   "radius": 6,

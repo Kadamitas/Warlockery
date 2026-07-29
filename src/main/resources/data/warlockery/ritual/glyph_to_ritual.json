@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Glyphic Transformation: Ritual",
-  "description": "Transforms the outer glyphs into ritual chalk.",
+  "title": "ritual.warlockery.glyph_to_ritual.title",
+  "description": "ritual.warlockery.glyph_to_ritual.description",
   "action": "glyph_transform",
   "power": 800,
   "radius": 6,

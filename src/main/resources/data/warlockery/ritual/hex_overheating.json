@@ -1,6 +1,6 @@
 {
-  "title": "Hex of Overheating",
-  "description": "Causes the imprint-bound being to burn with infernal fever.",
+  "title": "ritual.warlockery.hex_overheating.title",
+  "description": "ritual.warlockery.hex_overheating.description",
   "action": "hex",
   "power": 2200,
   "radius": 6,

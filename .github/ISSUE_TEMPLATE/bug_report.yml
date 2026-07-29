@@ -1,0 +1,74 @@
+name: Bug report
+description: Report a reproducible Warlockery problem
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve Warlockery. Remove secrets and personal information from logs before uploading them.
+  - type: input
+    id: warlockery-version
+    attributes:
+      label: Warlockery version
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Minecraft, Forge, and Java versions
+      placeholder: Minecraft 26.2, Forge 65.1.0, Java 25
+    validations:
+      required: true
+  - type: dropdown
+    id: side
+    attributes:
+      label: Where did the problem occur?
+      options:
+        - Single-player or integrated server
+        - Dedicated server
+        - Client connected to a server
+        - Startup or loading
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the result and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Place...
+        2. Use...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other installed mods
+      description: Include versions and say whether the issue also occurs with only Forge and Warlockery.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log or crash report
+      description: Drag the relevant latest.log or crash report here. Do not paste only the final exception line.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I tested the latest Warlockery release for Minecraft 26.2.
+          required: true
+        - label: I searched existing issues for the same problem.
+          required: true

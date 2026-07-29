@@ -65,7 +65,7 @@ public final class CritterSnareBlock extends BushBlock {
         final CritterSnarePayload payload = state.getValue(PAYLOAD);
         if (!payload.occupied()) {
             if (!level.isClientSide()) {
-                player.sendOverlayMessage(Component.literal("Missing a bat, silverfish, or tiny slime"));
+                player.sendOverlayMessage(Component.translatable("message.warlockery.critter_snare.empty"));
             }
             return InteractionResult.FAIL;
         }
@@ -75,7 +75,10 @@ public final class CritterSnareBlock extends BushBlock {
                 serverLevel.addFreshEntity(critter);
             });
             level.setBlockAndUpdate(pos, state.setValue(PAYLOAD, CritterSnarePayload.EMPTY));
-            player.sendOverlayMessage(Component.literal("\u2713 Released " + payload.getSerializedName()));
+            player.sendOverlayMessage(Component.translatable(
+                "message.warlockery.critter_snare.released",
+                Component.translatable("entity.minecraft." + payload.getSerializedName())
+            ));
         }
         return InteractionResult.SUCCESS;
     }

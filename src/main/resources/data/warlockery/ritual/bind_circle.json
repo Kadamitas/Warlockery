@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Binding: Circle Talisman",
-  "description": "Pulls the prepared circle into a talisman for portable rites.",
+  "title": "ritual.warlockery.bind_circle.title",
+  "description": "ritual.warlockery.bind_circle.description",
   "action": "bind_circle",
   "power": 1000,
   "radius": 6,

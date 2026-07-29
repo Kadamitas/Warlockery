@@ -1,6 +1,6 @@
 {
-  "title": "Rite of the Forest",
-  "description": "Places and force-grows compatible tagged saplings into a surrounding woodland.",
+  "title": "ritual.warlockery.forestation.title",
+  "description": "ritual.warlockery.forestation.description",
   "action": "forestation",
   "power": 2600,
   "radius": 12,

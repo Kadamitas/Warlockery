@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Transposition: Waystone",
-  "description": "Teleports the caster to a bound waystone in this dimension.",
+  "title": "ritual.warlockery.teleport_waystone.title",
+  "description": "ritual.warlockery.teleport_waystone.description",
   "action": "teleport_waystone",
   "power": 1000,
   "radius": 6,

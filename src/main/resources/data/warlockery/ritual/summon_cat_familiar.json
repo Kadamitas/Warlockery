@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Calling: Cat Familiar",
-  "description": "Calls a cat familiar that can be bound as a persistent magical companion.",
+  "title": "ritual.warlockery.summon_cat_familiar.title",
+  "description": "ritual.warlockery.summon_cat_familiar.description",
   "action": "summon_entity",
   "target": "warlockery:familiar_cat",
   "power": 1500,

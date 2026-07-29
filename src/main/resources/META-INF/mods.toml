@@ -1,14 +1,19 @@
-
 modLoader="javafml"
 loaderVersion="[65,)"
-license="All Rights Reserved"
+license="MIT"
+issueTrackerURL="https://github.com/Kadamitas/Warlockery/issues"
 
 [[mods]]
 modId="warlockery"
 version="${file.jarVersion}"
 displayName="Warlockery"
-logoFile="assets/warlockery/icon.png"
+displayURL="https://github.com/Kadamitas/Warlockery"
+updateJSONURL="https://raw.githubusercontent.com/Kadamitas/Warlockery/main/update.json"
+logoFile="warlockery-icon.png"
+logoBlur=false
 authors="Kadamitas"
+displayTest="MATCH_VERSION"
+features={java_version="[25,)"}
 
 description='''A standalone ritual-magic mod for Forge 65 and Minecraft 26.2.
 Warlockery includes data-driven circles and machines, magical plants, sympathetic magic,
@@ -18,9 +23,16 @@ silver-equipped Werewolf Hunters, and modern ore progression.'''
 [[dependencies.warlockery]]
     modId="forge"
     mandatory=true
-    versionRange="[65,)"
+    versionRange="[65.1.0,)"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.warlockery]]
+    modId="jei"
+    mandatory=false
+    versionRange="[30.15.0,)"
+    ordering="AFTER"
+    side="CLIENT"
 
 [[dependencies.warlockery]]
     modId="minecraft"

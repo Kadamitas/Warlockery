@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Binding: Death",
-  "description": "Consumes five bound beings from each spectral host to call Death through the veil.",
+  "title": "ritual.warlockery.bind_death.title",
+  "description": "ritual.warlockery.bind_death.description",
   "action": "summon_entity",
   "target": "warlockery:death",
   "count": 1,

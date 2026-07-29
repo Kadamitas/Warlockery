@@ -33,9 +33,9 @@ public record AdvancedMutationAssessment(
             .collect(Collectors.joining("; "));
     }
 
-    public record MissingCondition(String name, int present, int required) {
+    public record MissingCondition(String id, String name, int present, int required) {
         public MissingCondition {
-            if (name.isBlank() || present < 0 || required < 1 || present >= required) {
+            if (id.isBlank() || name.isBlank() || present < 0 || required < 1 || present >= required) {
                 throw new IllegalArgumentException("Missing conditions must describe an unmet requirement");
             }
         }

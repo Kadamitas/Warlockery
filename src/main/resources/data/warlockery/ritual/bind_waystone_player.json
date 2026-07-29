@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Binding: Blooded Waystone",
-  "description": "Creates a waystone bound through a creature sympathetic imprint.",
+  "title": "ritual.warlockery.bind_waystone_player.title",
+  "description": "ritual.warlockery.bind_waystone_player.description",
   "action": "bind_item",
   "power": 1600,
   "radius": 6,

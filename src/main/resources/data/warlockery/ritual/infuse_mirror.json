@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Mirror",
-  "description": "Condenses a crafted mirror surface into a portable infernal reflection.",
+  "title": "ritual.warlockery.infuse_mirror.title",
+  "description": "ritual.warlockery.infuse_mirror.description",
   "action": "summon_item",
   "power": 3200,
   "radius": 6,

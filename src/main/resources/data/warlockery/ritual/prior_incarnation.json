@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Prior Incarnation",
-  "description": "Calls restorative echoes of a target player around the circle.",
+  "title": "ritual.warlockery.prior_incarnation.title",
+  "description": "ritual.warlockery.prior_incarnation.description",
   "action": "prior_incarnation",
   "power": 2800,
   "radius": 6,

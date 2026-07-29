@@ -42,22 +42,22 @@ public final class WickerBundleBlock extends Block {
     ) {
         if (!stack.is(ResourceCompatibilityTags.Items.BLOOD_SOURCES)) {
             if (!level.isClientSide()) {
-                player.sendOverlayMessage(Component.literal(
-                    state.getValue(BLOODIED) ? "\u2713 Wicker bundle is bloodied" : "Missing a tagged blood source"
-                ));
+                player.sendOverlayMessage(Component.translatable(state.getValue(BLOODIED)
+                    ? "message.warlockery.wicker_bundle.bloodied"
+                    : "message.warlockery.wicker_bundle.missing_blood"));
             }
             return InteractionResult.FAIL;
         }
         if (state.getValue(BLOODIED)) {
             if (!level.isClientSide()) {
-                player.sendOverlayMessage(Component.literal("\u2713 Wicker bundle is already bloodied"));
+                player.sendOverlayMessage(Component.translatable("message.warlockery.wicker_bundle.already_bloodied"));
             }
             return InteractionResult.FAIL;
         }
         if (!level.isClientSide()) {
             level.setBlockAndUpdate(pos, state.setValue(BLOODIED, true));
             stack.consume(1, player);
-            player.sendOverlayMessage(Component.literal("\u2713 Bloodied wicker bundle is ready"));
+            player.sendOverlayMessage(Component.translatable("message.warlockery.wicker_bundle.ready"));
         }
         return InteractionResult.SUCCESS;
     }
@@ -71,9 +71,9 @@ public final class WickerBundleBlock extends Block {
         final BlockHitResult hitResult
     ) {
         if (!level.isClientSide()) {
-            player.sendOverlayMessage(Component.literal(
-                state.getValue(BLOODIED) ? "\u2713 Bloodied wicker bundle is ready" : "Missing a tagged blood source"
-            ));
+            player.sendOverlayMessage(Component.translatable(state.getValue(BLOODIED)
+                ? "message.warlockery.wicker_bundle.ready"
+                : "message.warlockery.wicker_bundle.missing_blood"));
         }
         return InteractionResult.SUCCESS;
     }

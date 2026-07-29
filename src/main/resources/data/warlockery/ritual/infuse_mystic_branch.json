@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Mystic Branch",
-  "description": "Infuses a branch with focused natural magic.",
+  "title": "ritual.warlockery.infuse_mystic_branch.title",
+  "description": "ritual.warlockery.infuse_mystic_branch.description",
   "action": "summon_item",
   "power": 2200,
   "radius": 6,

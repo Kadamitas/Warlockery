@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infestation: Parasytic Louse",
-  "description": "Calls a Parasytic Louse that can capture and redirect potion effects.",
+  "title": "ritual.warlockery.summon_parasytic_louse.title",
+  "description": "ritual.warlockery.summon_parasytic_louse.description",
   "action": "summon_entity",
   "target": "warlockery:parasytic_louse",
   "power": 1400,

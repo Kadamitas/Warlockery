@@ -108,7 +108,7 @@ public final class PlantMineBlock extends BushBlock {
         if (entity instanceof Player player) {
             player.sendOverlayMessage(Component.translatable(
                 "message.warlockery.plant_mine.triggered",
-                payload.getSerializedName()
+                payloadName(payload)
             ).withStyle(ChatFormatting.GOLD));
         }
         PlantMineEffects.activate(serverLevel, pos, payload);
@@ -130,6 +130,10 @@ public final class PlantMineBlock extends BushBlock {
             case WRONG -> ChatFormatting.RED;
             case READY -> ChatFormatting.GREEN;
         };
-        player.sendOverlayMessage(Component.translatable(key, payload.getSerializedName()).withStyle(color));
+        player.sendOverlayMessage(Component.translatable(key, payloadName(payload)).withStyle(color));
+    }
+
+    private static Component payloadName(final PlantMinePayload payload) {
+        return Component.translatable("plant_mine_payload.warlockery." + payload.getSerializedName());
     }
 }

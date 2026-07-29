@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Summoning: Banshee",
-  "description": "Calls a banshee from beyond the veil.",
+  "title": "ritual.warlockery.summon_banshee.title",
+  "description": "ritual.warlockery.summon_banshee.description",
   "action": "summon_entity",
   "power": 2200,
   "radius": 6,

@@ -1,6 +1,6 @@
 {
-  "title": "Drain Growth",
-  "description": "Returns nearby crops to seedlings and transfers their growth into the caster's health and hunger.",
+  "title": "ritual.warlockery.drain_growth.title",
+  "description": "ritual.warlockery.drain_growth.description",
   "action": "drain_growth",
   "power": 900,
   "radius": 7,

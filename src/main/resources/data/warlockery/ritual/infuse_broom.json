@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Enchanted Broom",
-  "description": "Creates an enchanted broom from a mundane broom and flying ointment.",
+  "title": "ritual.warlockery.infuse_broom.title",
+  "description": "ritual.warlockery.infuse_broom.description",
   "action": "summon_item",
   "power": 1800,
   "radius": 6,

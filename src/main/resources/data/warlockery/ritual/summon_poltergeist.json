@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Summoning: Poltergeist",
-  "description": "Calls a Poltergeist needed by the greater Rite of Binding.",
+  "title": "ritual.warlockery.summon_poltergeist.title",
+  "description": "ritual.warlockery.summon_poltergeist.description",
   "action": "summon_entity",
   "target": "warlockery:poltergeist",
   "power": 1900,

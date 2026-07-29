@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Calling: Lost Soul",
-  "description": "Draws a Lost Soul into the world so it can be bound with a spirit vessel.",
+  "title": "ritual.warlockery.summon_lost_soul.title",
+  "description": "ritual.warlockery.summon_lost_soul.description",
   "action": "summon_entity",
   "target": "warlockery:lost_soul",
   "power": 1700,

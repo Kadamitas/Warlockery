@@ -1,6 +1,6 @@
 {
-  "title": "Deathly Veil",
-  "description": "Hides beings in the circle from ordinary sight for a short time.",
+  "title": "ritual.warlockery.deathly_veil.title",
+  "description": "ritual.warlockery.deathly_veil.description",
   "action": "effect",
   "effect": "minecraft:invisibility",
   "power": 1100,

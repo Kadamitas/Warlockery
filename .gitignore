@@ -21,6 +21,15 @@ run-data
 logs
 tmp
 release
+crash-reports
+hs_err_pid*.log
+
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
 
 forge_README.txt
 forge*changelog.txt

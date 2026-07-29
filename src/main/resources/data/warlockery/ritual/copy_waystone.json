@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Binding: Copy Waystone",
-  "description": "Copies a bound location onto a second waystone.",
+  "title": "ritual.warlockery.copy_waystone.title",
+  "description": "ritual.warlockery.copy_waystone.description",
   "action": "copy_waystone",
   "power": 750,
   "radius": 6,

@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 final class RitualParityTest {
     private static final Path DATA = Path.of("src", "main", "resources", "data", "warlockery");
     private static final Path ASSETS = Path.of("src", "main", "resources", "assets", "warlockery");
+    private static final JsonObject ENGLISH = readJson(ASSETS.resolve("lang/en_us.json"));
     private static final Map<String, RitualDefinition> RITUALS = JsonFixtureLoader
         .load(DATA.resolve("ritual"), RitualDefinition.CODEC)
         .stream()
@@ -28,9 +29,10 @@ final class RitualParityTest {
     void fertilityDeclaresTaggedGrowthAndDocumentedCures() {
         final RitualDefinition fertility = RITUALS.get("fertility");
         assertEquals(RitualAction.FERTILITY.id(), fertility.action());
-        assertTrue(fertility.description().contains("poison"));
-        assertTrue(fertility.description().contains("nausea"));
-        assertTrue(fertility.description().contains("blindness"));
+        final String description = english(fertility.description());
+        assertTrue(description.contains("poison"));
+        assertTrue(description.contains("nausea"));
+        assertTrue(description.contains("blindness"));
         assertTrue(tagContains("block", "ritual_growables", "#warlockery:ritual_crops"));
         assertTrue(tagContains("entity_type", "fertility_familiars", "warlockery:familiar_cat"));
     }
@@ -65,7 +67,7 @@ final class RitualParityTest {
         final RitualDefinition storm = RITUALS.get("storm");
         assertEquals(RitualAction.SKYS_WRATH.id(), storm.action());
         assertEquals(RitualAction.Outcome.WEATHER_AND_EFFECT, RitualAction.require(storm.action()).outcome());
-        assertTrue(storm.description().contains("target"));
+        assertTrue(english(storm.description()).contains("target"));
     }
 
     @Test
@@ -101,5 +103,9 @@ final class RitualParityTest {
     private static boolean tagContains(final String registry, final String id, final String value) {
         return java.util.stream.StreamSupport.stream(tagValues(registry, id).spliterator(), false)
             .anyMatch(element -> element.getAsString().equals(value));
+    }
+
+    private static String english(final String translationKey) {
+        return ENGLISH.get(translationKey).getAsString();
     }
 }

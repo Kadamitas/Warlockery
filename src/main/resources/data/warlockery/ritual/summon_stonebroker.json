@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Challenge: Stonebroker",
-  "description": "Calls the armored Stonebroker patron for combat, worship, and kobold blessings.",
+  "title": "ritual.warlockery.summon_stonebroker.title",
+  "description": "ritual.warlockery.summon_stonebroker.description",
   "action": "summon_entity",
   "target": "warlockery:stonebroker",
   "power": 3200,

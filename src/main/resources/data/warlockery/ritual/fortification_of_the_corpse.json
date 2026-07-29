@@ -1,6 +1,6 @@
 {
-  "title": "Fortification of the Corpse",
-  "description": "Strengthens nearby undead with resistance, vigor, and a temporary health barrier.",
+  "title": "ritual.warlockery.fortification_of_the_corpse.title",
+  "description": "ritual.warlockery.fortification_of_the_corpse.description",
   "action": "fortify_undead",
   "power": 1500,
   "radius": 8,

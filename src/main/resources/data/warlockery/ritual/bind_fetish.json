@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Binding: Fetish",
-  "description": "Empowers a scarecrow or ladder as a spectral fetish.",
+  "title": "ritual.warlockery.bind_fetish.title",
+  "description": "ritual.warlockery.bind_fetish.description",
   "action": "bind_fetish",
   "power": 2200,
   "radius": 6,

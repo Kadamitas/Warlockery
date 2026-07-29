@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Fertility",
-  "description": "Grows compatible plants, cures poison, nausea, and blindness, and restores zombie villagers.",
+  "title": "ritual.warlockery.fertility.title",
+  "description": "ritual.warlockery.fertility.description",
   "action": "fertility",
   "power": 2000,
   "radius": 10,

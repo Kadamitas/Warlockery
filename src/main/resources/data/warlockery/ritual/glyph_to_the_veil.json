@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Glyphic Transformation: the Veil",
-  "description": "Transforms the outer glyphs into the_veil chalk.",
+  "title": "ritual.warlockery.glyph_to_the_veil.title",
+  "description": "ritual.warlockery.glyph_to_the_veil.description",
   "action": "glyph_transform",
   "power": 900,
   "radius": 6,

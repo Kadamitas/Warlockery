@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Transposition: Creature",
-  "description": "Summons the creature or player identified by a bound sympathetic imprint.",
+  "title": "ritual.warlockery.teleport_entity.title",
+  "description": "ritual.warlockery.teleport_entity.description",
   "action": "teleport_entity",
   "power": 1800,
   "radius": 6,

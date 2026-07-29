@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Light",
-  "description": "Infuses those in the circle with radiant sight.",
+  "title": "ritual.warlockery.infusion_light.title",
+  "description": "ritual.warlockery.infusion_light.description",
   "action": "infuse_path",
   "power": 1800,
   "radius": 6,

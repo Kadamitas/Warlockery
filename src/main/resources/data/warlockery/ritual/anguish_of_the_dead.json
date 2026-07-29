@@ -1,6 +1,6 @@
 {
-  "title": "Anguish of the Dead",
-  "description": "Scours nearby undead with magic and leaves them weak and slow.",
+  "title": "ritual.warlockery.anguish_of_the_dead.title",
+  "description": "ritual.warlockery.anguish_of_the_dead.description",
   "action": "anguish_undead",
   "power": 1400,
   "radius": 8,

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Summoning: Echo Shade",
-  "description": "Releases the hostile echo_shade held within an infused mirror.",
+  "title": "ritual.warlockery.summon_reflection.title",
+  "description": "ritual.warlockery.summon_reflection.description",
   "action": "summon_entity",
   "power": 3000,
   "radius": 6,

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Protection",
-  "description": "Raises a short-lived magical ward around the circle.",
+  "title": "ritual.warlockery.barrier.title",
+  "description": "ritual.warlockery.barrier.description",
   "action": "protection_ward",
   "power": 1300,
   "radius": 6,

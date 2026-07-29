@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Necromancy: Spectral Stone",
-  "description": "Infuses a Spectral Stone under the night sky.",
+  "title": "ritual.warlockery.spectral_stone.title",
+  "description": "ritual.warlockery.spectral_stone.description",
   "action": "summon_item",
   "power": 1600,
   "radius": 6,

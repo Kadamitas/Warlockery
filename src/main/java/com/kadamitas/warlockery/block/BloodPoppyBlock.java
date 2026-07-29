@@ -69,15 +69,18 @@ public final class BloodPoppyBlock extends BushBlock {
         }
         final Optional<LivingEntity> victim = recentVictim(serverLevel, pos);
         if (victim.isEmpty()) {
-            player.sendOverlayMessage(Component.literal("Missing a recent blood sample"));
+            player.sendOverlayMessage(Component.translatable("message.warlockery.blood_poppy.missing_sample"));
             return InteractionResult.FAIL;
         }
         final LivingEntity target = victim.orElseThrow();
         SympatheticBinding.from(target).write(stack);
         stack.set(DataComponents.LORE, new ItemLore(java.util.List.of(
-            Component.literal("Blood sample: " + target.getName().getString())
+            Component.translatable("tooltip.warlockery.blood_poppy.sample", target.getDisplayName())
         )));
-        player.sendOverlayMessage(Component.literal("\u2713 Collected " + target.getName().getString() + "'s sample"));
+        player.sendOverlayMessage(Component.translatable(
+            "message.warlockery.blood_poppy.collected",
+            target.getDisplayName()
+        ));
         return InteractionResult.SUCCESS;
     }
 
@@ -91,9 +94,9 @@ public final class BloodPoppyBlock extends BushBlock {
     ) {
         if (!level.isClientSide()) {
             final boolean ready = level instanceof ServerLevel serverLevel && recentVictim(serverLevel, pos).isPresent();
-            player.sendOverlayMessage(Component.literal(
-                ready ? "\u2713 Blood sample ready for an empty vial" : "Missing a recent blood sample"
-            ));
+            player.sendOverlayMessage(Component.translatable(ready
+                ? "message.warlockery.blood_poppy.ready"
+                : "message.warlockery.blood_poppy.missing_sample"));
         }
         return InteractionResult.SUCCESS;
     }
@@ -114,7 +117,7 @@ public final class BloodPoppyBlock extends BushBlock {
         player.causeFoodExhaustion(0.05F);
         if (level instanceof ServerLevel serverLevel) {
             player.hurtServer(serverLevel, player.damageSources().sweetBerryBush(), 2.0F);
-            player.sendOverlayMessage(Component.literal("The Blood Poppy requires a boline for safe harvest"));
+            player.sendOverlayMessage(Component.translatable("message.warlockery.blood_poppy.unsafe_harvest"));
         }
     }
 

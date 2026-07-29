@@ -1,6 +1,6 @@
 {
-  "title": "Hex of Sinking",
-  "description": "Burdens the imprint-bound being with crushing supernatural weight.",
+  "title": "ritual.warlockery.hex_sinking.title",
+  "description": "ritual.warlockery.hex_sinking.description",
   "action": "hex",
   "power": 1900,
   "radius": 6,

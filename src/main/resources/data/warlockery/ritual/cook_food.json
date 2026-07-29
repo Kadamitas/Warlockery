@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Broiling",
-  "description": "Cooks dropped raw food in the ritual area.",
+  "title": "ritual.warlockery.cook_food.title",
+  "description": "ritual.warlockery.cook_food.description",
   "action": "cook",
   "power": 600,
   "radius": 6,

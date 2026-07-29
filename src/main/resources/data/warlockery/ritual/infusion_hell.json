@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Infernal",
-  "description": "Infuses those in the circle with protection from flame.",
+  "title": "ritual.warlockery.infusion_hell.title",
+  "description": "ritual.warlockery.infusion_hell.description",
   "action": "infuse_path",
   "power": 2100,
   "radius": 6,

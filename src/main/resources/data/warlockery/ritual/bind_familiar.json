@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Binding: Familiar",
-  "description": "Strengthens and protects a familiar standing in the circle.",
+  "title": "ritual.warlockery.bind_familiar.title",
+  "description": "ritual.warlockery.bind_familiar.description",
   "action": "bind_entity",
   "power": 1500,
   "radius": 5,

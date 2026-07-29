@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Transposition: Ore",
-  "description": "Draws ore from the rock below and deposits it at the circle.",
+  "title": "ritual.warlockery.transpose_ore.title",
+  "description": "ritual.warlockery.transpose_ore.description",
   "action": "transpose_ore",
   "power": 1400,
   "radius": 8,

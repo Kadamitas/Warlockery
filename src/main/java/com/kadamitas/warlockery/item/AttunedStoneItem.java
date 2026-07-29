@@ -33,7 +33,7 @@ public final class AttunedStoneItem extends Item {
             : AttunedStoneRules.withdraw(before, altar.getPower());
         if (!transfer.succeeded()) {
             if (context.getPlayer() != null && !context.getLevel().isClientSide()) {
-                context.getPlayer().sendOverlayMessage(Component.literal("Missing available altar or stone power"));
+                context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.attuned_stone.no_power"));
             }
             return InteractionResult.FAIL;
         }
@@ -45,8 +45,10 @@ public final class AttunedStoneItem extends Item {
             }
             setStoredPower(stack, transfer.stonePower());
             if (context.getPlayer() != null) {
-                context.getPlayer().sendOverlayMessage(Component.literal(
-                    "\u2713 Attuned Stone: " + transfer.stonePower() + "/" + AttunedStoneRules.CAPACITY
+                context.getPlayer().sendOverlayMessage(Component.translatable(
+                    "message.warlockery.attuned_stone.power",
+                    transfer.stonePower(),
+                    AttunedStoneRules.CAPACITY
                 ));
             }
         }
@@ -64,8 +66,10 @@ public final class AttunedStoneItem extends Item {
     static void setStoredPower(final ItemStack stack, final int power) {
         final int bounded = AttunedStoneRules.bounded(power);
         CustomData.update(DataComponents.CUSTOM_DATA, stack, data -> data.putInt(POWER, bounded));
-        stack.set(DataComponents.LORE, new ItemLore(List.of(Component.literal(
-            "Altar power: " + bounded + "/" + AttunedStoneRules.CAPACITY
+        stack.set(DataComponents.LORE, new ItemLore(List.of(Component.translatable(
+            "tooltip.warlockery.attuned_stone.power",
+            bounded,
+            AttunedStoneRules.CAPACITY
         ))));
     }
 

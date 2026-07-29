@@ -1,6 +1,6 @@
 {
-  "title": "Portable Rite of Protection",
-  "description": "Provides one minute of powerful warding.",
+  "title": "ritual.warlockery.barrier_portable.title",
+  "description": "ritual.warlockery.barrier_portable.description",
   "action": "effect",
   "power": 1700,
   "radius": 6,

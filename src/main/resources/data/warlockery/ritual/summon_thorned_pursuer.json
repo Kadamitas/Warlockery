@@ -1,6 +1,6 @@
 {
-  "title": "Rite of the Bloodied Effigy",
-  "description": "Consumes four bloodied wicker bundles at the cardinal points to call the Thorned Pursuer.",
+  "title": "ritual.warlockery.summon_thorned_pursuer.title",
+  "description": "ritual.warlockery.summon_thorned_pursuer.description",
   "action": "summon_huntsman",
   "target": "warlockery:thorned_pursuer",
   "power": 4800,

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Imprisonment",
-  "description": "Cripples movement inside the circle so captured foes cannot escape.",
+  "title": "ritual.warlockery.imprisonment.title",
+  "description": "ritual.warlockery.imprisonment.description",
   "action": "imprisonment_ward",
   "power": 1000,
   "radius": 6,

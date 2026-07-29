@@ -1,6 +1,6 @@
 {
-  "title": "Hex of Misfortune",
-  "description": "Hexes the imprint-bound being with persistent bad luck.",
+  "title": "ritual.warlockery.hex_misfortune.title",
+  "description": "ritual.warlockery.hex_misfortune.description",
   "action": "hex",
   "power": 1600,
   "radius": 6,

@@ -1,6 +1,6 @@
 {
-  "title": "Graveyard Mist",
-  "description": "Fills the circle with ash that conceals and restores undead while blinding the living.",
+  "title": "ritual.warlockery.graveyard_mist.title",
+  "description": "ritual.warlockery.graveyard_mist.description",
   "action": "graveyard_mist",
   "power": 1700,
   "radius": 9,

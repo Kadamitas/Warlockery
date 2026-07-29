@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Hexbreaking: Nightmare",
-  "description": "Ends the waking nightmare of the imprint-bound being.",
+  "title": "ritual.warlockery.cure_nightmare.title",
+  "description": "ritual.warlockery.cure_nightmare.description",
   "action": "cleanse",
   "power": 2800,
   "radius": 6,

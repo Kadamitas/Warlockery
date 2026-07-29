@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Summoning: Demon",
-  "description": "Calls a Warlockery demon from the infernal realm.",
+  "title": "ritual.warlockery.summon_demon.title",
+  "description": "ritual.warlockery.summon_demon.description",
   "action": "summon_entity",
   "power": 2800,
   "radius": 6,

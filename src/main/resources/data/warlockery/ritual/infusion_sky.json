@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: Sky",
-  "description": "Infuses those in the circle with the grace of flight.",
+  "title": "ritual.warlockery.infusion_sky.title",
+  "description": "ritual.warlockery.infusion_sky.description",
   "action": "infuse_path",
   "power": 2400,
   "radius": 6,

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Charging",
-  "description": "Charges an attuned stone with concentrated altar power.",
+  "title": "ritual.warlockery.charge_attuned_stone.title",
+  "description": "ritual.warlockery.charge_attuned_stone.description",
   "action": "summon_item",
   "power": 2000,
   "radius": 6,

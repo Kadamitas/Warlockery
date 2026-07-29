@@ -42,7 +42,7 @@ public final class DemonHeartBlock extends Block {
             effects().forEach(player::addEffect);
             player.igniteForSeconds(8.0F);
             level.removeBlock(pos, false);
-            player.sendOverlayMessage(Component.literal("\u2713 Infernal heart consumed"));
+            player.sendOverlayMessage(Component.translatable("message.warlockery.demon_heart.consumed"));
         }
         return InteractionResult.SUCCESS;
     }

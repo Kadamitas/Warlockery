@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Infusion: the Veil",
-  "description": "Infuses those in the circle with otherworldly speed.",
+  "title": "ritual.warlockery.infusion_ender.title",
+  "description": "ritual.warlockery.infusion_ender.description",
   "action": "infuse_path",
   "power": 2100,
   "radius": 6,

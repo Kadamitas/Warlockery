@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Greater Protection",
-  "description": "Raises a wide magical ward for a coven and its allies.",
+  "title": "ritual.warlockery.barrier_large.title",
+  "description": "ritual.warlockery.barrier_large.description",
   "action": "effect",
   "power": 2400,
   "radius": 12,

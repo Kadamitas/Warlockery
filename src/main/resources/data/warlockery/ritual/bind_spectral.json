@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Binding: Spectral Creatures",
-  "description": "Condenses spectral creatures into a refreshed Spectral Stone.",
+  "title": "ritual.warlockery.bind_spectral.title",
+  "description": "ritual.warlockery.bind_spectral.description",
   "action": "bind_entity",
   "power": 2000,
   "radius": 6,

@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Icy Expansion",
-  "description": "Builds a hollow sphere of packed ice around the circle.",
+  "title": "ritual.warlockery.ice_shell.title",
+  "description": "ritual.warlockery.ice_shell.description",
   "action": "ice_sphere",
   "power": 2200,
   "radius": 6,

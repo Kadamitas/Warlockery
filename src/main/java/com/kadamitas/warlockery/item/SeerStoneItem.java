@@ -1,7 +1,8 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.magic.MagicPath;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
-import java.util.stream.Collectors;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -35,16 +36,30 @@ public final class SeerStoneItem extends Item {
             ).withStyle(ChatFormatting.LIGHT_PURPLE));
         }
         final DivinationRuntime.Progression progression = DivinationRuntime.progression(player);
-        final String paths = progression.paths().isEmpty()
-            ? Component.translatable("message.warlockery.divination.no_paths").getString()
-            : progression.paths().stream().map(path -> path.id()).collect(Collectors.joining(", "));
+        final Component paths = progression.paths().isEmpty()
+            ? Component.translatable("message.warlockery.divination.no_paths")
+            : pathList(progression.paths());
         player.sendSystemMessage(Component.translatable(
             "message.warlockery.divination.progression",
-            progression.form().name().toLowerCase(java.util.Locale.ROOT),
+            Component.translatable(
+                "supernatural_form.warlockery."
+                    + progression.form().name().toLowerCase(java.util.Locale.ROOT)
+            ),
             progression.supernaturalReserve(),
             paths,
             progression.totalPathReserve()
         ).withStyle(ChatFormatting.AQUA));
         return InteractionResult.SUCCESS;
+    }
+
+    private static Component pathList(final List<MagicPath> paths) {
+        final var result = Component.empty();
+        for (int index = 0; index < paths.size(); index++) {
+            if (index > 0) {
+                result.append(Component.literal(", "));
+            }
+            result.append(Component.translatable("magic_path.warlockery." + paths.get(index).id()));
+        }
+        return result;
     }
 }

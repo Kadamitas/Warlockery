@@ -20,18 +20,18 @@ public final class TreefydSeedItem extends Item {
         }
         final var spawn = context.getClickedPos().relative(context.getClickedFace());
         if (!level.getBlockState(spawn).canBeReplaced()) {
-            context.getPlayer().sendOverlayMessage(Component.literal("Missing an open block for the Treefyd"));
+            context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.missing_space"));
             return InteractionResult.FAIL;
         }
         final var treefyd = ModEntities.ALL.get("bramble_colossus").get().create(level, EntitySpawnReason.EVENT);
         if (treefyd == null) {
-            context.getPlayer().sendOverlayMessage(Component.literal("The Treefyd seed could not awaken"));
+            context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.failed"));
             return InteractionResult.FAIL;
         }
         treefyd.snapTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
         level.addFreshEntity(treefyd);
         context.getItemInHand().consume(1, context.getPlayer());
-        context.getPlayer().sendOverlayMessage(Component.literal("\u2713 Treefyd awakened"));
+        context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.awakened"));
         return InteractionResult.SUCCESS;
     }
 }

@@ -1,6 +1,6 @@
 {
-  "title": "Portable Rite of Sky's Wrath",
-  "description": "Calls a focused thunderstorm from a circle talisman.",
+  "title": "ritual.warlockery.storm_portable.title",
+  "description": "ritual.warlockery.storm_portable.description",
   "action": "storm",
   "power": 1800,
   "radius": 6,

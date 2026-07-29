@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Beastial Call",
-  "description": "Draws nearby animals into the ritual circle.",
+  "title": "ritual.warlockery.call_beasts.title",
+  "description": "ritual.warlockery.call_beasts.description",
   "action": "call_beasts",
   "power": 1800,
   "radius": 8,

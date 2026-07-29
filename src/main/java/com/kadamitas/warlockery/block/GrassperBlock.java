@@ -52,7 +52,7 @@ public final class GrassperBlock extends BushBlock {
         if (level instanceof ServerLevel serverLevel) {
             final Display.ItemDisplay display = EntityTypes.ITEM_DISPLAY.create(serverLevel, EntitySpawnReason.EVENT);
             if (display == null) {
-                player.sendOverlayMessage(Component.literal("The Grassper could not hold that item"));
+                player.sendOverlayMessage(Component.translatable("message.warlockery.grassper.cannot_hold"));
                 return InteractionResult.FAIL;
             }
             final SlotAccess slot = display.getSlot(0);
@@ -65,7 +65,7 @@ public final class GrassperBlock extends BushBlock {
             serverLevel.addFreshEntity(display);
             stack.consume(1, player);
             level.setBlockAndUpdate(pos, state.setValue(OCCUPIED, true));
-            player.sendOverlayMessage(Component.literal("\u2713 Grassper is holding one item"));
+            player.sendOverlayMessage(Component.translatable("message.warlockery.grassper.holding"));
         }
         return InteractionResult.SUCCESS;
     }
@@ -80,7 +80,7 @@ public final class GrassperBlock extends BushBlock {
     ) {
         if (!state.getValue(OCCUPIED)) {
             if (!level.isClientSide()) {
-                player.sendOverlayMessage(Component.literal("Missing an item to hold"));
+                player.sendOverlayMessage(Component.translatable("message.warlockery.grassper.missing_item"));
             }
             return InteractionResult.FAIL;
         }
@@ -97,13 +97,13 @@ public final class GrassperBlock extends BushBlock {
             final Optional<ItemStack> stack = takeStoredItem(serverLevel, pos);
             if (stack.isEmpty()) {
                 level.setBlockAndUpdate(pos, state.setValue(OCCUPIED, false));
-                player.sendOverlayMessage(Component.literal("Stored item is missing"));
+                player.sendOverlayMessage(Component.translatable("message.warlockery.grassper.stored_item_missing"));
                 return InteractionResult.FAIL;
             }
             if (!player.getInventory().add(stack.orElseThrow())) {
                 Block.popResource(level, pos.above(), stack.orElseThrow());
             }
-            player.sendOverlayMessage(Component.literal("\u2713 Grassper returned its item"));
+            player.sendOverlayMessage(Component.translatable("message.warlockery.grassper.returned"));
         }
         return InteractionResult.SUCCESS;
     }

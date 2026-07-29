@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Calling: Circle Mage",
-  "description": "Calls a Circle Mage who can be recruited with a familiar and a coven offering.",
+  "title": "ritual.warlockery.summon_circle_mage.title",
+  "description": "ritual.warlockery.summon_circle_mage.description",
   "action": "summon_entity",
   "target": "warlockery:circle_mage",
   "power": 1800,

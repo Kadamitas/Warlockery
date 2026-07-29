@@ -1,6 +1,6 @@
 {
-  "title": "Rite of Hexbreaking: Lycanthropy",
-  "description": "Cleanses lycanthropy from the imprint-bound werewolf.",
+  "title": "ritual.warlockery.cure_wolf.title",
+  "description": "ritual.warlockery.cure_wolf.description",
   "action": "remove_werewolf",
   "power": 3400,
   "radius": 6,
