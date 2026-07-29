@@ -1,6 +1,6 @@
 # Cross-mod compatibility
 
-Warlockery targets Forge 65.1.0 for Minecraft 26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and Forge capabilities.
+Warlockery targets NeoForge 26.2.0.37-beta for Minecraft 26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and NeoForge capabilities.
 
 ## Tag strategy
 
@@ -42,7 +42,7 @@ The `ritual` and `warlockery_machine` reload listeners accept valid definitions 
 
 Every complete manual remains a normal registered item whose use action opens the shared searchable library. Book-collection mods that store an item and later invoke that real item, including Akashic Tome and Eccentric Tome style systems, therefore retain the Warlockery screen without a hard dependency or special API adapter.
 
-Complete manuals are published in `warlockery:guide_books` and `minecraft:bookshelf_books`. The torn page stays in the broader `warlockery:manuals` tag but is intentionally excluded from the complete guide list. Forge 65.1.0 has no canonical `c:books` contract, so Warlockery does not invent one.
+Complete manuals are published in `warlockery:guide_books` and `minecraft:bookshelf_books`. The torn page stays in the broader `warlockery:manuals` tag but is intentionally excluded from the complete guide list. NeoForge 26.2 has no canonical `c:books` contract, so Warlockery does not invent one.
 
 Magical damage and brew gas participation use the private extension tags `warlockery:magical_damage` and `warlockery:brew_gases`. Other mods can add their damage types or gas blocks through a data pack without relying on invented global `c:` conventions.
 
@@ -50,13 +50,13 @@ Magical damage and brew gas participation use the private extension tags `warloc
 
 Silver, holy, stake, splitting, and anti-magic bolts are `ArrowItem` instances in `minecraft:arrows`. The Silver Repeater extends vanilla `CrossbowItem` and delegates firing to the vanilla crossbow path. Throwing Rocks extend vanilla `SnowballItem`. Fixed brews extend `SplashPotionItem`.
 
-The fixed Brew of Combustion supplies 2,400 burn ticks through `Item.getBurnTime(ItemStack, RecipeType)`, which is Forge 65.1.0's item fuel hook. The inactive `brew.fuel` registry placeholder is not advertised as fuel.
+The fixed Brew of Combustion supplies 2,400 burn ticks through `Item.getBurnTime(ItemStack, RecipeType, FuelValues)`, NeoForge 26.2's item fuel hook. The inactive `brew.fuel` registry placeholder is not advertised as fuel.
 
 ## Machine capabilities
 
-All nine machine block variants expose sided `ForgeCapabilities.ITEM_HANDLER` views. Top, bottom, and horizontal access use the machine slot layout. Distilleries, kettles, cauldrons, and silver vats also expose `ForgeCapabilities.FLUID_HANDLER` because their profiles store transferable fluids. Machines without a tank do not publish a fake fluid handler.
+All nine machine block variants expose sided `Capabilities.Item.BLOCK` handlers through `WorldlyContainerWrapper`. Top, bottom, and horizontal access use the machine slot layout. Distilleries, kettles, cauldrons, and silver vats also expose transactional `Capabilities.Fluid.BLOCK` handlers because their profiles store transferable fluids. Machines without a tank do not publish a fake fluid handler.
 
-Forge 65.1.0 has no universal mana capability. Its built-in capability set provides energy, fluid handlers, fluid container handlers, and item handlers. Warlockery altar power is not Forge Energy and is not labeled as another mod's mana. Optional mana support requires a soft adapter for each external mana API.
+NeoForge 26.2 has no universal mana capability. Its built-in capability set provides energy, fluid, and item handlers. Warlockery altar power is not NeoForge Energy and is not labeled as another mod's mana. Optional mana support requires a soft adapter for each external mana API.
 
 ## Advanced mutation extension points
 
@@ -64,7 +64,7 @@ The Mutating Sprig is published through `c:tools` and `minecraft:enchantable/dur
 
 Structure roles use private tags so other mods can opt in without claiming that a magical reagent is a common material. Shared structure tags are `warlockery:mutation/cobwebs`, `warlockery:mutation/grasspers`, and the fluid tag `warlockery:mutation/water`. Toad mutations add `warlockery:mutation/toad/slime_snares` and `warlockery:mutation/toad/hosts`. Minedrake mutations add `warlockery:mutation/minedrake/mandrake_crops`, `warlockery:mutation/minedrake/creeper_hosts`, and `warlockery:mutation/minedrake/living_mandrakes`.
 
-Stored ingredients use `warlockery:mutation/mutandis_extremis`, `warlockery:mutation/focused_will`, and `warlockery:mutation/charged_attuned_stones`. A tagged external Grassper block should expose `ForgeCapabilities.ITEM_HANDLER` on at least one face. A tagged external slime-snare block represents an already filled snare and is consumed on success. Warlockery Critter Snares instead keep their block and return to the empty payload state.
+Stored ingredients use `warlockery:mutation/mutandis_extremis`, `warlockery:mutation/focused_will`, and `warlockery:mutation/charged_attuned_stones`. A tagged external Grassper block should expose `Capabilities.Item.BLOCK` on at least one face. A tagged external slime-snare block represents an already filled snare and is consumed on success. Warlockery Critter Snares instead keep their block and return to the empty payload state.
 
 ## Ritual tools and creature roles
 
@@ -82,8 +82,8 @@ The magical tree oven routes use `warlockery:alder_saplings`, `warlockery:hawtho
 
 - Unique magical reagents stay in private Warlockery tags unless a canonical material, food, container, tool, or equipment meaning applies.
 - Spirit is not water, milk, experience, or another canonical common fluid, so it remains in `warlockery:spirit`.
-- Colored Brew Water and Erosion Brew use `warlockery:colored_brew_water` and `warlockery:erosion_brews`. Their source and flowing forms work with Forge fluid handlers, while `bucketbrew` and `bucketerosionbrew` are functional `BucketItem` containers published through `c:buckets`.
+- Colored Brew Water and Erosion Brew use `warlockery:colored_brew_water` and `warlockery:erosion_brews`. Their source and flowing forms work with NeoForge fluid handlers, while `bucketbrew` and `bucketerosionbrew` are functional `BucketItem` containers published through `c:buckets`.
 - Shadedglass is a glass building block but does not implement vanilla tinted-glass light behavior, so it is not in `c:glass_blocks/tinted`.
 - Hexwood's current `hex_leaves` and `hex_sapling` registrations are static legacy blocks, not live leaf and sapling implementations. They are not placed in vanilla leaf or sapling tags.
 - Inactive registry placeholders such as `brew.fuel` and `brew.water` are not assigned container, potion, fuel, or fluid contracts. All four functional magical fluid buckets participate in `c:buckets`.
-- Warlockery does not invent a global pipe, furnace, mana, or magic-reagent tag when Forge or the cross-loader `c:` namespace has no matching semantic contract.
+- Warlockery does not invent a global pipe, furnace, mana, or magic-reagent tag when NeoForge or the cross-loader `c:` namespace has no matching semantic contract.

@@ -29,7 +29,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import org.jspecify.annotations.Nullable;
 
 public final class DollItem extends Item {
@@ -132,20 +132,20 @@ public final class DollItem extends Item {
         repairTarget.ifPresent(target -> repairUsingDollCharge(player, stack, target));
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || event.getAmount() <= 0.0F) {
+    public static void handleDamage(final LivingDamageEvent.Pre event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || event.getNewDamage() <= 0.0F) {
             return;
         }
         if (!TRANSFERRING_DAMAGE.get()) {
             transferLinkedDamage(player, event);
         }
-        if (event.getAmount() < player.getHealth()
+        if (event.getNewDamage() < player.getHealth()
             || event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return;
         }
         findLethalGuard(player, event.getSource()).ifPresent(stack -> {
             final DollKind kind = ((DollItem) stack.getItem()).kind;
-            event.setAmount(0.0F);
+            event.setNewDamage(0.0F);
             player.setHealth(1.0F);
             DeathProtection.TOTEM_OF_UNDYING.applyEffects(stack.copy(), player);
             lethalBehavior(kind).recover(player, event.getSource());
@@ -282,7 +282,7 @@ public final class DollItem extends Item {
             || kind.definition().ability() instanceof DollAbility.HexGuard;
     }
 
-    private static void transferLinkedDamage(final ServerPlayer player, final LivingDamageEvent event) {
+    private static void transferLinkedDamage(final ServerPlayer player, final LivingDamageEvent.Pre event) {
         findBoundDoll(
             player,
             item -> item.kind.definition().ability() instanceof DollAbility.DamageLink
@@ -293,14 +293,14 @@ public final class DollItem extends Item {
             }
             final boolean guarded = EquipmentSetEffects.tryBlockHex(target) || tryBlockHex(target, player);
             final VampiricDollRules.TransferPlan plan = VampiricDollRules.plan(
-                event.getAmount(),
+                event.getNewDamage(),
                 true,
                 guarded
             );
             if (plan.victimDamage() <= 0.0F) {
                 return;
             }
-            event.setAmount(plan.protectedDamage());
+            event.setNewDamage(plan.protectedDamage());
             TRANSFERRING_DAMAGE.set(true);
             try {
                 target.hurtServer((ServerLevel) target.level(), target.damageSources().magic(), plan.victimDamage());

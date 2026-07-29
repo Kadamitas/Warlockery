@@ -38,11 +38,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.Relative;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.level.BlockEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 public final class MagicPathRuntime {
     private static final String GRAVE_OWNER = "WarlockeryGraveOwner";
@@ -57,17 +57,17 @@ public final class MagicPathRuntime {
             return;
         }
         registered = true;
-        TickEvent.PlayerTickEvent.Post.BUS.addListener(event -> tick(event.player()));
-        TickEvent.LevelTickEvent.Post.BUS.addListener(event -> {
-            if (event.level() instanceof ServerLevel level) {
+        NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Post event) -> tick(event.getEntity()));
+        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
+            if (event.getLevel() instanceof ServerLevel level) {
                 MagicConstructData.get(level).tick(level);
                 ManifestationRuntime.tick(level);
             }
         });
-        LivingDamageEvent.BUS.addListener(MagicPathRuntime::handleDamage);
-        LivingDeathEvent.BUS.addListener(MagicPathRuntime::handleDeath);
-        PlayerEvent.Clone.BUS.addListener(MagicPathState::copyAfterClone);
-        BlockEvent.BreakEvent.BUS.addListener(ImpContractRuntime::handleBlockBreak);
+        NeoForge.EVENT_BUS.addListener(MagicPathRuntime::handleDamage);
+        NeoForge.EVENT_BUS.addListener(MagicPathRuntime::handleDeath);
+        NeoForge.EVENT_BUS.addListener(MagicPathState::copyAfterClone);
+        NeoForge.EVENT_BUS.addListener(ImpContractRuntime::handleBlockBreak);
     }
 
     public static void infuse(final List<? extends Player> players, final MagicPath path) {
@@ -177,7 +177,7 @@ public final class MagicPathRuntime {
         }
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageEvent.Pre event) {
         if (event.getEntity() instanceof ServerPlayer player
             && event.getSource().is(DamageTypeTags.IS_FALL)
             && MagicPathState.has(player, MagicPath.OVERWORLD)) {
@@ -188,7 +188,7 @@ public final class MagicPathRuntime {
             && attacker != player
             && MagicPathState.has(player, MagicPath.LIGHT)
             && MagicPathState.spend(player, MagicPath.LIGHT, 4)) {
-            event.setAmount(event.getAmount() * 0.6F);
+            event.setNewDamage(event.getNewDamage() * 0.6F);
             attacker.addEffect(new MobEffectInstance(MobEffects.GLOWING, 160, 0));
             attacker.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 3));
         }
@@ -803,7 +803,7 @@ public final class MagicPathRuntime {
         return succeed(player, MagicPath.SKY, decision);
     }
 
-    private static void cushionOverworldFall(final ServerPlayer player, final LivingDamageEvent event) {
+    private static void cushionOverworldFall(final ServerPlayer player, final LivingDamageEvent.Pre event) {
         final BlockPos below = player.blockPosition().below();
         final ServerLevel level = (ServerLevel) player.level();
         if (!level.getBlockState(below).is(MagicCompatibilityTags.OVERWORLD_LANDING_BLOCKS)
@@ -812,7 +812,7 @@ public final class MagicPathRuntime {
             return;
         }
         level.destroyBlock(below, true, player);
-        event.setAmount(0.0F);
+        event.setNewDamage(0.0F);
         player.resetFallDistance();
         if (player.isShiftKeyDown()) {
             level.explode(player, player.getX(), player.getY(), player.getZ(), 2.0F, Level.ExplosionInteraction.NONE);

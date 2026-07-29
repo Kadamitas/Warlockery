@@ -13,6 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SplashPotionItem;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.phys.HitResult;
 import org.jspecify.annotations.Nullable;
@@ -58,9 +59,13 @@ public final class BrewItem extends SplashPotionItem {
     }
 
     @Override
-    public int getBurnTime(final ItemStack itemStack, final @Nullable RecipeType<?> recipeType) {
+    public int getBurnTime(
+        final ItemStack itemStack,
+        final @Nullable RecipeType<?> recipeType,
+        final FuelValues fuelValues
+    ) {
         final int burnTime = kind.fuelBurnTime();
-        return burnTime > 0 ? burnTime : super.getBurnTime(itemStack, recipeType);
+        return burnTime > 0 ? burnTime : super.getBurnTime(itemStack, recipeType, fuelValues);
     }
 
     @Override

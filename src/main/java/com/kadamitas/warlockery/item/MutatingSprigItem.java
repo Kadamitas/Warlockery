@@ -1,11 +1,13 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.mutation.AdvancedMutationResolver;
 import com.kadamitas.warlockery.mutation.AdvancedMutationTags;
 import com.kadamitas.warlockery.mutation.MutatingSprigRules;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -13,7 +15,11 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 
+@EventBusSubscriber(modid = Warlockery.MOD_ID)
 public final class MutatingSprigItem extends Item {
     public static final int DURABILITY = 128;
 
@@ -45,10 +51,16 @@ public final class MutatingSprigItem extends Item {
         return outcome.success() ? InteractionResult.SUCCESS : InteractionResult.FAIL;
     }
 
-    @Override
-    public boolean onBlockStartBreak(final ItemStack stack, final BlockPos pos, final Player player) {
-        final BlockState state = player.level().getBlockState(pos);
-        final boolean immersed = player.level().getFluidState(pos.above())
+    @SubscribeEvent
+    public static void handleBlockBreak(final BreakBlockEvent event) {
+        final Player player = event.getPlayer();
+        final ItemStack stack = player.getMainHandItem();
+        if (!(stack.getItem() instanceof MutatingSprigItem)) {
+            return;
+        }
+        final BlockPos pos = event.getPos();
+        final BlockState state = event.getState();
+        final boolean immersed = event.getLevel().getFluidState(pos.above())
             .is(AdvancedMutationTags.Fluids.MUTATION_WATER);
         final MutatingSprigRules.Transformation transformation = MutatingSprigRules.transformation(
             state.is(AdvancedMutationTags.Blocks.SPRIG_DIRT),
@@ -63,14 +75,14 @@ public final class MutatingSprigItem extends Item {
             case NONE -> null;
         };
         if (replacement == null) {
-            return false;
+            return;
         }
-        if (!player.level().isClientSide()) {
-            player.level().setBlockAndUpdate(pos, replacement.defaultBlockState());
+        event.setCanceled(true);
+        if (event.getLevel() instanceof ServerLevel level) {
+            level.setBlockAndUpdate(pos, replacement.defaultBlockState());
             if (!player.hasInfiniteMaterials()) {
-                stack.hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+                stack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
             }
         }
-        return true;
     }
 }

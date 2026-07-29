@@ -18,21 +18,23 @@ import com.kadamitas.warlockery.crafting.MachineProfiles;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModBlocks {
-    public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, Warlockery.MOD_ID);
-    private static final Map<String, RegistryObject<Block>> MUTABLE_BLOCKS = new LinkedHashMap<>();
+    public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(Registries.BLOCK, Warlockery.MOD_ID);
+    private static final Map<String, DeferredHolder<Block, Block>> MUTABLE_BLOCKS = new LinkedHashMap<>();
 
-    public static final RegistryObject<Block> ALTAR;
-    public static final Map<String, RegistryObject<Block>> ALL;
+    public static final DeferredHolder<Block, Block> ALTAR;
+    public static final Map<String, DeferredHolder<Block, Block>> ALL;
 
     static {
         ContentCatalog.BLOCKS.forEach(catalogName -> {
@@ -58,7 +60,7 @@ public final class ModBlocks {
             return new WolfTrapBlock(properties.noOcclusion());
         }
         if ("spiritflowing".equals(id)) {
-            return new SpiritLiquidBlock(ModFluids.SPIRIT_SOURCE, properties
+            return new SpiritLiquidBlock(ModFluids.SPIRIT_SOURCE.get(), properties
                 .noCollision()
                 .noOcclusion()
                 .replaceable()
@@ -66,7 +68,7 @@ public final class ModBlocks {
                 .noLootTable());
         }
         if ("hollowtears".equals(id)) {
-            return new HollowTearsLiquidBlock(ModFluids.HOLLOW_TEARS_SOURCE, properties
+            return new HollowTearsLiquidBlock(ModFluids.HOLLOW_TEARS_SOURCE.get(), properties
                 .noCollision()
                 .noOcclusion()
                 .replaceable()
@@ -74,7 +76,7 @@ public final class ModBlocks {
                 .noLootTable());
         }
         if ("brewliquid".equals(id)) {
-            return new LiquidBlock(ModFluids.COLORED_BREW_WATER_SOURCE, properties
+            return new LiquidBlock(ModFluids.COLORED_BREW_WATER_SOURCE.get(), properties
                 .noCollision()
                 .noOcclusion()
                 .replaceable()
@@ -82,7 +84,7 @@ public final class ModBlocks {
                 .noLootTable());
         }
         if ("erosionbrew".equals(id)) {
-            return new ErosionBrewLiquidBlock(ModFluids.EROSION_SOURCE, properties
+            return new ErosionBrewLiquidBlock(ModFluids.EROSION_SOURCE.get(), properties
                 .noCollision()
                 .noOcclusion()
                 .replaceable()
@@ -115,7 +117,7 @@ public final class ModBlocks {
 
     private static BlockBehaviour.Properties properties(final String id) {
         final var properties = BlockBehaviour.Properties.of()
-            .setId(REGISTRY.key(id))
+            .setId(key(id))
             .mapColor(mapColor(id))
             .strength(id.contains("barrier") ? -1.0F : 1.5F, 6.0F)
             .sound(sound(id));
@@ -136,6 +138,10 @@ public final class ModBlocks {
 
     private static boolean isMetalBlock(final String id) {
         return id.contains("silver") || id.contains("delvealloy");
+    }
+
+    private static ResourceKey<Block> key(final String id) {
+        return ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, id));
     }
 
     private static MapColor mapColor(final String id) {

@@ -84,7 +84,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 import org.jspecify.annotations.Nullable;
 
 public final class RitualManager extends SimpleJsonResourceReloadListener<RitualDefinition> {
@@ -705,7 +705,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
     }
 
     private static void cureZombieVillager(final ServerLevel level, final ZombieVillager zombie) {
-        if (!ForgeEventFactory.canLivingConvert(zombie, EntityTypes.VILLAGER, _ -> { })) {
+        if (!EventHooks.canLivingConvert(zombie, EntityTypes.VILLAGER, _ -> { })) {
             return;
         }
         zombie.convertTo(EntityTypes.VILLAGER, ConversionParams.single(zombie, false, false), villager -> {
@@ -720,7 +720,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             );
             villager.refreshBrain(level);
             level.levelEvent(null, 1027, zombie.blockPosition(), 0);
-            ForgeEventFactory.onLivingConvert(zombie, villager);
+            EventHooks.onLivingConvert(zombie, villager);
         });
     }
 

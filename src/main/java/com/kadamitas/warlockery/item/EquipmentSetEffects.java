@@ -18,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 public final class EquipmentSetEffects {
     private static final List<EquipmentSlot> ARMOR = List.of(
@@ -72,7 +72,7 @@ public final class EquipmentSetEffects {
         applyTwistingBand(player, level);
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageEvent.Pre event) {
         if (event.getEntity().level().isClientSide()) {
             return;
         }
@@ -113,7 +113,7 @@ public final class EquipmentSetEffects {
         return BrewingGarbRules.duplicate(outputs, BrewingGarbRules.duplicates(pieces, level.getRandom().nextInt(100)));
     }
 
-    private static void applyIncomingProtection(final LivingDamageEvent event) {
+    private static void applyIncomingProtection(final LivingDamageEvent.Pre event) {
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }
@@ -127,7 +127,7 @@ public final class EquipmentSetEffects {
             attacker != null && attacker.typeHolder().is(WarlockeryTags.EntityTypes.VAMPIRES)
         );
         if (protection.protectedDamage()) {
-            event.setAmount(event.getAmount() * protection.damageMultiplier());
+            event.setNewDamage(event.getNewDamage() * protection.damageMultiplier());
         }
         if (protection.burnsAttacker() && attacker != null) {
             attacker.igniteForSeconds(4.0F);
@@ -141,22 +141,22 @@ public final class EquipmentSetEffects {
         }
     }
 
-    private static void applyOffensiveEquipment(final LivingDamageEvent event) {
+    private static void applyOffensiveEquipment(final LivingDamageEvent.Pre event) {
         if (!(event.getSource().getEntity() instanceof Player attacker)) {
             return;
         }
         if (attacker.getMainHandItem().isEmpty()
             && attacker.getItemBySlot(EquipmentSlot.LEGS).is(WarlockeryTags.Items.UNARMED_POWER_ARMOR)) {
-            event.setAmount(event.getAmount() * 1.75F);
+            event.setNewDamage(event.getNewDamage() * 1.75F);
             event.getEntity().push(0.0, 0.65, 0.0);
         }
         if (event.getSource().is(DamageTypeTags.IS_PROJECTILE)
             && attacker.getItemBySlot(EquipmentSlot.LEGS).is(WarlockeryTags.Items.ARCHERY_ARMOR)) {
-            event.setAmount(event.getAmount() * (event.getEntity().isFallFlying() ? 1.75F : 1.25F));
+            event.setNewDamage(event.getNewDamage() * (event.getEntity().isFallFlying() ? 1.75F : 1.25F));
         }
         final ItemStack weapon = event.getSource().getWeaponItem();
         if (weapon != null && weapon.is(WarlockeryTags.Items.DEATH_WEAPONS)) {
-            event.setAmount(event.getAmount() + event.getEntity().getMaxHealth() * 0.1F);
+            event.setNewDamage(event.getNewDamage() + event.getEntity().getMaxHealth() * 0.1F);
         }
     }
 

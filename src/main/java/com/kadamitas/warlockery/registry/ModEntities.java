@@ -15,26 +15,28 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.core.registries.Registries;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModEntities {
-    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Warlockery.MOD_ID);
-    private static final Map<String, RegistryObject<? extends EntityType<?>>> MUTABLE = new LinkedHashMap<>();
+    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(Registries.ENTITY_TYPE, Warlockery.MOD_ID);
+    private static final Map<String, DeferredHolder<EntityType<?>, ? extends EntityType<?>>> MUTABLE = new LinkedHashMap<>();
 
     private static final Map<String, CreatureKind> ARCANE_KINDS = Map.ofEntries(
         Map.entry("hex_bat", CreatureKind.HEX_BAT), Map.entry("hedge_crone", CreatureKind.HEDGE_CRONE),
@@ -65,37 +67,37 @@ public final class ModEntities {
         .map(Map.Entry::getKey)
         .collect(java.util.stream.Collectors.toUnmodifiableSet());
 
-    public static final RegistryObject<EntityType<EntEntity>> ENT = register("ent",
+    public static final DeferredHolder<EntityType<?>, EntityType<EntEntity>> ENT = register("ent",
         () -> {
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.ENT);
             return EntityType.Builder.of(EntEntity::new, MobCategory.CREATURE)
-                .sized(visual.width(), visual.height()).build(REGISTRY.key("ent"));
+                .sized(visual.width(), visual.height()).build(key("ent"));
         });
-    public static final RegistryObject<EntityType<WerewolfEntity>> WEREWOLF = register("werewolf",
+    public static final DeferredHolder<EntityType<?>, EntityType<WerewolfEntity>> WEREWOLF = register("werewolf",
         () -> {
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.WEREWOLF);
             return EntityType.Builder.of(WerewolfEntity::new, MobCategory.MONSTER)
-                .sized(visual.width(), visual.height()).notInPeaceful().build(REGISTRY.key("werewolf"));
+                .sized(visual.width(), visual.height()).notInPeaceful().build(key("werewolf"));
         });
-    public static final RegistryObject<EntityType<WerewolfHunterEntity>> WEREWOLF_HUNTER = register("werewolf_hunter",
+    public static final DeferredHolder<EntityType<?>, EntityType<WerewolfHunterEntity>> WEREWOLF_HUNTER = register("werewolf_hunter",
         () -> {
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.WEREWOLF_HUNTER);
             return EntityType.Builder.of(WerewolfHunterEntity::new, MobCategory.MONSTER)
-                .sized(visual.width(), visual.height()).notInPeaceful().build(REGISTRY.key("werewolf_hunter"));
+                .sized(visual.width(), visual.height()).notInPeaceful().build(key("werewolf_hunter"));
         });
-    public static final RegistryObject<EntityType<HobgoblinEntity>> HOBGOBLIN = hobgoblin("hobgoblin", CreatureKind.HOBGOBLIN);
-    public static final RegistryObject<EntityType<HobgoblinEntity>> GOBLIN = hobgoblin("goblin", CreatureKind.HOBGOBLIN);
-    public static final RegistryObject<EntityType<HobgoblinEntity>> STONEBROKER = hobgoblin("stonebroker", CreatureKind.STONEBROKER);
-    public static final RegistryObject<EntityType<HobgoblinEntity>> FORGEWARDEN = hobgoblin("forgewarden", CreatureKind.FORGEWARDEN);
+    public static final DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> HOBGOBLIN = hobgoblin("hobgoblin", CreatureKind.HOBGOBLIN);
+    public static final DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> GOBLIN = hobgoblin("goblin", CreatureKind.HOBGOBLIN);
+    public static final DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> STONEBROKER = hobgoblin("stonebroker", CreatureKind.STONEBROKER);
+    public static final DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> FORGEWARDEN = hobgoblin("forgewarden", CreatureKind.FORGEWARDEN);
 
-    public static final Map<String, RegistryObject<? extends EntityType<?>>> ALL;
+    public static final Map<String, DeferredHolder<EntityType<?>, ? extends EntityType<?>>> ALL;
 
     static {
         ARCANE_KINDS.forEach((id, kind) -> {
             if (kind == CreatureKind.WEREWOLF) {
                 final CreatureVisualProfile visual = CreatureVisualProfile.forKind(kind);
                 register(id, () -> EntityType.Builder.of(WerewolfEntity::new, MobCategory.MONSTER)
-                    .sized(visual.width(), visual.height()).notInPeaceful().build(REGISTRY.key(id)));
+                    .sized(visual.width(), visual.height()).notInPeaceful().build(key(id)));
             } else if (isSpiritKind(kind)) {
                 registerSpirit(id, kind);
             } else {
@@ -108,7 +110,7 @@ public final class ModEntities {
     private ModEntities() {
     }
 
-    private static RegistryObject<EntityType<HobgoblinEntity>> hobgoblin(final String id, final CreatureKind kind) {
+    private static DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> hobgoblin(final String id, final CreatureKind kind) {
         return register(id, () -> {
             final boolean boss = KoboldBossRules.isBoss(kind);
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(kind);
@@ -119,7 +121,7 @@ public final class ModEntities {
             if (boss) {
                 builder.notInPeaceful();
             }
-            return builder.build(REGISTRY.key(id));
+            return builder.build(key(id));
         });
     }
 
@@ -135,7 +137,7 @@ public final class ModEntities {
             if (kind == CreatureKind.DEMON || kind == CreatureKind.HELLHOUND) {
                 builder.fireImmune();
             }
-            return builder.build(REGISTRY.key(id));
+            return builder.build(key(id));
         });
     }
 
@@ -149,14 +151,18 @@ public final class ModEntities {
             if (kind != CreatureKind.SPIRIT) {
                 builder.notInPeaceful();
             }
-            return builder.build(REGISTRY.key(id));
+            return builder.build(key(id));
         });
     }
 
-    private static <T extends EntityType<?>> RegistryObject<T> register(final String id, final java.util.function.Supplier<T> factory) {
-        final RegistryObject<T> object = REGISTRY.register(id, factory);
+    private static <T extends EntityType<?>> DeferredHolder<EntityType<?>, T> register(final String id, final java.util.function.Supplier<T> factory) {
+        final DeferredHolder<EntityType<?>, T> object = REGISTRY.register(id, factory);
         MUTABLE.put(id, object);
         return object;
+    }
+
+    private static ResourceKey<EntityType<?>> key(final String id) {
+        return ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, id));
     }
 
     public static boolean isSpiritKind(final CreatureKind kind) {
@@ -221,14 +227,14 @@ public final class ModEntities {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static void registerSpawnPlacements(final SpawnPlacementRegisterEvent event) {
+    public static void registerSpawnPlacements(final RegisterSpawnPlacementsEvent event) {
         Set.of("ent", "hobgoblin", "spirit", "hellhound", "mandrake", "dreamroot").forEach(id -> {
             final EntityType type = ALL.get(id).get();
             event.register(type, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Set.of("ent", "hobgoblin", "spirit").contains(id)
                     ? Mob::checkMobSpawnRules
                     : Monster::checkMonsterSpawnRules,
-                SpawnPlacementRegisterEvent.Operation.REPLACE);
+                RegisterSpawnPlacementsEvent.Operation.REPLACE);
         });
     }
 

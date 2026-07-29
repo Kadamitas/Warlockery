@@ -138,7 +138,7 @@ final class MagicalWoodFamilyTest {
             assertTrue(placed.contains("warlockery:" + family + "_sapling"), family);
             assertTrue(placed.contains("minecraft:would_survive"), family);
             final String modifier = readString(DATA.resolve(
-                "warlockery/forge/biome_modifier/" + family + "_trees.json"
+                "warlockery/neoforge/biome_modifier/" + family + "_trees.json"
             ));
             assertTrue(modifier.contains("#warlockery:has_" + family + "_trees"), family);
             assertTrue(modifier.contains("warlockery:" + family + "_tree"), family);

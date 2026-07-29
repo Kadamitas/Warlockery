@@ -13,8 +13,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 public final class HexRuntime {
     private static final List<HexKind.EffectSpec> MISFORTUNE_OUTCOMES = List.of(
@@ -28,9 +28,9 @@ public final class HexRuntime {
     private HexRuntime() {
     }
 
-    public static void tick(final LivingEvent.LivingTickEvent event) {
-        final LivingEntity target = event.getEntity();
-        if (!(target.level() instanceof ServerLevel level)) {
+    public static void tick(final EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof LivingEntity target)
+            || !(target.level() instanceof ServerLevel level)) {
             return;
         }
         if (tickTemporaryEntity(level, target)) {

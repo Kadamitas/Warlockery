@@ -1,21 +1,21 @@
 package com.kadamitas.warlockery.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public final class WarlockeryConfig {
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec SPEC;
 
-    private static final ForgeConfigSpec.BooleanValue ARM_PILLAGERS;
-    private static final ForgeConfigSpec.IntValue PILLAGER_SCAN_INTERVAL;
-    private static final ForgeConfigSpec.BooleanValue HOBGOBLIN_ENCLAVES;
-    private static final ForgeConfigSpec.IntValue HOBGOBLIN_ENCLAVE_INTERVAL;
-    private static final ForgeConfigSpec.DoubleValue HOBGOBLIN_ENCLAVE_CHANCE;
-    private static final ForgeConfigSpec.BooleanValue SILVER_HUNTS;
-    private static final ForgeConfigSpec.IntValue SILVER_HUNT_INTERVAL;
-    private static final ForgeConfigSpec.DoubleValue SILVER_HUNT_CHANCE;
+    private static final ModConfigSpec.BooleanValue ARM_PILLAGERS;
+    private static final ModConfigSpec.IntValue PILLAGER_SCAN_INTERVAL;
+    private static final ModConfigSpec.BooleanValue HOBGOBLIN_ENCLAVES;
+    private static final ModConfigSpec.IntValue HOBGOBLIN_ENCLAVE_INTERVAL;
+    private static final ModConfigSpec.DoubleValue HOBGOBLIN_ENCLAVE_CHANCE;
+    private static final ModConfigSpec.BooleanValue SILVER_HUNTS;
+    private static final ModConfigSpec.IntValue SILVER_HUNT_INTERVAL;
+    private static final ModConfigSpec.DoubleValue SILVER_HUNT_CHANCE;
 
     static {
-        final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.push("worldEvents");
         ARM_PILLAGERS = builder
             .comment("Allows nearby pillagers to equip silver weapons when they encounter werewolves.")

@@ -47,19 +47,19 @@ public final class ResourceUtilityItemFactory {
         return switch (id) {
             case "circletalisman" -> new CircleTalismanItem(properties.stacksTo(1));
             case "bucketbrew" -> new BucketItem(
-                ModFluids.COLORED_BREW_WATER_SOURCE,
+                ModFluids.COLORED_BREW_WATER_SOURCE.get(),
                 properties.stacksTo(1).craftRemainder(Items.BUCKET)
             );
             case "bucketerosionbrew" -> new BucketItem(
-                ModFluids.EROSION_SOURCE,
+                ModFluids.EROSION_SOURCE.get(),
                 properties.stacksTo(1).craftRemainder(Items.BUCKET)
             );
             case "bucketspirit" -> new BucketItem(
-                ModFluids.SPIRIT_SOURCE,
+                ModFluids.SPIRIT_SOURCE.get(),
                 properties.stacksTo(1).craftRemainder(Items.BUCKET)
             );
             case "buckethollowtears" -> new BucketItem(
-                ModFluids.HOLLOW_TEARS_SOURCE,
+                ModFluids.HOLLOW_TEARS_SOURCE.get(),
                 properties.stacksTo(1).craftRemainder(Items.BUCKET)
             );
             case "mutator" -> new MutatingSprigItem(properties);

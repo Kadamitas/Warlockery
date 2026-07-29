@@ -3,20 +3,28 @@ package com.kadamitas.warlockery.item;
 import com.kadamitas.warlockery.block.WitchcraftCompatibilityTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForgeMod;
 
 public final class FlyingBroomItem extends Item implements GlyphClearingTool {
     private static final String ACTIVE = "WarlockeryBroomFlight";
-    private static final String PREVIOUS_MAY_FLY = "WarlockeryBroomPreviousMayFly";
     private static final String PREVIOUS_SPEED = "WarlockeryBroomPreviousSpeed";
+    private static final Identifier FLIGHT_MODIFIER_ID = Identifier.fromNamespaceAndPath("warlockery", "flying_broom");
+    private static final AttributeModifier FLIGHT_MODIFIER = new AttributeModifier(
+        FLIGHT_MODIFIER_ID,
+        1.0,
+        AttributeModifier.Operation.ADD_VALUE
+    );
 
     public FlyingBroomItem(final Properties properties) {
         super(properties);
@@ -69,8 +77,8 @@ public final class FlyingBroomItem extends Item implements GlyphClearingTool {
             return;
         }
         final var abilities = serverPlayer.getAbilities();
-        final boolean changed = !abilities.mayfly || abilities.getFlyingSpeed() != decision.speed();
-        abilities.mayfly = decision.mayFly();
+        final boolean changed = !serverPlayer.mayFly() || abilities.getFlyingSpeed() != decision.speed();
+        grantFlight(serverPlayer);
         abilities.setFlyingSpeed(decision.speed());
         if (changed) {
             serverPlayer.onUpdateAbilities();
@@ -88,26 +96,33 @@ public final class FlyingBroomItem extends Item implements GlyphClearingTool {
 
     private static void activate(final ServerPlayer player) {
         final var data = player.getPersistentData();
-        data.putBoolean(PREVIOUS_MAY_FLY, player.getAbilities().mayfly);
         data.putFloat(PREVIOUS_SPEED, player.getAbilities().getFlyingSpeed());
         data.putBoolean(ACTIVE, true);
-        player.getAbilities().mayfly = true;
+        grantFlight(player);
         player.getAbilities().setFlyingSpeed(FlyingBroomRules.NORMAL_SPEED);
         player.onUpdateAbilities();
     }
 
     private static void deactivate(final ServerPlayer player) {
         final var data = player.getPersistentData();
-        final boolean privileged = player.isCreative() || player.isSpectator();
-        player.getAbilities().mayfly = privileged || data.getBooleanOr(PREVIOUS_MAY_FLY, false);
-        if (!player.getAbilities().mayfly) {
+        final var flight = player.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
+        if (flight != null) {
+            flight.removeModifier(FLIGHT_MODIFIER_ID);
+        }
+        if (!player.mayFly()) {
             player.getAbilities().flying = false;
         }
         player.getAbilities().setFlyingSpeed(data.getFloatOr(PREVIOUS_SPEED, FlyingBroomRules.NORMAL_SPEED));
         data.remove(ACTIVE);
-        data.remove(PREVIOUS_MAY_FLY);
         data.remove(PREVIOUS_SPEED);
         player.onUpdateAbilities();
+    }
+
+    private static void grantFlight(final ServerPlayer player) {
+        final var flight = player.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
+        if (flight != null) {
+            flight.addOrUpdateTransientModifier(FLIGHT_MODIFIER);
+        }
     }
 
     private static boolean isActive(final ServerPlayer player) {

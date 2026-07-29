@@ -1,6 +1,6 @@
 # Developing Warlockery
 
-Warlockery is a Forge mod for Minecraft 26.2. This guide covers local setup, the project layout, common development tasks, testing, and release builds.
+Warlockery is a NeoForge mod for Minecraft 26.2. This guide covers local setup, the project layout, common development tasks, testing, and release builds.
 
 ## Requirements
 
@@ -39,11 +39,11 @@ Create a versioned publishing bundle with:
 .\gradlew.bat --no-daemon releaseBundle
 ```
 
-The task writes the binary JAR, source JAR, license, changelog, and SHA-256 checksum files to `release/<version>`. Upload the binary JAR without the `-sources` suffix to a mod hosting site.
+The task writes the binary JAR, source JAR, license, changelog, and SHA-256 checksum files to `release/neoforge/<version>`. Upload the `warlockery-neoforge-<version>.jar` file without the `-sources` suffix to a mod hosting site.
 
 ## Running Minecraft
 
-ForgeGradle provides the development launch tasks:
+ModDevGradle provides the NeoForge development launch tasks:
 
 ```powershell
 .\gradlew.bat --no-daemon runClient
@@ -65,6 +65,7 @@ Delete a development world before retesting world generation changes. Keep test 
 | `src/main/resources/data/warlockery/recipe` | Crafting, smelting, and cooking recipes |
 | `src/main/resources/data/warlockery/ritual` | Circle ritual definitions |
 | `src/main/resources/data/warlockery/warlockery_machine` | Machine and fixed-brew recipes |
+| `src/main/resources/data/warlockery/neoforge/biome_modifier` | NeoForge biome feature and creature injection |
 | `src/main/resources/data/warlockery/tags` | Mod-specific extension tags |
 | `src/main/resources/data/c/tags` | Common cross-mod material tags |
 | `src/main/resources/data/minecraft/tags` | Vanilla behavior integration |
@@ -103,11 +104,11 @@ Client event subscribers, renderers, screens, and HUD layers belong in the clien
 
 ## Compatibility
 
-Warlockery uses Forge item and fluid capabilities for machine automation. Shared materials use established `c:` or vanilla tags. Magical concepts use Warlockery tags so integrations can opt in without claiming a global standard that Forge does not provide.
+Warlockery uses NeoForge item and fluid capabilities for machine automation. Shared materials use established `c:` or vanilla tags. Magical concepts use Warlockery tags so integrations can opt in without claiming a global standard that NeoForge does not provide.
 
-Altar power is its own gameplay resource, not Forge Energy. Integrating another mod's energy or mana system requires an optional adapter for that specific API.
+Altar power is its own gameplay resource, not NeoForge Energy. Integrating another mod's energy or mana system requires an optional adapter for that specific API.
 
-The optional JEI integration compiles against JEI 30.15.0's common API. It loads only when a compatible Forge JEI runtime is present, so Warlockery remains usable without JEI. Do not use a NeoForge-only JEI file in a Forge installation.
+The optional JEI integration compiles against JEI 30.15.0's common and NeoForge APIs. Development runs include the full NeoForge JEI runtime through Gradle's local-only runtime configuration. The published Warlockery JAR does not bundle JEI and remains usable without it.
 
 The available material, equipment, creature, machine, and guide-book extension points are documented in [Cross-mod compatibility](docs/CROSS_MOD_COMPATIBILITY.md).
 
@@ -165,7 +166,7 @@ Run all JUnit tests with:
 
 HTML reports are written to `build/reports/tests/test`. Machine-readable results are written to `build/test-results/test`.
 
-Run Forge GameTests after changing world interactions, entities, item use, capabilities, networking, rituals, or machines:
+Run NeoForge GameTests after changing world interactions, entities, item use, capabilities, networking, rituals, or machines:
 
 ```powershell
 .\gradlew.bat --no-daemon runGameTestServer
@@ -186,8 +187,8 @@ If a client feature crashes a dedicated server, inspect common classes for impor
 1. Update the version in `build.gradle`, `update.json`, and `changelog.txt`.
 2. Run `clean build` and inspect the JUnit report.
 3. Run `runGameTestServer` for gameplay changes.
-4. Run `releaseBundle` to collect the binary JAR, source JAR, license, changelog, and SHA-256 checksums in `release/<version>`.
-5. Test the binary JAR in clean client and dedicated-server Forge instances.
+4. Run `releaseBundle` to collect the binary JAR, source JAR, license, changelog, and SHA-256 checksums in `release/neoforge/<version>`.
+5. Test the binary JAR in clean client and dedicated-server NeoForge instances.
 6. Check both logs for missing translations, models, textures, tags, recipes, and optional-integration errors.
 7. Create a matching Git tag and attach the binary JAR from `release` to the release page.
 8. Upload the same binary JAR and changelog to the supported mod hosting sites with matching game and loader metadata.

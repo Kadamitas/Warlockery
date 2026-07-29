@@ -18,9 +18,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 
 public final class ArthanaHarvestRuntime {
     private static final List<BonusDrop> BONUS_DROPS = List.of(
@@ -40,9 +39,8 @@ public final class ArthanaHarvestRuntime {
         if (weapon == null || !weapon.is(WarlockeryTags.Items.ARTHANAS)) {
             return;
         }
-        final int looting = EnchantmentHelper.getItemEnchantmentLevel(
-            level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING),
-            weapon
+        final int looting = weapon.getEnchantmentLevel(
+            level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING)
         );
         BONUS_DROPS.stream()
             .filter(drop -> event.getEntity().typeHolder().is(drop.sources()))

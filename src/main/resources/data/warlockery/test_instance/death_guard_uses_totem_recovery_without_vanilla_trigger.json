@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:death_guard_uses_totem_recovery_without_vanilla_trigger","environment":"minecraft:default","structure":"forge:empty3x3x3","max_ticks":100}
+{"type":"minecraft:function","function":"warlockery:death_guard_uses_totem_recovery_without_vanilla_trigger","environment":"minecraft:default","structure":"warlockery:empty3x3x3","max_ticks":100}

@@ -21,6 +21,7 @@ import com.kadamitas.warlockery.item.FancifulCharmRuntime;
 import com.kadamitas.warlockery.magic.MagicPathRuntime;
 import com.kadamitas.warlockery.block.DreamWeaverRuntime;
 import com.kadamitas.warlockery.block.BoundStatueData;
+import com.kadamitas.warlockery.compat.neoforge.WarlockeryCapabilities;
 import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.ritual.RitualManager;
 import com.kadamitas.warlockery.ritual.RitualSessionData;
@@ -34,21 +35,23 @@ import com.kadamitas.warlockery.entity.CreatureCombat;
 import com.kadamitas.warlockery.world.CreatureWorldIntegration;
 import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.slf4j.Logger;
 
 @Mod(Warlockery.MOD_ID)
@@ -56,9 +59,8 @@ public final class Warlockery {
     public static final String MOD_ID = "warlockery";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public Warlockery(final FMLJavaModLoadingContext context) {
-        final var modBus = context.getModBusGroup();
-        context.registerConfig(ModConfig.Type.SERVER, WarlockeryConfig.SPEC);
+    public Warlockery(final IEventBus modBus, final ModContainer container) {
+        container.registerConfig(ModConfig.Type.SERVER, WarlockeryConfig.SPEC);
         ModFluids.TYPES.register(modBus);
         ModFluids.REGISTRY.register(modBus);
         ModEntities.REGISTRY.register(modBus);
@@ -69,18 +71,19 @@ public final class Warlockery {
         ModBlockEntities.REGISTRY.register(modBus);
         ModCreativeTabs.REGISTRY.register(modBus);
         ModGameTests.REGISTRY.register(modBus);
-        EntityAttributeCreationEvent.BUS.addListener(ModEntities::registerAttributes);
-        SpawnPlacementRegisterEvent.BUS.addListener(ModEntities::registerSpawnPlacements);
-        ModNetwork.init();
+        modBus.addListener(ModEntities::registerAttributes);
+        modBus.addListener(ModEntities::registerSpawnPlacements);
+        modBus.addListener(WarlockeryCapabilities::register);
+        ModNetwork.init(modBus);
         BrewPersistentRuntime.registerEvents();
         MagicPathRuntime.registerEvents();
-        AddReloadListenerEvent.BUS.addListener(event -> {
-            event.addListener(RitualManager.INSTANCE);
-            event.addListener(MachineRecipeManager.INSTANCE);
-            event.addListener(CustomBrewDefinitionManager.INSTANCE);
+        NeoForge.EVENT_BUS.addListener((AddServerReloadListenersEvent event) -> {
+            event.addListener(Identifier.fromNamespaceAndPath(MOD_ID, "rituals"), RitualManager.INSTANCE);
+            event.addListener(Identifier.fromNamespaceAndPath(MOD_ID, "machine_recipes"), MachineRecipeManager.INSTANCE);
+            event.addListener(Identifier.fromNamespaceAndPath(MOD_ID, "custom_brews"), CustomBrewDefinitionManager.INSTANCE);
         });
-        TickEvent.LevelTickEvent.Post.BUS.addListener(event -> {
-            if (event.level() instanceof ServerLevel level) {
+        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
+            if (event.getLevel() instanceof ServerLevel level) {
                 RitualSessionData.get(level).tick(level);
                 RitualWardData.get(level).tick(level);
                 RitualEclipseData.get(level).tick(level);
@@ -88,28 +91,28 @@ public final class Warlockery {
                 CreatureWorldIntegration.tick(level);
             }
         });
-        TickEvent.PlayerTickEvent.Post.BUS.addListener(event -> {
-            SupernaturalState.tick(event.player());
-            EquipmentSetEffects.tick(event.player());
-            InfernalPactEffects.tick(event.player());
-            FlyingBroomItem.tickFlight(event.player());
+        NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Post event) -> {
+            SupernaturalState.tick(event.getEntity());
+            EquipmentSetEffects.tick(event.getEntity());
+            InfernalPactEffects.tick(event.getEntity());
+            FlyingBroomItem.tickFlight(event.getEntity());
         });
-        LivingDamageEvent.BUS.addListener(SupernaturalState::handleDamage);
-        LivingDamageEvent.BUS.addListener(DollItem::handleDamage);
-        LivingDamageEvent.BUS.addListener(CreatureCombat::handleDamage);
-        LivingDamageEvent.BUS.addListener(EquipmentSetEffects::handleDamage);
-        LivingDamageEvent.BUS.addListener(FancifulCharmRuntime::handleDamage);
-        LivingDamageEvent.BUS.addListener(RitualWardData::handleDamage);
-        LivingEvent.LivingTickEvent.BUS.addListener(HexRuntime::tick);
-        LivingEntityUseItemEvent.Finish.BUS.addListener(CustomBrewRuntime::handleFinishUse);
-        LivingDropsEvent.BUS.addListener(ResourceInteractionEvents::handleDrops);
-        LivingDropsEvent.BUS.addListener(HexRuntime::handleDrops);
-        LivingDropsEvent.BUS.addListener(PriorIncarnationRuntime::handleDrops);
-        ProjectileImpactEvent.BUS.addListener(ResourceInteractionEvents::handleProjectileImpact);
-        PlayerWakeUpEvent.BUS.addListener(DreamWeaverRuntime::handleWake);
-        PlayerEvent.Clone.BUS.addListener(SupernaturalState::copyAfterClone);
-        PlayerEvent.Clone.BUS.addListener(HexState::copyAfterClone);
-        LOGGER.info("Loading Warlockery for Minecraft 26.2");
+        NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> SupernaturalState.handleDamage(event));
+        NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> DollItem.handleDamage(event));
+        NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> CreatureCombat.handleDamage(event));
+        NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> EquipmentSetEffects.handleDamage(event));
+        NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> FancifulCharmRuntime.handleDamage(event));
+        NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> RitualWardData.handleDamage(event));
+        NeoForge.EVENT_BUS.addListener((EntityTickEvent.Post event) -> HexRuntime.tick(event));
+        NeoForge.EVENT_BUS.addListener((LivingEntityUseItemEvent.Finish event) -> CustomBrewRuntime.handleFinishUse(event));
+        NeoForge.EVENT_BUS.addListener((LivingDropsEvent event) -> ResourceInteractionEvents.handleDrops(event));
+        NeoForge.EVENT_BUS.addListener((LivingDropsEvent event) -> HexRuntime.handleDrops(event));
+        NeoForge.EVENT_BUS.addListener((LivingDropsEvent event) -> PriorIncarnationRuntime.handleDrops(event));
+        NeoForge.EVENT_BUS.addListener((ProjectileImpactEvent event) -> ResourceInteractionEvents.handleProjectileImpact(event));
+        NeoForge.EVENT_BUS.addListener((PlayerWakeUpEvent event) -> DreamWeaverRuntime.handleWake(event));
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> SupernaturalState.copyAfterClone(event));
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> HexState.copyAfterClone(event));
+        LOGGER.info("Loading Warlockery for Minecraft 26.2 with NeoForge");
     }
 
 }

@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:common_material_and_wood_tags_are_populated",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "warlockery:empty3x3x3",
   "max_ticks": 100
 }

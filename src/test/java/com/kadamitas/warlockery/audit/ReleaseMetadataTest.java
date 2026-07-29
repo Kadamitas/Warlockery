@@ -37,19 +37,20 @@ final class ReleaseMetadataTest {
 
     @Test
     void modMetadataPublishesLicenseSupportAndRepositoryLinks() throws IOException {
-        final String metadata = read("src/main/resources/META-INF/mods.toml");
+        final String metadata = read("src/main/resources/META-INF/neoforge.mods.toml");
         assertTrue(metadata.contains("license=\"MIT\""));
-        assertTrue(metadata.contains("version=\"${file.jarVersion}\""));
+        assertTrue(metadata.contains("version=\"${mod_version}\""));
         assertTrue(metadata.contains("issueTrackerURL=\"https://github.com/Kadamitas/Warlockery/issues\""));
         assertTrue(metadata.contains("displayURL=\"https://github.com/Kadamitas/Warlockery\""));
-        assertTrue(metadata.contains("updateJSONURL=\"https://raw.githubusercontent.com/Kadamitas/Warlockery/main/update.json\""));
+        assertTrue(metadata.contains("updateJSONURL=\"https://raw.githubusercontent.com/Kadamitas/Warlockery/neoforge-main/update.json\""));
         assertTrue(metadata.contains("logoFile=\"warlockery-icon.png\""));
         assertTrue(metadata.contains("logoBlur=false"));
-        assertTrue(metadata.contains("features={java_version=\"[25,)\"}"));
-        assertTrue(metadata.contains("versionRange=\"[65.1.0,)\""));
+        assertTrue(metadata.contains("[features.warlockery]"));
+        assertTrue(metadata.contains("javaVersion=\"[25,)\""));
+        assertTrue(metadata.contains("modId=\"neoforge\""));
+        assertTrue(metadata.contains("versionRange=\"[26.2.0.37-beta,)\""));
         assertTrue(metadata.contains("modId=\"jei\""));
-        assertTrue(metadata.contains("mandatory=false"));
-        assertTrue(Pattern.compile("(?s)modId=\"jei\".*?mandatory=false.*?side=\"CLIENT\"")
+        assertTrue(Pattern.compile("(?s)modId=\"jei\".*?type=\"optional\".*?side=\"CLIENT\"")
             .matcher(metadata)
             .find());
         assertTrue(read("LICENSE").startsWith("MIT License"));
@@ -70,7 +71,8 @@ final class ReleaseMetadataTest {
         assertTrue(build.contains("abstract class ReleaseBundleTask extends DefaultTask"));
         assertTrue(build.contains("tasks.register('releaseBundle', ReleaseBundleTask)"));
         assertTrue(build.contains("MessageDigest.getInstance('SHA-256')"));
-        assertTrue(build.contains("release/${project.version}"));
+        assertTrue(build.contains("release/neoforge/${project.version}"));
+        assertTrue(build.contains("expand mod_version: project.version"));
 
         final String gradleProperties = read("gradle.properties");
         assertTrue(gradleProperties.contains("org.gradle.configuration-cache=false"));

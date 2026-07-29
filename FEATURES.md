@@ -151,7 +151,7 @@ The side status panel shows bound dolls, remaining charges, recent activations, 
 - **Distillery**: Refines tagged ingredients and fluids into advanced magical reagents.
 - **Spinning Wheel**: Converts fibers and magical materials into thread, cloth, and woven components.
 - **Brazier**: Burns configured reagents to produce bounded magical effects.
-- **Silver Vat**: Processes compatible fluids and silver materials while exposing Forge item and fluid automation.
+- **Silver Vat**: Processes compatible fluids and silver materials while exposing NeoForge item and fluid automation.
 
 ### Travel, divination, and summoning
 

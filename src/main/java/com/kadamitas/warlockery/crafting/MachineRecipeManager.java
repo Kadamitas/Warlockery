@@ -24,8 +24,10 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public final class MachineRecipeManager extends SimpleJsonResourceReloadListener<MachineRecipeDefinition> {
     public static final MachineRecipeManager INSTANCE = new MachineRecipeManager();
@@ -156,8 +158,25 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         IngredientAllocator.allocate(recipe.inputs(), inputs).consumeFrom(inputs);
     }
 
-    public void consumeFluid(final MachineRecipeDefinition recipe, final IFluidHandler handler) {
-        recipe.fluid().ifPresent(input -> handler.drain(input.amount(), IFluidHandler.FluidAction.EXECUTE));
+    public void consumeFluid(
+        final MachineRecipeDefinition recipe,
+        final ResourceHandler<FluidResource> handler
+    ) {
+        recipe.fluid().ifPresent(input -> {
+            final FluidIngredient ingredient = FluidIngredient.parse(input.ingredient()).orElseThrow();
+            try (var transaction = Transaction.openRoot()) {
+                int remaining = input.amount();
+                for (int index = 0; index < handler.size() && remaining > 0; index++) {
+                    final FluidResource resource = handler.getResource(index);
+                    if (ingredient.matches(resource)) {
+                        remaining -= handler.extract(index, resource, remaining, transaction);
+                    }
+                }
+                if (remaining == 0) {
+                    transaction.commit();
+                }
+            }
+        });
     }
 
     public List<ItemStack> createOutputs(final MachineRecipeDefinition recipe) {

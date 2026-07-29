@@ -10,8 +10,8 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 public final class SupernaturalState {
     private static final String FORM_KEY = "WarlockerySupernaturalForm";
@@ -43,7 +43,7 @@ public final class SupernaturalState {
         setReserve(player, getReserve(player) + amount);
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageEvent.Pre event) {
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }
@@ -56,10 +56,10 @@ public final class SupernaturalState {
         if (reserve <= 0) {
             return;
         }
-        final int cost = Math.max(1, (int) Math.ceil(event.getAmount() * 5.0F));
+        final int cost = Math.max(1, (int) Math.ceil(event.getNewDamage() * 5.0F));
         final float protection = Math.min(0.9F, reserve / (float) cost * 0.9F);
         setReserve(player, reserve - Math.min(reserve, cost));
-        event.setAmount(Math.max(0.25F, event.getAmount() * (1.0F - protection)));
+        event.setNewDamage(Math.max(0.25F, event.getNewDamage() * (1.0F - protection)));
     }
 
     public static void tick(final Player player) {
@@ -97,7 +97,7 @@ public final class SupernaturalState {
         SupernaturalProgression.copy(oldPlayer, newPlayer);
     }
 
-    private static boolean isWeakness(final SupernaturalForm form, final LivingDamageEvent event) {
+    private static boolean isWeakness(final SupernaturalForm form, final LivingDamageEvent.Pre event) {
         if (event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return true;
         }

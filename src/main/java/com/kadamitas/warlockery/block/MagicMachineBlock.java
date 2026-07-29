@@ -11,7 +11,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -26,10 +25,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import org.jspecify.annotations.Nullable;
 
 public final class MagicMachineBlock extends BaseEntityBlock {
@@ -82,13 +80,18 @@ public final class MagicMachineBlock extends BaseEntityBlock {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (level.isClientSide()) {
-            return itemStack.getItem() instanceof BucketItem || itemStack.is(Items.BUCKET)
+            return ItemAccess.forStack(itemStack).oneByOne().getCapability(Capabilities.Fluid.ITEM) != null
                 ? InteractionResult.SUCCESS
                 : InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        return machine.getCapability(ForgeCapabilities.FLUID_HANDLER, hitResult.getDirection())
-            .map(handler -> transferBucket(itemStack, handler))
-            .orElse(InteractionResult.TRY_WITH_EMPTY_HAND);
+        return FluidUtil.interactWithFluidHandler(
+            player,
+            hand,
+            level,
+            pos,
+            hitResult.getDirection(),
+            null
+        ) ? InteractionResult.SUCCESS_SERVER : InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     private static InteractionResult useBrazier(
@@ -122,26 +125,6 @@ public final class MagicMachineBlock extends BaseEntityBlock {
         }
         player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.warlockery.brazier.ignited"));
         return InteractionResult.SUCCESS_SERVER;
-    }
-
-    private static InteractionResult transferBucket(final ItemStack itemStack, final IFluidHandler handler) {
-        if (itemStack.getItem() instanceof BucketItem bucket && bucket.getFluid() != net.minecraft.world.level.material.Fluids.EMPTY) {
-            final FluidStack fluid = new FluidStack(bucket.getFluid(), FluidType.BUCKET_VOLUME);
-            if (handler.fill(fluid, IFluidHandler.FluidAction.SIMULATE) == FluidType.BUCKET_VOLUME) {
-                handler.fill(fluid, IFluidHandler.FluidAction.EXECUTE);
-                return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(new ItemStack(Items.BUCKET));
-            }
-            return InteractionResult.FAIL;
-        }
-        if (itemStack.is(Items.BUCKET)) {
-            final FluidStack fluid = handler.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.SIMULATE);
-            if (fluid.getAmount() == FluidType.BUCKET_VOLUME && fluid.getFluid().getBucket() != Items.AIR) {
-                handler.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.EXECUTE);
-                return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(new ItemStack(fluid.getFluid().getBucket()));
-            }
-            return InteractionResult.FAIL;
-        }
-        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override

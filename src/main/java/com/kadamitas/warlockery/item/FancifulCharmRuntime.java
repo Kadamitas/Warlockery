@@ -6,13 +6,13 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 public final class FancifulCharmRuntime {
     private FancifulCharmRuntime() {
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageEvent.Pre event) {
         if (!(event.getEntity() instanceof Player player) || !(player.level() instanceof ServerLevel)) {
             return;
         }

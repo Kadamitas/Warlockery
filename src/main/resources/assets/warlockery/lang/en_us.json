@@ -1039,7 +1039,7 @@
   "manual.warlockery.distilling.outputs": "The output display reports blocked slots and every missing input.",
   "manual.warlockery.distilling.automation": "Sided item and fluid capabilities allow compatible pipes to automate the machine.",
   "manual.warlockery.herbology.title": "Warlockery: Herbology",
-  "manual.warlockery.herbology.crops": "Magical crops use Forge and vanilla crop, seed, flower, and fiber tags.",
+  "manual.warlockery.herbology.crops": "Magical crops use common and vanilla crop, seed, flower, and fiber tags.",
   "manual.warlockery.herbology.mutations": "Mutations require the displayed nearby plants, catalysts, and world conditions.",
   "manual.warlockery.herbology.toad_mutation": "Toad mutation: use the Sprig on a cobweb over water with two or more slime-filled Critter Snares, four diagonal Grasspers holding three Mutandis Extremis and one charged Attuned Stone, and a nearby cat or ocelot. One Toad forms for every filled snare.",
   "manual.warlockery.herbology.minedrake_mutation": "Dreamroot mutation: place four mature Mandrakes on the cardinal rays and four diagonal Grasspers holding two Mutandis Extremis, Focused Will, and a charged Attuned Stone around a cobweb over water. Bring a Creeper and a living Mandrake, then use the Sprig to change all four crops.",

@@ -42,17 +42,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.CactusBlock;
+import net.minecraft.world.level.block.SugarCaneBlock;
+import net.minecraft.world.level.block.VegetationBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.IPlantable;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jspecify.annotations.Nullable;
 
 public final class BrewRuntime {
@@ -897,11 +902,7 @@ public final class BrewRuntime {
             if (entity instanceof Player player) {
                 stacks.addAll(player.getInventory().getNonEquipmentItems());
             }
-            final int drained = stacks.stream().mapToInt(stack -> stack
-                .getCapability(ForgeCapabilities.ENERGY)
-                .map(storage -> storage.extractEnergy(50_000, false))
-                .orElse(0)
-            ).sum();
+            final int drained = stacks.stream().mapToInt(BrewRuntime::drainEnergy).sum();
             if (!beneficial.isEmpty() || drained > 0) {
                 affected++;
             }
@@ -928,6 +929,20 @@ public final class BrewRuntime {
             }
         }
         return ImpactResult.entities(affected);
+    }
+
+    private static int drainEnergy(final ItemStack stack) {
+        final var storage = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
+        if (storage == null) {
+            return 0;
+        }
+        try (var transaction = Transaction.openRoot()) {
+            final int drained = storage.extract(50_000, transaction);
+            if (drained > 0) {
+                transaction.commit();
+            }
+            return drained;
+        }
     }
 
     private static ImpactResult placeWater(final ImpactContext context) {
@@ -1014,27 +1029,23 @@ public final class BrewRuntime {
         final List<ItemEntity> drops = context.level().getEntitiesOfClass(
             ItemEntity.class,
             area,
-            item -> item.isAlive() && item.getItem().getItem() instanceof BlockItem blockItem
-                && blockItem.getBlock() instanceof IPlantable
+            item -> item.isAlive()
+                && item.getItem().getItem() instanceof BlockItem blockItem
+                && isPlantBlock(blockItem.getBlock())
         );
         int planted = 0;
         for (ItemEntity drop : drops) {
             final BlockItem blockItem = (BlockItem) drop.getItem().getItem();
-            final IPlantable plantable = (IPlantable) blockItem.getBlock();
+            final BlockState plant = blockItem.getBlock().defaultBlockState();
             final Optional<BlockPos> ground = BrewArea.sphere(center, (int) Math.ceil(context.radius()))
-                .filter(pos -> context.level().getBlockState(pos).canSustainPlant(
-                    context.level(), pos, Direction.UP, plantable
-                ))
                 .filter(pos -> context.level().getBlockState(pos.above()).canBeReplaced())
-                .filter(pos -> plantable.getPlant(context.level(), pos.above()).canSurvive(
-                    context.level(), pos.above()
-                ))
+                .filter(pos -> plant.canSurvive(context.level(), pos.above()))
                 .min(Comparator.comparingDouble(pos -> pos.distSqr(drop.blockPosition())));
             if (ground.isEmpty()) {
                 continue;
             }
             final BlockPos position = ground.orElseThrow().above();
-            if (!context.level().setBlockAndUpdate(position, plantable.getPlant(context.level(), position))) {
+            if (!context.level().setBlockAndUpdate(position, plant)) {
                 continue;
             }
             drop.getItem().shrink(1);
@@ -1044,6 +1055,13 @@ public final class BrewRuntime {
             planted++;
         }
         return new ImpactResult(planted, planted, 0);
+    }
+
+    private static boolean isPlantBlock(final Block block) {
+        return block instanceof VegetationBlock
+            || block instanceof BambooStalkBlock
+            || block instanceof CactusBlock
+            || block instanceof SugarCaneBlock;
     }
 
     private static ImpactResult summonPoisonToads(final ImpactContext context) {

@@ -26,8 +26,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.util.Result;
-import net.minecraftforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 
 public final class ImpContractRuntime {
     private static final String MELTING_EXPIRATION = "WarlockeryImpMeltingExpiration";
@@ -95,7 +94,7 @@ public final class ImpContractRuntime {
         return InteractionResult.SUCCESS;
     }
 
-    public static void handleBlockBreak(final BlockEvent.BreakEvent event) {
+    public static void handleBlockBreak(final BreakBlockEvent event) {
         if (!(event.getPlayer() instanceof ServerPlayer player)
             || !(event.getLevel() instanceof ServerLevel level)
             || level.getGameTime() >= player.getPersistentData().getLongOr(MELTING_EXPIRATION, 0L)
@@ -114,7 +113,7 @@ public final class ImpContractRuntime {
         if (converted.equals(drops)) {
             return;
         }
-        event.setResult(Result.DENY);
+        event.setCanceled(true);
         level.setBlockAndUpdate(event.getPos(), Blocks.AIR.defaultBlockState());
         converted.forEach(stack -> Block.popResource(level, event.getPos(), stack));
     }

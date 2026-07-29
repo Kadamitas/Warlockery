@@ -2,18 +2,18 @@
 
 [Releases](https://github.com/Kadamitas/Warlockery/releases) | [Issue tracker](https://github.com/Kadamitas/Warlockery/issues) | [MIT license](LICENSE)
 
-Warlockery is a standalone ritual magic mod by Kadamitas for Minecraft 26.2 and Forge 65.1.0.
+Warlockery is a standalone ritual magic mod by Kadamitas for Minecraft 26.2 and NeoForge 26.2.0.37-beta or newer.
 
 It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, kobold village enclaves, silver hunting equipment, and Netherite-tier Koboldite gear.
 
 ## Installation
 
-1. Install Minecraft 26.2 with Forge 65.1.0 or newer.
+1. Install Minecraft 26.2 with NeoForge 26.2.0.37-beta or newer.
 2. Download the matching Warlockery release and copy its JAR into the instance or server `mods` folder.
 3. Install the same Warlockery version on the client and server.
 4. Start Minecraft and confirm that Warlockery appears in the Mods screen.
 
-JEI integration is optional and activates when a compatible Forge JEI build is installed. The integration targets JEI 30.15.0 or newer through its common API.
+JEI integration is optional and activates when the NeoForge build of JEI 30.15.0 or newer is installed.
 
 ## Languages
 
@@ -33,11 +33,11 @@ Standard Minecraft resource packs can replace Warlockery textures, item and bloc
 
 ## Support
 
-Report bugs through the [issue tracker](https://github.com/Kadamitas/Warlockery/issues). Include the Warlockery, Minecraft, Forge, and optional-mod versions, a clear reproduction, and the relevant `latest.log` or crash report. Confirm the problem with the latest Warlockery release before filing an issue.
+Report bugs through the [issue tracker](https://github.com/Kadamitas/Warlockery/issues). Include the Warlockery, Minecraft, NeoForge, and optional-mod versions, a clear reproduction, and the relevant `latest.log` or crash report. Confirm the problem with the latest Warlockery release before filing an issue.
 
 ## Repository structure
 
-- `src/main/java` contains the Forge runtime and client implementation.
+- `src/main/java` contains the NeoForge runtime and client implementation.
 - `src/main/resources` contains assets, recipes, tags, loot, world generation, manuals, and other data-driven content.
 - `src/test/java` contains unit, integration, and resource-contract tests.
 - `docs` contains player and compatibility documentation.

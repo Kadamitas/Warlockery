@@ -3,13 +3,13 @@ package com.kadamitas.warlockery.registry;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.ritual.WarlockeryGameTests;
 import java.util.function.Consumer;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraftforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> REGISTRY =
-        DeferredRegister.create(Registries.TEST_FUNCTION, Warlockery.MOD_ID);
+        DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, Warlockery.MOD_ID);
 
     static {
         REGISTRY.register("ritual_catalog_loads", () -> WarlockeryGameTests::ritualCatalogLoads);

@@ -42,6 +42,7 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -49,18 +50,20 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
+import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jspecify.annotations.Nullable;
 
 public final class MagicMachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
     private static final int INVENTORY_SIZE = 9;
+    private static final int FLUID_CAPACITY = 4_000;
 
     private NonNullList<ItemStack> items = NonNullList.withSize(INVENTORY_SIZE, ItemStack.EMPTY);
     private int burnTime;
@@ -75,15 +78,13 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     private int customBrewProgress;
     private boolean brazierIgnited;
     private MachineSlotLayout slotLayout;
-    private LazyOptional<? extends IItemHandler>[] itemHandlers = createItemHandlers();
-    private final FluidTank fluidTank = new FluidTank(4_000) {
+    private final FluidStacksResourceHandler fluidTank = new FluidStacksResourceHandler(1, FLUID_CAPACITY) {
         @Override
-        protected void onContentsChanged() {
+        protected void onContentsChanged(final int index, final FluidStack previousContents) {
             invalidateRecipeCache();
             setChanged();
         }
     };
-    private LazyOptional<IFluidHandler> fluidHandler = LazyOptional.of(() -> fluidTank);
 
     public MagicMachineBlockEntity(final BlockPos pos, final BlockState state) {
         super(ModBlockEntities.MAGIC_MACHINE.get(), pos, state);
@@ -210,7 +211,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         final CustomBrewDefinitionManager.Inspection inspection = CustomBrewDefinitionManager.INSTANCE.inspect(
             items,
             profile.inputSlots(),
-            fluidTank.getFluid(),
+            fluidStack(),
             altarPower,
             isHeated(level, pos),
             items.get(profile.outputStart()).isEmpty(),
@@ -252,7 +253,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
                 return true;
             }
             items.stream().limit(profile.inputSlots()).filter(stack -> !stack.isEmpty()).forEach(stack -> stack.shrink(1));
-            fluidTank.drain(CustomBrewComposer.WATER_REQUIRED, IFluidHandler.FluidAction.EXECUTE);
+            extractFluid(CustomBrewComposer.WATER_REQUIRED);
             items.set(profile.outputStart(), output);
             LeonardBrewingRisk.apply(serverLevel, pos);
             customBrewProgress = 0;
@@ -289,7 +290,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             return false;
         }
         final ItemStack fuel = items.get(profile.fuelSlot());
-        final int duration = level.fuelValues().burnDuration(fuel);
+        final int duration = burnDuration(level, fuel);
         if (duration <= 0) {
             return false;
         }
@@ -358,7 +359,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             cachedRecipe = manager.find(
                 profile,
                 items,
-                profile.supportsFluids() ? fluidTank.getFluid() : FluidStack.EMPTY,
+                profile.supportsFluids() ? fluidStack() : FluidStack.EMPTY,
                 altarPower
             );
             cachedRevision = manager.revision();
@@ -370,6 +371,22 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
 
     private void invalidateRecipeCache() {
         recipeDirty = true;
+    }
+
+    private FluidStack fluidStack() {
+        return FluidUtil.getStack(fluidTank, 0);
+    }
+
+    private void extractFluid(final int amount) {
+        final FluidResource resource = fluidTank.getResource(0);
+        if (resource.isEmpty()) {
+            return;
+        }
+        try (var transaction = Transaction.openRoot()) {
+            if (fluidTank.extract(0, resource, amount, transaction) == amount) {
+                transaction.commit();
+            }
+        }
     }
 
     public String machineKind() {
@@ -412,7 +429,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         final MachineRecipeManager.Diagnostic diagnostic = MachineRecipeManager.INSTANCE.diagnose(
             profile,
             items,
-            profile.supportsFluids() ? fluidTank.getFluid() : FluidStack.EMPTY,
+            profile.supportsFluids() ? fluidStack() : FluidStack.EMPTY,
             level instanceof ServerLevel serverLevel ? AltarPowerNetwork.available(serverLevel, pos) : 0
         );
         final MachineStatus status;
@@ -443,7 +460,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             if (outputs.isEmpty() || outputs.stream().anyMatch(ItemStack::isEmpty) || !canAccept(outputs, profile)) {
                 status = MachineStatus.OUTPUT_BLOCKED;
             } else if (profile.hasFuelSlot() && burnTime <= 0
-                && level.fuelValues().burnDuration(items.get(profile.fuelSlot())) <= 0) {
+                && burnDuration(level, items.get(profile.fuelSlot())) <= 0) {
                 status = MachineStatus.NO_FUEL;
             } else if (diagnostic.recipe().equals(activeRecipe) && progress > 0) {
                 status = MachineStatus.PROCESSING;
@@ -486,7 +503,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     public boolean canPlaceItem(final int slot, final ItemStack stack) {
         final MachineProfile profile = machineProfile();
         if (profile.hasFuelSlot() && slot == profile.fuelSlot()) {
-            return level != null && level.fuelValues().isFuel(stack);
+            return level != null && burnDuration(level, stack) > 0;
         }
         return slot < profile.inputSlots();
     }
@@ -511,40 +528,24 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             return true;
         }
         return slotLayout().extractsFuelRemainder(direction, slot)
-            && (level == null || !level.fuelValues().isFuel(stack));
+            && (level == null || burnDuration(level, stack) <= 0);
     }
 
-    @Override
-    public <T> LazyOptional<T> getCapability(final Capability<T> capability, final @Nullable Direction facing) {
-        if (capability == ForgeCapabilities.FLUID_HANDLER && machineProfile().supportsFluids() && !remove) {
-            return fluidHandler.cast();
-        }
-        if (capability == ForgeCapabilities.ITEM_HANDLER && facing != null && !remove) {
-            return switch (facing) {
-                case UP -> itemHandlers[0].cast();
-                case DOWN -> itemHandlers[1].cast();
-                default -> itemHandlers[2].cast();
-            };
-        }
-        return super.getCapability(capability, facing);
+    private static int burnDuration(final Level level, final ItemStack stack) {
+        return stack.getBurnTime(RecipeType.SMELTING, level.fuelValues());
     }
 
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        java.util.Arrays.stream(itemHandlers).forEach(LazyOptional::invalidate);
-        fluidHandler.invalidate();
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        itemHandlers = createItemHandlers();
-        fluidHandler = LazyOptional.of(() -> fluidTank);
-    }
-
-    private LazyOptional<? extends IItemHandler>[] createItemHandlers() {
-        return SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH);
+    public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(
+            Capabilities.Item.BLOCK,
+            ModBlockEntities.MAGIC_MACHINE.get(),
+            WorldlyContainerWrapper::new
+        );
+        event.registerBlockEntity(
+            Capabilities.Fluid.BLOCK,
+            ModBlockEntities.MAGIC_MACHINE.get(),
+            (machine, side) -> machine.machineProfile().supportsFluids() ? machine.fluidTank : null
+        );
     }
 
     @Override
@@ -625,7 +626,12 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             .orElse(CustomBrewCauldronState.EMPTY);
         customBrewProgress = input.getIntOr("CustomBrewProgress", 0);
         brazierIgnited = input.getBooleanOr("BrazierIgnited", false);
-        fluidTank.readFrom(input.childOrEmpty("FluidTank"));
+        fluidTank.deserialize(input.childOrEmpty("FluidTank"));
+        if (ResourceHandlerUtil.isEmpty(fluidTank)) {
+            input.read("FluidTank", FluidStack.CODEC).ifPresent(stack ->
+                fluidTank.set(0, FluidResource.of(stack), Math.min(stack.getAmount(), FLUID_CAPACITY))
+            );
+        }
         invalidateRecipeCache();
     }
 
@@ -640,8 +646,8 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         output.store("CustomBrewState", CustomBrewCauldronState.CODEC, customBrewState);
         output.putInt("CustomBrewProgress", customBrewProgress);
         output.putBoolean("BrazierIgnited", brazierIgnited);
-        if (!fluidTank.isEmpty()) {
-            fluidTank.writeTo(output.child("FluidTank"));
+        if (!ResourceHandlerUtil.isEmpty(fluidTank)) {
+            fluidTank.serialize(output.child("FluidTank"));
         }
     }
 

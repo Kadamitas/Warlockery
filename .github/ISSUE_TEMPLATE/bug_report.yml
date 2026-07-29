@@ -17,8 +17,8 @@ body:
   - type: input
     id: environment
     attributes:
-      label: Minecraft, Forge, and Java versions
-      placeholder: Minecraft 26.2, Forge 65.1.0, Java 25
+      label: Minecraft, NeoForge, and Java versions
+      placeholder: Minecraft 26.2, NeoForge 26.2.0.37-beta, Java 25
     validations:
       required: true
   - type: dropdown
@@ -53,7 +53,7 @@ body:
     id: mods
     attributes:
       label: Other installed mods
-      description: Include versions and say whether the issue also occurs with only Forge and Warlockery.
+      description: Include versions and say whether the issue also occurs with only NeoForge and Warlockery.
     validations:
       required: true
   - type: textarea

@@ -1,7 +1,6 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.registry.WarlockeryTags;
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -16,7 +15,7 @@ import net.minecraft.world.level.material.FlowingFluid;
 
 public final class HollowTearsLiquidBlock extends LiquidBlock {
     public HollowTearsLiquidBlock(
-        final Supplier<? extends FlowingFluid> fluid,
+        final FlowingFluid fluid,
         final BlockBehaviour.Properties properties
     ) {
         super(fluid, properties);

@@ -8,13 +8,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 public final class CreatureCombat {
     private CreatureCombat() {
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageEvent.Pre event) {
         final ItemStack projectile = event.getSource().getDirectEntity() instanceof AbstractArrow arrow
             ? arrow.getPickupItemStackOrigin() : ItemStack.EMPTY;
         final ItemStack weapon = event.getSource().getWeaponItem();
@@ -25,9 +25,9 @@ public final class CreatureCombat {
         final boolean antiMagic = projectile.is(ModItems.ALL.get("ingredient_bolt_anti_magic").get());
 
         if (event.getEntity() instanceof ArcaneCreature creature) {
-            event.setAmount(adjustedDamage(
+            event.setNewDamage(adjustedDamage(
                 creature.creatureKind(),
-                event.getAmount(),
+                event.getNewDamage(),
                 silver,
                 stake,
                 holy,
@@ -35,7 +35,7 @@ public final class CreatureCombat {
                 isWerewolfTarget(event.getEntity())
             ));
         } else if (silver && isWerewolfTarget(event.getEntity())) {
-            event.setAmount(event.getAmount() * 2.0F);
+            event.setNewDamage(event.getNewDamage() * 2.0F);
         }
         if (antiMagic) {
             event.getEntity().removeAllEffects();
@@ -84,7 +84,7 @@ public final class CreatureCombat {
         return kind == ArcaneCreature.CreatureKind.WEREWOLF || kind == ArcaneCreature.CreatureKind.LYCAN_VILLAGER;
     }
 
-    public static boolean isSilverDamage(final LivingDamageEvent event) {
+    public static boolean isSilverDamage(final LivingDamageEvent.Pre event) {
         final ItemStack projectile = event.getSource().getDirectEntity() instanceof AbstractArrow arrow
             ? arrow.getPickupItemStackOrigin() : ItemStack.EMPTY;
         final ItemStack weapon = event.getSource().getWeaponItem();

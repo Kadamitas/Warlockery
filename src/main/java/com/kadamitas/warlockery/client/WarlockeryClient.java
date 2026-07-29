@@ -1,29 +1,33 @@
 package com.kadamitas.warlockery.client;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.compat.neoforge.WarlockeryFluidClient;
 import com.kadamitas.warlockery.entity.CreatureVisualProfile;
 import com.kadamitas.warlockery.item.ManualScreenBridge;
 import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModEntities;
 import java.util.Set;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
-import net.minecraftforge.client.gui.overlay.ForgeLayeredDraw;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
-@Mod.EventBusSubscriber(modid = Warlockery.MOD_ID, value = Dist.CLIENT)
+@Mod(value = Warlockery.MOD_ID, dist = Dist.CLIENT)
 public final class WarlockeryClient {
     private static final Set<String> SPECIAL_RENDERERS = Set.of(
         "ent", "werewolf_hunter", "hobgoblin", "goblin", "stonebroker", "forgewarden"
     );
 
-    private WarlockeryClient() {
+    public WarlockeryClient(final IEventBus modBus) {
+        modBus.addListener(WarlockeryClient::registerRenderers);
+        modBus.addListener(WarlockeryClient::addHudLayers);
+        modBus.addListener(WarlockeryFluidClient::registerModels);
+        modBus.addListener(ModNetwork::registerClientPayloadHandlers);
     }
 
-    @SubscribeEvent
     public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         ManualScreenBridge.setOpenHandler(ManualScreen::open);
         ModNetwork.setClientScreenHandler(payload ->
@@ -50,14 +54,11 @@ public final class WarlockeryClient {
         });
     }
 
-    @SubscribeEvent
-    public static void addHudLayers(final AddGuiOverlayLayersEvent event) {
-        if (event.getLayeredDraw().getName().equals(ForgeLayeredDraw.VANILLA_ROOT)) {
-            event.getLayeredDraw().add(
-                ForgeLayeredDraw.PRE_SLEEP_STACK,
-                DollStatusOverlay.LAYER,
-                DollStatusOverlay::extract
-            );
-        }
+    public static void addHudLayers(final RegisterGuiLayersEvent event) {
+        event.registerBelow(
+            VanillaGuiLayers.SLEEP_OVERLAY,
+            DollStatusOverlay.LAYER,
+            DollStatusOverlay::extract
+        );
     }
 }

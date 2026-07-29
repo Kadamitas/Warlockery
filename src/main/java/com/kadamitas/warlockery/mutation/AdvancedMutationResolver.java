@@ -26,8 +26,10 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public final class AdvancedMutationResolver {
     private AdvancedMutationResolver() {
@@ -200,33 +202,55 @@ public final class AdvancedMutationResolver {
         if (level.getBlockState(pos).getBlock() instanceof GrassperBlock) {
             return GrassperBlock.storedItem(level, pos);
         }
-        return itemHandlers(level.getBlockEntity(pos)).stream()
+        return itemHandlers(level, pos).stream()
             .map(handler -> firstStack(handler, false))
             .flatMap(Optional::stream)
             .findFirst();
     }
 
-    private static Optional<ItemStack> firstStack(final IItemHandler handler, final boolean extract) {
-        for (int slot = 0; slot < handler.getSlots(); slot++) {
-            if (!handler.getStackInSlot(slot).isEmpty()) {
-                return Optional.of(extract
-                    ? handler.extractItem(slot, 1, false)
-                    : handler.getStackInSlot(slot).copyWithCount(1));
+    private static Optional<ItemStack> firstStack(
+        final ResourceHandler<ItemResource> handler,
+        final boolean extract
+    ) {
+        for (int slot = 0; slot < handler.size(); slot++) {
+            final ItemResource resource = handler.getResource(slot);
+            if (!resource.isEmpty() && handler.getAmountAsLong(slot) > 0L) {
+                if (!extract) {
+                    return Optional.of(resource.toStack());
+                }
+                try (Transaction transaction = Transaction.openRoot()) {
+                    final int extracted = handler.extract(slot, resource, 1, transaction);
+                    if (extracted > 0) {
+                        transaction.commit();
+                        return Optional.of(resource.toStack(extracted));
+                    }
+                }
             }
         }
         return Optional.empty();
     }
 
-    private static List<IItemHandler> itemHandlers(final BlockEntity blockEntity) {
+    private static List<ResourceHandler<ItemResource>> itemHandlers(
+        final ServerLevel level,
+        final BlockPos position
+    ) {
+        final BlockEntity blockEntity = level.getBlockEntity(position);
         if (blockEntity == null) {
             return List.of();
         }
-        final List<IItemHandler> handlers = new ArrayList<>();
+        final BlockState state = level.getBlockState(position);
+        final List<ResourceHandler<ItemResource>> handlers = new ArrayList<>();
         for (Direction direction : Direction.values()) {
-            blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction)
-                .resolve()
-                .filter(handler -> handlers.stream().noneMatch(existing -> existing == handler))
-                .ifPresent(handlers::add);
+            final ResourceHandler<ItemResource> handler = level.getCapability(
+                Capabilities.Item.BLOCK,
+                position,
+                state,
+                blockEntity,
+                direction
+            );
+            if (handler != null && handlers.stream().noneMatch(existing -> existing == handler)) {
+                handlers.add(handler);
+            }
         }
         return List.copyOf(handlers);
     }
@@ -279,7 +303,7 @@ public final class AdvancedMutationResolver {
             GrassperBlock.takeStoredItem(level, pos);
             return;
         }
-        itemHandlers(level.getBlockEntity(pos)).stream()
+        itemHandlers(level, pos).stream()
             .map(handler -> firstStack(handler, true))
             .flatMap(Optional::stream)
             .findFirst();

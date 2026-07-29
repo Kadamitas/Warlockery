@@ -22,7 +22,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.tags.FluidTags;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 public final class CustomBrewDefinitionManager extends SimpleJsonResourceReloadListener<CustomBrewComponentDefinition> {
     public static final CustomBrewDefinitionManager INSTANCE = new CustomBrewDefinitionManager();

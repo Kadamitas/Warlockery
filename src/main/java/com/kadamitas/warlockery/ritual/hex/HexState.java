@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 public final class HexState {
     private static final String ACTIVE_HEXES = "WarlockeryActiveHexes";

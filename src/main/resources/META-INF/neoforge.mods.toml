@@ -1,42 +1,41 @@
-modLoader="javafml"
-loaderVersion="[65,)"
 license="MIT"
 issueTrackerURL="https://github.com/Kadamitas/Warlockery/issues"
 
 [[mods]]
 modId="warlockery"
-version="${file.jarVersion}"
+version="${mod_version}"
 displayName="Warlockery"
 displayURL="https://github.com/Kadamitas/Warlockery"
-updateJSONURL="https://raw.githubusercontent.com/Kadamitas/Warlockery/main/update.json"
+updateJSONURL="https://raw.githubusercontent.com/Kadamitas/Warlockery/neoforge-main/update.json"
 logoFile="warlockery-icon.png"
 logoBlur=false
 authors="Kadamitas"
-displayTest="MATCH_VERSION"
-features={java_version="[25,)"}
 
-description='''A standalone ritual-magic mod for Forge 65 and Minecraft 26.2.
+description='''A standalone ritual-magic mod for NeoForge and Minecraft 26.2.
 Warlockery includes data-driven circles and machines, magical plants, sympathetic magic,
 dolls, supernatural forms, creatures and bosses, kobold village enclaves,
 silver-equipped Werewolf Hunters, and modern ore progression.'''
 
+[features.warlockery]
+    javaVersion="[25,)"
+
 [[dependencies.warlockery]]
-    modId="forge"
-    mandatory=true
-    versionRange="[65.1.0,)"
+    modId="neoforge"
+    type="required"
+    versionRange="[26.2.0.37-beta,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.warlockery]]
     modId="jei"
-    mandatory=false
+    type="optional"
     versionRange="[30.15.0,)"
     ordering="AFTER"
     side="CLIENT"
 
 [[dependencies.warlockery]]
     modId="minecraft"
-    mandatory=true
+    type="required"
     versionRange="[26.2,26.3)"
     ordering="NONE"
     side="BOTH"

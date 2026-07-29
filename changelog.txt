@@ -1,12 +1,12 @@
 Warlockery 1.0.0
 ================
 
-- First stable public release for Forge 65.1.0, Minecraft 26.2, and Java 25.
+- First stable NeoForge release for NeoForge 26.2.0.37-beta, Minecraft 26.2, and Java 25.
 - Includes 101 data-driven rituals with interactive chalk-circle selection and requirement displays.
 - Includes fixed and custom brewing, ritual machines, altar power, dolls, hexes, vampires, and werewolves.
 - Includes 47 creature types, kobold village integration, biome-aware Ents, and silver-equipped Werewolf Hunters.
-- Includes Forge automation capabilities, common material tags, searchable in-game manuals, and original pixel art.
-- Adds optional JEI recipe-viewer integration when a compatible Forge JEI build is installed.
+- Includes NeoForge automation capabilities, common material tags, searchable in-game manuals, and original pixel art.
+- Adds optional JEI recipe-viewer integration for the NeoForge build of JEI 30.15.0 or newer.
 - Adds English, French, Spanish, Brazilian Portuguese, German, Polish, Japanese, and Traditional Chinese for Taiwan.
 - Supports texture, model, and sound replacement through standard Minecraft resource packs.
-- Adds server configuration for rare world events and Forge update-check metadata.
+- Adds server configuration for rare world events and NeoForge update-check metadata.

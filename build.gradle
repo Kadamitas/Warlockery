@@ -1,9 +1,9 @@
 
 plugins {
-    id 'java'
+    id 'java-library'
     id 'idea'
     id 'eclipse'
-    id 'net.minecraftforge.gradle' version '7.0.17'
+    id 'net.neoforged.moddev' version '2.0.143'
 }
 
 abstract class ReleaseBundleTask extends DefaultTask {
@@ -58,17 +58,97 @@ abstract class ReleaseBundleTask extends DefaultTask {
     }
 }
 
+abstract class GenerateEmptyGameTestStructure extends DefaultTask {
+    @Input
+    abstract Property<Integer> getStructureSize()
+
+    @Input
+    abstract Property<Integer> getDataVersion()
+
+    @OutputFile
+    abstract RegularFileProperty getOutputFile()
+
+    @TaskAction
+    void generate() {
+        def output = outputFile.get().asFile.toPath()
+        java.nio.file.Files.createDirectories(output.parent)
+        def stream = new java.io.DataOutputStream(new java.util.zip.GZIPOutputStream(java.nio.file.Files.newOutputStream(output)))
+        stream.withCloseable { data ->
+            int size = structureSize.get()
+            data.writeByte(10)
+            data.writeUTF('')
+            GenerateEmptyGameTestStructure.writeIntList(data, 'size', size, size, size)
+            GenerateEmptyGameTestStructure.writeCompoundList(data, 'entities', 0)
+            GenerateEmptyGameTestStructure.writeCompoundList(data, 'blocks', size * size * size)
+            for (int y = 0; y < size; y++) {
+                for (int x = 0; x < size; x++) {
+                    for (int z = 0; z < size; z++) {
+                        GenerateEmptyGameTestStructure.writeIntList(data, 'pos', x, y, z)
+                        data.writeByte(3)
+                        data.writeUTF('state')
+                        data.writeInt(0)
+                        data.writeByte(0)
+                    }
+                }
+            }
+            GenerateEmptyGameTestStructure.writeCompoundList(data, 'palette', 1)
+            data.writeByte(8)
+            data.writeUTF('Name')
+            data.writeUTF('minecraft:air')
+            data.writeByte(0)
+            data.writeByte(3)
+            data.writeUTF('DataVersion')
+            data.writeInt(dataVersion.get())
+            data.writeByte(0)
+        }
+    }
+
+    private static void writeIntList(final java.io.DataOutputStream data, final String name, final int... values) {
+        data.writeByte(9)
+        data.writeUTF(name)
+        data.writeByte(3)
+        data.writeInt(values.length)
+        values.each { data.writeInt(it) }
+    }
+
+    private static void writeCompoundList(final java.io.DataOutputStream data, final String name, final int size) {
+        data.writeByte(9)
+        data.writeUTF(name)
+        data.writeByte(10)
+        data.writeInt(size)
+    }
+}
+
 version = '1.0.0'
 group = 'com.kadamitas.warlockery'
+
+base {
+    archivesName = 'warlockery-neoforge'
+}
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
     withSourcesJar()
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+def generatedGameTestResources = layout.buildDirectory.dir('generated/gameTestResources')
+def generateEmptyGameTestStructure = tasks.register('generateEmptyGameTestStructure', GenerateEmptyGameTestStructure) {
+    structureSize.set(3)
+    dataVersion.set(4_903)
+    outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty3x3x3.nbt') })
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    srcDir generatedGameTestResources
+}
 
 tasks.named('processResources', ProcessResources) {
+    dependsOn generateEmptyGameTestStructure
+    inputs.property 'modVersion', project.version
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand mod_version: project.version
+    }
     exclude 'assets/warlockery/icon.png'
     from('src/main/resources/assets/warlockery/icon.png') {
         into ''
@@ -76,38 +156,55 @@ tasks.named('processResources', ProcessResources) {
     }
 }
 
-sourceSets.test.compileClasspath += sourceSets.main.output
-sourceSets.test.runtimeClasspath += sourceSets.main.output
+tasks.named('sourcesJar', Jar) {
+    dependsOn generateEmptyGameTestStructure
+}
 
-minecraft {
+sourceSets.test.compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+sourceSets.test.runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+
+neoForge {
+    version = '26.2.0.37-beta'
+
     runs {
         configureEach {
-            workingDir = layout.projectDirectory.dir('run')
-
-            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
-            systemProperty 'forge.enabledGameTestNamespaces', 'warlockery'
+            gameDirectory = layout.projectDirectory.dir('run')
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'warlockery'
         }
 
-        register('client')
-
-        register('server') {
-            args '--nogui'
+        client {
+            client()
         }
 
-        register('gameTestServer')
-
-        register('data') {
-            workingDir = layout.projectDirectory.dir('run-data')
-
-            args '--mod', 'warlockery', '--all', '--output', layout.projectDirectory.dir('src/generated/resources'), '--existing', layout.projectDirectory.dir('src/main/resources')
+        server {
+            server()
+            programArgument '--nogui'
         }
+
+        gameTestServer {
+            type = 'gameTestServer'
+        }
+
+        data {
+            clientData()
+            gameDirectory = layout.projectDirectory.dir('run-data')
+            programArguments.addAll '--mod', 'warlockery', '--all', '--output', layout.projectDirectory.dir('src/generated/resources').asFile.absolutePath, '--existing', layout.projectDirectory.dir('src/main/resources').asFile.absolutePath
+        }
+    }
+
+    mods {
+        warlockery {
+            sourceSet sourceSets.main
+        }
+    }
+
+    unitTest {
+        enable()
+        testedMod = mods.warlockery
     }
 }
 
 repositories {
-    minecraft.mavenizer(it)
-    maven fg.forgeMaven
-    maven fg.minecraftLibsMaven
     maven {
         url = 'https://maven.blamejared.com'
         content { includeGroup 'mezz.jei' }
@@ -115,10 +212,14 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
 dependencies {
-    implementation minecraft.dependency('net.minecraftforge:forge:26.2-65.1.0')
     compileOnly 'mezz.jei:jei-26.2-common-api:30.15.0.104'
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.5'
+    compileOnly 'mezz.jei:jei-26.2-neoforge-api:30.15.0.104'
+    localRuntime 'mezz.jei:jei-26.2-neoforge:30.15.0.104'
     testImplementation platform('org.junit:junit-bom:6.1.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -127,7 +228,13 @@ dependencies {
 tasks.named('test', Test) {
     useJUnitPlatform()
     testLogging {
-        events 'passed', 'skipped', 'failed'
+        events 'skipped', 'failed'
+    }
+}
+
+afterEvaluate {
+    tasks.named('test', Test) {
+        workingDir = rootProject.projectDir
     }
 }
 
@@ -167,7 +274,7 @@ tasks.named('jar', Jar) {
     }
 }
 
-def releaseDirectory = layout.projectDirectory.dir("release/${project.version}")
+def releaseDirectory = layout.projectDirectory.dir("release/neoforge/${project.version}")
 
 tasks.register('releaseBundle', ReleaseBundleTask) {
     group = 'build'

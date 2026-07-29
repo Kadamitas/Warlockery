@@ -46,18 +46,18 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModItems {
-    public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, Warlockery.MOD_ID);
-    private static final Map<String, RegistryObject<Item>> MUTABLE_ITEMS = new LinkedHashMap<>();
+    public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(Registries.ITEM, Warlockery.MOD_ID);
+    private static final Map<String, DeferredHolder<Item, ? extends Item>> MUTABLE_ITEMS = new LinkedHashMap<>();
     private static final Set<String> SINGLE_STACK_ITEMS = Set.of(
         "ritual_knife", "boline", "canesword", "coffin", "deathscowl", "deathshand", "divinerlava", "divinerwater",
         "replication_staff", "silver_repeater", "hornofthehunt", "thorn_spear", "delvealloypickaxe", "mirror", "mysticbranch",
@@ -74,7 +74,7 @@ public final class ModItems {
         "seedswormwood", "wormwood"
     );
 
-    public static final Map<String, RegistryObject<Item>> ALL;
+    public static final Map<String, DeferredHolder<Item, ? extends Item>> ALL;
 
     static {
         ModBlocks.ALL.forEach((id, block) -> {
@@ -161,13 +161,13 @@ public final class ModItems {
         MUTABLE_ITEMS.put(id, REGISTRY.register(id, factory));
     }
 
-    public static void registerSpawnEggs(final Map<String, RegistryObject<? extends net.minecraft.world.entity.EntityType<?>>> entityTypes) {
+    public static void registerSpawnEggs(final Map<String, DeferredHolder<net.minecraft.world.entity.EntityType<?>, ? extends net.minecraft.world.entity.EntityType<?>>> entityTypes) {
         entityTypes.forEach((id, type) -> register(id + "_spawn_egg",
-            () -> new SpawnEggItem(new Item.Properties().setId(REGISTRY.key(id + "_spawn_egg")).spawnEgg(type.get()))));
+            () -> new SpawnEggItem(new Item.Properties().setId(key(id + "_spawn_egg")).spawnEgg(type.get()))));
     }
 
     private static Item.Properties properties(final String id) {
-        Item.Properties properties = new Item.Properties().setId(REGISTRY.key(id));
+        Item.Properties properties = new Item.Properties().setId(key(id));
         if ("sympathetic_vial".equals(id)) {
             properties = properties.component(DataComponents.LORE, new ItemLore(java.util.List.of(
                 net.minecraft.network.chat.Component.translatable("tooltip.warlockery.sympathetic_vial.empty")
@@ -211,6 +211,10 @@ public final class ModItems {
             case "seepingshoes" -> enchanted(equipmentProperties, Enchantments.DEPTH_STRIDER, 3);
             default -> equipmentProperties;
         };
+    }
+
+    private static ResourceKey<Item> key(final String id) {
+        return ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, id));
     }
 
     private static Item.Properties enchanted(

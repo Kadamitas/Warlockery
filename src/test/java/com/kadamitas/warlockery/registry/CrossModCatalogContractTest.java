@@ -167,10 +167,11 @@ final class CrossModCatalogContractTest {
     }
 
     @Test
-    void fuelsUseTheForgeItemBurnTimeHook() {
+    void fuelsUseTheNeoForgeItemBurnTimeHook() {
         final String item = read(Path.of("src/main/java/com/kadamitas/warlockery/brew/BrewItem.java"));
         final String kind = read(Path.of("src/main/java/com/kadamitas/warlockery/brew/BrewKind.java"));
-        assertTrue(item.contains("int getBurnTime(final ItemStack itemStack"));
+        assertTrue(item.contains("public int getBurnTime("));
+        assertTrue(item.contains("final FuelValues fuelValues"));
         assertTrue(item.contains("kind.fuelBurnTime()"));
         assertTrue(kind.contains("return this == COMBUSTION ? 2_400 : 0;"));
     }
@@ -183,9 +184,10 @@ final class CrossModCatalogContractTest {
         final String profiles = read(Path.of(
             "src/main/java/com/kadamitas/warlockery/crafting/MachineProfiles.java"
         ));
-        assertTrue(machine.contains("ForgeCapabilities.ITEM_HANDLER"));
-        assertTrue(machine.contains("ForgeCapabilities.FLUID_HANDLER"));
-        assertTrue(machine.contains("SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH)"));
+        assertTrue(machine.contains("Capabilities.Item.BLOCK"));
+        assertTrue(machine.contains("Capabilities.Fluid.BLOCK"));
+        assertTrue(machine.contains("WorldlyContainerWrapper::new"));
+        assertTrue(machine.contains("RegisterCapabilitiesEvent"));
         assertTrue(machine.contains("machineProfile().supportsFluids()"));
         idClassifications("machine", "block").forEach(id -> assertTrue(profiles.contains("\"" + id + "\""), id));
     }
@@ -205,8 +207,8 @@ final class CrossModCatalogContractTest {
             }
         }
         final String documentation = read(Path.of("docs/CROSS_MOD_COMPATIBILITY.md"));
-        assertTrue(documentation.contains("Forge 65.1.0 has no universal mana capability"));
-        assertTrue(documentation.contains("Warlockery altar power is not Forge Energy"));
+        assertTrue(documentation.contains("NeoForge 26.2 has no universal mana capability"));
+        assertTrue(documentation.contains("Warlockery altar power is not NeoForge Energy"));
     }
 
     @Test

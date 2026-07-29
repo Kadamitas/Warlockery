@@ -39,11 +39,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.GameType;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -359,9 +361,9 @@ public final class WarlockeryGameTests {
         final ItemStack doll = boundDoll(player, "death_guard_doll");
         player.getInventory().setItem(0, doll);
         player.setHealth(4.0F);
-        final LivingDamageEvent event = new LivingDamageEvent(player, helper.getLevel().damageSources().generic(), 20.0F);
+        final LivingDamageEvent.Pre event = damageEvent(player, helper.getLevel().damageSources().generic(), 20.0F);
         DollItem.handleDamage(event);
-        helper.assertValueEqual(event.getAmount(), 0.0F, "lethal damage after death guard");
+        helper.assertValueEqual(event.getNewDamage(), 0.0F, "lethal damage after death guard");
         helper.assertValueEqual(player.getHealth(), 1.0F, "death guard recovery health");
         helper.assertTrue(player.hasEffect(MobEffects.REGENERATION), "death guard must use vanilla Totem regeneration");
         helper.assertTrue(player.hasEffect(MobEffects.ABSORPTION), "death guard must use vanilla Totem absorption");
@@ -376,7 +378,7 @@ public final class WarlockeryGameTests {
         player.setHealth(1.0F);
         player.getFoodData().setFoodLevel(0);
         player.getFoodData().setSaturation(0.0F);
-        final LivingDamageEvent event = new LivingDamageEvent(player, helper.getLevel().damageSources().starve(), 2.0F);
+        final LivingDamageEvent.Pre event = damageEvent(player, helper.getLevel().damageSources().starve(), 2.0F);
         DollItem.handleDamage(event);
         helper.assertValueEqual(player.getFoodData().getFoodLevel(), 20, "restored hunger");
         helper.assertTrue(player.getFoodData().getSaturationLevel() >= 10.0F, "hunger guard must restore saturation");
@@ -420,18 +422,18 @@ public final class WarlockeryGameTests {
 
         player.getInventory().setItem(0, boundDoll(player, "earth_guard_doll"));
         player.setHealth(1.0F);
-        final LivingDamageEvent fall = new LivingDamageEvent(player, helper.getLevel().damageSources().fall(), 2.0F);
+        final LivingDamageEvent.Pre fall = damageEvent(player, helper.getLevel().damageSources().fall(), 2.0F);
         DollItem.handleDamage(fall);
-        helper.assertValueEqual(fall.getAmount(), 0.0F, "earth guard lethal fall damage");
+        helper.assertValueEqual(fall.getNewDamage(), 0.0F, "earth guard lethal fall damage");
         helper.assertTrue(player.hasEffect(MobEffects.SLOW_FALLING), "earth guard must apply vanilla Slow Falling");
 
         player.removeAllEffects();
         player.getInventory().setItem(0, boundDoll(player, "water_guard_doll"));
         player.setHealth(1.0F);
         player.setAirSupply(0);
-        final LivingDamageEvent drowning = new LivingDamageEvent(player, helper.getLevel().damageSources().drown(), 2.0F);
+        final LivingDamageEvent.Pre drowning = damageEvent(player, helper.getLevel().damageSources().drown(), 2.0F);
         DollItem.handleDamage(drowning);
-        helper.assertValueEqual(drowning.getAmount(), 0.0F, "water guard lethal drowning damage");
+        helper.assertValueEqual(drowning.getNewDamage(), 0.0F, "water guard lethal drowning damage");
         helper.assertValueEqual(player.getAirSupply(), player.getMaxAirSupply(), "water guard restored air");
         helper.assertTrue(player.hasEffect(MobEffects.WATER_BREATHING),
             "water guard must apply vanilla Water Breathing");
@@ -439,9 +441,9 @@ public final class WarlockeryGameTests {
         player.removeAllEffects();
         player.getInventory().setItem(0, boundDoll(player, "fire_guard_doll"));
         player.setHealth(1.0F);
-        final LivingDamageEvent lava = new LivingDamageEvent(player, helper.getLevel().damageSources().lava(), 2.0F);
+        final LivingDamageEvent.Pre lava = damageEvent(player, helper.getLevel().damageSources().lava(), 2.0F);
         DollItem.handleDamage(lava);
-        helper.assertValueEqual(lava.getAmount(), 0.0F, "fire guard lethal lava damage");
+        helper.assertValueEqual(lava.getNewDamage(), 0.0F, "fire guard lethal lava damage");
         helper.assertTrue(player.hasEffect(MobEffects.FIRE_RESISTANCE),
             "fire guard must apply vanilla Fire Resistance");
         helper.succeed();
@@ -496,59 +498,133 @@ public final class WarlockeryGameTests {
         final BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, ModBlocks.ALL.get("spinningwheel").get());
         final MagicMachineBlockEntity machine = helper.getBlockEntity(relative, MagicMachineBlockEntity.class);
-        final IItemHandler top = machine.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP)
-            .orElseThrow(() -> new IllegalStateException("Missing top item handler"));
+        final ResourceHandler<ItemResource> top = requireCapability(
+            helper.getLevel().getCapability(Capabilities.Item.BLOCK, absolute, Direction.UP),
+            "top item handler"
+        );
 
-        final ItemStack simulatedRemainder = top.insertItem(0, new ItemStack(Items.STRING, 8), true);
-        helper.assertTrue(simulatedRemainder.isEmpty(), "top pipe must simulate accepting recipe inputs");
+        helper.assertValueEqual(
+            insert(top, 0, ItemResource.of(Items.STRING), 8, false),
+            8,
+            "top pipe must simulate accepting recipe inputs"
+        );
         helper.assertTrue(machine.getItem(0).isEmpty(), "simulated pipe insertion must not mutate inventory");
-        helper.assertTrue(top.insertItem(0, new ItemStack(Items.STRING, 8), false).isEmpty(),
-            "top pipe must insert recipe inputs");
-        helper.assertTrue(top.extractItem(0, 1, false).isEmpty(), "top pipe must not extract recipe inputs");
+        helper.assertValueEqual(
+            insert(top, 0, ItemResource.of(Items.STRING), 8, true),
+            8,
+            "top pipe must insert recipe inputs"
+        );
+        helper.assertValueEqual(
+            extract(top, 0, ItemResource.of(Items.STRING), 1, true),
+            0,
+            "top pipe must not extract recipe inputs"
+        );
 
         IntStream.range(0, 160).forEach(_ -> MagicMachineBlockEntity.serverTick(
             helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
         ));
 
-        final IItemHandler bottom = machine.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN)
-            .orElseThrow(() -> new IllegalStateException("Missing bottom item handler"));
-        helper.assertTrue(bottom.insertItem(0, new ItemStack(Items.STRING), false).is(Items.STRING),
-            "bottom pipe must reject insertion");
-        final ItemStack simulatedOutput = bottom.extractItem(0, 1, true);
-        helper.assertTrue(simulatedOutput.is(Items.WOOL.white()), "bottom pipe must expose finished output");
+        final ResourceHandler<ItemResource> bottom = requireCapability(
+            helper.getLevel().getCapability(Capabilities.Item.BLOCK, absolute, Direction.DOWN),
+            "bottom item handler"
+        );
+        helper.assertValueEqual(
+            insert(bottom, 0, ItemResource.of(Items.STRING), 1, true),
+            0,
+            "bottom pipe must reject insertion"
+        );
+        final ItemResource outputResource = bottom.getResource(0);
+        helper.assertTrue(outputResource.is(Items.WOOL.white()), "bottom pipe must expose finished output");
+        helper.assertValueEqual(
+            extract(bottom, 0, outputResource, 1, false),
+            1,
+            "bottom pipe must simulate finished output extraction"
+        );
         helper.assertTrue(machine.getItem(6).is(Items.WOOL.white()), "simulated extraction must preserve output");
-        final ItemStack output = bottom.extractItem(0, 1, false);
-        helper.assertTrue(output.is(Items.WOOL.white()), "bottom pipe must extract finished output");
+        helper.assertValueEqual(
+            extract(bottom, 0, outputResource, 1, true),
+            1,
+            "bottom pipe must extract finished output"
+        );
         helper.assertTrue(machine.getItem(6).isEmpty(), "real extraction must remove output");
         helper.succeed();
     }
 
     public static void fluidPipesConnectToLiquidMachines(final GameTestHelper helper) {
         final BlockPos relative = new BlockPos(1, 1, 1);
+        final BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, ModBlocks.ALL.get("kettle").get());
-        final MagicMachineBlockEntity machine = helper.getBlockEntity(relative, MagicMachineBlockEntity.class);
-        final IFluidHandler handler = machine.getCapability(ForgeCapabilities.FLUID_HANDLER, Direction.NORTH)
-            .orElseThrow(() -> new IllegalStateException("Missing fluid handler"));
-        final FluidStack water = new FluidStack(Fluids.WATER, 1_000);
+        final ResourceHandler<FluidResource> handler = requireCapability(
+            helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, absolute, Direction.NORTH),
+            "fluid handler"
+        );
+        final FluidResource water = FluidResource.of(Fluids.WATER);
         helper.assertValueEqual(
-            handler.fill(water, IFluidHandler.FluidAction.SIMULATE),
+            insert(handler, 0, water, 1_000, false),
             1_000,
             "fluid pipe simulation"
         );
-        helper.assertValueEqual(handler.getFluidInTank(0).getAmount(), 0, "simulation must preserve the tank");
+        helper.assertValueEqual(handler.getAmountAsInt(0), 0, "simulation must preserve the tank");
         helper.assertValueEqual(
-            handler.fill(water, IFluidHandler.FluidAction.EXECUTE),
+            insert(handler, 0, water, 1_000, true),
             1_000,
             "fluid pipe insertion"
         );
-        helper.assertValueEqual(handler.getFluidInTank(0).getAmount(), 1_000, "tank amount after insertion");
+        helper.assertValueEqual(handler.getAmountAsInt(0), 1_000, "tank amount after insertion");
         helper.assertValueEqual(
-            handler.drain(250, IFluidHandler.FluidAction.EXECUTE).getAmount(),
+            extract(handler, 0, water, 250, true),
             250,
             "fluid pipe extraction"
         );
-        helper.assertValueEqual(handler.getFluidInTank(0).getAmount(), 750, "tank amount after extraction");
+        helper.assertValueEqual(handler.getAmountAsInt(0), 750, "tank amount after extraction");
         helper.succeed();
+    }
+
+    private static LivingDamageEvent.Pre damageEvent(
+        final net.minecraft.world.entity.LivingEntity target,
+        final net.minecraft.world.damagesource.DamageSource source,
+        final float amount
+    ) {
+        return new LivingDamageEvent.Pre(target, new DamageContainer(source, amount));
+    }
+
+    private static <T extends net.neoforged.neoforge.transfer.resource.Resource> int insert(
+        final ResourceHandler<T> handler,
+        final int index,
+        final T resource,
+        final int amount,
+        final boolean commit
+    ) {
+        try (Transaction transaction = Transaction.openRoot()) {
+            final int inserted = handler.insert(index, resource, amount, transaction);
+            if (commit) {
+                transaction.commit();
+            }
+            return inserted;
+        }
+    }
+
+    private static <T extends net.neoforged.neoforge.transfer.resource.Resource> int extract(
+        final ResourceHandler<T> handler,
+        final int index,
+        final T resource,
+        final int amount,
+        final boolean commit
+    ) {
+        try (Transaction transaction = Transaction.openRoot()) {
+            final int extracted = handler.extract(index, resource, amount, transaction);
+            if (commit) {
+                transaction.commit();
+            }
+            return extracted;
+        }
+    }
+
+    private static <T> T requireCapability(final T capability, final String name) {
+        if (capability == null) {
+            throw new IllegalStateException("Missing " + name);
+        }
+        return capability;
     }
 
     private static int hornCount(final ServerPlayer player) {

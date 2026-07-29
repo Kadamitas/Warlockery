@@ -6,7 +6,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 public record FluidIngredient(String value, Identifier id, boolean tag) {
     public static Optional<FluidIngredient> parse(final String value) {
@@ -19,14 +20,19 @@ public record FluidIngredient(String value, Identifier id, boolean tag) {
     }
 
     public boolean matches(final FluidStack stack) {
-        if (stack.isEmpty()) {
-            return false;
-        }
+        return !stack.isEmpty() && matches(stack.getFluid());
+    }
+
+    public boolean matches(final FluidResource resource) {
+        return !resource.isEmpty() && matches(resource.getFluid());
+    }
+
+    private boolean matches(final Fluid candidate) {
         if (tag) {
-            return BuiltInRegistries.FLUID.wrapAsHolder(stack.getFluid()).is(TagKey.create(Registries.FLUID, id));
+            return BuiltInRegistries.FLUID.wrapAsHolder(candidate).is(TagKey.create(Registries.FLUID, id));
         }
         final Fluid fluid = BuiltInRegistries.FLUID.getValue(id);
-        return fluid != null && stack.getFluid() == fluid;
+        return fluid != null && candidate == fluid;
     }
 
     public boolean isResolvable() {

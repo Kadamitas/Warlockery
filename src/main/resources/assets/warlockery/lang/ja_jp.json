@@ -1039,7 +1039,7 @@
   "manual.warlockery.distilling.outputs": "出力表示には、ブロックされたスロットと欠落しているすべての入力が報告されます。",
   "manual.warlockery.distilling.automation": "サイドアイテムと流体機能により、互換性のあるパイプで機械を自動化できます。",
   "manual.warlockery.herbology.title": "Warlockery: 薬草学",
-  "manual.warlockery.herbology.crops": "魔法の作物は、Forge とバニラの作物、種子、花、繊維のタグを使用します。",
+  "manual.warlockery.herbology.crops": "魔法の作物は、作物、種、花、繊維の共通タグとバニラタグを使用します。",
   "manual.warlockery.herbology.mutations": "突然変異には、表示される近くの植物、触媒、世界条件が必要です。",
   "manual.warlockery.herbology.toad_mutation": "ヒキガエルの突然変異：スライムで満たされたクリッタースネアを2つ以上、対角線の4つのGrasspersに3つのMutandis Extremisと1つの充電された同調石を保持し、近くの猫またはオセロットを備えた水上のクモの巣にある小枝を使用します。満たされたスネアごとに 1 つのヒキガエルが形成されます。",
   "manual.warlockery.herbology.minedrake_mutation": "ドリームルートの突然変異：4つの成熟したマンドレイクを枢機卿の光線の上に配置し、水上のクモの巣の周りに2つのMutandis Extremis、集中された意志、および充電された同調石を保持する4つの対角線上のGrasspersを配置します。クリーパーと生きているマンドレイクを持ってきて、小枝を使って 4 つの作物すべてを変更します。",

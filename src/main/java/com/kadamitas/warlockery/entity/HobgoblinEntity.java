@@ -40,6 +40,9 @@ import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ContainerOrHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 public class HobgoblinEntity extends Villager implements ArcaneCreature {
     private final CreatureKind kind;
@@ -240,7 +243,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
                 blockPosition().offset(8, 3, 8)
             )
             .filter(position -> level.getBlockState(position).is(CreatureBehaviorTags.Blocks.HOBGOBLIN_DEPOSIT_CONTAINERS))
-            .filter(position -> HopperBlockEntity.getContainerAt(level, position) != null)
+            .filter(position -> !HopperBlockEntity.getContainerOrHandlerAt(level, position, null).isEmpty())
             .min(Comparator.comparingDouble(position -> distanceToSqr(Vec3.atCenterOf(position))));
         final Optional<ItemEntity> looseItem = level.getEntitiesOfClass(
                 ItemEntity.class,
@@ -272,8 +275,8 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
             getNavigation().moveTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0.9);
             return;
         }
-        final Container container = HopperBlockEntity.getContainerAt(level, position);
-        if (container == null) {
+        final ContainerOrHandler destination = HopperBlockEntity.getContainerOrHandlerAt(level, position, null);
+        if (destination.isEmpty()) {
             return;
         }
         IntStream.range(0, getInventory().getContainerSize())
@@ -281,14 +284,25 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
             .findFirst()
             .ifPresent(slot -> {
                 final ItemStack source = getInventory().getItem(slot);
-                final ItemStack remainder = HopperBlockEntity.addItem(
-                    getInventory(),
-                    container,
-                    source.copy(),
-                    null
-                );
+                final ItemStack remainder = depositInto(destination, source);
                 getInventory().setItem(slot, remainder);
             });
+    }
+
+    private ItemStack depositInto(final ContainerOrHandler destination, final ItemStack source) {
+        final Container container = destination.container();
+        if (container != null) {
+            return HopperBlockEntity.addItem(getInventory(), container, source.copy(), null);
+        }
+        final ItemStack remainder = source.copy();
+        final int inserted = ResourceHandlerUtil.insertStacking(
+            destination.itemHandler(),
+            ItemResource.of(source),
+            source.getCount(),
+            null
+        );
+        remainder.shrink(inserted);
+        return remainder;
     }
 
     private boolean isPatronBoss() {
