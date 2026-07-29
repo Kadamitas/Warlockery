@@ -2,7 +2,7 @@
 
 Warlockery is a standalone ritual magic mod by Kadamitas for Minecraft 26.2 and Forge 65.1.0.
 
-It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and sympathetic links, vampire and werewolf progression, magical creatures, biome-aware Ents, kobold village enclaves, silver hunting equipment, and Netherite-tier Koboldite gear. Rituals, machines, traps, and progression systems provide visible diagnostics when a requirement is missing.
+It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, kobold village enclaves, silver hunting equipment, and Netherite-tier Koboldite gear.
 
 ## Installation
 
@@ -10,8 +10,6 @@ It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls a
 2. Copy the Warlockery JAR into the instance or server `mods` folder.
 3. Install the same Warlockery version on the client and server.
 4. Start Minecraft and confirm that Warlockery appears in the Mods screen.
-
-Warlockery has no required content-mod dependency beyond Forge.
 
 ## Documentation
 
