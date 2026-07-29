@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:hex_log",
+    "warlockery:alder_log",
+    "warlockery:hawthorn_log",
+    "warlockery:rowan_log"
+  ]
+}

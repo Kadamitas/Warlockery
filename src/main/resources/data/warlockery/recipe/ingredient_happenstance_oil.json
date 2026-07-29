@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#warlockery:luck_essences",
+    "warlockery:ingredient_oil_of_vitriol",
+    "minecraft:honey_bottle",
+    "warlockery:ingredient_clay_jar"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_happenstance_oil"
+  }
+}

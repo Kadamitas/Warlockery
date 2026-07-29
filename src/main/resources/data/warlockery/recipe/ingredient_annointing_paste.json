@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AM",
+    "BS"
+  ],
+  "key": {
+    "A": "warlockery:seedsartichoke",
+    "M": "warlockery:seedsmandrake",
+    "B": "warlockery:seedsbelladonna",
+    "S": "warlockery:seedssnowbell"
+  },
+  "result": {
+    "id": "warlockery:ingredient_annointing_paste",
+    "count": 4
+  }
+}

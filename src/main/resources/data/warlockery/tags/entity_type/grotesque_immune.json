@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:ender_dragon",
+    "minecraft:wither",
+    "#warlockery:demons",
+    "#warlockery:spectral",
+    "#warlockery:vampires",
+    "#warlockery:werewolves"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#warlockery:torment_souls",
+    "warlockery:ingredient_infernal_blood",
+    "warlockery:demonheart"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_infernal_animus"
+  }
+}

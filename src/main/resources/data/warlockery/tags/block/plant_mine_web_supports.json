@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:base_stone_nether",
+    "#minecraft:base_stone_overworld",
+    "#minecraft:dirt",
+    "#minecraft:planks",
+    "#minecraft:sand",
+    "minecraft:gravel",
+    "minecraft:moss_block"
+  ]
+}

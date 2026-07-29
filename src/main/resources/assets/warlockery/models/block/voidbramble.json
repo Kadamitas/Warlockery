@@ -1,0 +1,6 @@
+{
+    "parent":  "minecraft:block/cube_all",
+    "textures":  {
+                     "all":  "warlockery:block/void_bramble"
+                 }
+}

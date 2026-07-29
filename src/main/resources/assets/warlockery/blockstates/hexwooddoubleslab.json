@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "warlockery:block/hexwooddoubleslab"
+    },
+    "type=double": {
+      "model": "warlockery:block/hexwooddoubleslab_double"
+    },
+    "type=top": {
+      "model": "warlockery:block/hexwooddoubleslab_top"
+    }
+  }
+}

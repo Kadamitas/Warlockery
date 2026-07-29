@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:ingredient_attuned_stone",
+    "warlockery:ingredient_attuned_stone_charged"
+  ]
+}

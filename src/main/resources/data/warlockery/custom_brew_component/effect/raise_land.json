@@ -1,0 +1,7 @@
+{
+  "ingredient": "warlockery:brew_raise_land",
+  "role": "effect",
+  "capacity_cost": 4,
+  "source_brew": "raise_land",
+  "inverse_brew": "erosion"
+}

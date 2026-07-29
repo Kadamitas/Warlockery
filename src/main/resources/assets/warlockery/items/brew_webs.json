@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_webs",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -2565928
+      }
+    ]
+  }
+}

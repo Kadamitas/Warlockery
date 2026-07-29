@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:fumefunnel",
+    "#warlockery:machine_upgrades/filtered_fume_funnels"
+  ]
+}

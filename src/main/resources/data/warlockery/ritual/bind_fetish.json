@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Binding: Fetish",
+  "description": "Empowers a scarecrow or ladder as a spectral fetish.",
+  "action": "bind_fetish",
+  "power": 2200,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyphinfernal": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:scarecrow",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_spectral_dust",
+        "count": 3,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "warlockery:scarecrow"
+}

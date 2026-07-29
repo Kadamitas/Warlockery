@@ -1,0 +1,11 @@
+{
+  "machine": "silvervat",
+  "inputs": [
+    { "ingredient": "#c:ingots/iron" },
+    { "ingredient": "warlockery:ingredient_oil_of_vitriol" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_silverdust", "count": 3 }
+  ],
+  "processing_time": 400
+}

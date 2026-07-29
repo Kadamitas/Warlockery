@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_animal_repulsion",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -8952235
+      }
+    ]
+  }
+}

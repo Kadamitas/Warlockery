@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NGN",
+    "GDG",
+    "NGN"
+  ],
+  "key": {
+    "N": "#c:nuggets/gold",
+    "G": "#c:ingots/gold",
+    "D": "#c:gems/diamond"
+  },
+  "result": {
+    "id": "warlockery:circletalisman"
+  }
+}

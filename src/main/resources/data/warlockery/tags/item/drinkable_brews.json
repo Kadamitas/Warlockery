@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:ingredient_brew_bats",
+    "warlockery:ingredient_brew_depths",
+    "warlockery:ingredient_brew_grave",
+    "warlockery:ingredient_brew_congealed_spirit",
+    "warlockery:ingredient_brew_love",
+    "warlockery:ingredient_brew_raising",
+    "warlockery:ingredient_brew_revealing",
+    "warlockery:ingredient_brew_soaring",
+    "warlockery:ingredient_brew_grotesque",
+    "warlockery:ingredient_brew_ice",
+    "warlockery:ingredient_brew_sleep",
+    "warlockery:ingredient_brew_infection",
+    "warlockery:ingredient_brew_wasting",
+    "warlockery:ingredient_brew_soul_anguish",
+    "warlockery:ingredient_brew_soul_fear",
+    "warlockery:ingredient_brew_soul_torment",
+    "warlockery:ingredient_brew_soul_hunger"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_fell_tree",
+  "role": "effect",
+  "capacity_cost": 1,
+  "source_brew": "fell_tree"
+}

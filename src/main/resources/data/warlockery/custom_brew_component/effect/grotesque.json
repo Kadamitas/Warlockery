@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_grotesque",
+  "role": "effect",
+  "capacity_cost": 3,
+  "source_brew": "grotesque"
+}

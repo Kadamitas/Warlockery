@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:silver_ore",
+    "warlockery:deepslate_silver_ore",
+    "warlockery:raw_silver_block",
+    "warlockery:silver_block",
+    "warlockery:delvealloy_ore",
+    "warlockery:deepslate_delvealloy_ore",
+    "warlockery:raw_delvealloy_block",
+    "warlockery:delvealloy_block",
+    "warlockery:cbuttonstone",
+    "warlockery:cstonepressureplate",
+    "warlockery:icedoor",
+    "warlockery:icepressureplate",
+    "warlockery:icefence",
+    "warlockery:icefencegate",
+    "warlockery:icestockade",
+    "warlockery:iceslab",
+    "warlockery:icedoubleslab",
+    "warlockery:icestairs"
+  ]
+}

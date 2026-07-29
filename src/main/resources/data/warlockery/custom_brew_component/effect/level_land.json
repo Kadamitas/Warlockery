@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_level_land",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "level_land"
+}

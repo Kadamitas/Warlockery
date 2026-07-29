@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "SMS",
+    " S "
+  ],
+  "key": {
+    "S": "#c:stones",
+    "M": "#warlockery:manual_reagents/biome_manuals"
+  },
+  "result": {
+    "id": "warlockery:bookbiomes2"
+  }
+}

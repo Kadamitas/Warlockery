@@ -1,0 +1,6 @@
+{
+    "model":  {
+                  "type":  "minecraft:model",
+                  "model":  "warlockery:item/ingredient_ghost_of_the_light"
+              }
+}

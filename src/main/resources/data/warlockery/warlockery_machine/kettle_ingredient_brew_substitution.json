@@ -1,0 +1,18 @@
+{
+  "machine": "kettle",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    { "ingredient": "#warlockery:brew_reagents/ender_dews", "count": 2 },
+    { "ingredient": "#warlockery:mutation/mutandis_extremis" },
+    { "ingredient": "#c:eggs" },
+    { "ingredient": "#warlockery:brew_reagents/magma_creams" },
+    { "ingredient": "#warlockery:brew_reagents/ent_twigs" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_brew_substitution", "count": 3 }
+  ],
+  "processing_time": 240
+}

@@ -1,0 +1,17 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "misc",
+    "pattern":  [
+                    "III",
+                    "IFI",
+                    "IBI"
+                ],
+    "key":  {
+                "I":  "#c:ingots/iron",
+                "F":  "#c:player_workstations/furnaces",
+                "B":  "#c:bars/iron"
+            },
+    "result":  {
+                   "id":  "warlockery:alchemical_oven"
+               }
+}

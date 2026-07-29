@@ -1,0 +1,36 @@
+{
+  "title": "Hex of Hell on Earth",
+  "description": "Opens a contained infernal breach that releases tagged demons through a ring of soul fire.",
+  "action": "hell_on_earth",
+  "power": 3600,
+  "radius": 9,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 260,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_necro_stone",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:rotten_flesh",
+        "count": 8,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "minecraft:overworld",
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "count": 12
+}

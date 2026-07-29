@@ -1,0 +1,15 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "misc",
+    "pattern":  [
+                    "I I",
+                    "I I",
+                    "III"
+                ],
+    "key":  {
+                "I":  "#c:ingots/iron"
+            },
+    "result":  {
+                   "id":  "warlockery:kettle"
+               }
+}

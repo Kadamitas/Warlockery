@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "ICI",
+    "GGG"
+  ],
+  "key": {
+    "G": "#c:glass_blocks/colorless",
+    "I": "#c:ingots/iron",
+    "C": "warlockery:ingredient_attuned_stone_charged"
+  },
+  "result": {
+    "id": "warlockery:ingredient_fume_filter"
+  }
+}

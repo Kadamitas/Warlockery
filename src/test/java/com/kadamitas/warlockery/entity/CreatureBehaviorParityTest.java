@@ -1,0 +1,191 @@
+package com.kadamitas.warlockery.entity;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
+import com.kadamitas.warlockery.entity.CreatureBehaviorProfile.Feature;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DynamicContainer;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+
+final class CreatureBehaviorParityTest {
+    private static final Path DATA = Path.of("src", "main", "resources", "data", "warlockery");
+    private static final Path LANGUAGE = Path.of(
+        "src", "main", "resources", "assets", "warlockery", "lang", "en_us.json"
+    );
+    private static final UUID PLAYER = UUID.fromString("f219c6f9-2434-4bf1-a1cc-96b6e39552cd");
+    private static final UUID OTHER = UUID.fromString("86cb633e-2a18-49e8-a2df-44355864c449");
+    private static final List<MobCase> CASES = List.of(
+        mob("baba_yaga", CreatureKind.HEDGE_CRONE, Feature.POTION_VOLLEY),
+        mob("banshee", CreatureKind.BANSHEE, Feature.DUST_EMPOWERMENT),
+        mob("binky", CreatureKind.PALE_STEED, Feature.RIDEABLE_BOND),
+        mob("coven_witch", CreatureKind.CIRCLE_MAGE, Feature.COVEN_RECRUITMENT),
+        mob("death", CreatureKind.DEATH, Feature.DEATH_DISGUISE),
+        mob("demon", CreatureKind.DEMON, Feature.INFERNAL_BARTER),
+        mob("ent", CreatureKind.ENT, Feature.PROXIMITY_AGGRESSION),
+        mob("familiar", CreatureKind.CAT, Feature.FAMILIAR_BOND),
+        mob("flame_imp", CreatureKind.IMP, Feature.FIRE_MELEE),
+        mob("flying_monkey", CreatureKind.STORM_SIMIAN, Feature.WAYSTONE_TRAVEL),
+        mob("gulg", CreatureKind.FORGEWARDEN, Feature.FORGE_AURA),
+        mob("hobgoblin", CreatureKind.HOBGOBLIN, Feature.ORE_MINING),
+        mob("horned_huntsman", CreatureKind.THORNED_PURSUER, Feature.WOLF_SUMMONING),
+        mob("lilith", CreatureKind.CRIMSON_MATRIARCH, Feature.VAMPIRE_INITIATION),
+        mob("lord_of_torment", CreatureKind.ABYSSAL_REGENT, Feature.TORMENT_BANISHMENT),
+        mob("lost_soul", CreatureKind.LOST_SOUL, Feature.SPIRIT_BINDING),
+        mob("mandrake", CreatureKind.MANDRAKE, Feature.SCREECH),
+        mob("minedrake", CreatureKind.DREAMROOT, Feature.ROOTED_DRAIN),
+        mob("mog", CreatureKind.STONEBROKER, Feature.PATRON_OFFERING),
+        mob("nightmare", CreatureKind.NIGHTMARE, Feature.RIDEABLE_BOND),
+        mob("owl", CreatureKind.OWL, Feature.BROOM_AURA),
+        mob("parasytic_louse", CreatureKind.LOUSE, Feature.EFFECT_REDIRECTION),
+        mob("poltergeist", CreatureKind.POLTERGEIST, Feature.TELEKINESIS),
+        mob("shade_of_leonard", CreatureKind.EMBERHORN_ARCHFIEND, Feature.CAULDRON_AURA),
+        mob("spectral_familiar", CreatureKind.FAMILIAR, Feature.ORE_GUIDANCE),
+        mob("spectre", CreatureKind.SPECTRE, Feature.FEAR_AURA),
+        mob("spirit", CreatureKind.SPIRIT, Feature.SPIRIT_BINDING),
+        mob("toad", CreatureKind.TOAD, Feature.AMPHIBIOUS_AURA),
+        mob("treefyd", CreatureKind.BRAMBLE_COLOSSUS, Feature.HEART_EMPOWERMENT),
+        mob("vampire", CreatureKind.VAMPIRE, Feature.BLOOD_DRAIN),
+        mob("witch_hunter", CreatureKind.WEREWOLF_HUNTER, Feature.SILVER_HUNTING),
+        mob("wolfman", CreatureKind.WEREWOLF, Feature.WEREWOLF_INTEGRATION)
+    );
+
+    @Test
+    void allThirtyTwoMobRowsHaveProfiles() {
+        assertEquals(32, CASES.size());
+        assertEquals(32, CreatureBehaviorProfile.audited().size());
+        assertEquals(
+            CASES.stream().map(MobCase::kind).collect(java.util.stream.Collectors.toUnmodifiableSet()),
+            CreatureBehaviorProfile.audited().stream()
+                .map(CreatureBehaviorProfile::kind)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet())
+        );
+    }
+
+    @TestFactory
+    Stream<DynamicContainer> oneFailureStateAndSuccessContainerPerMob() {
+        return CASES.stream().map(testCase -> DynamicContainer.dynamicContainer(testCase.auditId(), List.of(
+            DynamicTest.dynamicTest("failure is bounded", () -> failure(testCase)),
+            DynamicTest.dynamicTest("diagnostic or state is exposed", () -> state(testCase)),
+            DynamicTest.dynamicTest("success restores a distinctive behavior", () -> success(testCase))
+        )));
+    }
+
+    private static void failure(final MobCase testCase) {
+        final CreatureBehaviorProfile profile = profile(testCase);
+        assertFalse(CreatureBehaviorRules.shouldPulse(profile.pulseIntervalTicks() - 1, 0, profile.pulseIntervalTicks()));
+        profile.offering().ifPresent(_ -> assertFalse(CreatureBehaviorRules.canBind(
+            Optional.empty(),
+            PLAYER,
+            false
+        )));
+        switch (testCase.requiredFeature()) {
+            case RIDEABLE_BOND -> assertFalse(CreatureBehaviorRules.canMount(Optional.of(OTHER), PLAYER));
+            case COVEN_RECRUITMENT -> assertFalse(CreatureBehaviorRules.canRecruit(
+                Optional.empty(), PLAYER, true, false
+            ));
+            case WOLF_SUMMONING -> assertFalse(CreatureBehaviorRules.shouldSummonWolves(20.0F, 20.0F, 0, 400));
+            case EFFECT_REDIRECTION -> assertFalse(CreatureBehaviorRules.canRedirectEffect(true, false, true, true));
+            case CAULDRON_AURA -> assertEquals(0, CreatureBehaviorRules.cauldronRangeBonus(0));
+            case BLOOD_DRAIN -> assertFalse(CreatureBehaviorRules.shouldBurnInSun(false, true, false));
+            default -> assertFalse(profile.features().isEmpty());
+        }
+    }
+
+    private static void state(final MobCase testCase) {
+        final CreatureBehaviorProfile profile = profile(testCase);
+        assertEquals(testCase.auditId(), profile.auditId());
+        assertNotNull(profile.auditStatus());
+        assertEquals(profile, CreatureBehaviorFactory.create(testCase.kind()).profile());
+        profile.offering().ifPresent(tag -> {
+            final Path resource = DATA.resolve("tags").resolve("item")
+                .resolve(tag.location().getPath() + ".json");
+            final JsonObject json = json(resource);
+            assertFalse(json.getAsJsonArray("values").isEmpty(), resource.toString());
+        });
+        final JsonObject language = json(LANGUAGE);
+        Set.of(
+            "message.warlockery.creature.bound",
+            "message.warlockery.creature.empowered",
+            "message.warlockery.creature.owner_required"
+        ).forEach(key -> assertTrue(language.has(key), key));
+    }
+
+    private static void success(final MobCase testCase) {
+        final CreatureBehaviorProfile profile = profile(testCase);
+        assertTrue(profile.has(testCase.requiredFeature()), testCase.requiredFeature().name());
+        assertTrue(profile.features().size() >= 2);
+        switch (testCase.requiredFeature()) {
+            case DUST_EMPOWERMENT, HEART_EMPOWERMENT ->
+                assertEquals(1, CreatureBehaviorRules.empoweredLevel(0, 1));
+            case RIDEABLE_BOND -> assertTrue(CreatureBehaviorRules.canMount(Optional.of(PLAYER), PLAYER));
+            case COVEN_RECRUITMENT -> assertTrue(CreatureBehaviorRules.canRecruit(
+                Optional.empty(), PLAYER, true, true
+            ));
+            case WOLF_SUMMONING -> assertTrue(CreatureBehaviorRules.shouldSummonWolves(10.0F, 20.0F, 0, 400));
+            case EFFECT_REDIRECTION -> assertTrue(CreatureBehaviorRules.canRedirectEffect(true, true, true, true));
+            case CAULDRON_AURA -> assertEquals(16, CreatureBehaviorRules.cauldronRangeBonus(4));
+            case BLOOD_DRAIN -> assertTrue(CreatureBehaviorRules.shouldBurnInSun(true, true, false));
+            default -> assertTrue(CreatureBehaviorRules.shouldPulse(0, 0, profile.pulseIntervalTicks()));
+        }
+        assertSupportingTags(profile);
+    }
+
+    private static void assertSupportingTags(final CreatureBehaviorProfile profile) {
+        if (profile.has(Feature.CAULDRON_AURA)) {
+            assertTag("block", "creature_habitats/magical_cauldrons");
+        }
+        if (profile.has(Feature.ORE_GUIDANCE)) {
+            assertTag("block", "creature_habitats/spectral_ores");
+            assertTag("item", "creature_interactions/spectral_ore_samples");
+        }
+        if (profile.has(Feature.FAMILIAR_BOND) || profile.has(Feature.COVEN_RECRUITMENT)) {
+            assertTag("entity_type", "creature_families/familiars");
+        }
+        if (profile.has(Feature.KOBOLD_AURA) || profile.has(Feature.FORGE_AURA)) {
+            assertTag("entity_type", "creature_families/kobolds");
+        }
+        if (profile.has(Feature.ROOTED_DRAIN)) {
+            assertTag("block", "creature_habitats/living_ground");
+        }
+    }
+
+    private static void assertTag(final String registry, final String path) {
+        final JsonObject json = json(DATA.resolve("tags").resolve(registry).resolve(path + ".json"));
+        assertFalse(json.getAsJsonArray("values").isEmpty(), registry + "/" + path);
+    }
+
+    private static CreatureBehaviorProfile profile(final MobCase testCase) {
+        return CreatureBehaviorProfile.find(testCase.kind()).orElseThrow();
+    }
+
+    private static JsonObject json(final Path path) {
+        try {
+            return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
+        } catch (IOException exception) {
+            throw new UncheckedIOException(path.toString(), exception);
+        }
+    }
+
+    private static MobCase mob(final String auditId, final CreatureKind kind, final Feature feature) {
+        return new MobCase(auditId, kind, feature);
+    }
+
+    private record MobCase(String auditId, CreatureKind kind, Feature requiredFeature) {
+    }
+}

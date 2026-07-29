@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "enabled=false":  {
+                              "model":  "warlockery:block/occluded_summons_statue"
+                          },
+                     "enabled=true":  {
+                              "model":  "warlockery:block/occluded_summons_statue"
+                          }
+                 }
+}

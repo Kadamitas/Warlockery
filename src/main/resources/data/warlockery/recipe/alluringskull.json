@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " B ",
+    "GSG",
+    " N "
+  ],
+  "key": {
+    "B": "#c:bones",
+    "G": "warlockery:ingredient_graveyard_dust",
+    "S": "minecraft:skeleton_skull",
+    "N": "warlockery:ingredient_necro_stone"
+  },
+  "result": {
+    "id": "warlockery:alluringskull"
+  }
+}

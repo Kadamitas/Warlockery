@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_reincarnate",
+  "role": "effect",
+  "capacity_cost": 6,
+  "source_brew": "reincarnate"
+}

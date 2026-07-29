@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC",
+    " G ",
+    "GGG"
+  ],
+  "key": {
+    "C": "#minecraft:candles",
+    "G": "#c:ingots/gold"
+  },
+  "result": {
+    "id": "warlockery:candelabra"
+  }
+}

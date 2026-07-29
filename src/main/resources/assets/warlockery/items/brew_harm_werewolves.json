@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_harm_werewolves",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -3748138
+      }
+    ]
+  }
+}

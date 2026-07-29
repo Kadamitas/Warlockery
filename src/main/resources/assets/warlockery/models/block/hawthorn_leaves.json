@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/leaves",
+  "textures": {
+    "all": "warlockery:block/hawthorn_leaves"
+  }
+}

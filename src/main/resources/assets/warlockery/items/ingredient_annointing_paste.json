@@ -1,0 +1,6 @@
+{
+    "model":  {
+                  "type":  "minecraft:model",
+                  "model":  "warlockery:item/ingredient_annointing_paste"
+              }
+}

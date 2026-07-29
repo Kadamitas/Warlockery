@@ -1,0 +1,18 @@
+{
+  "machine": "cauldron",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 1000
+  },
+  "altar_power": 1200,
+  "inputs": [
+    { "ingredient": "#c:buckets/empty" },
+    { "ingredient": "#warlockery:congealed_spirits" },
+    { "ingredient": "warlockery:ingredient_subdued_spirit" },
+    { "ingredient": "warlockery:ingredient_whiff_of_magic" }
+  ],
+  "outputs": [
+    { "item": "warlockery:bucketspirit" }
+  ],
+  "processing_time": 360
+}

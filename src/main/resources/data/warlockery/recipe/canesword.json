@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " DC",
+    "DSD",
+    "DD "
+  ],
+  "key": {
+    "D": "#warlockery:utility_reagents/dark_cloths",
+    "C": "#c:ingots/gold",
+    "S": "#warlockery:utility_reagents/diamond_swords"
+  },
+  "result": {
+    "id": "warlockery:canesword"
+  }
+}

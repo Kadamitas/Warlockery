@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["SGS", "GGG"],
+  "key": {"S": "#c:strings", "G": "warlockery:garlic"},
+  "result": {"id": "warlockery:garlicgarland"}
+}

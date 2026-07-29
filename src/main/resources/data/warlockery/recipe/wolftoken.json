@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " W ",
+    "SAS",
+    " H "
+  ],
+  "key": {
+    "W": "#warlockery:wolfsbane_reagents",
+    "S": "#c:ingots/silver",
+    "A": "#warlockery:wolf_token_attunements",
+    "H": "#warlockery:wolf_altar_heads"
+  },
+  "result": {
+    "id": "warlockery:wolftoken"
+  }
+}

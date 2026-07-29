@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:alderwooddoor",
+    "warlockery:rowanwooddoor",
+    "warlockery:cwoodendoor",
+    "warlockery:cbuttonwood",
+    "warlockery:cwoodpressureplate",
+    "warlockery:stockade",
+    "warlockery:hexwoodslab",
+    "warlockery:hexwooddoubleslab",
+    "warlockery:stairswoodalder",
+    "warlockery:stairswoodhawthorn",
+    "warlockery:stairswoodrowan",
+    "warlockery:hex_ladder"
+  ]
+}

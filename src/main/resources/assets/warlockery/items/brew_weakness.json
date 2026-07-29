@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_weakness",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -12038840
+      }
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "title": "Hex of Misfortune",
+  "description": "Hexes the imprint-bound being with persistent bad luck.",
+  "action": "hex",
+  "power": 1600,
+  "radius": 6,
+  "duration": 12000,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyphinfernal": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:sympathetic_vial",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_reek_of_misfortune",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": true,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "misfortune"
+}

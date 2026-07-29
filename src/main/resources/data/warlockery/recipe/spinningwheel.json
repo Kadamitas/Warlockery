@@ -1,0 +1,16 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "misc",
+    "pattern":  [
+                    "PPP",
+                    "S S",
+                    "PPP"
+                ],
+    "key":  {
+                "P":  "#minecraft:planks",
+                "S":  "#c:rods/wooden"
+            },
+    "result":  {
+                   "id":  "warlockery:spinningwheel"
+               }
+}

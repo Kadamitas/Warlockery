@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_ice_world",
+  "role": "effect",
+  "capacity_cost": 5,
+  "source_brew": "ice_world"
+}

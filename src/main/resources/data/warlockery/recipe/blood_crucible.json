@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["I I", "GCG", "III"],
+  "key": {
+    "I": "#c:ingots/iron",
+    "G": "#c:glass_blocks/colorless",
+    "C": "minecraft:cauldron"
+  },
+  "result": {"id": "warlockery:bloodcrucible"}
+}

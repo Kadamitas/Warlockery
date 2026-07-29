@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Hexbreaking: Insanity",
+  "description": "Cleanses insanity from the imprint-bound being.",
+  "action": "cleanse",
+  "power": 2100,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:sympathetic_vial",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_odour_of_purity",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "insanity"
+}

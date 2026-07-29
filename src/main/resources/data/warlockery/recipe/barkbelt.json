@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "SES",
+    "TBT",
+    "SCS"
+  ],
+  "key": {
+    "S": "#warlockery:distillery/spirit_fluid_containers",
+    "E": "#c:gems/emerald",
+    "T": "#warlockery:brew_reagents/ent_twigs",
+    "B": "#warlockery:utility_reagents/biting_belts",
+    "C": "#warlockery:utility_reagents/creeper_hearts"
+  },
+  "result": {
+    "id": "warlockery:barkbelt"
+  }
+}

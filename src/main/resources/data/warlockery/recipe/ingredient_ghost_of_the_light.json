@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_tear_of_the_goddess",
+    "#c:dusts/glowstone",
+    "#c:gems/amethyst",
+    "warlockery:ingredient_clay_jar"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_ghost_of_the_light"
+  }
+}

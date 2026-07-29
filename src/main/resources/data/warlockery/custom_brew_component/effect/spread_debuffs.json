@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_spread_debuffs",
+  "role": "effect",
+  "capacity_cost": 8,
+  "source_brew": "spread_debuffs"
+}

@@ -1,0 +1,7 @@
+{
+  "ingredient": "warlockery:brew_fire_resistance",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "fire_resistance",
+  "inverse_brew": "overheating"
+}

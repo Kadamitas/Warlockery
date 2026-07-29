@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "lit=false":  {
+                                       "model":  "warlockery:block/alchemical_oven_lit"
+                                   },
+                     "lit=true":  {
+                                      "model":  "warlockery:block/alchemical_oven_lit"
+                                  }
+                 }
+}

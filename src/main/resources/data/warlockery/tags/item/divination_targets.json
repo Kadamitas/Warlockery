@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:ingredient_waystone_bound",
+    "warlockery:ingredient_waystone_creature_bound",
+    "warlockery:sympathetic_vial"
+  ]
+}

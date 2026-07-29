@@ -1,0 +1,41 @@
+{
+  "title": "Rite of Necromancy: Necromantic Stone",
+  "description": "Creates a Necromantic Stone under the night sky.",
+  "action": "summon_item",
+  "power": 1900,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyphinfernal": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_spectral_dust",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:bones",
+        "count": 4,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:gems/diamond",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "target": "warlockery:ingredient_necro_stone"
+}

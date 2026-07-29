@@ -1,0 +1,7 @@
+{
+  "ingredient": "warlockery:brew_pull",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "pull",
+  "inverse_brew": "push"
+}

@@ -1,0 +1,19 @@
+{
+  "machine": "kettle",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    { "ingredient": "#c:dusts/redstone" },
+    { "ingredient": "#warlockery:luck_essences" },
+    { "ingredient": "warlockery:ingredient_bat_wool" },
+    { "ingredient": "warlockery:ingredient_dog_tongue" },
+    { "ingredient": "warlockery:ingredient_belladonna" },
+    { "ingredient": "warlockery:ingredient_mandrake_root" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_redstone_soup" }
+  ],
+  "processing_time": 400
+}

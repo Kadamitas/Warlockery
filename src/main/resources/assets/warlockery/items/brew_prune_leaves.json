@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_prune_leaves",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -12615880
+      }
+    ]
+  }
+}

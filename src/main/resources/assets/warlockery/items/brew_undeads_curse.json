@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_undeads_curse",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -1
+      }
+    ]
+  }
+}

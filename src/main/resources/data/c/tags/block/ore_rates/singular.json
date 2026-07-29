@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:silver_ore",
+    "warlockery:deepslate_silver_ore",
+    "warlockery:delvealloy_ore",
+    "warlockery:deepslate_delvealloy_ore"
+  ]
+}

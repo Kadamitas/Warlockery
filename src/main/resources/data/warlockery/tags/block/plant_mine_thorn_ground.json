@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:dirt",
+    "minecraft:farmland",
+    "minecraft:moss_block",
+    "minecraft:mud"
+  ]
+}

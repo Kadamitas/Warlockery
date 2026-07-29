@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "ITI",
+    "INI",
+    "III"
+  ],
+  "key": {
+    "I": "#warlockery:utility_reagents/impregnated_leathers",
+    "T": "#warlockery:utility_reagents/golden_threads",
+    "N": "#warlockery:necromantic_foci"
+  },
+  "result": {
+    "id": "warlockery:necromancerrobe"
+  }
+}

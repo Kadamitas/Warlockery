@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#c:stones",
+    "#c:cobblestones",
+    "minecraft:sandstone",
+    "minecraft:red_sandstone"
+  ]
+}

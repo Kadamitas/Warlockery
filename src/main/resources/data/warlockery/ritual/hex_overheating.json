@@ -1,0 +1,40 @@
+{
+  "title": "Hex of Overheating",
+  "description": "Causes the imprint-bound being to burn with infernal fever.",
+  "action": "hex",
+  "power": 2200,
+  "radius": 6,
+  "duration": 12000,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:sympathetic_vial",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_foul_fume",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:blaze_powder",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "overheating"
+}

@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:corpse",
+    "warlockery:banshee",
+    "warlockery:lost_soul",
+    "warlockery:poltergeist",
+    "warlockery:echo_shade",
+    "warlockery:spectre",
+    "warlockery:spirit",
+    "warlockery:vampire",
+    "warlockery:blood_thrall"
+  ]
+}

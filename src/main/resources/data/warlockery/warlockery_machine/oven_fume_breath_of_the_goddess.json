@@ -1,0 +1,21 @@
+{
+  "machine": "alchemical_oven",
+  "inputs": [
+    {
+      "ingredient": "minecraft:birch_sapling"
+    },
+    {
+      "ingredient": "warlockery:ingredient_clay_jar"
+    }
+  ],
+  "outputs": [
+    {
+      "item": "warlockery:ingredient_ash_wood"
+    },
+    {
+      "item": "warlockery:ingredient_breath_of_the_goddess"
+    }
+  ],
+  "processing_time": 180,
+  "requires_fuel": true
+}

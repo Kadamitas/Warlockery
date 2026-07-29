@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "ITI",
+    "DRD",
+    "MMM"
+  ],
+  "key": {
+    "I": "#warlockery:utility_reagents/impregnated_leathers",
+    "T": "#warlockery:utility_reagents/golden_threads",
+    "D": "#warlockery:death_weapons",
+    "R": "#warlockery:utility_reagents/redstone_soups",
+    "M": "#c:buckets/milk"
+  },
+  "result": {
+    "id": "warlockery:seepingshoes"
+  }
+}

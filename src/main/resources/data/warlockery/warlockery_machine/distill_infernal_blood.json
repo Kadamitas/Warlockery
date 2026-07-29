@@ -1,0 +1,26 @@
+{
+  "machine": "distillery",
+  "inputs": [
+    {
+      "ingredient": "warlockery:demonheart"
+    },
+    {
+      "ingredient": "warlockery:ingredient_diamond_vapour"
+    },
+    {
+      "ingredient": "warlockery:ingredient_clay_jar",
+      "count": 4
+    }
+  ],
+  "outputs": [
+    {
+      "item": "warlockery:ingredient_infernal_blood",
+      "count": 4
+    },
+    {
+      "item": "warlockery:ingredient_refined_evil"
+    }
+  ],
+  "processing_time": 500,
+  "requires_fuel": true
+}

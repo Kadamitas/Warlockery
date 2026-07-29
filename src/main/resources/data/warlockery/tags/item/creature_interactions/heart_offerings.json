@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:demonheart",
+    "warlockery:ingredient_creeper_heart",
+    "warlockery:ingredient_frozen_heart",
+    "warlockery:ingredient_heartofgold"
+  ]
+}

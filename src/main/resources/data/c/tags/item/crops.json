@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:ingredient_artichoke",
+    "warlockery:ingredient_belladonna",
+    "warlockery:garlic",
+    "warlockery:ingredient_mandrake_root",
+    "warlockery:ingredient_icy_needle",
+    "warlockery:ingredient_wolfsbane",
+    "warlockery:ingredient_wormwood"
+  ]
+}

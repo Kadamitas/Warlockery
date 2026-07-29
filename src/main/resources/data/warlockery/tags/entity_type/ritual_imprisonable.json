@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:ravager",
+    "minecraft:warden",
+    "minecraft:witch",
+    "#warlockery:demons",
+    "#warlockery:nightmares",
+    "#warlockery:werewolves"
+  ]
+}

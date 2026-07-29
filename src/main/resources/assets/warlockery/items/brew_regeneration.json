@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_regeneration",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -3318613
+      }
+    ]
+  }
+}

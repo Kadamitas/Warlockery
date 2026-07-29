@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_transpose_ore",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -1
+      }
+    ]
+  }
+}

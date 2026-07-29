@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_door_key",
+    "#c:nuggets/iron"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_door_keyring"
+  }
+}

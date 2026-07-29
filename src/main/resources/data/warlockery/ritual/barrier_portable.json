@@ -1,0 +1,35 @@
+{
+  "title": "Portable Rite of Protection",
+  "description": "Provides one minute of powerful warding.",
+  "action": "effect",
+  "power": 1700,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 4,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 8,
+    "circleglyph_veil": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:circletalisman",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_focused_will",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "effect": "minecraft:resistance"
+}

@@ -1,0 +1,17 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "building",
+    "pattern":  [
+                    "SSS",
+                    "SCS",
+                    "SSS"
+                ],
+    "key":  {
+                "S":  "#c:stones",
+                "C":  "warlockery:ingredient_breath_of_the_goddess"
+            },
+    "result":  {
+                   "id":  "warlockery:altar",
+                   "count":  3
+               }
+}

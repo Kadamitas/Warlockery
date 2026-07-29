@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:glassgoblet",
+    "warlockery:ingredient_warm_blood",
+    "#c:foods/raw_meat"
+  ]
+}

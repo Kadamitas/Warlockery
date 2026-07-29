@@ -1,0 +1,7 @@
+{
+  "ingredient": "warlockery:brew_heal",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "heal",
+  "inverse_brew": "harm"
+}

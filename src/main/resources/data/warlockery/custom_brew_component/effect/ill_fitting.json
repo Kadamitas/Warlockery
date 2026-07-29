@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_ill_fitting",
+  "role": "effect",
+  "capacity_cost": 6,
+  "source_brew": "ill_fitting"
+}

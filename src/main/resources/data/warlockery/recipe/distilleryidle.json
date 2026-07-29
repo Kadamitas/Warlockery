@@ -1,0 +1,16 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "misc",
+    "pattern":  [
+                    " G ",
+                    "GIG",
+                    " G "
+                ],
+    "key":  {
+                "G":  "minecraft:glass_bottle",
+                "I":  "#c:ingots/iron"
+            },
+    "result":  {
+                   "id":  "warlockery:distilleryidle"
+               }
+}

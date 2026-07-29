@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "I",
+    "C",
+    "G"
+  ],
+  "key": {
+    "I": "warlockery:ingredient_icy_needle",
+    "C": "warlockery:ingredient_creeper_heart",
+    "G": "minecraft:ghast_tear"
+  },
+  "result": {
+    "id": "warlockery:ingredient_frozen_heart"
+  }
+}

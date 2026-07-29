@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " T ",
+    "IBQ"
+  ],
+  "key": {
+    "T": "#warlockery:brew_reagents/ent_twigs",
+    "I": "#c:dyes/black",
+    "B": "#warlockery:manual_reagents/books",
+    "Q": "#c:feathers"
+  },
+  "result": {
+    "id": "warlockery:ingredient_book_wands"
+  }
+}

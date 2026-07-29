@@ -1,0 +1,16 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "misc",
+    "pattern":  [
+                    " W ",
+                    "WSW",
+                    " W "
+                ],
+    "key":  {
+                "W":  "#minecraft:wool",
+                "S":  "#c:strings"
+            },
+    "result":  {
+                   "id":  "warlockery:doll"
+               }
+}

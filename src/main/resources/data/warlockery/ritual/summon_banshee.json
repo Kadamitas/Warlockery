@@ -1,0 +1,29 @@
+{
+  "title": "Rite of Summoning: Banshee",
+  "description": "Calls a banshee from beyond the veil.",
+  "action": "summon_entity",
+  "power": 2200,
+  "radius": 6,
+  "casting_time": 120,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_subdued_spirit",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:disturbed_fibers",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "target": "warlockery:banshee"
+}

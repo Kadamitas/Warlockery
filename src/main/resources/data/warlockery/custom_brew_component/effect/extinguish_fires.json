@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_extinguish_fires",
+  "role": "effect",
+  "capacity_cost": 1,
+  "source_brew": "extinguish_fires"
+}

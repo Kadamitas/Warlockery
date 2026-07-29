@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_grow_lily",
+  "role": "effect",
+  "capacity_cost": 1,
+  "source_brew": "grow_lily"
+}

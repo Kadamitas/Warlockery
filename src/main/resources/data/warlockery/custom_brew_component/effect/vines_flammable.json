@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_vines_flammable",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "vines_flammable"
+}

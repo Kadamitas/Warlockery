@@ -1,0 +1,19 @@
+{
+  "machine": "kettle",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    { "ingredient": "#c:mushrooms" },
+    { "ingredient": "#c:seeds" },
+    { "ingredient": "#warlockery:bodega_thorn_brews" },
+    { "ingredient": "#warlockery:bat_binding_fibers" },
+    { "ingredient": "#c:feathers" },
+    { "ingredient": "#warlockery:bodega_owl_wings" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_brew_hitchcock", "count": 3 }
+  ],
+  "processing_time": 240
+}

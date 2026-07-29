@@ -1,0 +1,36 @@
+{
+  "title": "Rite of Summoning: Echo Shade",
+  "description": "Releases the hostile echo_shade held within an infused mirror.",
+  "action": "summon_entity",
+  "power": 3000,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 220,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:mirror",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_refined_evil",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "target": "warlockery:echo_shade"
+}

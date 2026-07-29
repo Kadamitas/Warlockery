@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:brew_fertilize",
+    "warlockery:brew_grow_flowers",
+    "warlockery:brew_grow_sapling",
+    "warlockery:ingredient_brew_sprouting"
+  ]
+}

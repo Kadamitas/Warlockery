@@ -1,0 +1,33 @@
+{
+  "title": "Portable Rite of Sky's Wrath",
+  "description": "Calls a focused thunderstorm from a circle talisman.",
+  "action": "storm",
+  "power": 1800,
+  "radius": 6,
+  "duration": 6000,
+  "amplifier": 0,
+  "casting_time": 160,
+  "glyphs": {
+    "circleglyphritual": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:circletalisman",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_breath_of_the_goddess",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

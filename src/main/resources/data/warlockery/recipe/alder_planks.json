@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "#warlockery:alder_logs"
+  ],
+  "result": {
+    "id": "warlockery:alder_planks",
+    "count": 4
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:cstonepressureplate",
+    "warlockery:icepressureplate",
+    "warlockery:snowpressureplate"
+  ]
+}

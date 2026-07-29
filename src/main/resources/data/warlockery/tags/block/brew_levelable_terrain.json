@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:dirt",
+    "#c:stones",
+    "#c:cobblestones",
+    "minecraft:sand",
+    "minecraft:red_sand",
+    "minecraft:gravel",
+    "minecraft:clay",
+    "minecraft:grass_block"
+  ]
+}

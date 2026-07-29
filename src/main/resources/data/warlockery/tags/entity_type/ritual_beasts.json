@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:followable_friendly_mobs",
+    "warlockery:familiar_cat",
+    "warlockery:owl",
+    "warlockery:toad"
+  ]
+}

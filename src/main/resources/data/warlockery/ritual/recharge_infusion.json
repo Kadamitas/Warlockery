@@ -1,0 +1,29 @@
+{
+  "title": "Rite of Infusion Recharge",
+  "description": "Restores magical reserve to witches standing in the circle.",
+  "action": "recharge_path",
+  "power": 4000,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 1,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#c:potions/bottle",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "all"
+}

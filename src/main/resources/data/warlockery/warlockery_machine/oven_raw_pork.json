@@ -1,0 +1,11 @@
+{
+  "machine": "alchemical_oven",
+  "inputs": [
+    { "ingredient": "warlockery:ingredient_odd_porkchop_raw" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_odd_porkchop_cooked" }
+  ],
+  "processing_time": 200,
+  "requires_fuel": true
+}

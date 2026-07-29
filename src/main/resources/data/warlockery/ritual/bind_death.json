@@ -1,0 +1,49 @@
+{
+  "title": "Rite of Binding: Death",
+  "description": "Consumes five bound beings from each spectral host to call Death through the veil.",
+  "action": "summon_entity",
+  "target": "warlockery:death",
+  "count": 1,
+  "power": 6000,
+  "radius": 6,
+  "casting_time": 300,
+  "night_only": true,
+  "glyphs": {
+    "circleglyphritual": 20,
+    "circleglyph_veil": 20,
+    "circleglyphinfernal": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_bone_needle",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_focused_will",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "entities": [
+      {
+        "entity": "#warlockery:death_binding/banshees",
+        "count": 5,
+        "consume": true
+      },
+      {
+        "entity": "#warlockery:death_binding/poltergeists",
+        "count": 5,
+        "consume": true
+      },
+      {
+        "entity": "#warlockery:death_binding/spectres",
+        "count": 5,
+        "consume": true
+      }
+    ],
+    "full_moon": true,
+    "minimum_players": 1
+  }
+}

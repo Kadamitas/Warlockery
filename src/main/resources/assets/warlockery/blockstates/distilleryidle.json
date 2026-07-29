@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "lit=false":  {
+                                       "model":  "warlockery:block/distilleryidle"
+                                   },
+                     "lit=true":  {
+                                      "model":  "warlockery:block/distilleryburning"
+                                  }
+                 }
+}

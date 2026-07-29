@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#warlockery:spectral",
+    "minecraft:enderman",
+    "minecraft:endermite",
+    "minecraft:shulker"
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "ingredient": "#warlockery:custom_brew/modifier/color",
+  "role": "modifier",
+  "modifier": "color_from_ingredient"
+}

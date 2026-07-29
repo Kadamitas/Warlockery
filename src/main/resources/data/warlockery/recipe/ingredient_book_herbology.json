@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " F ",
+    "IBQ",
+    " G "
+  ],
+  "key": {
+    "F": "#minecraft:small_flowers",
+    "I": "#c:dyes/black",
+    "B": "#warlockery:manual_reagents/books",
+    "Q": "#c:feathers",
+    "G": "#minecraft:small_flowers"
+  },
+  "result": {
+    "id": "warlockery:ingredient_book_herbology"
+  }
+}

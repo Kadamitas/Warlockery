@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Manifestation",
+  "description": "Temporarily manifests spirit walkers as visible, mobile ghosts.",
+  "action": "manifest",
+  "power": 2400,
+  "radius": 6,
+  "duration": 2400,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyph_veil": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_subdued_spirit",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_spectral_dust",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "night_only": true
+}

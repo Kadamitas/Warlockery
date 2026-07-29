@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_ender_dew",
+    "warlockery:ingredient_subdued_spirit",
+    "#c:ender_pearls"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_spirit_of_the_veil"
+  }
+}

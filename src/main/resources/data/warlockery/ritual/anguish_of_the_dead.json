@@ -1,0 +1,30 @@
+{
+  "title": "Anguish of the Dead",
+  "description": "Scours nearby undead with magic and leaves them weak and slow.",
+  "action": "anguish_undead",
+  "power": 1400,
+  "radius": 8,
+  "duration": 600,
+  "amplifier": 1,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_graveyard_dust",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:dusts/glowstone",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  },
+  "night_only": true
+}

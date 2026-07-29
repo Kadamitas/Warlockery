@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "trap_state=disarmed": {
+      "model": "warlockery:block/beartrap_disarmed"
+    },
+    "trap_state=armed": {
+      "model": "warlockery:block/beartrap_armed"
+    },
+    "trap_state=sprung": {
+      "model": "warlockery:block/beartrap_sprung"
+    }
+  }
+}

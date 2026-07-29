@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " V ",
+    "RWR",
+    "VSV"
+  ],
+  "key": {
+    "V": "warlockery:ingredient_verdant_catalyst",
+    "R": "warlockery:ingredient_reek_of_misfortune",
+    "W": "warlockery:ingredient_apple_wormy",
+    "S": "warlockery:ingredient_brew_sleep"
+  },
+  "result": {
+    "id": "warlockery:ingredient_sleeping_apple"
+  }
+}

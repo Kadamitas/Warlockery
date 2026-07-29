@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_refined_evil",
+    "warlockery:ingredient_odour_of_purity",
+    "#c:slime_balls"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_mysticunguent"
+  }
+}

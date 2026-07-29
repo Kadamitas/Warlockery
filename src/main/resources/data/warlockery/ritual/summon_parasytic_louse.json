@@ -1,0 +1,33 @@
+{
+  "title": "Rite of Infestation: Parasytic Louse",
+  "description": "Calls a Parasytic Louse that can capture and redirect potion effects.",
+  "action": "summon_entity",
+  "target": "warlockery:parasytic_louse",
+  "power": 1400,
+  "radius": 6,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "minecraft:fermented_spider_eye",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:potion",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_focused_will",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  }
+}

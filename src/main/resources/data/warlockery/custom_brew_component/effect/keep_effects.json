@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_keep_effects",
+  "role": "effect",
+  "capacity_cost": 8,
+  "source_brew": "keep_effects"
+}

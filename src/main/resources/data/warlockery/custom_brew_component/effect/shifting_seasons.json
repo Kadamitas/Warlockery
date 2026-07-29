@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_shifting_seasons",
+  "role": "effect",
+  "capacity_cost": 8,
+  "source_brew": "shifting_seasons"
+}

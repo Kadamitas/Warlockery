@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_ender_inhibition",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -1
+      }
+    ]
+  }
+}

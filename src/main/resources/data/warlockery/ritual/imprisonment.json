@@ -1,0 +1,29 @@
+{
+  "title": "Rite of Imprisonment",
+  "description": "Cripples movement inside the circle so captured foes cannot escape.",
+  "action": "imprisonment_ward",
+  "power": 1000,
+  "radius": 6,
+  "duration": 1800,
+  "amplifier": 4,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 8,
+    "circleglyphinfernal": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_refined_evil",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "title": "Rite of Summoning: Demon",
+  "description": "Calls a Warlockery demon from the infernal realm.",
+  "action": "summon_entity",
+  "power": 2800,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 220,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_refined_evil",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_infernal_blood",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:rods/blaze",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "target": "warlockery:demon"
+}

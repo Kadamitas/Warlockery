@@ -1,0 +1,29 @@
+{
+  "title": "Rite of Calling: Lost Soul",
+  "description": "Draws a Lost Soul into the world so it can be bound with a spirit vessel.",
+  "action": "summon_entity",
+  "target": "warlockery:lost_soul",
+  "power": 1700,
+  "radius": 6,
+  "casting_time": 100,
+  "night_only": true,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#warlockery:congealed_spirits",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:creature_interactions/spirit_binders",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  }
+}

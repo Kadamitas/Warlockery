@@ -1,0 +1,39 @@
+{
+  "title": "Rite of Earth's Wrath",
+  "description": "Draws a nearby underground volcanic fluid pool into a contained basalt vent.",
+  "action": "earths_wrath",
+  "power": 3000,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 240,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#c:buckets/lava",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:magma_block",
+        "count": 4,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_reek_of_misfortune",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

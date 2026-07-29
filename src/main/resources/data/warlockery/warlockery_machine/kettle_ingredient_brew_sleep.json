@@ -1,0 +1,19 @@
+{
+  "machine": "kettle",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    { "ingredient": "#warlockery:brew_reagents/purified_milks" },
+    { "ingredient": "#warlockery:brew_reagents/cookies" },
+    { "ingredient": "#warlockery:brew_reagents/love_brews" },
+    { "ingredient": "#warlockery:brew_reagents/whiffs_of_magic" },
+    { "ingredient": "#warlockery:brew_reagents/icy_needles" },
+    { "ingredient": "#warlockery:brew_reagents/water_artichokes" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_brew_sleep", "count": 3 }
+  ],
+  "processing_time": 240
+}

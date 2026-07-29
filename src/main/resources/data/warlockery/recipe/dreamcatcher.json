@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " F ",
+    "FSF",
+    " H "
+  ],
+  "key": {
+    "F": "warlockery:ingredient_fanciful_thread",
+    "S": "#c:rods/wooden",
+    "H": "warlockery:ingredient_mellifluous_hunger"
+  },
+  "result": {
+    "id": "warlockery:dreamcatcher"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_breath_of_the_goddess",
+    "warlockery:ingredient_heartwood_splinter",
+    "#c:stones"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_soul_of_the_world"
+  }
+}

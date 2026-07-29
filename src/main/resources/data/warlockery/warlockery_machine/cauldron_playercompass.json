@@ -1,0 +1,19 @@
+{
+  "machine": "cauldron",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    { "ingredient": "#warlockery:utility_reagents/vanilla_compasses" },
+    { "ingredient": "#c:crops/nether_wart" },
+    { "ingredient": "#warlockery:brazier/tears" },
+    { "ingredient": "#warlockery:utility_reagents/vines" },
+    { "ingredient": "#warlockery:brazier/spider_eyes" }
+  ],
+  "outputs": [
+    { "item": "warlockery:playercompass" }
+  ],
+  "processing_time": 360,
+  "altar_power": 5000
+}

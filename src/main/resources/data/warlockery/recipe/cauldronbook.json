@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " D ",
+    "IBQ"
+  ],
+  "key": {
+    "D": "#warlockery:solidifying/dirt_targets",
+    "I": "#c:dyes/black",
+    "B": "#warlockery:manual_reagents/books",
+    "Q": "#c:feathers"
+  },
+  "result": {
+    "id": "warlockery:cauldronbook"
+  }
+}

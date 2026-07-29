@@ -1,0 +1,14 @@
+{
+  "machine": "distillery",
+  "inputs": [
+    { "ingredient": "warlockery:ingredient_foul_fume" },
+    { "ingredient": "warlockery:ingredient_quicklime" },
+    { "ingredient": "warlockery:ingredient_clay_jar" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_gypsum" },
+    { "item": "warlockery:ingredient_oil_of_vitriol" }
+  ],
+  "processing_time": 300,
+  "requires_fuel": true
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " V ",
+    " H ",
+    " S "
+  ],
+  "key": {
+    "V": "#warlockery:mutation/mutandis_extremis",
+    "H": "warlockery:ingredient_heartwood_splinter",
+    "S": "#c:rods/wooden"
+  },
+  "result": {
+    "id": "warlockery:mutator"
+  }
+}

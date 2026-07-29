@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "warlockery:block/snowpressureplate"
+    },
+    "powered=true": {
+      "model": "warlockery:block/snowpressureplate_down"
+    }
+  }
+}

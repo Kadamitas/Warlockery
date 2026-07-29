@@ -1,0 +1,27 @@
+{
+  "title": "Drain Growth",
+  "description": "Returns nearby crops to seedlings and transfers their growth into the caster's health and hunger.",
+  "action": "drain_growth",
+  "power": 900,
+  "radius": 7,
+  "casting_time": 80,
+  "glyphs": {
+    "circleglyphritual": 8,
+    "circleglyphinfernal": 4
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_mellifluous_hunger",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:crops/wheat",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:string",
+    "warlockery:ingredient_attuned_stone"
+  ]
+}

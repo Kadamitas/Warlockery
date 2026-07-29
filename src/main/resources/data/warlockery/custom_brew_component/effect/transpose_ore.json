@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_transpose_ore",
+  "role": "effect",
+  "capacity_cost": 4,
+  "source_brew": "transpose_ore"
+}

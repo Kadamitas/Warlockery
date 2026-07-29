@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "lit=false":  {
+                                       "model":  "warlockery:block/silvervat"
+                                   },
+                     "lit=true":  {
+                                      "model":  "warlockery:block/silvervat"
+                                  }
+                 }
+}

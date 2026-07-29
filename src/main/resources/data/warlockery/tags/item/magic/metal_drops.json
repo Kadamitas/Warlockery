@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#c:dusts",
+    "#c:ingots",
+    "#c:nuggets",
+    "#c:ores",
+    "#c:raw_materials",
+    "#c:storage_blocks"
+  ]
+}

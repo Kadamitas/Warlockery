@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "VRV",
+    "MAE",
+    "VTV"
+  ],
+  "key": {
+    "V": "warlockery:ingredient_verdant_catalyst_prime",
+    "R": "warlockery:ingredient_reek_of_misfortune",
+    "M": "warlockery:ingredient_mandrake_root",
+    "A": "warlockery:ingredient_artichoke",
+    "E": "warlockery:embermoss",
+    "T": "warlockery:ingredient_tear_of_the_goddess"
+  },
+  "result": {
+    "id": "warlockery:ingredient_bramble_colossus_seed"
+  }
+}

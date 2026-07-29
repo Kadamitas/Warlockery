@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "warlockery:block/snowdoubleslab"
+    },
+    "type=double": {
+      "model": "warlockery:block/snowdoubleslab_double"
+    },
+    "type=top": {
+      "model": "warlockery:block/snowdoubleslab_top"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "machine": "distillery",
+  "inputs": [
+    { "ingredient": "warlockery:ingredient_diamond_vapour" },
+    { "ingredient": "minecraft:ghast_tear" },
+    { "ingredient": "warlockery:ingredient_clay_jar", "count": 3 }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_odour_of_purity" },
+    { "item": "warlockery:ingredient_reek_of_misfortune" },
+    { "item": "warlockery:ingredient_foul_fume" },
+    { "item": "warlockery:ingredient_refined_evil" }
+  ],
+  "processing_time": 500,
+  "requires_fuel": true
+}

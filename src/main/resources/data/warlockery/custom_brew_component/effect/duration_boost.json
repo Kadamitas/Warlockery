@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_duration_boost",
+  "role": "effect",
+  "capacity_cost": 6,
+  "source_brew": "duration_boost"
+}

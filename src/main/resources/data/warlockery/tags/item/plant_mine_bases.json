@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:dandelion",
+    "minecraft:oak_sapling",
+    "minecraft:poppy",
+    "warlockery:bramble"
+  ]
+}

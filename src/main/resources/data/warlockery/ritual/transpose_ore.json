@@ -1,0 +1,33 @@
+{
+  "title": "Rite of Transposition: Ore",
+  "description": "Draws ore from the rock below and deposits it at the circle.",
+  "action": "transpose_ore",
+  "power": 1400,
+  "radius": 8,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#c:raw_materials/iron",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_ender_dew",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "GCG",
+    " A "
+  ],
+  "key": {
+    "G": "#c:ingots/gold",
+    "C": "#warlockery:woven_cruor",
+    "A": "#c:gems/amethyst"
+  },
+  "result": {
+    "id": "warlockery:twisting_band"
+  }
+}

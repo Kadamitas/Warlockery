@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:overworld_carver_replaceables",
+    "#minecraft:nether_carver_replaceables",
+    "#minecraft:dirt",
+    "minecraft:sand",
+    "minecraft:red_sand",
+    "minecraft:gravel",
+    "minecraft:clay",
+    "minecraft:mud"
+  ]
+}

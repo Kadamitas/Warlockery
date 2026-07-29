@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#warlockery:silver_weapons",
+    "#warlockery:silver_projectiles",
+    "warlockery:ingredient_bolt_stake",
+    "warlockery:ingredient_stake"
+  ]
+}

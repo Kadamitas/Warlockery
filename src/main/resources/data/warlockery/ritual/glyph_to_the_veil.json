@@ -1,0 +1,29 @@
+{
+  "title": "Rite of Glyphic Transformation: the Veil",
+  "description": "Transforms the outer glyphs into the_veil chalk.",
+  "action": "glyph_transform",
+  "power": 900,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:chalk_veil",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "warlockery:circleglyph_veil"
+}

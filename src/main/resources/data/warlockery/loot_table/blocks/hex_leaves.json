@@ -1,0 +1,133 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": {
+                        "items": "minecraft:shears"
+                      }
+                    },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": {
+                        "predicates": {
+                          "minecraft:enchantments": [
+                            {
+                              "enchantments": "minecraft:silk_touch",
+                              "levels": {
+                                "min": 1
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "name": "warlockery:hex_leaves"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:survives_explosion"
+                },
+                {
+                  "chances": [
+                    0.05,
+                    0.0625,
+                    0.083333336,
+                    0.1
+                  ],
+                  "condition": "minecraft:table_bonus",
+                  "enchantment": "minecraft:fortune"
+                }
+              ],
+              "name": "warlockery:hex_sapling"
+            }
+          ]
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "conditions": [
+        {
+          "condition": "minecraft:inverted",
+          "term": {
+            "condition": "minecraft:any_of",
+            "terms": [
+              {
+                "condition": "minecraft:match_tool",
+                "predicate": {
+                  "items": "minecraft:shears"
+                }
+              },
+              {
+                "condition": "minecraft:match_tool",
+                "predicate": {
+                  "predicates": {
+                    "minecraft:enchantments": [
+                      {
+                        "enchantments": "minecraft:silk_touch",
+                        "levels": {
+                          "min": 1
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            },
+            {
+              "chances": [
+                0.02,
+                0.025,
+                0.033333335,
+                0.05,
+                0.1
+              ],
+              "condition": "minecraft:table_bonus",
+              "enchantment": "minecraft:fortune"
+            }
+          ],
+          "functions": [
+            {
+              "count": {
+                "type": "minecraft:uniform",
+                "max": 2,
+                "min": 1
+              },
+              "function": "minecraft:set_count"
+            }
+          ],
+          "name": "warlockery:ingredient_berries_rowan"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "warlockery:blocks/hex_leaves"
+}

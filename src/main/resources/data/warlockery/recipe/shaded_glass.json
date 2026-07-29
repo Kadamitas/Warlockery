@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": ["GGG", "DRD", "GGG"],
+  "key": {"G": "#c:glass_blocks/colorless", "D": "#c:dyes/black", "R": "#c:dusts/redstone"},
+  "result": {"id": "warlockery:shadedglass", "count": 8}
+}

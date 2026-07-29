@@ -1,0 +1,12 @@
+{
+    "type":  "minecraft:crafting_shapeless",
+    "category":  "misc",
+    "ingredients":  [
+                        "minecraft:glass_bottle",
+                        "#c:bones",
+                        "#c:strings"
+                    ],
+    "result":  {
+                   "id":  "warlockery:sympathetic_vial"
+               }
+}

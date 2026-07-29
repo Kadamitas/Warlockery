@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:ingredient_muttonraw",
+    "warlockery:ingredient_muttoncooked",
+    "warlockery:ingredient_odd_porkchop_raw",
+    "warlockery:ingredient_odd_porkchop_cooked"
+  ]
+}

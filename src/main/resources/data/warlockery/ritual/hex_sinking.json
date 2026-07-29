@@ -1,0 +1,35 @@
+{
+  "title": "Hex of Sinking",
+  "description": "Burdens the imprint-bound being with crushing supernatural weight.",
+  "action": "hex",
+  "power": 1900,
+  "radius": 6,
+  "duration": 12000,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyphinfernal": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:sympathetic_vial",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_graveyard_dust",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": true,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "sinking"
+}

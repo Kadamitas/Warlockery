@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:cobblestones"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_rock",
+    "count": 4
+  }
+}

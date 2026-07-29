@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_damage_boost",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -7134173
+      }
+    ]
+  }
+}

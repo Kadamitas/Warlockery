@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "SWS",
+    "WRW",
+    "SWS"
+  ],
+  "key": {
+    "S": "#c:rods/wooden",
+    "W": "warlockery:ingredient_web",
+    "R": "#c:dusts/redstone"
+  },
+  "result": {
+    "id": "warlockery:plantmine"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "warlockery:block/icepressureplate"
+    },
+    "powered=true": {
+      "model": "warlockery:block/icepressureplate_down"
+    }
+  }
+}

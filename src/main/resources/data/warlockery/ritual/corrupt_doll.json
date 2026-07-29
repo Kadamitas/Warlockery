@@ -1,0 +1,40 @@
+{
+  "title": "Hex of the Corrupted Doll",
+  "description": "Damages up to three bound protection dolls unless a Hex Guard or Doll Guard intercepts it.",
+  "action": "hex",
+  "power": 2200,
+  "radius": 6,
+  "duration": 6000,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:sympathetic_vial",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:doll",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_refined_evil",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "corrupt_doll"
+}

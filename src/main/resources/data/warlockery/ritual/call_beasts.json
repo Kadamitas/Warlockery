@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Beastial Call",
+  "description": "Draws nearby animals into the ritual circle.",
+  "action": "call_beasts",
+  "power": 1800,
+  "radius": 8,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_dog_tongue",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:bones",
+        "count": 4,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 3
+  },
+  "count": 16
+}

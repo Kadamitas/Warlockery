@@ -1,0 +1,36 @@
+{
+  "title": "Rite of Infusion: Brew of the Grave",
+  "description": "Infuses a completed Brew of the Grave.",
+  "action": "summon_item",
+  "power": 1800,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyphinfernal": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#warlockery:congealed_spirits",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_graveyard_dust",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "target": "warlockery:ingredient_brew_grave"
+}

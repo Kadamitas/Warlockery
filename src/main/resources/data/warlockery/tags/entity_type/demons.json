@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:demon",
+    "warlockery:imp",
+    "warlockery:hellhound",
+    "warlockery:emberhorn_archfiend",
+    "warlockery:abyssal_regent"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#c:gems",
+    "#c:ingots",
+    "#c:ores",
+    "#c:raw_materials",
+    "warlockery:ingredient_delvealloydust"
+  ]
+}

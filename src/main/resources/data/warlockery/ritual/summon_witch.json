@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Summoning: Witch",
+  "description": "Calls a witch to the center of the prepared circle.",
+  "action": "summon_entity",
+  "power": 1300,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_mandrake_root",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:glass_bottle",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "minecraft:witch"
+}

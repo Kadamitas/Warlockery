@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_solidify_dirt",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -1
+      }
+    ]
+  }
+}

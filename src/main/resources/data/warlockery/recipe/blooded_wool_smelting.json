@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": "warlockery:bloodedwool",
+  "result": {
+    "id": "warlockery:ingredient_woven_cruor"
+  },
+  "experience": 0.35,
+  "cookingtime": 200
+}

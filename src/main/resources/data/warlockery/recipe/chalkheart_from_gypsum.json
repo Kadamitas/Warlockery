@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_gypsum",
+    "#c:dyes/red"
+  ],
+  "result": {
+    "id": "warlockery:chalkheart",
+    "count": 4
+  }
+}

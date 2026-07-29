@@ -1,0 +1,28 @@
+{
+  "title": "Rite of Calling: Circle Mage",
+  "description": "Calls a Circle Mage who can be recruited with a familiar and a coven offering.",
+  "action": "summon_entity",
+  "target": "warlockery:circle_mage",
+  "power": 1800,
+  "radius": 6,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#warlockery:creature_interactions/coven_offerings",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_focused_will",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  }
+}

@@ -1,0 +1,13 @@
+{
+    "type":  "minecraft:crafting_shapeless",
+    "category":  "misc",
+    "ingredients":  [
+                        "#c:eggs",
+                        "#c:fertilizers",
+                        "warlockery:ingredient_mandrake_root"
+                    ],
+    "result":  {
+                   "id":  "warlockery:ingredient_verdant_catalyst",
+                   "count":  2
+               }
+}

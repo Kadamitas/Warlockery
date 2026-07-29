@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:garlic",
+    "warlockery:seedsartichoke",
+    "warlockery:seedsbelladonna",
+    "warlockery:seedsmandrake",
+    "warlockery:seedsdreamroot",
+    "warlockery:seedssnowbell",
+    "warlockery:seedswolfsbane",
+    "warlockery:seedswormwood"
+  ]
+}

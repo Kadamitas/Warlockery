@@ -1,0 +1,28 @@
+{
+  "title": "Rite of Challenge: Forgewarden",
+  "description": "Calls a combat-ready Forgewarden who empowers nearby kobolds.",
+  "action": "summon_entity",
+  "target": "warlockery:forgewarden",
+  "power": 3600,
+  "radius": 7,
+  "casting_time": 200,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#c:ingots/koboldite",
+        "count": 4,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:creature_interactions/heart_offerings",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  }
+}

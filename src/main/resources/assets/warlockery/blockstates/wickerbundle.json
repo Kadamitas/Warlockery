@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "bloodied=false": { "model": "warlockery:block/wickerbundle" },
+    "bloodied=true": { "model": "warlockery:block/wickerbundle" }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["PPP", "B B", "PPP"],
+  "key": {"P": "#minecraft:planks", "B": "#minecraft:bookshelf_books"},
+  "result": {"id": "warlockery:doll_shelf"}
+}

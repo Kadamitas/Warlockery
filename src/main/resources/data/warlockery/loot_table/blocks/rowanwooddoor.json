@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "warlockery:rowanwooddoor",
+          "properties": {
+            "half": "lower"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "warlockery:rowanwooddoor"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "warlockery:blocks/rowanwooddoor"
+}

@@ -1,0 +1,38 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "name": "warlockery:ingredient_chalice_full",
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "warlockery:chalice",
+                  "properties": {
+                    "filled": "true"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "warlockery:chalice"
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "warlockery:blocks/chalice"
+}

@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_extinguish_fires",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -12877871
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_undead_bane",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "undead_bane"
+}

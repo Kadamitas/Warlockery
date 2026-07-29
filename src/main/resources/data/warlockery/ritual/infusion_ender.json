@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Infusion: the Veil",
+  "description": "Infuses those in the circle with otherworldly speed.",
+  "action": "infuse_path",
+  "power": 2100,
+  "radius": 6,
+  "duration": 7200,
+  "amplifier": 1,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#warlockery:veil_spirits",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:ender_pearls",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "otherwhere"
+}

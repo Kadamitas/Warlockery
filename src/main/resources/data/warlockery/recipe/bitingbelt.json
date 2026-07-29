@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "I I",
+    "IHI",
+    " I "
+  ],
+  "key": {
+    "I": "warlockery:ingredient_impregnated_leather",
+    "H": "warlockery:ingredient_mellifluous_hunger"
+  },
+  "result": {
+    "id": "warlockery:bitingbelt"
+  }
+}

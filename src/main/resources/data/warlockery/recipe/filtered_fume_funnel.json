@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:fumefunnel",
+    "warlockery:ingredient_fume_filter"
+  ],
+  "result": {
+    "id": "warlockery:filteredfumefunnel"
+  }
+}

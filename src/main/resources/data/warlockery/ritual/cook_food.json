@@ -1,0 +1,28 @@
+{
+  "title": "Rite of Broiling",
+  "description": "Cooks dropped raw food in the ritual area.",
+  "action": "cook",
+  "power": 600,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#minecraft:coals",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LLL",
+    "LCL",
+    "LLL"
+  ],
+  "key": {
+    "L": "#c:leathers",
+    "C": "warlockery:ingredient_nullcatalyst"
+  },
+  "result": {
+    "id": "warlockery:ingredient_nullifiedleather",
+    "count": 3
+  }
+}

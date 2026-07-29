@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_resizing",
+  "role": "effect",
+  "capacity_cost": 6,
+  "source_brew": "resizing"
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:forgewarden",
+    "warlockery:goblin",
+    "warlockery:hobgoblin",
+    "warlockery:stonebroker"
+  ]
+}

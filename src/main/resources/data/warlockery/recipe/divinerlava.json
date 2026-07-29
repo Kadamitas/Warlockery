@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " R ",
+    " W ",
+    "R R"
+  ],
+  "key": {
+    "R": "#c:rods/blaze",
+    "W": "#warlockery:utility_reagents/water_diviners"
+  },
+  "result": {
+    "id": "warlockery:divinerlava"
+  }
+}

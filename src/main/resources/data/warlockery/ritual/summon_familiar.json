@@ -1,0 +1,36 @@
+{
+  "title": "Rite of Summoning: Familiar",
+  "description": "Summons a cat familiar to aid the witch.",
+  "action": "summon_entity",
+  "power": 1800,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#c:foods/raw_fish",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_focused_will",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "target": "warlockery:spectral_familiar"
+}

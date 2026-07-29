@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:ingredient_door_key",
+    "warlockery:ingredient_door_keyring",
+    "warlockery:arcane_focus"
+  ]
+}

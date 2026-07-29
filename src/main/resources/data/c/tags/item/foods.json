@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#c:foods/raw_meat",
+    "#c:foods/cooked_meat",
+    "#c:foods/soup",
+    "#c:foods/fruit"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "lit=false":  {
+                                       "model":  "warlockery:block/brazier"
+                                   },
+                     "lit=true":  {
+                                      "model":  "warlockery:block/brazier"
+                                  }
+                 }
+}

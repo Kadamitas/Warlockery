@@ -1,0 +1,886 @@
+{
+  "format": 1,
+  "tag_classifications": [
+    {
+      "role": "equipment",
+      "registry": "item",
+      "tags": [
+        "c:armors/humanoid",
+        "c:tools"
+      ]
+    },
+    {
+      "role": "seed",
+      "registry": "item",
+      "tags": [
+        "c:seeds"
+      ]
+    },
+    {
+      "role": "crop",
+      "registry": "block",
+      "tags": [
+        "minecraft:crops"
+      ]
+    },
+    {
+      "role": "crop",
+      "registry": "item",
+      "tags": [
+        "c:crops"
+      ]
+    },
+    {
+      "role": "wood_family",
+      "registry": "block",
+      "tags": [
+        "minecraft:logs",
+        "minecraft:planks",
+        "minecraft:leaves",
+        "minecraft:saplings",
+        "minecraft:wooden_doors",
+        "minecraft:wooden_fences",
+        "minecraft:wooden_slabs",
+        "minecraft:wooden_stairs",
+        "minecraft:wooden_buttons",
+        "minecraft:wooden_pressure_plates"
+      ]
+    },
+    {
+      "role": "wood_family",
+      "registry": "item",
+      "tags": [
+        "minecraft:logs",
+        "minecraft:planks",
+        "minecraft:leaves",
+        "minecraft:saplings",
+        "minecraft:wooden_doors",
+        "minecraft:wooden_fences",
+        "minecraft:wooden_slabs",
+        "minecraft:wooden_stairs",
+        "minecraft:wooden_buttons",
+        "minecraft:wooden_pressure_plates"
+      ]
+    },
+    {
+      "role": "metal_form",
+      "registry": "block",
+      "tags": [
+        "c:ores/silver",
+        "c:ores/koboldite",
+        "c:storage_blocks/silver",
+        "c:storage_blocks/raw_silver",
+        "c:storage_blocks/koboldite",
+        "c:storage_blocks/raw_koboldite"
+      ]
+    },
+    {
+      "role": "metal_form",
+      "registry": "item",
+      "tags": [
+        "c:ores/silver",
+        "c:ores/koboldite",
+        "c:raw_materials/silver",
+        "c:raw_materials/koboldite",
+        "c:ingots/silver",
+        "c:ingots/koboldite",
+        "c:nuggets/koboldite",
+        "c:dusts/silver",
+        "c:dusts/koboldite",
+        "c:storage_blocks/silver",
+        "c:storage_blocks/raw_silver",
+        "c:storage_blocks/koboldite",
+        "c:storage_blocks/raw_koboldite"
+      ]
+    },
+    {
+      "role": "brew",
+      "registry": "item",
+      "tags": [
+        "warlockery:brews"
+      ]
+    },
+    {
+      "role": "infusion_reagent",
+      "registry": "item",
+      "tags": [
+        "warlockery:ghost_light_reagents",
+        "warlockery:happenstance_oils",
+        "warlockery:mystic_unguents",
+        "warlockery:world_souls",
+        "warlockery:veil_spirits",
+        "warlockery:flying_ointments",
+        "warlockery:congealed_spirits"
+      ]
+    },
+    {
+      "role": "ritual_reagent",
+      "registry": "item",
+      "tags": [
+        "warlockery:spectral_stone_bases",
+        "warlockery:spectral_dusts",
+        "warlockery:condensed_fears",
+        "warlockery:lycanthropy_catalysts",
+        "warlockery:wolfsbane_reagents",
+        "warlockery:wolf_token_attunements",
+        "warlockery:wolf_altar_heads",
+        "warlockery:wolf_altar_offerings",
+        "warlockery:sympathetic_containers",
+        "warlockery:creature_interactions/vampire_initiation"
+      ]
+    },
+    {
+      "role": "machine_input",
+      "registry": "item",
+      "tags": [
+        "warlockery:bodega_thorn_brews",
+        "warlockery:bodega_owl_wings"
+      ]
+    },
+    {
+      "role": "projectile",
+      "registry": "item",
+      "tags": [
+        "minecraft:arrows",
+        "warlockery:throwing_stones"
+      ]
+    },
+    {
+      "role": "food",
+      "registry": "item",
+      "tags": [
+        "c:foods"
+      ]
+    },
+    {
+      "role": "drink",
+      "registry": "item",
+      "tags": [
+        "c:drinks"
+      ]
+    },
+    {
+      "role": "common_container",
+      "registry": "item",
+      "tags": [
+        "c:buckets",
+        "c:drink_containing/bottle",
+        "minecraft:bundles"
+      ]
+    },
+    {
+      "role": "common_utility",
+      "registry": "item",
+      "tags": [
+        "minecraft:compasses",
+        "minecraft:bookshelf_books",
+        "warlockery:guide_books",
+        "warlockery:mirror_tools"
+      ]
+    },
+    {
+      "role": "common_block",
+      "registry": "block",
+      "tags": [
+        "c:fences",
+        "c:fence_gates",
+        "c:glass_blocks",
+        "c:player_workstations/furnaces",
+        "warlockery:creature_habitats/magical_cauldrons"
+      ]
+    },
+    {
+      "role": "common_block",
+      "registry": "item",
+      "tags": [
+        "c:fences",
+        "c:fence_gates",
+        "c:glass_blocks",
+        "c:player_workstations/furnaces"
+      ]
+    },
+    {
+      "role": "fluid",
+      "registry": "fluid",
+      "tags": [
+        "warlockery:spirit",
+        "warlockery:hollow_tears",
+        "warlockery:colored_brew_water",
+        "warlockery:erosion_brews"
+      ]
+    }
+  ],
+  "id_classifications": [
+    {
+      "role": "wood_family",
+      "registry": "block",
+      "ids": [
+        "hex_leaves",
+        "hex_sapling",
+        "hex_ladder"
+      ]
+    },
+    {
+      "role": "wood_family",
+      "registry": "item",
+      "ids": [
+        "hex_leaves",
+        "hex_sapling",
+        "hex_ladder"
+      ]
+    },
+    {
+      "role": "machine",
+      "registry": "block",
+      "ids": [
+        "alchemical_oven",
+        "alchemical_oven_lit",
+        "distilleryidle",
+        "distilleryburning",
+        "kettle",
+        "cauldron",
+        "silvervat",
+        "spinningwheel",
+        "brazier"
+      ]
+    },
+    {
+      "role": "machine",
+      "registry": "item",
+      "ids": [
+        "alchemical_oven",
+        "alchemical_oven_lit",
+        "distilleryidle",
+        "distilleryburning",
+        "kettle",
+        "cauldron",
+        "silvervat",
+        "spinningwheel",
+        "brazier"
+      ]
+    },
+    {
+      "role": "fuel",
+      "registry": "item",
+      "ids": [
+        "brew_combustion"
+      ]
+    },
+    {
+      "role": "progression_reward",
+      "registry": "item",
+      "ids": [
+        "hornofthehunt"
+      ]
+    }
+  ],
+  "tag_contracts": [
+    {
+      "registry": "item",
+      "tag": "warlockery:guide_books",
+      "contains": [
+        "warlockery:bookbiomes2",
+        "warlockery:cauldronbook",
+        "warlockery:vampirebook",
+        "warlockery:ingredient_book_biomes",
+        "warlockery:ingredient_book_burning",
+        "warlockery:ingredient_book_circle_magic",
+        "warlockery:ingredient_book_distilling",
+        "warlockery:ingredient_book_herbology",
+        "warlockery:ingredient_book_infusions",
+        "warlockery:ingredient_book_oven",
+        "warlockery:ingredient_book_wands"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:bookshelf_books",
+      "contains": [
+        "warlockery:bookbiomes2",
+        "warlockery:cauldronbook",
+        "warlockery:vampirebook",
+        "warlockery:ingredient_book_biomes",
+        "warlockery:ingredient_book_burning",
+        "warlockery:ingredient_book_circle_magic",
+        "warlockery:ingredient_book_distilling",
+        "warlockery:ingredient_book_herbology",
+        "warlockery:ingredient_book_infusions",
+        "warlockery:ingredient_book_oven",
+        "warlockery:ingredient_book_wands"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:nightmare_guard_charms",
+      "contains": [
+        "warlockery:ingredient_charm_disrupted_dreams"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:ghost_light_reagents",
+      "contains": [
+        "warlockery:ingredient_ghost_of_the_light"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:happenstance_oils",
+      "contains": [
+        "warlockery:ingredient_happenstance_oil"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:mystic_unguents",
+      "contains": [
+        "warlockery:ingredient_mysticunguent"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:world_souls",
+      "contains": [
+        "warlockery:ingredient_soul_of_the_world"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:veil_spirits",
+      "contains": [
+        "warlockery:ingredient_spirit_of_the_veil"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:flying_ointments",
+      "contains": [
+        "warlockery:ingredient_flying_ointment"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:congealed_spirits",
+      "contains": [
+        "warlockery:ingredient_brew_congealed_spirit"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:bodega_thorn_brews",
+      "contains": [
+        "warlockery:brew_thorns"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:bodega_owl_wings",
+      "contains": [
+        "warlockery:ingredient_owlets_wing"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:creature_interactions/vampire_initiation",
+      "contains": [
+        "warlockery:ingredient_matriarchs_blood"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:mirror_tools",
+      "contains": [
+        "warlockery:mirror",
+        "warlockery:replication_staff"
+      ]
+    },
+    {
+      "registry": "entity_type",
+      "tag": "warlockery:creature_families/cauldron_range_extenders",
+      "contains": [
+        "warlockery:emberhorn_archfiend"
+      ]
+    },
+    {
+      "registry": "block",
+      "tag": "warlockery:creature_habitats/magical_cauldrons",
+      "contains": [
+        "warlockery:cauldron",
+        "minecraft:cauldron",
+        "minecraft:water_cauldron",
+        "minecraft:lava_cauldron",
+        "minecraft:powder_snow_cauldron"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:spectral_stone_bases",
+      "contains": [
+        "warlockery:ingredient_attuned_stone"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:spectral_dusts",
+      "contains": [
+        "warlockery:ingredient_spectral_dust"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:condensed_fears",
+      "contains": [
+        "warlockery:ingredient_condensed_fear"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:lycanthropy_catalysts",
+      "contains": [
+        "warlockery:wolftoken"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:wolfsbane_reagents",
+      "contains": [
+        "warlockery:ingredient_wolfsbane"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:wolf_token_attunements",
+      "contains": [
+        "warlockery:ingredient_attuned_stone_charged"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:wolf_altar_heads",
+      "contains": [
+        "warlockery:wolfhead"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:wolf_altar_offerings",
+      "contains": [
+        "#c:foods/raw_meat",
+        "warlockery:ingredient_muttonraw",
+        "#c:bones"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:brazier_igniters",
+      "contains": [
+        "minecraft:fire_charge",
+        "minecraft:flint_and_steel",
+        "warlockery:mysticbranch"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:arthanas",
+      "contains": [
+        "warlockery:ritual_knife"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:altar_range_foci",
+      "contains": [
+        "#warlockery:arthanas"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:alder_saplings",
+      "contains": [
+        "warlockery:alder_sapling"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:hawthorn_saplings",
+      "contains": [
+        "warlockery:hawthorn_sapling"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:rowan_saplings",
+      "contains": [
+        "warlockery:rowan_sapling"
+      ]
+    },
+    {
+      "registry": "entity_type",
+      "tag": "warlockery:nightmares",
+      "contains": [
+        "warlockery:nightmare"
+      ]
+    },
+    {
+      "registry": "entity_type",
+      "tag": "warlockery:arthana_bat_sources",
+      "contains": [
+        "minecraft:bat",
+        "warlockery:hex_bat"
+      ]
+    },
+    {
+      "registry": "entity_type",
+      "tag": "warlockery:arthana_dog_sources",
+      "contains": [
+        "minecraft:wolf",
+        "warlockery:hellhound"
+      ]
+    },
+    {
+      "registry": "entity_type",
+      "tag": "warlockery:arthana_owl_sources",
+      "contains": [
+        "minecraft:parrot",
+        "warlockery:owl"
+      ]
+    },
+    {
+      "registry": "entity_type",
+      "tag": "warlockery:arthana_frog_sources",
+      "contains": [
+        "minecraft:frog",
+        "warlockery:toad"
+      ]
+    },
+    {
+      "registry": "entity_type",
+      "tag": "warlockery:arthana_heart_sources",
+      "contains": [
+        "minecraft:creeper",
+        "warlockery:illusion_creeper"
+      ]
+    },
+    {
+      "registry": "entity_type",
+      "tag": "warlockery:arthana_spectral_sources",
+      "contains": [
+        "#minecraft:undead",
+        "#warlockery:spectral"
+      ]
+    },
+    {
+      "registry": "block",
+      "tag": "warlockery:brew_gases",
+      "contains": [
+        "warlockery:brewgas"
+      ]
+    },
+    {
+      "registry": "damage_type",
+      "tag": "warlockery:magical_damage",
+      "contains": [
+        "minecraft:magic"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "c:buckets",
+      "contains": [
+        "warlockery:bucketspirit",
+        "warlockery:buckethollowtears",
+        "warlockery:bucketbrew",
+        "warlockery:bucketerosionbrew"
+      ]
+    },
+    {
+      "registry": "block",
+      "tag": "warlockery:machine_upgrades/fume_funnels",
+      "contains": [
+        "warlockery:fumefunnel",
+        "#warlockery:machine_upgrades/filtered_fume_funnels"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "warlockery:alchemical_fumes",
+      "contains": [
+        "warlockery:ingredient_foul_fume",
+        "warlockery:ingredient_whiff_of_magic"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "c:drinks/magic",
+      "contains": [
+        "#warlockery:drinkable_brews"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "c:drink_containing/bottle",
+      "contains": [
+        "#warlockery:drinkable_brews"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "c:foods/fruit",
+      "contains": [
+        "warlockery:ingredient_sleeping_apple"
+      ]
+    },
+    {
+      "registry": "block",
+      "tag": "c:fences",
+      "contains": [
+        "warlockery:icefence",
+        "warlockery:stockade",
+        "warlockery:icestockade"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "c:fences/wooden",
+      "contains": [
+        "warlockery:stockade"
+      ]
+    },
+    {
+      "registry": "block",
+      "tag": "c:fence_gates",
+      "contains": [
+        "warlockery:icefencegate"
+      ]
+    },
+    {
+      "registry": "block",
+      "tag": "c:glass_blocks",
+      "contains": [
+        "warlockery:shadedglass",
+        "warlockery:shadedglass_active"
+      ]
+    },
+    {
+      "registry": "block",
+      "tag": "c:player_workstations/furnaces",
+      "contains": [
+        "warlockery:alchemical_oven",
+        "warlockery:alchemical_oven_lit"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "c:tools",
+      "contains": [
+        "warlockery:arcane_focus",
+        "warlockery:circletalisman",
+        "warlockery:divinerlava",
+        "warlockery:divinerwater",
+        "warlockery:chalkheart",
+        "warlockery:chalkinfernal",
+        "warlockery:chalk_veil",
+        "warlockery:chalkritual",
+        "warlockery:mutator",
+        "warlockery:ingredient_broom_enchanted"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:compasses",
+      "contains": [
+        "warlockery:playercompass",
+        "warlockery:shelfcompass"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:bundles",
+      "contains": [
+        "warlockery:brewbag"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:meat",
+      "contains": [
+        "warlockery:ingredient_muttonraw",
+        "warlockery:ingredient_muttoncooked",
+        "warlockery:ingredient_odd_porkchop_raw",
+        "warlockery:ingredient_odd_porkchop_cooked"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:metal_nuggets",
+      "contains": [
+        "warlockery:ingredient_delvealloynugget"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:villager_plantable_seeds",
+      "contains": [
+        "warlockery:garlic",
+        "warlockery:seedsartichoke",
+        "warlockery:seedsbelladonna",
+        "warlockery:seedsmandrake",
+        "warlockery:seedsdreamroot",
+        "warlockery:seedssnowbell",
+        "warlockery:seedswolfsbane",
+        "warlockery:seedswormwood"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:enchantable/durability",
+      "contains": [
+        "warlockery:silver_repeater",
+        "warlockery:divinerlava",
+        "warlockery:divinerwater",
+        "warlockery:chalkheart",
+        "warlockery:chalkinfernal",
+        "warlockery:chalk_veil",
+        "warlockery:chalkritual",
+        "warlockery:mutator",
+        "warlockery:ingredient_broom_enchanted"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:arrows",
+      "contains": [
+        "warlockery:ingredient_bolt_anti_magic",
+        "warlockery:ingredient_bolt_holy",
+        "warlockery:ingredient_bolt_silver",
+        "warlockery:ingredient_bolt_splitting",
+        "warlockery:ingredient_bolt_stake"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:enchantable/crossbow",
+      "contains": [
+        "warlockery:silver_repeater"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "c:potions/bottle",
+      "contains": [
+        "#warlockery:throwable_brews"
+      ]
+    },
+    {
+      "registry": "fluid",
+      "tag": "warlockery:spirit",
+      "contains": [
+        "warlockery:spirit",
+        "warlockery:flowing_spirit"
+      ]
+    },
+    {
+      "registry": "fluid",
+      "tag": "warlockery:hollow_tears",
+      "contains": [
+        "warlockery:hollow_tears",
+        "warlockery:flowing_hollow_tears"
+      ]
+    },
+    {
+      "registry": "fluid",
+      "tag": "warlockery:colored_brew_water",
+      "contains": [
+        "warlockery:colored_brew_water",
+        "warlockery:flowing_colored_brew_water"
+      ]
+    },
+    {
+      "registry": "fluid",
+      "tag": "warlockery:erosion_brews",
+      "contains": [
+        "warlockery:erosion_brew",
+        "warlockery:flowing_erosion_brew"
+      ]
+    },
+    {
+      "registry": "item",
+      "tag": "minecraft:logs_that_burn",
+      "contains": [
+        "warlockery:hex_log"
+      ]
+    },
+    {
+      "registry": "block",
+      "tag": "c:natural_logs/overworld",
+      "contains": [
+        "warlockery:hex_log",
+        "warlockery:alder_log",
+        "warlockery:hawthorn_log",
+        "warlockery:rowan_log"
+      ]
+    }
+  ],
+  "recipe_contracts": [
+    {
+      "path": "recipe/doll_shelf.json",
+      "required": "#minecraft:bookshelf_books",
+      "forbidden": "#c:books"
+    },
+    {
+      "path": "recipe/candelabra.json",
+      "required": "#minecraft:candles",
+      "forbidden": "\"minecraft:candle\""
+    },
+    {
+      "path": "recipe/ingredient_attuned_stone.json",
+      "required": "#c:buckets/lava",
+      "forbidden": "\"minecraft:lava_bucket\""
+    },
+    {
+      "path": "recipe/ingredient_graveyard_dust.json",
+      "required": "#c:fertilizers",
+      "forbidden": "\"minecraft:bone_meal\""
+    },
+    {
+      "path": "recipe/ingredient_quartz_sphere.json",
+      "required": "#c:glass_blocks/colorless",
+      "forbidden": "\"minecraft:glass\""
+    },
+    {
+      "path": "recipe/ingredient_purified_milk.json",
+      "required": "#c:buckets/milk",
+      "forbidden": "\"minecraft:milk_bucket\""
+    },
+    {
+      "path": "recipe/plantmine.json",
+      "required": "#c:dusts/redstone",
+      "forbidden": "\"minecraft:redstone\""
+    },
+    {
+      "path": "warlockery_machine/distill_ender_dew.json",
+      "required": "#c:ender_pearls",
+      "forbidden": "\"minecraft:ender_pearl\""
+    },
+    {
+      "path": "warlockery_machine/cauldron_flowing_spirit.json",
+      "required": "#c:buckets/empty",
+      "forbidden": "\"minecraft:bucket\""
+    },
+    {
+      "path": "warlockery_machine/kettle_brew_bodega.json",
+      "required": "#warlockery:bodega_thorn_brews",
+      "forbidden": "\"warlockery:brew_thorns\""
+    },
+    {
+      "path": "warlockery_machine/kettle_brew_bodega.json",
+      "required": "#warlockery:bodega_owl_wings",
+      "forbidden": "\"warlockery:ingredient_owlets_wing\""
+    },
+    {
+      "path": "ritual/infuse_mirror.json",
+      "required": "\"ingredient\": \"warlockery:mirrorblock\"",
+      "forbidden": "\"ingredient\": \"warlockery:mirror\""
+    }
+  ]
+}

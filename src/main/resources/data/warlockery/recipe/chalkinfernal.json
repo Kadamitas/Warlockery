@@ -1,0 +1,11 @@
+{
+    "type":  "minecraft:crafting_shapeless",
+    "category":  "misc",
+    "ingredients":  [
+                        "warlockery:chalkritual",
+                        "minecraft:blaze_powder"
+                    ],
+    "result":  {
+                   "id":  "warlockery:chalkinfernal"
+               }
+}

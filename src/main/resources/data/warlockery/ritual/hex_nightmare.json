@@ -1,0 +1,40 @@
+{
+  "title": "Hex of Waking Nightmare",
+  "description": "Haunts the imprint-bound being with darkness and hunger.",
+  "action": "hex",
+  "power": 2600,
+  "radius": 6,
+  "duration": 12000,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:sympathetic_vial",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "#warlockery:disturbed_fibers",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_condensed_fear",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": true,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "nightmare"
+}

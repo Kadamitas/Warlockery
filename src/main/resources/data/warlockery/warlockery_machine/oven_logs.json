@@ -1,0 +1,13 @@
+{
+  "machine": "alchemical_oven",
+  "inputs": [
+    { "ingredient": "#minecraft:logs" },
+    { "ingredient": "warlockery:ingredient_clay_jar" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_ash_wood" },
+    { "item": "warlockery:ingredient_foul_fume" }
+  ],
+  "processing_time": 200,
+  "requires_fuel": true
+}

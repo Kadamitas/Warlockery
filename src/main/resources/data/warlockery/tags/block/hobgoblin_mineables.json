@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#c:ores",
+    "#c:cobblestones",
+    "minecraft:stone",
+    "minecraft:deepslate"
+  ]
+}

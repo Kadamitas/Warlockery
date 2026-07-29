@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " L ",
+    "IBQ",
+    " G "
+  ],
+  "key": {
+    "L": "#warlockery:custom_brew/lingering/two",
+    "I": "#c:dyes/black",
+    "B": "#warlockery:manual_reagents/books",
+    "Q": "#c:feathers",
+    "G": "#warlockery:manual_reagents/breaths_of_the_goddess"
+  },
+  "result": {
+    "id": "warlockery:ingredient_book_distilling"
+  }
+}

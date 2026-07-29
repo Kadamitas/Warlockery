@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:soul_lantern",
+    "warlockery:ingredient_attuned_stone",
+    "warlockery:ingredient_clay_jar"
+  ]
+}

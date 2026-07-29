@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "GDG",
+    "DCD",
+    "GNG"
+  ],
+  "key": {
+    "G": "#c:ingots/gold",
+    "D": "#c:gems/diamond",
+    "C": "#warlockery:utility_reagents/clocks",
+    "N": "#warlockery:utility_reagents/null_catalysts"
+  },
+  "result": {
+    "id": "warlockery:shelfcompass"
+  }
+}

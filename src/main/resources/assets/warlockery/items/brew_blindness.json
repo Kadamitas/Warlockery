@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_blindness",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -14737629
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "machine": "brazier",
+  "inputs": [
+    { "ingredient": "#warlockery:brazier/wormwood" },
+    { "ingredient": "#warlockery:brazier/bat_wool" },
+    { "ingredient": "#warlockery:brazier/graveyard_dust" }
+  ],
+  "outputs": [{ "item": "warlockery:ingredient_ash_wood" }],
+  "processing_time": 600,
+  "altar_power": 1200
+}

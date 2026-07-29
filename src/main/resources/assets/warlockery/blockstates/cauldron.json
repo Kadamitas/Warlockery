@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "lit=false":  {
+                                       "model":  "warlockery:block/cauldron"
+                                   },
+                     "lit=true":  {
+                                      "model":  "warlockery:block/cauldron"
+                                  }
+                 }
+}

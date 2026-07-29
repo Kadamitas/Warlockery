@@ -1,0 +1,39 @@
+{
+  "title": "Portable Rite of Total Eclipse",
+  "description": "Darkens the sky from a circle talisman.",
+  "action": "eclipse",
+  "power": 3800,
+  "radius": 6,
+  "duration": 2400,
+  "amplifier": 0,
+  "casting_time": 260,
+  "glyphs": {
+    "circleglyphritual": 8,
+    "circleglyphinfernal": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:circletalisman",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "#warlockery:ghost_light_reagents",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:clock",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": true,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

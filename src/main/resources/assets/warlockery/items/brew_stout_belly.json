@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_stout_belly",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -3631030
+      }
+    ]
+  }
+}

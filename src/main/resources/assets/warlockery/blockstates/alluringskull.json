@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "warlockery:block/alluringskull"
+    },
+    "active=true": {
+      "model": "warlockery:block/alluringskull",
+      "y": 180
+    }
+  }
+}

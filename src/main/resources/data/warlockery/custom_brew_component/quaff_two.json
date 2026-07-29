@@ -1,0 +1,6 @@
+{
+  "ingredient": "#warlockery:custom_brew/modifier/quaff_2",
+  "role": "modifier",
+  "value": 2,
+  "modifier": "quaff"
+}

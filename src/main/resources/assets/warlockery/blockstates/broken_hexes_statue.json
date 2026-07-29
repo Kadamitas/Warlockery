@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "enabled=false":  {
+                              "model":  "warlockery:block/broken_hexes_statue"
+                          },
+                     "enabled=true":  {
+                              "model":  "warlockery:block/broken_hexes_statue"
+                          }
+                 }
+}

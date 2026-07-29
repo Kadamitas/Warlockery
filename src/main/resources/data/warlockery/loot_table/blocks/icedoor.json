@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "warlockery:icedoor",
+          "properties": {
+            "half": "lower"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "warlockery:icedoor"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "warlockery:blocks/icedoor"
+}

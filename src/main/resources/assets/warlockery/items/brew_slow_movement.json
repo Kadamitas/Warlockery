@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_slow_movement",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -10851199
+      }
+    ]
+  }
+}

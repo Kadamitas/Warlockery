@@ -1,0 +1,22 @@
+{
+  "machine": "kettle",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    {
+      "ingredient": "warlockery:ingredient_infusion_base"
+    },
+    {
+      "ingredient": "#minecraft:saplings"
+    }
+  ],
+  "outputs": [
+    {
+      "item": "warlockery:brew_grow_sapling",
+      "count": 1
+    }
+  ],
+  "processing_time": 200
+}

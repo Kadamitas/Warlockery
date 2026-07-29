@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "payload=ink": {
+      "model": "warlockery:block/plantmine"
+    },
+    "payload=sprouting": {
+      "model": "warlockery:block/plantmine"
+    },
+    "payload=thorns": {
+      "model": "warlockery:block/plantmine"
+    },
+    "payload=unarmed": {
+      "model": "warlockery:block/plantmine"
+    },
+    "payload=webs": {
+      "model": "warlockery:block/plantmine"
+    }
+  }
+}

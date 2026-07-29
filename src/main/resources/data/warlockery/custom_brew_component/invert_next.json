@@ -1,0 +1,5 @@
+{
+  "ingredient": "#warlockery:custom_brew/modifier/invert",
+  "role": "modifier",
+  "modifier": "invert_next"
+}

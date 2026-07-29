@@ -1,0 +1,10 @@
+{
+  "machine": "spinningwheel",
+  "inputs": [
+    { "ingredient": "#c:strings", "count": 8 }
+  ],
+  "outputs": [
+    { "item": "minecraft:white_wool" }
+  ],
+  "processing_time": 160
+}

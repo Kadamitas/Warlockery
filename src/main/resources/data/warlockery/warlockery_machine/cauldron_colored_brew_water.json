@@ -1,0 +1,16 @@
+{
+  "machine": "cauldron",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 1000
+  },
+  "inputs": [
+    { "ingredient": "#c:buckets/empty" },
+    { "ingredient": "warlockery:brew_combustion" },
+    { "ingredient": "#c:dyes" }
+  ],
+  "outputs": [
+    { "item": "warlockery:bucketbrew" }
+  ],
+  "processing_time": 240
+}

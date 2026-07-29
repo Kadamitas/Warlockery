@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#warlockery:ritual_stones",
+    "#minecraft:dirt",
+    "minecraft:netherrack",
+    "minecraft:soul_sand",
+    "minecraft:soul_soil",
+    "minecraft:magma_block"
+  ]
+}

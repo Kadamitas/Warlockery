@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "warlockery:block/hex_ladder"
+    },
+    "facing=east": {
+      "model": "warlockery:block/hex_ladder",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "warlockery:block/hex_ladder",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "warlockery:block/hex_ladder",
+      "y": 270
+    }
+  }
+}

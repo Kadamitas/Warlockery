@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:nether_stars",
+    "#c:gems/diamond",
+    "#warlockery:crafting/flints",
+    "#warlockery:brew_reagents/magma_creams",
+    "#warlockery:brew_reagents/magma_creams",
+    "#warlockery:brew_reagents/magma_creams",
+    "#warlockery:brew_reagents/magma_creams",
+    "#warlockery:brew_reagents/magma_creams",
+    "#warlockery:brew_reagents/magma_creams"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_nullcatalyst"
+  }
+}

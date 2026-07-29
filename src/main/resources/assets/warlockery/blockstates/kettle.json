@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "lit=false":  {
+                                       "model":  "warlockery:block/kettle"
+                                   },
+                     "lit=true":  {
+                                      "model":  "warlockery:block/kettle"
+                                  }
+                 }
+}

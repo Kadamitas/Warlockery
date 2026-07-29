@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#warlockery:mystic_unguents",
+    "warlockery:ingredient_owlets_wing",
+    "#c:feathers",
+    "warlockery:ingredient_tormented_twine"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_flying_ointment"
+  }
+}

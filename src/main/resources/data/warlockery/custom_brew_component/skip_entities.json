@@ -1,0 +1,5 @@
+{
+  "ingredient": "#warlockery:custom_brew/modifier/skip_entities",
+  "role": "modifier",
+  "modifier": "skip_entities"
+}

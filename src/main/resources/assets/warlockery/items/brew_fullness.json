@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_fullness",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -515037
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_endless_water",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "endless_water"
+}

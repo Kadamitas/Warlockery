@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#c:stones",
+    "#c:cobblestones",
+    "#minecraft:terracotta",
+    "minecraft:calcite",
+    "minecraft:tuff",
+    "minecraft:dripstone_block"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_depths",
+  "role": "effect",
+  "capacity_cost": 3,
+  "source_brew": "depths"
+}

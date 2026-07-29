@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#warlockery:ritual_beasts",
+    "minecraft:villager",
+    "minecraft:wandering_trader"
+  ]
+}

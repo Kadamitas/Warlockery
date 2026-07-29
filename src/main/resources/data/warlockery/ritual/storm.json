@@ -1,0 +1,33 @@
+{
+  "title": "Rite of Sky's Wrath",
+  "description": "Calls a violent thunderstorm and strikes the bound or nearest target with lightning.",
+  "action": "skys_wrath",
+  "power": 1400,
+  "radius": 6,
+  "duration": 6000,
+  "amplifier": 0,
+  "casting_time": 140,
+  "glyphs": {
+    "circleglyphritual": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_breath_of_the_goddess",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:lightning_rod",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

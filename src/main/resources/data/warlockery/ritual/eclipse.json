@@ -1,0 +1,34 @@
+{
+  "title": "Rite of Total Eclipse",
+  "description": "Darkens the sky and blankets nearby creatures in supernatural darkness.",
+  "action": "eclipse",
+  "power": 3200,
+  "radius": 6,
+  "duration": 2400,
+  "amplifier": 0,
+  "casting_time": 240,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#warlockery:ghost_light_reagents",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:clock",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": true,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

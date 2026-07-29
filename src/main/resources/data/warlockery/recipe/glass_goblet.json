@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["G G", " G ", " I "],
+  "key": {"G": "#c:glass_panes/colorless", "I": "#c:nuggets/iron"},
+  "result": {"id": "warlockery:glassgoblet"}
+}

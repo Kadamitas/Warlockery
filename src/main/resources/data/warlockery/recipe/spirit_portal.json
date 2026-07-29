@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["OSO", "S S", "OSO"],
+  "key": {"O": "#c:obsidians", "S": "warlockery:ingredient_spectral_dust"},
+  "result": {"id": "warlockery:spiritportal"}
+}

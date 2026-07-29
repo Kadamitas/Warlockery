@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Infusion: Enchanted Broom",
+  "description": "Creates an enchanted broom from a mundane broom and flying ointment.",
+  "action": "summon_item",
+  "power": 1800,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_broom",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:flying_ointments",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "warlockery:ingredient_broom_enchanted"
+}

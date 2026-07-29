@@ -1,0 +1,19 @@
+{
+  "machine": "cauldron",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "altar_power": 3000,
+  "inputs": [
+    { "ingredient": "warlockery:ingredient_refined_evil" },
+    { "ingredient": "#warlockery:luck_catalysts" },
+    { "ingredient": "warlockery:ingredient_reek_of_misfortune" },
+    { "ingredient": "#c:dusts/glowstone" },
+    { "ingredient": "warlockery:ingredient_clay_jar" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_drop_of_luck" }
+  ],
+  "processing_time": 360
+}

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["LWL", " B "],
+  "key": {"L": "#c:leathers", "W": "#minecraft:wool", "B": "#c:bones"},
+  "result": {"id": "warlockery:wolfhead"}
+}

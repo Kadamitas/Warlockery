@@ -1,0 +1,11 @@
+{
+  "machine": "brazier",
+  "inputs": [
+    { "ingredient": "#warlockery:brazier/condensed_fear" },
+    { "ingredient": "#warlockery:brazier/wormy_apples" },
+    { "ingredient": "#warlockery:brazier/graveyard_dust" }
+  ],
+  "outputs": [{ "item": "warlockery:ingredient_ash_wood" }],
+  "processing_time": 100,
+  "altar_power": 800
+}

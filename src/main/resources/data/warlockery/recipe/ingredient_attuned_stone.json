@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "W",
+    "D",
+    "L"
+  ],
+  "key": {
+    "W": "warlockery:ingredient_whiff_of_magic",
+    "D": "#c:gems/diamond",
+    "L": "#c:buckets/lava"
+  },
+  "result": {
+    "id": "warlockery:ingredient_attuned_stone"
+  }
+}

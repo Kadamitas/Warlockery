@@ -1,0 +1,28 @@
+{
+  "title": "Rite of Challenge: Stonebroker",
+  "description": "Calls the armored Stonebroker patron for combat, worship, and kobold blessings.",
+  "action": "summon_entity",
+  "target": "warlockery:stonebroker",
+  "power": 3200,
+  "radius": 7,
+  "casting_time": 180,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyph_veil": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#c:ingots/koboldite",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:creature_interactions/heart_offerings",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  }
+}

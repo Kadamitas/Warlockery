@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["SSS", "GGG", "SSS"],
+  "key": {"S": "#c:ingots/silver", "G": "#c:glass_blocks/colorless"},
+  "result": {"id": "warlockery:mirrorblock"}
+}

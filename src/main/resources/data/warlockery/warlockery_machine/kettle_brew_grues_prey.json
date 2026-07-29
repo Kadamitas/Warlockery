@@ -1,0 +1,25 @@
+{
+  "machine": "kettle",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    {
+      "ingredient": "warlockery:ingredient_infusion_base"
+    },
+    {
+      "ingredient": "#c:dyes/black"
+    },
+    {
+      "ingredient": "warlockery:ingredient_whiff_of_magic"
+    }
+  ],
+  "outputs": [
+    {
+      "item": "warlockery:brew_grues_prey",
+      "count": 1
+    }
+  ],
+  "processing_time": 240
+}

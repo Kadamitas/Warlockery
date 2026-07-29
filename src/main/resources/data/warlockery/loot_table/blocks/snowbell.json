@@ -1,0 +1,97 @@
+{
+  "type": "minecraft:block",
+  "functions": [
+    {
+      "function": "minecraft:explosion_decay"
+    }
+  ],
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "warlockery:snowbell",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "age": "7"
+                  }
+                }
+              ],
+              "name": "minecraft:snowball"
+            },
+            {
+              "type": "minecraft:item",
+              "name": "warlockery:seedssnowbell"
+            }
+          ]
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "conditions": [
+        {
+          "block": "warlockery:snowbell",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "age": "7"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "enchantment": "minecraft:fortune",
+              "formula": "minecraft:binomial_with_bonus_count",
+              "function": "minecraft:apply_bonus",
+              "parameters": {
+                "extra": 3,
+                "probability": 0.5714286
+              }
+            }
+          ],
+          "name": "warlockery:seedssnowbell"
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "conditions": [
+        {
+          "block": "warlockery:snowbell",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "age": "7"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "conditions": [
+            {
+              "chances": [
+                0.2,
+                0.25,
+                0.33333334,
+                0.5
+              ],
+              "condition": "minecraft:table_bonus",
+              "enchantment": "minecraft:fortune"
+            }
+          ],
+          "name": "warlockery:ingredient_icy_needle"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "warlockery:blocks/snowbell"
+}

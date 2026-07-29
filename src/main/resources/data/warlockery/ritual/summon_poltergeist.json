@@ -1,0 +1,29 @@
+{
+  "title": "Rite of Summoning: Poltergeist",
+  "description": "Calls a Poltergeist needed by the greater Rite of Binding.",
+  "action": "summon_entity",
+  "target": "warlockery:poltergeist",
+  "power": 1900,
+  "radius": 6,
+  "casting_time": 100,
+  "night_only": true,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_spectral_dust",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:chests/wooden",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  }
+}

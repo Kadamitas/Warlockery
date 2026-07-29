@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " S ",
+    "SFS",
+    " S "
+  ],
+  "key": {
+    "S": "#c:rods/wooden",
+    "F": "warlockery:ingredient_fanciful_thread"
+  },
+  "result": {
+    "id": "warlockery:ingredient_charm_disrupted_dreams"
+  }
+}

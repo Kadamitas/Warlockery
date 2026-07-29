@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [" S ", " L ", "BLB"],
+  "key": {"S": "#minecraft:saplings", "L": "#minecraft:logs", "B": "#c:fertilizers"},
+  "result": {"id": "warlockery:trent"}
+}

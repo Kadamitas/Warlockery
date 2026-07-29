@@ -1,0 +1,13 @@
+{
+  "machine": "alchemical_oven",
+  "inputs": [
+    { "ingredient": "#warlockery:hawthorn_saplings" },
+    { "ingredient": "warlockery:ingredient_clay_jar" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_ash_wood" },
+    { "item": "warlockery:ingredient_odour_of_purity" }
+  ],
+  "processing_time": 160,
+  "requires_fuel": true
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " S ",
+    "SBS",
+    " S "
+  ],
+  "key": {
+    "S": "#c:dusts/silver",
+    "B": "warlockery:beartrap"
+  },
+  "result": {
+    "id": "warlockery:wolftrap"
+  }
+}

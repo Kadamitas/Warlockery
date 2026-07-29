@@ -1,0 +1,36 @@
+{
+  "title": "Rite of Infusion: Sky",
+  "description": "Infuses those in the circle with the grace of flight.",
+  "action": "infuse_path",
+  "power": 2400,
+  "radius": 6,
+  "duration": 7200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyph_veil": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_owlets_wing",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:feathers",
+        "count": 4,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "target": "sky"
+}

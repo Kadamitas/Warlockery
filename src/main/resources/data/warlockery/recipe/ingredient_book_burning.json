@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " A ",
+    "IBQ",
+    " F "
+  ],
+  "key": {
+    "A": "#warlockery:brew_reagents/wood_ashes",
+    "I": "#c:dyes/black",
+    "B": "#warlockery:manual_reagents/books",
+    "Q": "#c:feathers",
+    "F": "#warlockery:brazier_igniters"
+  },
+  "result": {
+    "id": "warlockery:ingredient_book_burning"
+  }
+}

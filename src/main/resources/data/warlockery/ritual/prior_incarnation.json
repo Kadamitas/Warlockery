@@ -1,0 +1,39 @@
+{
+  "title": "Rite of Prior Incarnation",
+  "description": "Calls restorative echoes of a target player around the circle.",
+  "action": "prior_incarnation",
+  "power": 2800,
+  "radius": 6,
+  "duration": 2400,
+  "amplifier": 2,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyph_veil": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:sympathetic_vial",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_hint_of_rebirth",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:experience_bottle",
+        "count": 4,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

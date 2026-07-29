@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "IFI",
+    "I I",
+    "III"
+  ],
+  "key": {
+    "I": "warlockery:ingredient_impregnated_leather",
+    "F": "warlockery:ingredient_fanciful_thread"
+  },
+  "result": {
+    "id": "warlockery:brewbag"
+  }
+}

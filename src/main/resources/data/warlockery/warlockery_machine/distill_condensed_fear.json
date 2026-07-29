@@ -1,0 +1,29 @@
+{
+  "machine": "distillery",
+  "fluid": {
+    "ingredient": "#warlockery:spirit",
+    "amount": 1000
+  },
+  "inputs": [
+    {
+      "ingredient": "warlockery:ingredient_oil_of_vitriol"
+    },
+    {
+      "ingredient": "warlockery:ingredient_clay_jar",
+      "count": 2
+    }
+  ],
+  "outputs": [
+    {
+      "item": "warlockery:ingredient_focused_will"
+    },
+    {
+      "item": "warlockery:ingredient_condensed_fear"
+    },
+    {
+      "item": "warlockery:buckethollowtears"
+    }
+  ],
+  "processing_time": 420,
+  "requires_fuel": true
+}

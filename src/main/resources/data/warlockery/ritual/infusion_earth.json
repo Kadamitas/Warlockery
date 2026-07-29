@@ -1,0 +1,34 @@
+{
+  "title": "Rite of Infusion: Earth",
+  "description": "Infuses those in the circle with the endurance of stone.",
+  "action": "infuse_path",
+  "power": 1800,
+  "radius": 6,
+  "duration": 7200,
+  "amplifier": 1,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#warlockery:world_souls",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:stones",
+        "count": 4,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "overworld"
+}

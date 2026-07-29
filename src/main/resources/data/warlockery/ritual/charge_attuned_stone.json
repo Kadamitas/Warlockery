@@ -1,0 +1,44 @@
+{
+  "title": "Rite of Charging",
+  "description": "Charges an attuned stone with concentrated altar power.",
+  "action": "summon_item",
+  "power": 2000,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_attuned_stone",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_ash_wood",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_quicklime",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:dusts/glowstone",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "warlockery:ingredient_attuned_stone_charged"
+}

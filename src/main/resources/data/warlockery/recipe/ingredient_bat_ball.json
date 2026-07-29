@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["FFF", "FSF", "FFF"],
+  "key": {
+    "F": "#warlockery:bat_binding_fibers",
+    "S": "#c:slime_balls"
+  },
+  "result": {
+    "id": "warlockery:ingredient_bat_ball"
+  }
+}

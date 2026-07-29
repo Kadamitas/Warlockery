@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "lit=false":  {
+                                       "model":  "warlockery:block/spinningwheel"
+                                   },
+                     "lit=true":  {
+                                      "model":  "warlockery:block/spinningwheel"
+                                  }
+                 }
+}

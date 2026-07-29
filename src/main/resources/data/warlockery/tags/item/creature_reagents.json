@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:demonheart",
+    "warlockery:ingredient_bat_wool",
+    "warlockery:ingredient_creeper_heart",
+    "warlockery:ingredient_dog_tongue",
+    "warlockery:ingredient_heartwood_splinter",
+    "warlockery:ingredient_mellifluous_hunger",
+    "warlockery:ingredient_owlets_wing",
+    "warlockery:ingredient_spectral_dust",
+    "warlockery:ingredient_subdued_spirit",
+    "warlockery:ingredient_toe_of_frog"
+  ]
+}

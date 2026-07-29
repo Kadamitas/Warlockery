@@ -1,0 +1,29 @@
+{
+  "title": "Rite of Glyphic Transformation: Infernal",
+  "description": "Transforms the outer glyphs into infernal chalk.",
+  "action": "glyph_transform",
+  "power": 1000,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:chalkinfernal",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "warlockery:circleglyphinfernal"
+}

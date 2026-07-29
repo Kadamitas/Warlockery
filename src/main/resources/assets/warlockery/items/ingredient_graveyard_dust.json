@@ -1,0 +1,6 @@
+{
+    "model":  {
+                  "type":  "minecraft:model",
+                  "model":  "warlockery:item/ingredient_graveyard_dust"
+              }
+}

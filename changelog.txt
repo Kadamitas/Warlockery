@@ -1,0 +1,9 @@
+Warlockery 1.0.0-alpha.1
+========================
+
+- Rebranded the project, packages, mod namespace, metadata, and distributable as Warlockery by Kadamitas.
+- Added 84 data-driven rituals and floating diagnostics for chalk circles, machines, altars, and werewolf traps.
+- Added 47 creature types, kobold village integration, biome-aware Ents, supernatural forms, and silver-equipped Werewolf Hunters.
+- Replaced inherited visual/audio resources with an original generated pixel-art set and vanilla-event sound design.
+- Added JUnit coverage and registry-backed Minecraft GameTests for rituals, creatures, combat, and hunter equipment.
+- Updated the implementation for Forge 65.1.0, Minecraft 26.2, and Java 25.

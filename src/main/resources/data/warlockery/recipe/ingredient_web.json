@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "SWS",
+    " S "
+  ],
+  "key": {
+    "S": "#c:strings",
+    "W": "minecraft:cobweb"
+  },
+  "result": {
+    "id": "warlockery:ingredient_web"
+  }
+}

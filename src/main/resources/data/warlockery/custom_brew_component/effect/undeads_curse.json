@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_undeads_curse",
+  "role": "effect",
+  "capacity_cost": 6,
+  "source_brew": "undeads_curse"
+}

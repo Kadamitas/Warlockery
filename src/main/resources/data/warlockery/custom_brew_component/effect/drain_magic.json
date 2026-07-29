@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_drain_magic",
+  "role": "effect",
+  "capacity_cost": 6,
+  "source_brew": "drain_magic"
+}

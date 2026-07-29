@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_tint_skin",
+  "role": "effect",
+  "capacity_cost": 1,
+  "source_brew": "tint_skin"
+}

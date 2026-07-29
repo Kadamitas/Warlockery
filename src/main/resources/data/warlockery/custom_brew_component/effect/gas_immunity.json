@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_gas_immunity",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "gas_immunity"
+}

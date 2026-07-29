@@ -1,0 +1,17 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "equipment",
+    "pattern":  [
+                    " BM",
+                    " SB",
+                    "S  "
+                ],
+    "key":  {
+                "B":  "warlockery:ingredient_belladonna",
+                "M":  "warlockery:ingredient_mandrake_root",
+                "S":  "#c:rods/wooden"
+            },
+    "result":  {
+                   "id":  "warlockery:arcane_focus"
+               }
+}

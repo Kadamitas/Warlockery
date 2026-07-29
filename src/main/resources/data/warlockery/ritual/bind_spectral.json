@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Binding: Spectral Creatures",
+  "description": "Condenses spectral creatures into a refreshed Spectral Stone.",
+  "action": "bind_entity",
+  "power": 2000,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:spectralstone",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_spectral_dust",
+        "count": 3,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "spectral"
+}

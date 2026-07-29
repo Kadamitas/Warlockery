@@ -1,0 +1,12 @@
+{
+  "machine": "spinningwheel",
+  "inputs": [
+    { "ingredient": "#warlockery:disturbed_fibers", "count": 4 },
+    { "ingredient": "#c:strings" },
+    { "ingredient": "warlockery:ingredient_reek_of_misfortune" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_tormented_twine" }
+  ],
+  "processing_time": 280
+}

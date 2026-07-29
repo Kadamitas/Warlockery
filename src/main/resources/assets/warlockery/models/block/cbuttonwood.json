@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/button",
+  "textures": {
+    "texture": "warlockery:block/hawthorn_planks"
+  }
+}

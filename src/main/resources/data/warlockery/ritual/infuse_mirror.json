@@ -1,0 +1,41 @@
+{
+  "title": "Rite of Infusion: Mirror",
+  "description": "Condenses a crafted mirror surface into a portable infernal reflection.",
+  "action": "summon_item",
+  "power": 3200,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:mirrorblock",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_infernal_blood",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:gems/diamond",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "target": "warlockery:mirror"
+}

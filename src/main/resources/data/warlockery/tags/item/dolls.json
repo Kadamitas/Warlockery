@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:doll",
+    "warlockery:earth_guard_doll",
+    "warlockery:water_guard_doll",
+    "warlockery:hunger_guard_doll",
+    "warlockery:fire_guard_doll",
+    "warlockery:tool_mending_doll",
+    "warlockery:death_guard_doll",
+    "warlockery:hex_guard_doll",
+    "warlockery:hexing_doll",
+    "warlockery:blood_link_doll",
+    "warlockery:doll_guard",
+    "warlockery:armor_mending_doll"
+  ]
+}

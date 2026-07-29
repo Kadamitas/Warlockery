@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#warlockery:spectral",
+    "#warlockery:vampires",
+    "warlockery:corpse"
+  ]
+}

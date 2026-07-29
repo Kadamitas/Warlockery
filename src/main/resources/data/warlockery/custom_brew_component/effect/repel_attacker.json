@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_repel_attacker",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "repel_attacker"
+}

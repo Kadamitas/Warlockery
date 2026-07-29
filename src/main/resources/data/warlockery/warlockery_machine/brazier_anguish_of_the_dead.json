@@ -1,0 +1,11 @@
+{
+  "machine": "brazier",
+  "inputs": [
+    { "ingredient": "#warlockery:brazier/tears" },
+    { "ingredient": "#c:bones" },
+    { "ingredient": "#warlockery:brazier/blaze_powder" }
+  ],
+  "outputs": [{ "item": "warlockery:ingredient_ash_wood" }],
+  "processing_time": 100,
+  "altar_power": 1000
+}

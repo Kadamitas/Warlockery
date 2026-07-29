@@ -1,0 +1,32 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:axes",
+    "#minecraft:hoes",
+    "#minecraft:swords",
+    "#minecraft:spears",
+    "#minecraft:pickaxes",
+    "#minecraft:shovels",
+    "#c:tools/crossbow",
+    "warlockery:arcane_focus",
+    "warlockery:circletalisman",
+    "warlockery:divinerlava",
+    "warlockery:divinerwater",
+    "warlockery:chalkheart",
+    "warlockery:chalkinfernal",
+    "warlockery:chalk_veil",
+    "warlockery:chalkritual",
+    "warlockery:mutator",
+    "warlockery:ingredient_broom",
+    "warlockery:ingredient_broom_enchanted",
+    "warlockery:ingredient_necro_stone",
+    "warlockery:ingredient_seer_stone",
+    "warlockery:ingredient_waystone",
+    "warlockery:ingredient_waystone_bound",
+    "warlockery:ingredient_waystone_creature_bound",
+    "warlockery:spectralstone",
+    "warlockery:mirror",
+    "warlockery:replication_staff",
+    "warlockery:wolftoken"
+  ]
+}

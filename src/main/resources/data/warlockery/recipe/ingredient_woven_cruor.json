@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:bloodedwool",
+    "warlockery:ingredient_golden_thread",
+    "#c:dyes/red"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_woven_cruor",
+    "count": 2
+  }
+}

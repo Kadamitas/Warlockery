@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:familiar_cat",
+    "warlockery:imp",
+    "warlockery:owl",
+    "warlockery:spectral_familiar",
+    "warlockery:storm_simian",
+    "warlockery:toad"
+  ]
+}

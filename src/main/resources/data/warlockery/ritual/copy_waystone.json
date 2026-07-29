@@ -1,0 +1,38 @@
+{
+  "title": "Rite of Binding: Copy Waystone",
+  "description": "Copies a bound location onto a second waystone.",
+  "action": "copy_waystone",
+  "power": 750,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_waystone_bound",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_waystone",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "#c:dusts/redstone",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " G ",
+    "GQG",
+    " F "
+  ],
+  "key": {
+    "G": "#c:dusts/glowstone",
+    "Q": "#warlockery:solar_chargeables",
+    "F": "#warlockery:utility_reagents/sunflowers"
+  },
+  "result": {
+    "id": "warlockery:sungrenade",
+    "count": 2
+  }
+}

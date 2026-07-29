@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:buckets/milk",
+    "warlockery:ingredient_odour_of_purity",
+    "warlockery:ingredient_clay_jar",
+    "warlockery:ingredient_clay_jar",
+    "warlockery:ingredient_clay_jar"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_purified_milk",
+    "count": 3
+  }
+}

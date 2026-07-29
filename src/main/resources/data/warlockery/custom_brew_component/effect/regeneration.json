@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_regeneration",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "regeneration"
+}

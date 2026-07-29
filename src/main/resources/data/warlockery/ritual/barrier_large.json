@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Greater Protection",
+  "description": "Raises a wide magical ward for a coven and its allies.",
+  "action": "effect",
+  "power": 2400,
+  "radius": 12,
+  "duration": 1800,
+  "amplifier": 3,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyph_veil": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_focused_will",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:obsidians/normal",
+        "count": 4,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "effect": "minecraft:resistance"
+}

@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_demonbane",
+  "role": "effect",
+  "capacity_cost": 5,
+  "source_brew": "demonbane"
+}

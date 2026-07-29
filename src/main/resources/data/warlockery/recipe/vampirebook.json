@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WSW",
+    "WBW",
+    "WGW"
+  ],
+  "key": {
+    "W": "#c:crops/nether_wart",
+    "S": "#c:nether_stars",
+    "B": "#warlockery:manual_reagents/books",
+    "G": "#warlockery:manual_reagents/garlic"
+  },
+  "result": {
+    "id": "warlockery:vampirebook"
+  }
+}

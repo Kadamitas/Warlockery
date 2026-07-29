@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_spectral_dust",
+    "warlockery:ingredient_verdant_catalyst",
+    "#c:fertilizers"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_graveyard_dust"
+  }
+}

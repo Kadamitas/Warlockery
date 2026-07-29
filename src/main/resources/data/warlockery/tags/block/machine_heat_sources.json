@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:campfires",
+    "#c:player_workstations/furnaces",
+    "minecraft:fire",
+    "minecraft:soul_fire",
+    "minecraft:magma_block",
+    "minecraft:lava"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#warlockery:utility_reagents/null_catalysts",
+    "#warlockery:custom_brew/lingering/two",
+    "#warlockery:custom_brew/lingering/two",
+    "#warlockery:projectile_reagents/holy_arrows",
+    "#warlockery:projectile_reagents/holy_arrows",
+    "#warlockery:projectile_reagents/holy_arrows"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_bolt_anti_magic",
+    "count": 3
+  }
+}

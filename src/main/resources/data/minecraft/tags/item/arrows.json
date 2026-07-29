@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:ingredient_bolt_anti_magic",
+    "warlockery:ingredient_bolt_holy",
+    "warlockery:ingredient_bolt_silver",
+    "warlockery:ingredient_bolt_splitting",
+    "warlockery:ingredient_bolt_stake"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:werewolf",
+    "warlockery:feral_lycan",
+    "warlockery:lycan_villager"
+  ]
+}

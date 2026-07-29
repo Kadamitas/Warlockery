@@ -1,0 +1,46 @@
+{
+  "title": "Rite of Infusion: Seer Stone",
+  "description": "Infuses a stone for communication among a coven.",
+  "action": "summon_item",
+  "power": 2300,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyph_veil": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_quartz_sphere",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_attuned_stone_charged",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_focused_will",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:happenstance_oils",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "night_only": true,
+  "target": "warlockery:ingredient_seer_stone"
+}

@@ -1,0 +1,19 @@
+{
+  "machine": "kettle",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    { "ingredient": "#c:bones" },
+    { "ingredient": "#warlockery:brew_reagents/apples" },
+    { "ingredient": "#warlockery:plant_mine_payloads/sprouting" },
+    { "ingredient": "#warlockery:custom_brew/lingering/two" },
+    { "ingredient": "#c:feathers" },
+    { "ingredient": "#c:foods/raw_fish" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_brew_hexed_leaping", "count": 3 }
+  ],
+  "processing_time": 240
+}

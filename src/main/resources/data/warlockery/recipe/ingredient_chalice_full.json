@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:chalice",
+    "#warlockery:chalice_fillers"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_chalice_full"
+  }
+}

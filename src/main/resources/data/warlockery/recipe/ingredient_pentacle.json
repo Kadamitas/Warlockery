@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NNN",
+    "NIN",
+    "NNN"
+  ],
+  "key": {
+    "N": "#c:nuggets/koboldite",
+    "I": "#c:ingots/koboldite"
+  },
+  "result": {
+    "id": "warlockery:ingredient_pentacle"
+  }
+}

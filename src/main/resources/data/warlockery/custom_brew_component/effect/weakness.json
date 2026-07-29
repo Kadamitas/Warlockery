@@ -1,0 +1,7 @@
+{
+  "ingredient": "warlockery:brew_weakness",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "weakness",
+  "inverse_brew": "damage_boost"
+}

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:chalice",
+    "warlockery:ingredient_chalice",
+    "warlockery:ingredient_chalice_full"
+  ]
+}

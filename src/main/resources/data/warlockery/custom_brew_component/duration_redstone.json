@@ -1,0 +1,5 @@
+{
+  "ingredient": "#warlockery:custom_brew/duration/redstone",
+  "role": "duration",
+  "multiplier": 2.0
+}

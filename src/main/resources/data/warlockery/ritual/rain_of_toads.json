@@ -1,0 +1,36 @@
+{
+  "title": "Hex of Raining Toads",
+  "description": "Rains poisonous and safely exploding toads into the ritual area.",
+  "action": "toad_rain",
+  "power": 1400,
+  "radius": 7,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 8,
+    "circleglyph_veil": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_toe_of_frog",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:slime_balls",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": true,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "minecraft:frog",
+  "count": 8
+}

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:hex_log",
+    "#minecraft:logs"
+  ]
+}

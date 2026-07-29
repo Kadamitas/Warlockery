@@ -1,0 +1,5 @@
+{
+  "ingredient": "#warlockery:custom_brew/modifier/hide_particles",
+  "role": "modifier",
+  "modifier": "hide_particles"
+}

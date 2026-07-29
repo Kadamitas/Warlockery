@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Moving Earth",
+  "description": "Raises a solid column from the circle.",
+  "action": "raise_column",
+  "power": 1100,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#c:stones",
+        "count": 8,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:world_souls",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "minecraft:stone",
+  "count": 8
+}

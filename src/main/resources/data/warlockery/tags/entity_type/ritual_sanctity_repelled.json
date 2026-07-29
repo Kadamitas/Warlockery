@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:phantom",
+    "minecraft:ravager",
+    "minecraft:warden",
+    "minecraft:witch",
+    "#warlockery:demons",
+    "#warlockery:nightmares",
+    "#warlockery:werewolves"
+  ]
+}

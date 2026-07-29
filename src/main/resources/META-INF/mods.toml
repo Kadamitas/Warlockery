@@ -1,0 +1,30 @@
+
+modLoader="javafml"
+loaderVersion="[65,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="warlockery"
+version="${file.jarVersion}"
+displayName="Warlockery"
+logoFile="assets/warlockery/icon.png"
+authors="Kadamitas"
+
+description='''A standalone ritual-magic mod for Forge 65 and Minecraft 26.2.
+Warlockery includes data-driven circles and machines, magical plants, sympathetic magic,
+dolls, supernatural forms, creatures and bosses, kobold village enclaves,
+silver-equipped Werewolf Hunters, and modern ore progression.'''
+
+[[dependencies.warlockery]]
+    modId="forge"
+    mandatory=true
+    versionRange="[65,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.warlockery]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[26.2,26.3)"
+    ordering="NONE"
+    side="BOTH"

@@ -1,0 +1,29 @@
+{
+  "title": "Rite of Calling: Cat Familiar",
+  "description": "Calls a cat familiar that can be bound as a persistent magical companion.",
+  "action": "summon_entity",
+  "target": "warlockery:familiar_cat",
+  "power": 1500,
+  "radius": 6,
+  "casting_time": 100,
+  "night_only": true,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#c:foods/raw_fish",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_focused_will",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  }
+}

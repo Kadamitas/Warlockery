@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WLW",
+    "LDL",
+    "WLW"
+  ],
+  "key": {
+    "W": "warlockery:ingredient_whiff_of_magic",
+    "L": "#c:leathers",
+    "D": "warlockery:ingredient_diamond_vapour"
+  },
+  "result": {
+    "id": "warlockery:ingredient_impregnated_leather",
+    "count": 4
+  }
+}

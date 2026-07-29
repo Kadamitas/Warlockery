@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "payload=empty": { "model": "warlockery:block/crittersnare" },
+    "payload=bat": { "model": "warlockery:block/crittersnare" },
+    "payload=silverfish": { "model": "warlockery:block/crittersnare" },
+    "payload=slime": { "model": "warlockery:block/crittersnare" },
+    "payload=magma_cube": { "model": "warlockery:block/crittersnare" }
+  }
+}

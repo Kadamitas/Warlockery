@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Infusion: Brew of Soaring",
+  "description": "Infuses a completed Brew of Soaring.",
+  "action": "summon_item",
+  "power": 1800,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "minecraft:phantom_membrane",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:flying_ointments",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "warlockery:ingredient_brew_soaring"
+}

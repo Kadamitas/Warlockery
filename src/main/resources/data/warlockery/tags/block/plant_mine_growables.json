@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:crops",
+    "#minecraft:flowers",
+    "#minecraft:saplings",
+    "#warlockery:ritual_growables"
+  ]
+}

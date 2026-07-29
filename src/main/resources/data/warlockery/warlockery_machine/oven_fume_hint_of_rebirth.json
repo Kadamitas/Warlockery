@@ -1,0 +1,21 @@
+{
+  "machine": "alchemical_oven",
+  "inputs": [
+    {
+      "ingredient": "minecraft:spruce_sapling"
+    },
+    {
+      "ingredient": "warlockery:ingredient_clay_jar"
+    }
+  ],
+  "outputs": [
+    {
+      "item": "warlockery:ingredient_ash_wood"
+    },
+    {
+      "item": "warlockery:ingredient_hint_of_rebirth"
+    }
+  ],
+  "processing_time": 180,
+  "requires_fuel": true
+}

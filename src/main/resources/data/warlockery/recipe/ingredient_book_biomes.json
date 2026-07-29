@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "IBQ",
+    " R "
+  ],
+  "key": {
+    "S": "#minecraft:saplings",
+    "I": "#c:dyes/black",
+    "B": "#warlockery:manual_reagents/books",
+    "Q": "#c:feathers",
+    "R": "#c:stones"
+  },
+  "result": {
+    "id": "warlockery:ingredient_book_biomes"
+  }
+}

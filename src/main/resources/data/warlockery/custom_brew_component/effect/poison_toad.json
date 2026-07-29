@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_poison_toad",
+  "role": "effect",
+  "capacity_cost": 5,
+  "source_brew": "poison_toad"
+}

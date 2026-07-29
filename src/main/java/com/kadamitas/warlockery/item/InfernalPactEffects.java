@@ -1,0 +1,37 @@
+package com.kadamitas.warlockery.item;
+
+import com.kadamitas.warlockery.registry.WarlockeryTags;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
+
+public final class InfernalPactEffects {
+    public static final String OWNER_KEY = "WarlockeryInfernalOwner";
+
+    private InfernalPactEffects() {
+    }
+
+    public static void tick(final Player owner) {
+        if (!(owner.level() instanceof ServerLevel level) || owner.tickCount % 20 != 0) {
+            return;
+        }
+        final LivingEntity commandedTarget = owner.getLastHurtMob() != null
+            ? owner.getLastHurtMob()
+            : owner.getLastHurtByMob();
+        level.getEntitiesOfClass(
+            Mob.class,
+            new AABB(owner.blockPosition()).inflate(32),
+            mob -> mob.typeHolder().is(WarlockeryTags.EntityTypes.DEMONS)
+                && owner.getStringUUID().equals(mob.getPersistentData().getStringOr(OWNER_KEY, ""))
+        ).forEach(demon -> {
+            if (demon.getTarget() == owner) {
+                demon.setTarget(null);
+            }
+            if (commandedTarget != null && commandedTarget != owner && commandedTarget.isAlive()) {
+                demon.setTarget(commandedTarget);
+            }
+        });
+    }
+}

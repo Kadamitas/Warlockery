@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_pulverize_rock",
+  "role": "effect",
+  "capacity_cost": 1,
+  "source_brew": "pulverize_rock"
+}

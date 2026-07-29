@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:ingredient_contract",
+    "warlockery:ingredient_contract_blaze",
+    "warlockery:ingredient_contract_evaporate",
+    "warlockery:ingredient_contract_fiery_touch",
+    "warlockery:ingredient_contract_resist_fire",
+    "warlockery:ingredient_contract_smelting",
+    "warlockery:ingredient_contract_torment"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " L ",
+    "IBQ",
+    " O "
+  ],
+  "key": {
+    "L": "#warlockery:custom_brew/lingering/two",
+    "I": "#c:dyes/black",
+    "B": "#warlockery:manual_reagents/books",
+    "Q": "#c:feathers",
+    "O": "#warlockery:brew_reagents/odours_of_purity"
+  },
+  "result": {
+    "id": "warlockery:ingredient_book_infusions"
+  }
+}

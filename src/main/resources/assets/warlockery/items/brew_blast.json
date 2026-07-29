@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_blast",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -12763843
+      }
+    ]
+  }
+}

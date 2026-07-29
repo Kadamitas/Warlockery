@@ -1,0 +1,30 @@
+{
+  "title": "Fortification of the Corpse",
+  "description": "Strengthens nearby undead with resistance, vigor, and a temporary health barrier.",
+  "action": "fortify_undead",
+  "power": 1500,
+  "radius": 8,
+  "duration": 2400,
+  "amplifier": 1,
+  "casting_time": 120,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyphinfernal": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_necro_stone",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "#c:bones",
+        "count": 4,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  },
+  "night_only": true
+}

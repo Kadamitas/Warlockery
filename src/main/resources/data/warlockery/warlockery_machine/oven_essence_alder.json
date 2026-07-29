@@ -1,0 +1,21 @@
+{
+  "machine": "alchemical_oven",
+  "inputs": [
+    {
+      "ingredient": "#warlockery:alder_logs"
+    },
+    {
+      "ingredient": "warlockery:ingredient_clay_jar"
+    }
+  ],
+  "outputs": [
+    {
+      "item": "warlockery:ingredient_ash_wood"
+    },
+    {
+      "item": "warlockery:ingredient_reek_of_misfortune"
+    }
+  ],
+  "processing_time": 200,
+  "requires_fuel": true
+}

@@ -1,0 +1,13 @@
+{
+  "machine": "alchemical_oven",
+  "inputs": [
+    { "ingredient": "#minecraft:saplings" },
+    { "ingredient": "warlockery:ingredient_clay_jar" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_ash_wood" },
+    { "item": "warlockery:ingredient_exhale_of_the_horned_one" }
+  ],
+  "processing_time": 160,
+  "requires_fuel": true
+}

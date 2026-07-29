@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_water_breathing",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -13741415
+      }
+    ]
+  }
+}

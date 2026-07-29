@@ -1,0 +1,10 @@
+{
+    "variants":  {
+                     "enabled=false":  {
+                              "model":  "warlockery:block/statueofworship"
+                          },
+                     "enabled=true":  {
+                              "model":  "warlockery:block/statueofworship"
+                          }
+                 }
+}

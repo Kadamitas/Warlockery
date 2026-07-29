@@ -1,0 +1,35 @@
+{
+  "title": "Rite of Binding: Familiar",
+  "description": "Strengthens and protects a familiar standing in the circle.",
+  "action": "bind_entity",
+  "power": 1500,
+  "radius": 5,
+  "duration": 2400,
+  "amplifier": 1,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_bone_needle",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_focused_will",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "familiar"
+}

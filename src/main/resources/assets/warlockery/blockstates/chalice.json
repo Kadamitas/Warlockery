@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "filled=false": {
+      "model": "warlockery:block/chalice"
+    },
+    "filled=true": {
+      "model": "warlockery:block/chalice_filled"
+    }
+  }
+}

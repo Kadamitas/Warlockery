@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_summon_abyssal_regent",
+  "role": "effect",
+  "capacity_cost": 12,
+  "source_brew": "summon_abyssal_regent"
+}

@@ -1,0 +1,11 @@
+{
+  "type": "warlockery:abyss",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "minecraft:soul_sand_valley"
+    },
+    "settings": "minecraft:nether"
+  }
+}

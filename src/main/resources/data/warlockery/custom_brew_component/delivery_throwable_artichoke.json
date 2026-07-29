@@ -1,0 +1,6 @@
+{
+  "ingredient": "#warlockery:custom_brew/delivery/throwable_artichoke",
+  "role": "delivery",
+  "delivery": "throwable",
+  "priority": 1
+}

@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:iceslab",
+    "warlockery:icedoubleslab",
+    "warlockery:snowslab",
+    "warlockery:snowdoubleslab",
+    "warlockery:hexwoodslab",
+    "warlockery:hexwooddoubleslab"
+  ]
+}

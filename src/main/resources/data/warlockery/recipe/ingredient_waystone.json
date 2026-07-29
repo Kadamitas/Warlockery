@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FN"
+  ],
+  "key": {
+    "F": "#warlockery:crafting/flints",
+    "N": "#warlockery:crafting/bone_needles"
+  },
+  "result": {
+    "id": "warlockery:ingredient_waystone"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "warlockery:block/cwoodpressureplate"
+    },
+    "powered=true": {
+      "model": "warlockery:block/cwoodpressureplate_down"
+    }
+  }
+}

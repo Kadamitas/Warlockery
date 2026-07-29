@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_air_hike",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "air_hike"
+}

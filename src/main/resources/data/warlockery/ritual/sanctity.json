@@ -1,0 +1,28 @@
+{
+  "title": "Rite of Sanctity",
+  "description": "Protects beings inside the circle from hostile attack.",
+  "action": "sanctity_ward",
+  "power": 800,
+  "radius": 6,
+  "duration": 2400,
+  "amplifier": 2,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_odour_of_purity",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

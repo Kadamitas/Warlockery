@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PRP",
+    "PPS"
+  ],
+  "key": {
+    "P": "minecraft:paper",
+    "R": "warlockery:ingredient_odd_porkchop_raw",
+    "S": "#c:strings"
+  },
+  "result": {
+    "id": "warlockery:ingredient_contract"
+  }
+}

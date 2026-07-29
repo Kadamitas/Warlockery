@@ -1,0 +1,38 @@
+{
+  "title": "Rite of Binding: Waystone",
+  "description": "Binds a waystone to this circle's location.",
+  "action": "bind_waystone",
+  "power": 500,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_waystone",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_ender_dew",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:dusts/glowstone",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_subdued_spirit",
+    "warlockery:ingredient_spectral_dust",
+    "#c:slime_balls",
+    "warlockery:ingredient_clay_jar"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_brew_congealed_spirit"
+  }
+}

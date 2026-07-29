@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": ["warlockery:mirrorblock"],
+  "result": {"id": "warlockery:mirrorwall", "count": 4}
+}

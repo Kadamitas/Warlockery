@@ -1,0 +1,34 @@
+{
+  "title": "Rite of Mutation: Storm Simian",
+  "description": "Shapes a storm-touched flying familiar that can travel to bound waystones.",
+  "action": "summon_entity",
+  "target": "warlockery:storm_simian",
+  "power": 2600,
+  "radius": 6,
+  "casting_time": 160,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyph_veil": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#warlockery:creature_interactions/companion_binders",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_waystone_bound",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:feathers",
+        "count": 4,
+        "consume": true
+      }
+    ],
+    "thundering": true,
+    "minimum_players": 1
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "title": "Greater Rite of Sky's Wrath",
+  "description": "Calls an extended thunderstorm over the world.",
+  "action": "storm",
+  "power": 2600,
+  "radius": 6,
+  "duration": 12000,
+  "amplifier": 0,
+  "casting_time": 220,
+  "glyphs": {
+    "circleglyphritual": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_breath_of_the_goddess",
+        "count": 2,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:lightning_rod",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

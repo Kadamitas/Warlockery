@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_invisible",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -8420462
+      }
+    ]
+  }
+}

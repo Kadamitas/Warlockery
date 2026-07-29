@@ -1,0 +1,40 @@
+{
+  "title": "Rite of Summoning: Wither",
+  "description": "Calls forth a Wither; clear the inner circle before beginning.",
+  "action": "summon_entity",
+  "power": 6000,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 320,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "minecraft:wither_skeleton_skull",
+        "count": 3,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:soul_sand",
+        "count": 4,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_necro_stone",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "target": "minecraft:wither"
+}

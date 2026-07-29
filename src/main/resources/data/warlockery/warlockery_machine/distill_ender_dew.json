@@ -1,0 +1,23 @@
+{
+  "machine": "distillery",
+  "inputs": [
+    {
+      "ingredient": "#c:ender_pearls"
+    },
+    {
+      "ingredient": "warlockery:ingredient_clay_jar",
+      "count": 6
+    }
+  ],
+  "outputs": [
+    {
+      "item": "warlockery:ingredient_ender_dew",
+      "count": 6
+    },
+    {
+      "item": "warlockery:ingredient_whiff_of_magic"
+    }
+  ],
+  "processing_time": 360,
+  "requires_fuel": true
+}

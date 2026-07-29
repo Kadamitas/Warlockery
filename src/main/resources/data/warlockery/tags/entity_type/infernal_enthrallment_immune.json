@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:ender_dragon",
+    "minecraft:wither",
+    "minecraft:warden",
+    "warlockery:abyssal_regent",
+    "warlockery:crimson_matriarch",
+    "warlockery:emberhorn_archfiend"
+  ]
+}

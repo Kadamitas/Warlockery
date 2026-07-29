@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:bookbiomes2",
+    "warlockery:cauldronbook",
+    "warlockery:vampirebook",
+    "warlockery:ingredient_book_biomes",
+    "warlockery:ingredient_book_burning",
+    "warlockery:ingredient_book_circle_magic",
+    "warlockery:ingredient_book_distilling",
+    "warlockery:ingredient_book_herbology",
+    "warlockery:ingredient_book_infusions",
+    "warlockery:ingredient_book_oven",
+    "warlockery:ingredient_book_wands"
+  ]
+}

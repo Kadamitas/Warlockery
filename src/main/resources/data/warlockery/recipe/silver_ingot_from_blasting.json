@@ -1,0 +1,4 @@
+{
+  "type":"minecraft:blasting","category":"misc","ingredient":"#c:raw_materials/silver",
+  "result":{"id":"warlockery:silver_ingot"},"experience":0.7,"cookingtime":100
+}

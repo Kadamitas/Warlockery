@@ -1,0 +1,7 @@
+{
+  "ingredient": "warlockery:brew_slow_movement",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "slow_movement",
+  "inverse_brew": "fast_movement"
+}

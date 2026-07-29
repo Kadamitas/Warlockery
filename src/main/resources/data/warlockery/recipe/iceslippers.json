@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "D D",
+    "IHI",
+    " S "
+  ],
+  "key": {
+    "D": "warlockery:ingredient_diamond_vapour",
+    "I": "warlockery:ingredient_impregnated_leather",
+    "H": "warlockery:ingredient_frozen_heart",
+    "S": "#c:strings"
+  },
+  "result": {
+    "id": "warlockery:iceslippers"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_attract_arrows",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "attract_arrows"
+}

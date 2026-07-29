@@ -1,0 +1,7 @@
+{
+  "ingredient": "warlockery:brew_remove_buffs",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "remove_buffs",
+  "inverse_brew": "remove_debuffs"
+}

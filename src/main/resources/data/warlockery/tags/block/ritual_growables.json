@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#warlockery:ritual_crops",
+    "#warlockery:ritual_flowers",
+    "#warlockery:ritual_saplings"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "warlockery:block/iceslab"
+    },
+    "type=double": {
+      "model": "warlockery:block/iceslab_double"
+    },
+    "type=top": {
+      "model": "warlockery:block/iceslab_top"
+    }
+  }
+}

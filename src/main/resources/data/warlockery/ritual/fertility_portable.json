@@ -1,0 +1,39 @@
+{
+  "title": "Portable Rite of Fertility",
+  "description": "Grows compatible plants and cures nearby players and zombie villagers from a circle talisman.",
+  "action": "fertility",
+  "power": 2400,
+  "radius": 10,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 8,
+    "circleglyph_veil": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:circletalisman",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "warlockery:ingredient_breath_of_the_goddess",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:fertilizers",
+        "count": 8,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  }
+}

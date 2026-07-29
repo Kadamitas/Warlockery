@@ -1,0 +1,34 @@
+{
+  "random.chalk": {
+    "category": "block",
+    "subtitle": "subtitle.warlockery.chalk",
+    "sounds": [
+      {"name": "minecraft:block.note_block.harp", "type": "event", "pitch": 1.65, "volume": 0.45},
+      {"name": "minecraft:block.amethyst_block.chime", "type": "event", "pitch": 1.25, "volume": 0.25}
+    ]
+  },
+  "random.heartbeat": {
+    "category": "block",
+    "subtitle": "subtitle.warlockery.ritual_pulse",
+    "sounds": [
+      {"name": "minecraft:block.note_block.bass", "type": "event", "pitch": 0.55, "volume": 0.65},
+      {"name": "minecraft:block.note_block.basedrum", "type": "event", "pitch": 0.72, "volume": 0.35}
+    ]
+  },
+  "random.hypnosis": {
+    "category": "player",
+    "subtitle": "subtitle.warlockery.ritual_chime",
+    "sounds": [
+      {"name": "minecraft:block.note_block.chime", "type": "event", "pitch": 0.85, "volume": 0.55},
+      {"name": "minecraft:block.note_block.harp", "type": "event", "pitch": 1.2, "volume": 0.35}
+    ]
+  },
+  "doll.activate": {
+    "category": "player",
+    "subtitle": "subtitle.warlockery.doll_activate",
+    "sounds": [
+      {"name": "minecraft:block.note_block.harp", "type": "event", "pitch": 1.45, "volume": 0.4},
+      {"name": "minecraft:block.amethyst_block.resonate", "type": "event", "pitch": 1.15, "volume": 0.25}
+    ]
+  }
+}

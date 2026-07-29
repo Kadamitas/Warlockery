@@ -1,0 +1,34 @@
+{
+  "title": "Rite of Icy Expansion",
+  "description": "Builds a hollow sphere of packed ice around the circle.",
+  "action": "ice_sphere",
+  "power": 2200,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyph_veil": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_frozen_heart",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:packed_ice",
+        "count": 8,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 2
+  }
+}

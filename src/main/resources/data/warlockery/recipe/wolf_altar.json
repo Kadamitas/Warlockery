@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["BMB", "SSS", " S "],
+  "key": {"B": "#c:bones", "M": "#c:foods/raw_meat", "S": "#c:stones"},
+  "result": {"id": "warlockery:wolfaltar"}
+}

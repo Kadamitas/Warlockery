@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_health_boost",
+  "role": "effect",
+  "capacity_cost": 4,
+  "source_brew": "health_boost"
+}

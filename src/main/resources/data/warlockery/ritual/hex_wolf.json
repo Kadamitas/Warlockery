@@ -1,0 +1,40 @@
+{
+  "title": "Hex of the Wolf",
+  "description": "Bestows lycanthropy on the imprint-bound mortal under a full moon with a full coven.",
+  "action": "transform_werewolf",
+  "power": 4200,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 300,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "#warlockery:sympathetic_containers",
+        "count": 1,
+        "consume": false
+      },
+      {
+        "ingredient": "#warlockery:lycanthropy_catalysts",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:wolfsbane_reagents",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": true,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 7
+  },
+  "night_only": true
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["CCC", "WVW", "CCC"],
+  "key": {
+    "C": "#minecraft:planks",
+    "W": "#warlockery:woven_cruor",
+    "V": "warlockery:sympathetic_vial"
+  },
+  "result": {"id": "warlockery:leechchest"}
+}

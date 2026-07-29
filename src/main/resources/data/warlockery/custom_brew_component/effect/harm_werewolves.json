@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_harm_werewolves",
+  "role": "effect",
+  "capacity_cost": 4,
+  "source_brew": "harm_werewolves"
+}

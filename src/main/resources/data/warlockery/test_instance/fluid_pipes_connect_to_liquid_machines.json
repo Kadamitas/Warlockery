@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:fluid_pipes_connect_to_liquid_machines",
+  "environment": "minecraft:default",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 100
+}

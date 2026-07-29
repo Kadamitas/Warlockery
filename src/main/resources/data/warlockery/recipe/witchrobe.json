@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "ITI",
+    "ICI",
+    "III"
+  ],
+  "key": {
+    "I": "#warlockery:utility_reagents/impregnated_leathers",
+    "T": "#warlockery:utility_reagents/golden_threads",
+    "C": "#warlockery:utility_reagents/creeper_hearts"
+  },
+  "result": {
+    "id": "warlockery:witchrobe"
+  }
+}

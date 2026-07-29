@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:bloodrose",
+    "minecraft:glass_bottle"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_warm_blood"
+  }
+}

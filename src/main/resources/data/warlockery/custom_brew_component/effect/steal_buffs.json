@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_steal_buffs",
+  "role": "effect",
+  "capacity_cost": 6,
+  "source_brew": "steal_buffs"
+}

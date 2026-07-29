@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_solidify_sand",
+  "role": "effect",
+  "capacity_cost": 3,
+  "source_brew": "solidify_sand"
+}

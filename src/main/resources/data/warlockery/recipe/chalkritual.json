@@ -1,0 +1,12 @@
+{
+    "type":  "minecraft:crafting_shapeless",
+    "category":  "misc",
+    "ingredients":  [
+                        "minecraft:clay_ball",
+                        "#c:dusts/redstone",
+                        "#c:fertilizers"
+                    ],
+    "result":  {
+                   "id":  "warlockery:chalkritual"
+               }
+}

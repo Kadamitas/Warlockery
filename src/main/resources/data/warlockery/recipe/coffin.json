@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["PPP", "PWP", "PPP"],
+  "key": {"P": "#minecraft:planks", "W": "#minecraft:wool"},
+  "result": {"id": "warlockery:coffinblock"}
+}

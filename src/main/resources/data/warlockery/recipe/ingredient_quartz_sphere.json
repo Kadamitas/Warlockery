@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "QBQ",
+    "BGB",
+    "QBQ"
+  ],
+  "key": {
+    "Q": "#c:gems/quartz",
+    "B": "minecraft:quartz_block",
+    "G": "#c:glass_blocks/colorless"
+  },
+  "result": {
+    "id": "warlockery:ingredient_quartz_sphere"
+  }
+}

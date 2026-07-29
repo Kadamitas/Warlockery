@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_reflect_damage",
+  "role": "effect",
+  "capacity_cost": 5,
+  "source_brew": "reflect_damage"
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:hexwood",
+    "warlockery:alder_planks",
+    "warlockery:hawthorn_planks",
+    "warlockery:rowan_planks"
+  ]
+}

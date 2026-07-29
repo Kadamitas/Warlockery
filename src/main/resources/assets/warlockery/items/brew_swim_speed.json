@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_swim_speed",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -7822402
+      }
+    ]
+  }
+}

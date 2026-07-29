@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_slow_fall",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -798791
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "BAB",
+    "BAB",
+    "ATA"
+  ],
+  "key": {
+    "B": "#warlockery:utility_reagents/water_bottles",
+    "A": "#c:rods/wooden",
+    "T": "#warlockery:brazier/tears"
+  },
+  "result": {
+    "id": "warlockery:divinerwater"
+  }
+}

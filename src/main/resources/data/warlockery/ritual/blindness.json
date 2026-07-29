@@ -1,0 +1,35 @@
+{
+  "title": "Hex of Blindness",
+  "description": "Blinds creatures caught inside the circle.",
+  "action": "effect",
+  "power": 1000,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyphinfernal": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_condensed_fear",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:dyes/black",
+        "count": 2,
+        "consume": true
+      }
+    ],
+    "day_only": false,
+    "full_moon": false,
+    "raining": false,
+    "thundering": false,
+    "dimension": "",
+    "minimum_players": 1
+  },
+  "effect": "minecraft:blindness"
+}

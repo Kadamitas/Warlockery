@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_solidify_dirt",
+  "role": "effect",
+  "capacity_cost": 3,
+  "source_brew": "solidify_dirt"
+}

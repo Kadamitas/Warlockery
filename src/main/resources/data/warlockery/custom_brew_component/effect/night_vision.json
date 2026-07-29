@@ -1,0 +1,7 @@
+{
+  "ingredient": "warlockery:brew_night_vision",
+  "role": "effect",
+  "capacity_cost": 2,
+  "source_brew": "night_vision",
+  "inverse_brew": "blindness"
+}

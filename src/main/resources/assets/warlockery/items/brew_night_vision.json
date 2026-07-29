@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_night_vision",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -14737503
+      }
+    ]
+  }
+}

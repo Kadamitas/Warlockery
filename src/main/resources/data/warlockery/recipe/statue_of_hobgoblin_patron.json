@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "SKS",
+    "SSS"
+  ],
+  "key": {
+    "S": "#c:stones",
+    "K": "#c:ingots/koboldite"
+  },
+  "result": {
+    "id": "warlockery:statueofworship"
+  }
+}

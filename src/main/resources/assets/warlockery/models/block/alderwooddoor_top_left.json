@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top_left",
+  "textures": {
+    "bottom": "warlockery:block/alder_planks",
+    "top": "warlockery:block/alder_planks"
+  }
+}

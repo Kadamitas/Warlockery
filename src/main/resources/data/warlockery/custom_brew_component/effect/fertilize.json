@@ -1,0 +1,6 @@
+{
+  "ingredient": "warlockery:brew_fertilize",
+  "role": "effect",
+  "capacity_cost": 1,
+  "source_brew": "fertilize"
+}

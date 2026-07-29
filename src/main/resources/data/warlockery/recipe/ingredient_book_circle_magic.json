@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " L ",
+    "IBQ",
+    " W "
+  ],
+  "key": {
+    "L": "#warlockery:custom_brew/lingering/two",
+    "I": "#c:dyes/black",
+    "B": "#warlockery:manual_reagents/books",
+    "Q": "#c:feathers",
+    "W": "#warlockery:brew_reagents/whiffs_of_magic"
+  },
+  "result": {
+    "id": "warlockery:ingredient_book_circle_magic"
+  }
+}

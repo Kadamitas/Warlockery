@@ -1,0 +1,15 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "equipment",
+    "pattern":  [
+                    " F",
+                    "S "
+                ],
+    "key":  {
+                "F":  "#warlockery:crafting/flints",
+                "S":  "#c:rods/wooden"
+            },
+    "result":  {
+                   "id":  "warlockery:ritual_knife"
+               }
+}

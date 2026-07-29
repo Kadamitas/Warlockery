@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:dirt",
+    "minecraft:magma_block",
+    "minecraft:netherrack",
+    "minecraft:soul_soil"
+  ]
+}

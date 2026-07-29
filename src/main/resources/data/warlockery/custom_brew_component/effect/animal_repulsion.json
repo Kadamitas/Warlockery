@@ -1,0 +1,7 @@
+{
+  "ingredient": "warlockery:brew_animal_repulsion",
+  "role": "effect",
+  "capacity_cost": 4,
+  "source_brew": "animal_repulsion",
+  "inverse_brew": "animal_attraction"
+}

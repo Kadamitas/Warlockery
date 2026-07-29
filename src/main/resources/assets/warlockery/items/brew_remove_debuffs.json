@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brew_remove_debuffs",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -8800861
+      }
+    ]
+  }
+}

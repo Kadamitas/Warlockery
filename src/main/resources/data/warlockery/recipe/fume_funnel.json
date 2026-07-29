@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["I I", "IHI", " I "],
+  "key": {"I": "#c:ingots/iron", "H": "minecraft:hopper"},
+  "result": {"id": "warlockery:fumefunnel"}
+}

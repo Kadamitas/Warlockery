@@ -1,0 +1,17 @@
+{
+  "machine": "cauldron",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    { "ingredient": "warlockery:ingredient_verdant_catalyst", "count": 2 },
+    { "ingredient": "warlockery:ingredient_whiff_of_magic" },
+    { "ingredient": "#c:crops/nether_wart" },
+    { "ingredient": "minecraft:ghast_tear" }
+  ],
+  "outputs": [
+    { "item": "warlockery:ingredient_verdant_catalyst_prime" }
+  ],
+  "processing_time": 360
+}

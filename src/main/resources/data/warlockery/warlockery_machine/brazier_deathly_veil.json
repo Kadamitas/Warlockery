@@ -1,0 +1,11 @@
+{
+  "machine": "brazier",
+  "inputs": [
+    { "ingredient": "#c:ender_pearls" },
+    { "ingredient": "#warlockery:brazier/spider_eyes" },
+    { "ingredient": "#warlockery:brazier/blaze_rods" }
+  ],
+  "outputs": [{ "item": "warlockery:ingredient_ash_wood" }],
+  "processing_time": 100,
+  "altar_power": 1200
+}
