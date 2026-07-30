@@ -1,12 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "warlockery:item/brew_endless_water",
-    "tints": [
-      {
-        "type": "minecraft:potion",
-        "default": -1
-      }
-    ]
+    "model": "warlockery:item/brew_endless_water"
   }
 }

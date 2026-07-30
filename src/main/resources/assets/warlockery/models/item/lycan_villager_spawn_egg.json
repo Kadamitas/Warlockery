@@ -1,6 +1,6 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "minecraft:item/wolf_spawn_egg"
-  }
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/lycan_villager_spawn_egg"
+                 }
 }

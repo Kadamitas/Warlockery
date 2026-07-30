@@ -1,6 +1,6 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "warlockery:block/alder_sapling"
-  }
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/alder_sapling"
+                 }
 }

@@ -1,6 +1,158 @@
-{
-    "parent":  "minecraft:block/cube_all",
+﻿{
+    "parent":  "minecraft:block/block",
+    "ambientocclusion":  false,
     "textures":  {
-                     "all":  "warlockery:block/altar"
-                 }
+                     "particle":  "warlockery:block/web",
+                     "strand":  "warlockery:block/web"
+                 },
+    "elements":  [
+                     {
+                         "from":  [
+                                      7,
+                                      0,
+                                      7
+                                  ],
+                         "to":  [
+                                    9,
+                                    16,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#strand"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#strand"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#strand"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#strand"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#strand"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#strand"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      0,
+                                      7,
+                                      7
+                                  ],
+                         "to":  [
+                                    16,
+                                    9,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#strand"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#strand"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#strand"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#strand"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#strand"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#strand"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      7,
+                                      0,
+                                      7
+                                  ],
+                         "to":  [
+                                    9,
+                                    16,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#strand"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#strand"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#strand"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#strand"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#strand"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#strand"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         8,
+                                                         8,
+                                                         8
+                                                     ],
+                                          "axis":  "z",
+                                          "angle":  45,
+                                          "rescale":  true
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      7,
+                                      0,
+                                      7
+                                  ],
+                         "to":  [
+                                    9,
+                                    16,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#strand"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#strand"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#strand"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#strand"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#strand"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#strand"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         8,
+                                                         8,
+                                                         8
+                                                     ],
+                                          "axis":  "z",
+                                          "angle":  -45,
+                                          "rescale":  true
+                                      }
+                     }
+                 ]
 }

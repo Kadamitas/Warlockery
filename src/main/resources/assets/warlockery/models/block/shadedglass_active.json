@@ -1,6 +1,6 @@
 {
     "parent":  "minecraft:block/cube_all",
     "textures":  {
-                     "all":  "warlockery:block/altar"
+                     "all":  "warlockery:block/shadedglass_active"
                  }
 }

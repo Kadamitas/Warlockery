@@ -11,14 +11,14 @@ public final class ContentCatalog {
 
     public static final List<String> BLOCKS = words("""
         alderwooddoor alluringskull altar artichoke barrier beartrap belladonna bloodcrucible bloodedwool bloodrose
-        bramble brazier brew brewgas brewliquid erosionbrew candelabra cauldron cbuttonstone cbuttonwood chalice circle
-        circleglyphinfernal circleglyph_veil circleglyphritual clever coffinblock crittersnare crystalball
-        csnowpressureplate cstonepressureplate cwoodendoor cwoodpressureplate daylightcollector broken_hexes_statue
+        bramble brazier brew brewgas brewliquid erosionbrew candelabra cauldron chalice circle
+        circleglyphinfernal circleglyph_veil circleglyphritual coffinblock crittersnare crystalball
+        daylightcollector broken_hexes_statue
         occluded_summons_statue demonheart disease distilleryburning distilleryidle dreamcatcher embermoss filteredfumefunnel
         force fumefunnel garlicgarland garlicplant glintweed glowglobe grassper hollowtears icedoor icedoubleslab
         icefence icefencegate icepressureplate iceslab icestairs icestockade paradox_egg kettle leapinglily leechchest pentacle
         light mandrake dreamroot mirrorblock mirrorblock2 mirrorwall perpetualice pitdirt pitgrass placeditem plantmine
-        doll_shelf refillingchest rowanwooddoor scarecrow shadedglass shadedglass_active silvervat slurp snowbell
+        doll_shelf refillingchest rowanwooddoor scarecrow shadedglass shadedglass_active silvervat snowbell
         snowdoubleslab snowpressureplate snowslab snowstairs somniancotton spanishmoss spinningwheel spiritflowing
         spiritportal stairswoodalder stairswoodhawthorn stairswoodrowan statuegoddess statueofworship stockade
         abyssal_portal abyssal_stone trent vine voidbramble wallgen web wickerbundle alchemical_oven_lit alchemical_oven
@@ -30,17 +30,17 @@ public final class ContentCatalog {
         """);
 
     public static final List<String> ITEMS = words("""
-        ritual_knife hedge_crones_hat barkbelt biomenote bitingbelt boline bookbiomes2 brew.fuel brew.water brewbag brewbottle
+        ritual_knife hedge_crones_hat barkbelt biomenote bitingbelt boline bookbiomes2 brew.fuel brew.water brewbag
         bucketbrew bucketerosionbrew buckethollowtears bucketspirit canesword cauldronbook chalkheart chalkinfernal chalk_veil
         chalkritual circletalisman coffin deathscowl deathsfeet deathshand deathsrobe silver_tongue_charm divinerlava
-        divinerwater replication_charge replication_staff earmuffs garlic glassgoblet forgewardens_girdle silver_repeater hornofthehunt werewolf_hunter_boots
+        divinerwater replication_charge replication_staff earmuffs garlic glassgoblet forgewardens_girdle hornofthehunt werewolf_hunter_boots
         werewolf_hunter_boots_dawn werewolf_hunter_boots_silvered werewolf_hunter_coat werewolf_hunter_coat_dawn werewolf_hunter_coat_silvered werewolf_hunter_hat
         werewolf_hunter_hat_dawn werewolf_hunter_hat_silvered werewolf_hunter_leggings werewolf_hunter_leggings_dawn werewolf_hunter_leggings_silvered thorn_spear
-        icedoubleslab iceslab iceslippers ingredient delvealloysword delvealloyaxe delvealloypickaxe delvealloyshovel
+        icedoubleslab iceslab iceslippers delvealloysword delvealloyaxe delvealloypickaxe delvealloyshovel
         delvealloyhoe delvealloyhelm delvealloychestplate delvealloyleggings delvealloyboots archfiends_urn louse mirror mooncharm
         mutator mysticbranch necromancerrobe playercompass beast_speech_charm doll earth_guard_doll water_guard_doll
         hunger_guard_doll fire_guard_doll tool_mending_doll death_guard_doll hex_guard_doll hexing_doll
-        blood_link_doll doll_guard armor_mending_doll potion stonebrokers_quiver emberstep_slippers
+        blood_link_doll doll_guard armor_mending_doll stonebrokers_quiver emberstep_slippers
         seedsartichoke seedsbelladonna seedsmandrake seedsdreamroot seedssnowbell seedswolfsbane seedswormwood
         seepingshoes shelfcompass silversword snowdoubleslab snowslab spectralstone stew stewraw sungrenade sympathetic_vial
         vampirebook vampireboots vampirechaincoat vampirechaincoat_female vampirecoat vampirecoat_female vampirehat
@@ -64,7 +64,7 @@ public final class ContentCatalog {
         dropOfLuck enderDew exhaleOfTheHornedOne fancifulThread flyingOintment focusedWill foulFume
         frozenHeart fumeFilter ghostOfTheLight goldenThread graveyardDust gypsum happenstanceOil heartofgold hintOfRebirth infernalAnimus
         heartwoodSplinter icyNeedle impregnatedLeather infernalBlood infusionBase delvealloydust delvealloyingot delvealloynugget matriarchsBlood
-        mandrakeRoot mellifluousHunger verdantCatalyst verdantCatalystPrime muttoncooked muttonraw mysticunguent necroStone
+        mandrakeRoot mellifluousHunger verdantCatalyst verdantCatalystPrime mysticunguent necroStone
         nullcatalyst nullifiedleather oddPorkchopCooked oddPorkchopRaw odourOfPurity oilOfVitriol owletsWing pentacle
         purifiedMilk quartzSphere quicklime redstoneSoup reekOfMisfortune refinedEvil rock brambleColossusSeed seerStone
         silverdust sleepingApple soulOfTheWorld soulOfTorment spectralDust spiritOfTheVeil stake subduedSpirit subduedSpiritVillage

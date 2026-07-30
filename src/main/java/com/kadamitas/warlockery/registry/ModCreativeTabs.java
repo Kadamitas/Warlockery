@@ -16,7 +16,9 @@ public final class ModCreativeTabs {
         .title(Component.translatable("itemGroup.warlockery.main"))
         .withTabsBefore(CreativeModeTabs.INGREDIENTS)
         .icon(() -> ModItems.ALL.get("ritual_knife").get().getDefaultInstance())
-        .displayItems((_, output) -> ModItems.ALL.values().forEach(item -> output.accept(item.get())))
+        .displayItems((_, output) -> CreativeInventoryCatalog.sortedIds(ModItems.ALL.keySet()).stream()
+            .map(ModItems.ALL::get)
+            .forEach(item -> output.accept(item.get())))
         .build());
 
     private ModCreativeTabs() {

@@ -1,6 +1,6 @@
-{
+﻿{
     "model":  {
                   "type":  "minecraft:model",
-                  "model":  "warlockery:block/light"
+                  "model":  "warlockery:item/light"
               }
 }

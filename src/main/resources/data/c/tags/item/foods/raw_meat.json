@@ -2,7 +2,7 @@
   "replace": false,
   "values": [
     "#warlockery:wolf_form_meats",
-    "warlockery:ingredient_muttonraw",
+    "minecraft:mutton",
     "warlockery:ingredient_odd_porkchop_raw"
   ]
 }

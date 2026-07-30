@@ -1,5 +1,6 @@
 param(
-    [string]$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+    [string]$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path,
+    [switch]$TintsOnly
 )
 
 $brews = @(
@@ -23,7 +24,7 @@ $brews = @(
     [ordered]@{ id = 'poison'; name = 'Brew of Poison'; color = 0x4E9331; catalyst = '#c:crops' }
     [ordered]@{ id = 'wither'; name = 'Brew of Wither'; color = 0x352A27; catalyst = '#c:bones' }
     [ordered]@{ id = 'weakness'; name = 'Brew of Weakness'; color = 0x484D48; catalyst = '#c:foods/raw_meat' }
-    [ordered]@{ id = 'fullness'; name = 'Brew of Fullness'; color = 0xF82423; catalyst = '#c:foods' }
+    [ordered]@{ id = 'fullness'; name = 'Brew of Fullness'; color = 0xE0A23A; catalyst = '#c:foods' }
     [ordered]@{ id = 'paralysis'; name = 'Brew of Paralysis'; color = 0x232F3D; catalyst = '#c:crops' }
     [ordered]@{ id = 'air_hike'; name = 'Brew of Air Hike'; color = 0xA8E6E6; catalyst = '#minecraft:wool' }
     [ordered]@{ id = 'fertilize'; name = 'Brew of Fertilize'; color = 0x66A33D; catalyst = '#c:bones' }
@@ -53,11 +54,40 @@ $brews = @(
 
 function Write-Json([string]$Path, [object]$Value) {
     New-Item -ItemType Directory -Force -Path (Split-Path $Path) | Out-Null
-    $Value | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $Path -Encoding utf8NoBOM
+    $json = $Value | ConvertTo-Json -Depth 20
+    [IO.File]::WriteAllText($Path, $json + "`n", [Text.UTF8Encoding]::new($false))
 }
 
 $assets = Join-Path $ProjectRoot 'src/main/resources/assets/warlockery'
 $data = Join-Path $ProjectRoot 'src/main/resources/data'
+
+function Sync-BrewTints {
+    $brewKindSource = Get-Content -LiteralPath (Join-Path $ProjectRoot 'src/main/java/com/kadamitas/warlockery/brew/BrewKind.java') -Raw
+    $brewKindPattern = '(?s)public static final BrewKind\s+\w+\s*=\s*(?:effect|effects|world|hybrid)\(\s*"([^"]+)"\s*,\s*0x([0-9A-Fa-f]{6})'
+    $untintedBrews = @('combustion', 'endless_water')
+    [regex]::Matches($brewKindSource, $brewKindPattern) | ForEach-Object {
+        $brewId = $_.Groups[1].Value
+        $definitionPath = Join-Path $assets "items/brew_$brewId.json"
+        if ((Test-Path -LiteralPath $definitionPath) -and $brewId -notin $untintedBrews) {
+            $rgb = [Convert]::ToInt64($_.Groups[2].Value, 16)
+            $argb = [long]4278190080 + $rgb
+            if ($argb -gt [int]::MaxValue) {
+                $argb -= [long]4294967296
+            }
+            $definition = Get-Content -LiteralPath $definitionPath -Raw | ConvertFrom-Json -AsHashtable
+            $currentTint = $definition.model.tints | Select-Object -First 1
+            if ($null -eq $currentTint -or $currentTint.type -ne 'minecraft:potion' -or $currentTint.default -ne [int]$argb) {
+                $definition.model.tints = @([ordered]@{ type = 'minecraft:potion'; default = [int]$argb })
+                Write-Json $definitionPath $definition
+            }
+        }
+    }
+}
+
+if ($TintsOnly) {
+    Sync-BrewTints
+    exit
+}
 
 foreach ($brew in $brews) {
     $itemId = "brew_$($brew.id)"
@@ -90,6 +120,8 @@ foreach ($brew in $brews) {
     Write-Json (Join-Path $assets "models/item/$itemId.json") $model
     Write-Json (Join-Path $data "warlockery/warlockery_machine/kettle_$itemId.json") $recipe
 }
+
+Sync-BrewTints
 
 $languagePath = Join-Path $assets 'lang/en_us.json'
 $language = Get-Content -LiteralPath $languagePath -Raw | ConvertFrom-Json -AsHashtable

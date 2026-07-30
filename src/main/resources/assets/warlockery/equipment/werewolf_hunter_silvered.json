@@ -1,0 +1,7 @@
+{
+  "layers": {
+    "humanoid": [{"texture": "warlockery:werewolf_hunter_silvered"}],
+    "humanoid_baby": [{"texture": "warlockery:werewolf_hunter_silvered"}],
+    "humanoid_leggings": [{"texture": "warlockery:werewolf_hunter_silvered"}]
+  }
+}

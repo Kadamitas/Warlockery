@@ -7,21 +7,21 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public enum DollKind {
-    TEMPLATE(new DollDefinition("doll", new DollAbility.None(), 0, false)),
+    TEMPLATE(new DollDefinition("doll", new DollAbility.None(), 0)),
     EARTH_GUARD(lethal("earth_guard_doll", DollBehaviorFactory.earthGuard())),
     WATER_GUARD(lethal("water_guard_doll", DollBehaviorFactory.waterGuard())),
     HUNGER_GUARD(lethal("hunger_guard_doll", DollBehaviorFactory.hungerGuard())),
     FIRE_GUARD(lethal("fire_guard_doll", DollBehaviorFactory.fireGuard())),
     TOOL_MENDING(new DollDefinition(
-        "tool_mending_doll", new DollAbility.Mending(DollAbility.RepairTarget.HELD), 128, false
+        "tool_mending_doll", new DollAbility.Mending(DollAbility.RepairTarget.HELD), 128
     )),
     DEATH_GUARD(lethal("death_guard_doll", DollBehaviorFactory.deathGuard())),
-    HEX_GUARD(new DollDefinition("hex_guard_doll", new DollAbility.HexGuard(), 32, false)),
-    HEXING(new DollDefinition("hexing_doll", new DollAbility.ActiveHex(), 64, false)),
-    BLOOD_LINK(new DollDefinition("blood_link_doll", new DollAbility.DamageLink(), 64, false)),
-    DOLL_GUARD(new DollDefinition("doll_guard", new DollAbility.DollGuard(), 32, false)),
+    HEX_GUARD(new DollDefinition("hex_guard_doll", new DollAbility.HexGuard(), 32)),
+    HEXING(new DollDefinition("hexing_doll", new DollAbility.ActiveHex(), 64)),
+    BLOOD_LINK(new DollDefinition("blood_link_doll", new DollAbility.DamageLink(), 64)),
+    DOLL_GUARD(new DollDefinition("doll_guard", new DollAbility.DollGuard(), 32)),
     ARMOR_MENDING(new DollDefinition(
-        "armor_mending_doll", new DollAbility.Mending(DollAbility.RepairTarget.WORN), 128, false
+        "armor_mending_doll", new DollAbility.Mending(DollAbility.RepairTarget.WORN), 128
     ));
 
     private static final Map<String, DollKind> BY_ID = Arrays.stream(values())
@@ -41,10 +41,6 @@ public enum DollKind {
         return definition;
     }
 
-    public boolean consumedOnActivation() {
-        return definition.consumedOnActivation();
-    }
-
     public String descriptionKey() {
         return definition.descriptionKey();
     }
@@ -54,6 +50,6 @@ public enum DollKind {
     }
 
     private static DollDefinition lethal(final String id, final LethalDollBehavior behavior) {
-        return new DollDefinition(id, new DollAbility.LethalProtection(behavior), 0, true);
+        return new DollDefinition(id, new DollAbility.LethalProtection(behavior), 32);
     }
 }

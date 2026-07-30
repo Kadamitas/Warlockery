@@ -8,7 +8,6 @@ $translations = [ordered]@{
     'item.warlockery.ritual_knife'='Ritual Knife'
     'item.warlockery.arcane_focus'='Arcane Focus'
     'item.warlockery.sympathetic_vial'='Sympathetic Vial'
-    'item.warlockery.silver_repeater'='Silver Repeater'
     'item.warlockery.thorn_spear'='Thorned Pursuer Spear'
     'item.warlockery.hedge_crones_hat'="Hedge Crone's Hat"
     'item.warlockery.beast_speech_charm'='Beast-Speech Charm'

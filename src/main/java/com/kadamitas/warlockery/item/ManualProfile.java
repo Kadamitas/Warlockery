@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.brew.BrewKind;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -10,13 +11,126 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public record ManualProfile(String id, String titleKey, List<String> sections) {
+    private static final String RITUAL_PREFIX = "rite_";
+    private static final String BREW_PREFIX = "brew_entry_";
+    private static final List<String> RITUAL_SECTIONS = """
+        anguish_of_the_dead
+        banish_demon
+        banish_demon_portable
+        barrier
+        barrier_large
+        barrier_portable
+        bind_circle
+        bind_circle_portable
+        bind_death
+        bind_familiar
+        bind_fetish
+        bind_spectral
+        bind_statue_player
+        bind_waystone
+        bind_waystone_player
+        bind_waystone_portable
+        blight
+        blindness
+        call_beasts
+        call_familiar
+        charge_attuned_stone
+        climate_change
+        cook_food
+        copy_waystone
+        copy_waystone_portable
+        corrupt_doll
+        cure_insanity
+        cure_misfortune
+        cure_nightmare
+        cure_overheating
+        cure_sinking
+        cure_vampire
+        cure_wolf
+        deathly_veil
+        drain_growth
+        eclipse
+        eclipse_portable
+        fertility
+        fertility_portable
+        forestation
+        fortification_of_the_corpse
+        glyph_to_infernal
+        glyph_to_ritual
+        glyph_to_the_veil
+        graveyard_mist
+        hell_on_earth
+        hex_insanity
+        hex_misfortune
+        hex_nightmare
+        hex_overheating
+        hex_sinking
+        hex_wolf
+        ice_shell
+        imprisonment
+        infuse_brew_grave
+        infuse_brew_soaring
+        infuse_broom
+        infuse_crystal_ball
+        infuse_mirror
+        infuse_mystic_branch
+        infuse_seer_stone
+        infusion_earth
+        infusion_ender
+        infusion_hell
+        infusion_light
+        infusion_sky
+        manifestation
+        natures_power
+        necrostone
+        part_earth
+        prior_incarnation
+        rain_of_toads
+        raise_earth
+        recharge_infusion
+        sanctity
+        spectral_stone
+        storm
+        storm_large
+        storm_portable
+        summon_banshee
+        summon_cat_familiar
+        summon_circle_mage
+        summon_crimson_matriarch
+        summon_demon
+        summon_familiar
+        summon_forgewarden
+        summon_imp
+        summon_lost_soul
+        summon_parasytic_louse
+        summon_poltergeist
+        summon_reflection
+        summon_spectre
+        summon_stonebroker
+        summon_storm_simian
+        summon_thorned_pursuer
+        summon_witch
+        summon_wither
+        teleport_entity
+        teleport_waystone
+        transpose_ore
+        volcano
+        """.lines()
+        .map(String::strip)
+        .filter(section -> !section.isEmpty())
+        .map(RITUAL_PREFIX::concat)
+        .toList();
+    private static final List<String> BREW_SECTIONS = BrewKind.builtIns().stream()
+        .map(BrewKind::id)
+        .map(BREW_PREFIX::concat)
+        .toList();
     private static final List<ManualProfile> PROFILES = List.of(
         profile("bookbiomes2", "biomes_extended", "overview", "biome_notes", "shifting_rite"),
-        profile("cauldronbook", "codex", "custom_brews", "delivery", "diagnostics"),
+        brewProfile("cauldronbook", "codex", "custom_brews", "delivery", "diagnostics"),
         profile("vampirebook", "immortal", "initiation", "blood", "weaknesses"),
         profile("ingredient_book_biomes", "biomes", "overview", "biome_notes"),
         profile("ingredient_book_burning", "conjuration", "summoning", "fetishes"),
-        profile("ingredient_book_circle_magic", "circles", "chalk", "ritual_ui", "power"),
+        ritualProfile("ingredient_book_circle_magic", "circles", "chalk", "ritual_ui", "power"),
         profile("ingredient_book_distilling", "distilling", "inputs", "outputs", "automation"),
         profile("ingredient_book_herbology", "herbology", "crops", "mutations", "toad_mutation",
             "minedrake_mutation", "minedrake_bulbs", "safe_harvest"),
@@ -76,10 +190,22 @@ public record ManualProfile(String id, String titleKey, List<String> sections) {
     }
 
     public String translatedSectionKey(final String section) {
+        if (isRitualSection(section)) {
+            return "ritual.warlockery." + section.substring(RITUAL_PREFIX.length()) + ".description";
+        }
+        if (isBrewSection(section)) {
+            return "item.warlockery." + "brew_" + section.substring(BREW_PREFIX.length());
+        }
         return "manual.warlockery." + titleKey + "." + section;
     }
 
     public String translatedSectionTitleKey(final String section) {
+        if (isRitualSection(section)) {
+            return "ritual.warlockery." + section.substring(RITUAL_PREFIX.length()) + ".title";
+        }
+        if (isBrewSection(section)) {
+            return translatedSectionKey(section);
+        }
         return translatedSectionKey(section) + ".title";
     }
 
@@ -102,6 +228,22 @@ public record ManualProfile(String id, String titleKey, List<String> sections) {
 
     private static ManualProfile profile(final String id, final String title, final String... sections) {
         return new ManualProfile(id, title, List.of(sections));
+    }
+
+    private static ManualProfile ritualProfile(final String id, final String title, final String... sections) {
+        return new ManualProfile(id, title, Stream.concat(Stream.of(sections), RITUAL_SECTIONS.stream()).toList());
+    }
+
+    private static ManualProfile brewProfile(final String id, final String title, final String... sections) {
+        return new ManualProfile(id, title, Stream.concat(Stream.of(sections), BREW_SECTIONS.stream()).toList());
+    }
+
+    private static boolean isRitualSection(final String section) {
+        return section.startsWith(RITUAL_PREFIX);
+    }
+
+    private static boolean isBrewSection(final String section) {
+        return section.startsWith(BREW_PREFIX);
     }
 
     private static String normalized(final String value, final String name) {

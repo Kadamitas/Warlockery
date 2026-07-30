@@ -2,11 +2,13 @@ package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.block.FetishRuntime;
+import com.kadamitas.warlockery.block.entity.DollShelfBlockEntity;
 import com.kadamitas.warlockery.registry.ModSounds;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -58,9 +60,7 @@ public final class DollItem extends Item {
         final InteractionHand hand
     ) {
         if (!player.level().isClientSide()) {
-            SympatheticBinding.from(target).write(stack);
-            updateLore(stack, target.getName());
-            player.sendSystemMessage(Component.translatable("message.warlockery.doll.bound", target.getDisplayName()));
+            bind(stack, player, target);
         }
         return InteractionResult.SUCCESS;
     }
@@ -68,10 +68,18 @@ public final class DollItem extends Item {
     @Override
     public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
         final ItemStack stack = player.getItemInHand(hand);
-        if (!(kind.definition().ability() instanceof DollAbility.ActiveHex)
-            || !(level instanceof ServerLevel serverLevel)
-            || !(player instanceof ServerPlayer serverPlayer)) {
+        final DollAbility ability = kind.definition().ability();
+        if (DollRules.canApplyToSelf(ability)) {
+            if (!level.isClientSide()) {
+                bind(stack, player, player);
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (!(ability instanceof DollAbility.ActiveHex)) {
             return InteractionResult.PASS;
+        }
+        if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResult.SUCCESS;
         }
         if (player.isSecondaryUseActive()) {
             final DollHexAction next = hexAction(stack).next();
@@ -114,22 +122,32 @@ public final class DollItem extends Item {
         final Entity owner,
         final @Nullable EquipmentSlot slot
     ) {
-        if (!(owner instanceof ServerPlayer player) || !isBoundTo(stack, player) || player.tickCount % 20 != 0) {
-            return;
+        if (owner instanceof ServerPlayer player
+            && DollMendingSchedule.isMendingTick(level.getServer().getTickCount())) {
+            tryMendBoundEquipment(stack, level, player);
         }
-        if (!(kind.definition().ability() instanceof DollAbility.Mending mending)) {
-            return;
+    }
+
+    public static boolean tryMendBoundEquipment(
+        final ItemStack doll,
+        final ServerLevel level,
+        final ServerPlayer player
+    ) {
+        if (!(doll.getItem() instanceof DollItem item)
+            || !(item.kind.definition().ability() instanceof DollAbility.Mending mending)
+            || !isBoundTo(doll, player)) {
+            return false;
         }
-        final Optional<ItemStack> repairTarget = switch (mending.target()) {
-            case HELD -> List.of(player.getMainHandItem(), player.getOffhandItem()).stream()
-                .filter(DollItem::needsRepair)
-                .findFirst();
-            case WORN -> ARMOR_SLOTS.stream()
-                .map(player::getItemBySlot)
-                .filter(DollItem::needsRepair)
-                .findFirst();
-        };
-        repairTarget.ifPresent(target -> repairUsingDollCharge(player, stack, target));
+        final Optional<ItemStack> target = repairTarget(player, mending.target());
+        if (target.isEmpty()) {
+            return false;
+        }
+        final int serverTick = level.getServer().getTickCount();
+        if (!DollMendingSchedule.forServer(level.getServer()).claim(player.getUUID(), mending.target(), serverTick)) {
+            return false;
+        }
+        repairUsingDollCharge(player, doll, target.orElseThrow());
+        return true;
     }
 
     public static void handleDamage(final LivingDamageEvent event) {
@@ -272,7 +290,7 @@ public final class DollItem extends Item {
             .filter(stack -> stack.getItem() instanceof DollItem);
         return java.util.stream.Stream.concat(
             carried,
-            com.kadamitas.warlockery.block.entity.DollShelfBlockEntity.loadedDolls()
+            DollShelfBlockEntity.loadedDolls(((ServerLevel) player.level()).getServer())
         )
             .filter(stack -> isBoundTo(stack, player));
     }
@@ -317,6 +335,21 @@ public final class DollItem extends Item {
         return stack.isDamageableItem() && DollRules.needsRepair(stack.getDamageValue(), stack.getMaxDamage());
     }
 
+    private static Optional<ItemStack> repairTarget(
+        final ServerPlayer player,
+        final DollAbility.RepairTarget target
+    ) {
+        return switch (target) {
+            case HELD -> Stream.of(player.getMainHandItem(), player.getOffhandItem())
+                .filter(DollItem::needsRepair)
+                .findFirst();
+            case WORN -> ARMOR_SLOTS.stream()
+                .map(player::getItemBySlot)
+                .filter(DollItem::needsRepair)
+                .findFirst();
+        };
+    }
+
     private static void repairUsingDollCharge(
         final ServerPlayer player,
         final ItemStack doll,
@@ -328,22 +361,8 @@ public final class DollItem extends Item {
     }
 
     private static void activate(final ServerPlayer player, final ItemStack activated, final DollKind kind) {
-        if (kind.consumedOnActivation() && !tryPreserveWithGuard(player, activated)) {
-            activated.shrink(1);
-        } else if (!kind.consumedOnActivation()) {
-            wear(activated, (ServerLevel) player.level(), player, 1);
-        }
+        wear(activated, (ServerLevel) player.level(), player, 1);
         signalActivation(player, kind);
-    }
-
-    private static boolean tryPreserveWithGuard(final ServerPlayer player, final ItemStack activated) {
-        final Optional<ItemStack> guard = findBoundDoll(player,
-            item -> item.kind.definition().ability() instanceof DollAbility.DollGuard && activated.getItem() != item);
-        guard.ifPresent(stack -> {
-            wear(stack, (ServerLevel) player.level(), player, 1);
-            signalActivation(player, DollKind.DOLL_GUARD);
-        });
-        return guard.isPresent();
     }
 
     private static void signalActivation(final ServerPlayer player, final DollKind kind) {
@@ -376,6 +395,7 @@ public final class DollItem extends Item {
         } else {
             stack.shrink(amount);
         }
+        DollShelfBlockEntity.markContainingShelfChanged(stack, level.getServer());
     }
 
     private static @Nullable ServerPlayer boundPlayer(final ItemStack stack, final ServerLevel level) {
@@ -399,6 +419,12 @@ public final class DollItem extends Item {
             lines.add(Component.translatable("tooltip.warlockery.doll.hex_mode", modeName(hexAction(stack))));
         }
         stack.set(DataComponents.LORE, new ItemLore(lines));
+    }
+
+    private void bind(final ItemStack stack, final Player player, final LivingEntity target) {
+        SympatheticBinding.from(target).write(stack);
+        updateLore(stack, target.getName());
+        player.sendSystemMessage(Component.translatable("message.warlockery.doll.bound", target.getDisplayName()));
     }
 
     private static Component modeName(final DollHexAction action) {

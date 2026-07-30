@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "warlockery:item/ingredient_silverdust"
+    "layer0": "warlockery:item/raw_silver"
   }
 }

@@ -49,10 +49,14 @@ final class KobolditeEquipmentTest {
         "delvealloyhoe"
     );
     private static final Set<Integer> PALETTE = Set.of(
-        0xFF101B19,
-        0xFFD0B46C,
-        0xFF68A84F,
-        0xFFE8DFB5
+        0xFF09130F,
+        0xFF173326,
+        0xFF245A3B,
+        0xFF3F8652,
+        0xFF77BD67,
+        0xFFB7E58D,
+        0xFF251A14,
+        0xFF805333
     );
 
     @BeforeAll

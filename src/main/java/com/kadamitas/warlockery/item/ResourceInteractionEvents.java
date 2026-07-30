@@ -1,6 +1,5 @@
 package com.kadamitas.warlockery.item;
 
-import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
@@ -10,6 +9,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
@@ -30,7 +30,7 @@ public final class ResourceInteractionEvents {
                 event.getEntity().getX(),
                 event.getEntity().getY(),
                 event.getEntity().getZ(),
-                new ItemStack(ModItems.ALL.get("ingredient_muttonraw").get())
+                new ItemStack(Items.MUTTON)
             ));
         }
         ArthanaHarvestRuntime.addDrops(event, level);

@@ -21,6 +21,12 @@ public final class ModGameTests {
             () -> WarlockeryGameTests::sanctityWardRepelsHostilesImmediately);
         REGISTRY.register("summon_imp_creates_warlockery_creature",
             () -> WarlockeryGameTests::summonImpCreatesWarlockeryCreature);
+        REGISTRY.register("murderous_flock_spawns_targeted_hex_bats",
+            () -> WarlockeryGameTests::murderousFlockSpawnsTargetedHexBats);
+        REGISTRY.register("winged_creatures_use_custom_entity_classes",
+            () -> WarlockeryGameTests::wingedCreaturesUseCustomEntityClasses);
+        REGISTRY.register("lycan_villager_trades_only_with_werewolves",
+            () -> WarlockeryGameTests::lycanVillagerTradesOnlyWithWerewolves);
         REGISTRY.register("fertility_grows_and_cures",
             () -> WarlockeryGameTests::fertilityGrowsAndCures);
         REGISTRY.register("natures_power_repairs_ground",
@@ -47,6 +53,14 @@ public final class ModGameTests {
             () -> WarlockeryGameTests::hungerGuardRestoresHungerAndSaturation);
         REGISTRY.register("mending_doll_trades_its_durability",
             () -> WarlockeryGameTests::mendingDollTradesItsDurability);
+        REGISTRY.register("shelved_mending_dolls_repair_once_per_second",
+            () -> WarlockeryGameTests::shelvedMendingDollsRepairOncePerSecond);
+        REGISTRY.register("self_applied_doll_remains_active_on_shelf",
+            () -> WarlockeryGameTests::selfAppliedDollRemainsActiveOnShelf);
+        REGISTRY.register("altar_attachments_install_render_and_shift_remove",
+            () -> WarlockeryGameTests::altarAttachmentsInstallRenderAndShiftRemove);
+        REGISTRY.register("chalk_places_connected_glyphs_and_spends_durability",
+            () -> WarlockeryGameTests::chalkPlacesConnectedGlyphsAndSpendsDurability);
         REGISTRY.register("hex_guard_blocks_hostile_hex",
             () -> WarlockeryGameTests::hexGuardBlocksHostileHex);
         REGISTRY.register("hex_behavior_applies_and_removes_its_effect",

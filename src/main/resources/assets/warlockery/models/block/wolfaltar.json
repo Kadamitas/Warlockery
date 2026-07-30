@@ -1,6 +1,276 @@
 {
-    "parent":  "minecraft:block/cube_all",
-    "textures":  {
-                     "all":  "warlockery:block/wolfaltar"
-                 }
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "warlockery:block/wolfaltar",
+    "stone": "warlockery:block/wolfaltar",
+    "fur": "warlockery:block/wolfaltar_fur",
+    "rune": "warlockery:block/wolfaltar_rune"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        2,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#stone",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#stone"
+        },
+        "north": {
+          "texture": "#stone",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#stone",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#stone",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#stone",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        2,
+        1
+      ],
+      "to": [
+        15,
+        4,
+        15
+      ],
+      "faces": {
+        "down": {
+          "texture": "#rune"
+        },
+        "up": {
+          "texture": "#rune"
+        },
+        "north": {
+          "texture": "#rune"
+        },
+        "south": {
+          "texture": "#rune"
+        },
+        "west": {
+          "texture": "#rune"
+        },
+        "east": {
+          "texture": "#rune"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        4,
+        3
+      ],
+      "to": [
+        13,
+        9,
+        13
+      ],
+      "faces": {
+        "down": {
+          "texture": "#stone"
+        },
+        "up": {
+          "texture": "#stone"
+        },
+        "north": {
+          "texture": "#stone"
+        },
+        "south": {
+          "texture": "#stone"
+        },
+        "west": {
+          "texture": "#stone"
+        },
+        "east": {
+          "texture": "#stone"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        9,
+        1
+      ],
+      "to": [
+        15,
+        12,
+        15
+      ],
+      "faces": {
+        "down": {
+          "texture": "#stone"
+        },
+        "up": {
+          "texture": "#stone"
+        },
+        "north": {
+          "texture": "#stone"
+        },
+        "south": {
+          "texture": "#stone"
+        },
+        "west": {
+          "texture": "#stone"
+        },
+        "east": {
+          "texture": "#stone"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        12,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        12
+      ],
+      "faces": {
+        "down": {
+          "texture": "#fur"
+        },
+        "up": {
+          "texture": "#fur",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#fur"
+        },
+        "south": {
+          "texture": "#fur"
+        },
+        "west": {
+          "texture": "#fur"
+        },
+        "east": {
+          "texture": "#fur"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        14,
+        6
+      ],
+      "to": [
+        6,
+        16,
+        10
+      ],
+      "faces": {
+        "down": {
+          "texture": "#fur"
+        },
+        "up": {
+          "texture": "#fur",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#fur"
+        },
+        "south": {
+          "texture": "#fur"
+        },
+        "west": {
+          "texture": "#fur"
+        },
+        "east": {
+          "texture": "#fur"
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        14,
+        6
+      ],
+      "to": [
+        13,
+        16,
+        10
+      ],
+      "faces": {
+        "down": {
+          "texture": "#fur"
+        },
+        "up": {
+          "texture": "#fur",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#fur"
+        },
+        "south": {
+          "texture": "#fur"
+        },
+        "west": {
+          "texture": "#fur"
+        },
+        "east": {
+          "texture": "#fur"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        12,
+        2
+      ],
+      "to": [
+        10,
+        15,
+        6
+      ],
+      "faces": {
+        "down": {
+          "texture": "#fur"
+        },
+        "up": {
+          "texture": "#fur"
+        },
+        "north": {
+          "texture": "#fur"
+        },
+        "south": {
+          "texture": "#fur"
+        },
+        "west": {
+          "texture": "#fur"
+        },
+        "east": {
+          "texture": "#fur"
+        }
+      }
+    }
+  ]
 }

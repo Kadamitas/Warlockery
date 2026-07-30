@@ -1,7 +1,7 @@
 {
-    "parent":  "minecraft:block/carpet",
-    "render_type":  "minecraft:cutout",
-    "textures":  {
-                     "wool":  "warlockery:block/altar"
-                 }
+  "parent": "warlockery:block/chalk_glyph_center",
+  "textures": {
+    "glyph": "warlockery:block/circleglyph_veil",
+    "particle": "warlockery:block/circleglyph_veil"
+  }
 }

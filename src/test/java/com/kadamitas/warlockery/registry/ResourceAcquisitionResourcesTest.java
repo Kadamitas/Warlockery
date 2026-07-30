@@ -53,7 +53,6 @@ final class ResourceAcquisitionResourcesTest {
         recipe("ingredient_fume_filter", "warlockery:ingredient_fume_filter"),
         recipe("ingredient_bramble_colossus_seed", "warlockery:ingredient_bramble_colossus_seed"),
         recipe("ingredient_odd_porkchop_raw", "warlockery:ingredient_odd_porkchop_raw"),
-        recipe("ingredient_muttoncooked_from_smelting", "warlockery:ingredient_muttoncooked"),
         recipe("ingredient_web", "warlockery:ingredient_web"),
         recipe("ingredient_sleeping_apple", "warlockery:ingredient_sleeping_apple"),
         recipe("gunpowder_from_creeper_heart", "minecraft:gunpowder")

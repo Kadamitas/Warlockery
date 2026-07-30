@@ -1,6 +1,6 @@
-{
+﻿{
     "model":  {
                   "type":  "minecraft:model",
-                  "model":  "warlockery:block/broken_hexes_statue"
+                  "model":  "warlockery:item/broken_hexes_statue"
               }
 }

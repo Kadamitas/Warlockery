@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "warlockery:item/ingredient_soul_of_torment"
+    "layer0": "warlockery:item/ingredient_infernal_animus"
   }
 }

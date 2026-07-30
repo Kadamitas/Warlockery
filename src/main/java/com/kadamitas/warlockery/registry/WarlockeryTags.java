@@ -179,10 +179,12 @@ public final class WarlockeryTags {
         public static final TagKey<Item> WOLF_ALTAR_HEADS = create("wolf_altar_heads");
         public static final TagKey<Item> WOLF_ALTAR_OFFERINGS = create("wolf_altar_offerings");
         public static final TagKey<Item> DOLLS = create("dolls");
+        public static final TagKey<Item> DOLL_SHELF_CONTENTS = create("doll_shelf_contents");
         public static final TagKey<Item> BABA_YAGA_SUMMONERS = create("baba_yaga_summoners");
         public static final TagKey<Item> BRAZIER_IGNITERS = create("brazier_igniters");
         public static final TagKey<Item> ARTHANAS = create("arthanas");
         public static final TagKey<Item> ALTAR_RANGE_FOCI = create("altar_range_foci");
+        public static final TagKey<Item> ALTAR_ATTACHMENTS = create("altar_attachments");
         public static final TagKey<Item> NIGHTMARE_GUARD_CHARMS = create("nightmare_guard_charms");
 
         private Items() {

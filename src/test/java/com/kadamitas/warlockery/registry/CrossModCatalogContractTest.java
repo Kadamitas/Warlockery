@@ -155,13 +155,19 @@ final class CrossModCatalogContractTest {
     @Test
     void projectilesUseVanillaProjectileAndCrossbowMechanics() {
         final String itemRegistry = read(Path.of("src/main/java/com/kadamitas/warlockery/registry/ModItems.java"));
-        final String repeater = read(Path.of("src/main/java/com/kadamitas/warlockery/item/SilverRepeaterItem.java"));
+        final String hunter = read(Path.of("src/main/java/com/kadamitas/warlockery/entity/WerewolfHunterEntity.java"));
+        final String worldIntegration = read(Path.of("src/main/java/com/kadamitas/warlockery/world/CreatureWorldIntegration.java"));
+        final String combat = read(Path.of("src/main/java/com/kadamitas/warlockery/entity/CreatureCombat.java"));
         final String rock = read(Path.of("src/main/java/com/kadamitas/warlockery/item/RockItem.java"));
         final String brews = read(Path.of("src/main/java/com/kadamitas/warlockery/brew/BrewItem.java"));
 
         assertTrue(itemRegistry.contains("new ArrowItem(properties(id))"));
-        assertTrue(repeater.contains("extends CrossbowItem"));
-        assertTrue(repeater.contains("super.shoot("));
+        assertFalse(itemRegistry.contains("silver_repeater"));
+        assertTrue(hunter.contains("new ItemStack(Items.CROSSBOW)"));
+        assertTrue(worldIntegration.contains("new ItemStack(Items.CROSSBOW)"));
+        assertTrue(hunter.contains("ingredient_bolt_silver"));
+        assertTrue(worldIntegration.contains("ingredient_bolt_silver"));
+        assertTrue(combat.contains("WarlockeryTags.Items.SILVER_PROJECTILES"));
         assertTrue(rock.contains("extends SnowballItem"));
         assertTrue(brews.contains("extends SplashPotionItem"));
     }

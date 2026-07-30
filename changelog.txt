@@ -1,3 +1,17 @@
+Warlockery 1.1.0
+================
+
+- Updated 3D models and textures for creatures, machines, ritual blocks, statues, equipment, and decorative blocks.
+- Replaced placeholder item art with distinct pixel art, corrected spawn eggs, and improved the creative inventory presentation.
+- Reworked the in-game manuals with a readable layout, progression-aware volumes, searchable articles, ritual diagrams, and brew ingredients.
+- Improved altars, chalk circles, doll shelves, and ritual displays with clearer interactions, rendered attachments, connected glyphs, and less UI clutter.
+- Expanded dolls with durability-based use, self-binding, shelf activation, restricted storage, and scheduled mending behavior.
+- Added distinct brew colors, restored missing brew presentation, improved custom brew validation, and added the murderous flock brew.
+- Improved creature models and behavior, including clothed Lycan and Kobold villagers, supernatural trading rules, and distinct flying creatures.
+- Removed obsolete developer items and redundant blocks, including the separate silver repeater in favor of vanilla crossbow compatibility.
+- Fixed altar breaking crashes, missing model bottoms, terrain x-ray gaps, item names, machine inventories, and several progression issues.
+- Expanded automated coverage for models, textures, manuals, brews, creatures, rituals, inventories, and multiblock interactions.
+
 Warlockery 1.0.0
 ================
 

@@ -17,7 +17,7 @@ public final class DollShelfRules {
             : UtilityDecision.success("protecting");
     }
 
-    public static boolean accepts(final boolean doll, final int storedDolls) {
-        return doll && storedDolls < CAPACITY;
+    public static boolean accepts(final boolean supportedContent, final int storedItems) {
+        return supportedContent && storedItems < CAPACITY;
     }
 }

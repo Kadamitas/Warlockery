@@ -1,6 +1,6 @@
-{
+﻿{
     "model":  {
                   "type":  "minecraft:model",
-                  "model":  "warlockery:block/abyssal_portal"
+                  "model":  "warlockery:item/abyssal_portal"
               }
 }

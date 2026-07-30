@@ -1,12 +1,12 @@
 package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.block.WitchcraftCompatibilityTags;
+import com.kadamitas.warlockery.registry.ModEffects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -55,7 +55,7 @@ public final class FlyingBroomItem extends Item implements GlyphClearingTool {
         }
         final ItemStack broom = heldBroom(serverPlayer);
         final boolean holding = !broom.isEmpty();
-        final boolean soaring = serverPlayer.hasEffect(MobEffects.SLOW_FALLING);
+        final boolean soaring = serverPlayer.hasEffect(ModEffects.SOARING.getHolder().orElseThrow());
         final FlyingBroomRules.FlightDecision decision = FlyingBroomRules.decide(
             true,
             holding,

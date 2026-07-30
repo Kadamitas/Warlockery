@@ -35,7 +35,7 @@ class GameTestRegistrationIntegrityTest {
                 ));
         }
 
-        assertEquals(25, registrations.size());
+        assertEquals(32, registrations.size());
         assertEquals(registrations, functions.keySet());
         functions.forEach((name, function) -> assertEquals("warlockery:" + name, function));
     }

@@ -1,4 +1,5 @@
 bin
+*.class
 *.launch
 .settings
 .metadata
@@ -14,6 +15,8 @@ out
 
 build
 .gradle
+.cache
+config
 
 eclipse
 run

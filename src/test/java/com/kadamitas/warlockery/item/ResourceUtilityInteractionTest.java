@@ -163,7 +163,7 @@ final class ResourceUtilityInteractionTest {
 
     private void wolfMeatUsesExtensionTags() {
         assertTrue(read(DATA.resolve("warlockery/tags/entity_type/wolf_form_lamb_sources.json")).contains("minecraft:sheep"));
-        assertTrue(read(DATA.resolve("warlockery/tags/item/wolf_form_meats.json")).contains("warlockery:ingredient_muttonraw"));
+        assertTrue(read(DATA.resolve("warlockery/tags/item/wolf_form_meats.json")).contains("minecraft:mutton"));
     }
 
     private void wolfFormReceivesLamb() {

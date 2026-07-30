@@ -466,7 +466,7 @@
       "tag": "warlockery:wolf_altar_offerings",
       "contains": [
         "#c:foods/raw_meat",
-        "warlockery:ingredient_muttonraw",
+        "minecraft:mutton",
         "#c:bones"
       ]
     },
@@ -704,8 +704,8 @@
       "registry": "item",
       "tag": "minecraft:meat",
       "contains": [
-        "warlockery:ingredient_muttonraw",
-        "warlockery:ingredient_muttoncooked",
+        "minecraft:mutton",
+        "minecraft:cooked_mutton",
         "warlockery:ingredient_odd_porkchop_raw",
         "warlockery:ingredient_odd_porkchop_cooked"
       ]
@@ -735,7 +735,6 @@
       "registry": "item",
       "tag": "minecraft:enchantable/durability",
       "contains": [
-        "warlockery:silver_repeater",
         "warlockery:divinerlava",
         "warlockery:divinerwater",
         "warlockery:chalkheart",
@@ -755,13 +754,6 @@
         "warlockery:ingredient_bolt_silver",
         "warlockery:ingredient_bolt_splitting",
         "warlockery:ingredient_bolt_stake"
-      ]
-    },
-    {
-      "registry": "item",
-      "tag": "minecraft:enchantable/crossbow",
-      "contains": [
-        "warlockery:silver_repeater"
       ]
     },
     {

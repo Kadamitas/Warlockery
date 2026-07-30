@@ -1,6 +1,6 @@
-{
+﻿{
     "model":  {
                   "type":  "minecraft:model",
-                  "model":  "warlockery:block/crittersnare"
+                  "model":  "warlockery:item/crittersnare"
               }
 }

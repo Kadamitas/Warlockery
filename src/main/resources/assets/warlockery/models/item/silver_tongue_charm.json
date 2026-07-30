@@ -1,6 +1,6 @@
 {
     "parent":  "minecraft:item/generated",
     "textures":  {
-                     "layer0":  "warlockery:item/devils_tongue_charm"
+                     "layer0":  "warlockery:item/silver_tongue_charm"
                  }
 }

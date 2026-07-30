@@ -22,9 +22,9 @@ Enclave residents use Minecraft's villager brain, allowing beds, village safety,
 
 ## Werewolf hunts and crossbows
 
-Werewolf Hunters extend Pillager crossbow combat. On rare full-moon nights, a Werewolf Hunter and an ordinary Pillager can engage a spawned Werewolf near a player. Pillagers that encounter an existing Werewolf can receive a Silver Repeater and Silver Bolts before targeting it.
+Werewolf Hunters extend Pillager crossbow combat. On rare full-moon nights, a Werewolf Hunter and an ordinary Pillager can engage a spawned Werewolf near a player. Pillagers that encounter an existing Werewolf can receive a vanilla Crossbow and Silver Bolts before targeting it.
 
-The Silver Repeater extends `CrossbowItem`, so charging, Quick Charge, Multishot, durability, animation, and projectile selection use Minecraft's native mechanics. Silver Bolts bypass Werewolf and Vampire mitigation and deal bonus damage. Stakes punish vampiric creatures, Holy Bolts punish spirits and vampires, Anti-Magic Bolts strip active effects, and Splitting Bolts produce a three-projectile fan.
+The vanilla Crossbow supplies charging, Quick Charge, Multishot, durability, animation, and projectile selection. Silver Bolts bypass Werewolf and Vampire mitigation and deal bonus damage. Stakes punish vampiric creatures, Holy Bolts punish spirits and vampires, and Anti-Magic Bolts strip active effects.
 
 ## Material interoperability
 

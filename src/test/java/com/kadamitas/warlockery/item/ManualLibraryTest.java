@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.kadamitas.warlockery.brew.BrewKind;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -38,7 +39,7 @@ final class ManualLibraryTest {
         final Function<String, String> resolver = key -> translations.has(key)
             ? translations.get(key).getAsString()
             : key;
-        assertEquals(List.of("ingredient_book_circle_magic"), ids(ManualProfile.search("circle magic", resolver)));
+        assertTrue(ids(ManualProfile.search("circle magic", resolver)).contains("ingredient_book_circle_magic"));
         assertEquals(List.of("ingredient_book_herbology"), ids(ManualProfile.search("safe harvest", resolver)));
         assertEquals(List.of("vampirebook"), ids(ManualProfile.search("holy bolts", resolver)));
         assertTrue(ManualProfile.search("no such manual text", resolver).isEmpty());
@@ -48,8 +49,8 @@ final class ManualLibraryTest {
     void chapterNavigationCyclesInBothDirections() {
         final ManualProfile profile = ManualProfile.find("cauldronbook").orElseThrow();
         assertEquals("delivery", profile.adjacentSection("custom_brews", 1));
-        assertEquals("diagnostics", profile.adjacentSection("custom_brews", -1));
-        assertEquals("custom_brews", profile.adjacentSection("diagnostics", 1));
+        assertEquals("brew_entry_solidify_erosion", profile.adjacentSection("custom_brews", -1));
+        assertEquals("brew_entry_heal", profile.adjacentSection("diagnostics", 1));
     }
 
     @Test
@@ -65,6 +66,26 @@ final class ManualLibraryTest {
                 assertFalse(translations.get(profile.translatedSectionKey(section)).getAsString().isBlank());
             });
         });
+    }
+
+    @Test
+    void circleMagicIndexesEveryDataDrivenRitual() throws IOException {
+        final ManualProfile circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        final long indexedRituals = circles.sections().stream().filter(section -> section.startsWith("rite_")).count();
+        final long packagedRituals;
+        try (var paths = Files.list(Path.of("src/main/resources/data/warlockery/ritual"))) {
+            packagedRituals = paths.filter(path -> path.toString().endsWith(".json")).count();
+        }
+        assertEquals(packagedRituals, indexedRituals);
+        assertEquals(101, indexedRituals);
+    }
+
+    @Test
+    void cauldronCodexIndexesEveryBuiltInBrew() {
+        final ManualProfile codex = ManualProfile.find("cauldronbook").orElseThrow();
+        final long indexedBrews = codex.sections().stream().filter(section -> section.startsWith("brew_entry_")).count();
+        assertEquals(BrewKind.builtIns().size(), indexedBrews);
+        assertEquals(128, indexedBrews);
     }
 
     private static List<String> ids(final List<ManualProfile> profiles) {

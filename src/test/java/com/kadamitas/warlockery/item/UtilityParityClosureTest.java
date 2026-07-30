@@ -87,8 +87,8 @@ final class UtilityParityClosureTest {
             "src/main/java/com/kadamitas/warlockery/client/ManualScreen.java"
         ));
         assertTrue(screen.contains("EditBox"));
-        assertTrue(screen.contains("adjacentSection(selectedSection, -1)"));
-        assertTrue(screen.contains("adjacentSection(selectedSection, 1)"));
+        assertTrue(screen.contains("navigate(-1, layout)"));
+        assertTrue(screen.contains("navigate(1, layout)"));
     }
 
     private void positionWaystoneFailure() {

@@ -1,7 +1,6 @@
-{
-  "parent": "minecraft:block/carpet",
-  "render_type": "minecraft:cutout",
-  "textures": {
-    "wool": "warlockery:item/ingredient_pentacle"
-  }
+﻿{
+    "parent":  "minecraft:block/cross",
+    "textures":  {
+                     "cross":  "warlockery:block/pentacle"
+                 }
 }

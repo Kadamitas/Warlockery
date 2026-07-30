@@ -1,6 +1,6 @@
-{
+﻿{
     "model":  {
                   "type":  "minecraft:model",
-                  "model":  "warlockery:block/mirrorblock2"
+                  "model":  "warlockery:item/mirrorblock2"
               }
 }

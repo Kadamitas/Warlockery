@@ -36,28 +36,42 @@ final class EveryDollInteractionTest {
 
     private static void successContract(final DollKind kind) {
         switch (kind.definition().ability()) {
-            case DollAbility.None ignored -> assertFalse(kind.consumedOnActivation());
+            case DollAbility.None ignored -> {
+                assertEquals(0, kind.definition().durability());
+                assertFalse(DollRules.canApplyToSelf(ignored));
+            }
             case DollAbility.Mending ignored -> {
                 assertTrue(DollRules.needsRepair(10, 100));
                 assertEquals(8, DollRules.repairedDamage(10));
                 assertEquals(0, DollRules.repairedDamage(1));
-                assertFalse(kind.consumedOnActivation());
                 assertEquals(128, kind.definition().durability());
+                assertTrue(DollRules.canApplyToSelf(ignored));
             }
             case DollAbility.LethalProtection ignored -> {
                 assertTrue(DollRules.isLethal(5.0F, 5.0F));
-                assertTrue(kind.consumedOnActivation());
+                assertEquals(32, kind.definition().durability());
+                assertTrue(DollRules.canApplyToSelf(ignored));
             }
             case DollAbility.ActiveHex ignored -> {
                 assertEquals(DollHexAction.SHOVE, DollHexAction.PRICK.next());
                 assertEquals(DollHexAction.IGNITE, DollHexAction.SHOVE.next());
                 assertEquals(DollHexAction.DROWN, DollHexAction.IGNITE.next());
                 assertEquals(DollHexAction.PRICK, DollHexAction.DROWN.next());
-                assertFalse(kind.consumedOnActivation());
+                assertTrue(kind.definition().durability() > 1);
+                assertFalse(DollRules.canApplyToSelf(ignored));
             }
-            case DollAbility.HexGuard ignored -> assertFalse(kind.consumedOnActivation());
-            case DollAbility.DamageLink ignored -> assertFalse(kind.consumedOnActivation());
-            case DollAbility.DollGuard ignored -> assertFalse(kind.consumedOnActivation());
+            case DollAbility.HexGuard ignored -> {
+                assertTrue(kind.definition().durability() > 1);
+                assertTrue(DollRules.canApplyToSelf(ignored));
+            }
+            case DollAbility.DamageLink ignored -> {
+                assertTrue(kind.definition().durability() > 1);
+                assertFalse(DollRules.canApplyToSelf(ignored));
+            }
+            case DollAbility.DollGuard ignored -> {
+                assertTrue(kind.definition().durability() > 1);
+                assertTrue(DollRules.canApplyToSelf(ignored));
+            }
         }
     }
 }

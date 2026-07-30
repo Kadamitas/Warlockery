@@ -113,19 +113,21 @@ Draw the required chalk circles, provide a powered altar, and place the ingredie
 ## Doll catalog
 
 - **Doll**: A blank sympathetic vessel used to craft specialized dolls.
-- **Earth Guard Doll**: Prevents one lethal fall, Elytra collision, dripstone impact, falling-block crush, or mace smash and grants Slow Falling.
-- **Water Guard Doll**: Prevents one lethal drowning hit, restores the air meter, and grants Water Breathing.
-- **Hunger Guard Doll**: Prevents one lethal starvation hit, fills the hunger bar, restores saturation, and applies the vanilla Saturation effect.
-- **Fire Guard Doll**: Prevents one lethal fire or lava hit, clears fire, grants Fire Resistance, and searches for safe footing after a lava activation.
+- **Earth Guard Doll**: Spends durability to prevent a lethal fall, Elytra collision, dripstone impact, falling-block crush, or mace smash and grants Slow Falling.
+- **Water Guard Doll**: Spends durability to prevent lethal drowning, restores the air meter, and grants Water Breathing.
+- **Hunger Guard Doll**: Spends durability to prevent lethal starvation, fills the hunger bar, restores saturation, and applies the vanilla Saturation effect.
+- **Fire Guard Doll**: Spends durability to prevent lethal fire or lava damage, clears fire, grants Fire Resistance, and searches for safe footing after a lava activation.
 - **Tool Mending Doll**: Spends one point of its durability to repair two durability on a damaged held tool.
-- **Death Guard Doll**: Prevents one otherwise lethal hit and applies the vanilla Totem recovery effects without the Totem screen animation.
+- **Death Guard Doll**: Spends durability to prevent an otherwise lethal hit and applies the vanilla Totem recovery effects without the Totem screen animation.
 - **Hex Guard Doll**: Spends durability to block hostile circle hexes aimed at its bound target.
 - **Hexing Doll**: Cycles through prick, shove, ignite, and drown actions against an available bound target.
 - **Blood Link Doll**: Spends durability to transfer half of the holder's incoming damage to an available bound target.
-- **Doll Guard**: Spends durability to preserve another one-use protection doll when it activates.
+- **Doll Guard**: Spends durability to block attempts to corrupt the bound target's protective dolls.
 - **Armor Mending Doll**: Spends one point of its durability to repair two durability on damaged worn armor.
 
 The side status panel shows bound dolls, remaining charges, recent activations, and harmful hex or effect durations. Doll activation never uses the full-screen Totem animation.
+
+Right-clicking air binds an eligible protection, mending, or guard doll to the user. A Doll Shelf accepts tagged dolls and sympathetic containers, and a shelf holding a bound doll safely keeps its chunk available so protection and once-per-second equipment mending remain active while its owner travels.
 
 ## Item descriptions
 
@@ -138,6 +140,7 @@ The side status panel shows bound dolls, remaining charges, recent activations, 
 - **Veil Chalk**: Draws glyphs used by spirit, concealment, and otherworld rites.
 - **Circle Talisman**: Captures a prepared chalk layout and restores it at a clear destination.
 - **Attuned Stone**: Stores portable altar power and transfers charge to or from a nearby altar.
+- **Ritual Knife**: Can be placed visibly on an altar as a reusable range focus and removed with shift-right-click.
 - **Sympathetic Vial**: Records a creature or player identity for rites, dolls, compasses, and bound devices.
 - **Waystone**: Records a location or creature target for travel, divination, and transposition rites.
 - **Blooded Waystone**: Carries a creature-linked destination used by advanced sympathetic rites.
@@ -169,7 +172,7 @@ The side status panel shows bound dolls, remaining charges, recent activations, 
 
 ### Combat and protection
 
-- **Silver Repeater**: Uses vanilla crossbow mechanics with silver and specialized arrow compatibility.
+- **Silver Bolts**: Fit Minecraft's vanilla crossbow and deal bonus damage to creatures vulnerable to silver.
 - **Silver Bolts**: Let players and Werewolf Hunters bypass werewolf protection.
 - **Anti-Magic Bolts**: Disrupt magical protections on struck targets.
 - **Holy Bolts**: Deal increased damage to tagged demons and undead creatures.

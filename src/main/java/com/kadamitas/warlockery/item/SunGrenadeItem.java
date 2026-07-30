@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.minecraft.core.Position;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,8 +22,13 @@ public final class SunGrenadeItem extends SplashPotionItem {
     public SunGrenadeItem(final Properties properties) {
         super(properties.stacksTo(16).component(
             DataComponents.POTION_CONTENTS,
-            new PotionContents(Optional.empty(), Optional.of(0xFFEFA3), java.util.List.of(), Optional.of("sun_grenade"))
+            new PotionContents(Optional.empty(), Optional.of(0xFFEFA3), java.util.List.of(), Optional.empty())
         ));
+    }
+
+    @Override
+    public Component getName(final ItemStack stack) {
+        return Component.translatable("item.warlockery.sungrenade");
     }
 
     @Override

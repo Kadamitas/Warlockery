@@ -111,6 +111,18 @@ final class LocalizationIntegrityTest {
     }
 
     @Test
+    void itemAndBlockNamesNeverExposeTranslationKeys() {
+        ENGLISH.entrySet().stream()
+            .filter(entry -> entry.getKey().startsWith("item.warlockery.")
+                || entry.getKey().startsWith("block.warlockery."))
+            .forEach(entry -> {
+                assertFalse(entry.getValue().equals(entry.getKey()), entry.getKey());
+                assertFalse(entry.getValue().startsWith("item.warlockery."), entry.getKey());
+                assertFalse(entry.getValue().startsWith("block.warlockery."), entry.getKey());
+            });
+    }
+
+    @Test
     void JavaTranslationKeysAndDynamicEnumFamiliesAreComplete() throws IOException {
         try (Stream<Path> paths = Files.walk(JAVA)) {
             paths.filter(path -> path.toString().endsWith(".java"))

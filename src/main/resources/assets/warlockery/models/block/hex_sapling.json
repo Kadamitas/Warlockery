@@ -1,6 +1,6 @@
-{
-    "parent":  "minecraft:block/cube_all",
+﻿{
+    "parent":  "minecraft:block/cross",
     "textures":  {
-                     "all":  "warlockery:block/altar"
+                     "cross":  "warlockery:block/hex_sapling"
                  }
 }

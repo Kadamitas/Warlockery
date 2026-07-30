@@ -1,3 +1,6 @@
-{
-    "parent":  "warlockery:block/paradox_egg"
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/paradox_egg"
+                 }
 }

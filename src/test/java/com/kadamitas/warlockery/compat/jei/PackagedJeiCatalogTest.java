@@ -24,7 +24,7 @@ final class PackagedJeiCatalogTest {
     @Test
     void packagedCatalogDecodesEveryMachineRecipe() {
         final var recipes = PackagedJeiCatalog.machines();
-        assertEquals(176, recipes.size());
+        assertEquals(177, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(recipe -> recipe.id()).distinct().count());
         assertTrue(recipes.stream().allMatch(recipe -> MachineProfiles.supportsRecipeType(recipe.recipe().machine())));
         assertTrue(recipes.stream().allMatch(recipe -> !recipe.recipe().inputs().isEmpty()));

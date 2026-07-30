@@ -1,6 +1,6 @@
-{
+﻿{
     "model":  {
                   "type":  "minecraft:model",
-                  "model":  "warlockery:block/glowglobe"
+                  "model":  "warlockery:item/glowglobe"
               }
 }

@@ -1,6 +1,6 @@
 {
     "parent":  "minecraft:item/generated",
     "textures":  {
-                     "layer0":  "warlockery:item/ingredient_verdant_catalyst"
+                     "layer0":  "warlockery:item/witchhat"
                  }
 }

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#warlockery:altar_range_foci",
+    "#warlockery:altar_upgrades/candelabra",
+    "#warlockery:altar_upgrades/chalice",
+    "#warlockery:altar_upgrades/pentacle"
+  ]
+}

@@ -19,7 +19,8 @@ public final class UtilityDeviceBlockFactory {
         "pentacle",
         "scarecrow",
         "voidbramble",
-        "wickerbundle"
+        "wickerbundle",
+        "wolfhead"
         ),
         StatueProfile.ids().stream(),
         UtilityDeviceProfile.blockIds().stream()
@@ -50,6 +51,7 @@ public final class UtilityDeviceBlockFactory {
             case "scarecrow" -> new FetishBlock(properties.noOcclusion().sound(SoundType.WOOD));
             case "voidbramble" -> new VoidBrambleBlock(properties.noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
             case "wickerbundle" -> new WickerBundleBlock(properties.sound(SoundType.WOOD));
+            case "wolfhead" -> new WolfHeadBlock(properties.noOcclusion().sound(SoundType.WOOL));
             default -> UtilityDeviceProfile.find(id)
                 .<Block>map(profile -> new InteractiveUtilityBlock(properties, profile))
                 .or(() -> StatueProfile.find(id)

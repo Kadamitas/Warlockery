@@ -3,12 +3,16 @@ package com.kadamitas.warlockery.registry;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.KoboldBossRules;
+import com.kadamitas.warlockery.entity.LycanVillagerEntity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.SpiritMob;
+import com.kadamitas.warlockery.entity.StormSimianEntity;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
+import com.kadamitas.warlockery.entity.WingedArcaneMob;
 import com.kadamitas.warlockery.entity.CreatureVisualProfile;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -96,6 +100,24 @@ public final class ModEntities {
                 final CreatureVisualProfile visual = CreatureVisualProfile.forKind(kind);
                 register(id, () -> EntityType.Builder.of(WerewolfEntity::new, MobCategory.MONSTER)
                     .sized(visual.width(), visual.height()).notInPeaceful().build(REGISTRY.key(id)));
+            } else if (kind == CreatureKind.IMP) {
+                register(id, () -> {
+                    final CreatureVisualProfile visual = CreatureVisualProfile.forKind(kind);
+                    return EntityType.Builder.of(ImpEntity::new, MobCategory.MONSTER)
+                        .sized(visual.width(), visual.height()).fireImmune().notInPeaceful().build(REGISTRY.key(id));
+                });
+            } else if (kind == CreatureKind.STORM_SIMIAN) {
+                register(id, () -> {
+                    final CreatureVisualProfile visual = CreatureVisualProfile.forKind(kind);
+                    return EntityType.Builder.of(StormSimianEntity::new, MobCategory.CREATURE)
+                        .sized(visual.width(), visual.height()).build(REGISTRY.key(id));
+                });
+            } else if (kind == CreatureKind.LYCAN_VILLAGER) {
+                register(id, () -> {
+                    final CreatureVisualProfile visual = CreatureVisualProfile.forKind(kind);
+                    return EntityType.Builder.of(LycanVillagerEntity::new, MobCategory.CREATURE)
+                        .sized(visual.width(), visual.height()).build(REGISTRY.key(id));
+                });
             } else if (isSpiritKind(kind)) {
                 registerSpirit(id, kind);
             } else {
@@ -190,6 +212,9 @@ public final class ModEntities {
             else if (id.equals("stonebroker")) event.put(type, patronAttributes(CreatureKind.STONEBROKER));
             else if (Set.of("hobgoblin", "goblin").contains(id)) event.put(type, Villager.createAttributes().build());
             else if (id.equals("werewolf_hunter")) event.put(type, Pillager.createAttributes().build());
+            else if (Set.of("imp", "storm_simian").contains(id))
+                event.put(type, WingedArcaneMob.createAttributes(kindFor(id)).build());
+            else if (id.equals("lycan_villager")) event.put(type, Villager.createAttributes().build());
             else if (SPIRIT_IDS.contains(id)) event.put(type, Vex.createAttributes().build());
             else event.put(type, groundAttributes(id).build());
         });

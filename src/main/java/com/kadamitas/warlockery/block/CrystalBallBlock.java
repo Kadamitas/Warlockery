@@ -22,10 +22,30 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class CrystalBallBlock extends Block {
+    private static final VoxelShape SHAPE = Shapes.or(
+        Block.box(3.0, 0.0, 3.0, 13.0, 3.0, 13.0),
+        Block.box(5.0, 3.0, 5.0, 11.0, 6.0, 11.0),
+        Block.box(3.0, 6.0, 3.0, 13.0, 14.0, 13.0)
+    );
+
     public CrystalBallBlock(final BlockBehaviour.Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected VoxelShape getShape(
+        final BlockState state,
+        final BlockGetter level,
+        final BlockPos pos,
+        final CollisionContext context
+    ) {
+        return SHAPE;
     }
 
     @Override

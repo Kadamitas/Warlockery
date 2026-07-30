@@ -19,6 +19,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.MoonPhase;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -103,7 +104,7 @@ public final class CreatureWorldIntegration {
     }
 
     private static void equipSilver(final Pillager pillager) {
-        pillager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(ModItems.ALL.get("silver_repeater").get()));
+        pillager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
         pillager.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(ModItems.ALL.get("ingredient_bolt_silver").get(), 64));
     }
 

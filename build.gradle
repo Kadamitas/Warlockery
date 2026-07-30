@@ -58,7 +58,7 @@ abstract class ReleaseBundleTask extends DefaultTask {
     }
 }
 
-version = '1.0.0'
+version = '1.1.0'
 group = 'com.kadamitas.warlockery'
 
 java {

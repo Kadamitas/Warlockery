@@ -5,6 +5,7 @@ import com.kadamitas.warlockery.crafting.AltarPowerNetwork;
 import com.kadamitas.warlockery.crafting.BrazierEffectRuntime;
 import com.kadamitas.warlockery.crafting.MachineRecipeManager;
 import com.kadamitas.warlockery.crafting.MachineDisplay;
+import com.kadamitas.warlockery.crafting.MachineInsertionRules;
 import com.kadamitas.warlockery.crafting.MachineProfile;
 import com.kadamitas.warlockery.crafting.MachineProfiles;
 import com.kadamitas.warlockery.crafting.MachineSlotLayout;
@@ -485,10 +486,14 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     @Override
     public boolean canPlaceItem(final int slot, final ItemStack stack) {
         final MachineProfile profile = machineProfile();
-        if (profile.hasFuelSlot() && slot == profile.fuelSlot()) {
-            return level != null && level.fuelValues().isFuel(stack);
-        }
-        return slot < profile.inputSlots();
+        return MachineInsertionRules.accepts(
+            profile,
+            slot,
+            stack,
+            level == null || !level.isClientSide(),
+            candidate -> MachineRecipeManager.INSTANCE.acceptsInput(profile, candidate),
+            candidate -> level != null && level.fuelValues().isFuel(candidate)
+        );
     }
 
     @Override

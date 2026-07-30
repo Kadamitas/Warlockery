@@ -47,7 +47,7 @@ function Write-SelfLoot {
 }
 
 function Write-Door {
-    param([string] $Id, [string] $Texture)
+    param([string] $Id, [string] $BottomTexture, [string] $TopTexture, [string] $ItemTexture)
     $variants = [ordered]@{}
     $baseRotation = [ordered]@{ east = 0; north = 270; south = 90; west = 180 }
     foreach ($facing in $baseRotation.Keys) {
@@ -75,14 +75,20 @@ function Write-Door {
             foreach ($open in @('', '_open')) {
                 $suffix = "_${vertical}_${hinge}$open"
                 Write-Model $Id $suffix "minecraft:block/door_${vertical}_${hinge}$open" ([ordered]@{
-                    bottom = $Texture
-                    top = $Texture
+                    bottom = $BottomTexture
+                    top = $TopTexture
                 })
             }
         }
     }
-    Write-Model $Id '' 'minecraft:block/door_bottom_left' ([ordered]@{ bottom = $Texture; top = $Texture })
-    Write-ItemModel $Id "warlockery:block/$Id"
+    Write-Model $Id '' 'minecraft:block/door_bottom_left' ([ordered]@{ bottom = $BottomTexture; top = $TopTexture })
+    Write-Json (Join-Path $itemModelRoot "$Id.json") ([ordered]@{
+        parent = 'minecraft:item/generated'
+        textures = [ordered]@{ layer0 = $ItemTexture }
+    })
+    Write-Json (Join-Path $itemDefinitionRoot "$Id.json") ([ordered]@{
+        model = [ordered]@{ type = 'minecraft:model'; model = "warlockery:item/$Id" }
+    })
     $condition = [ordered]@{
         condition = 'minecraft:block_state_property'
         block = "warlockery:$Id"
@@ -267,18 +273,11 @@ function Write-Ladder {
 }
 
 $doors = [ordered]@{
-    alderwooddoor = 'warlockery:block/alder_planks'
-    rowanwooddoor = 'warlockery:block/rowan_planks'
-    cwoodendoor = 'warlockery:block/hawthorn_planks'
-    icedoor = 'minecraft:block/packed_ice'
-}
-$buttons = [ordered]@{
-    cbuttonstone = 'minecraft:block/stone'
-    cbuttonwood = 'warlockery:block/hawthorn_planks'
+    alderwooddoor = @('warlockery:block/alderwooddoor_bottom', 'warlockery:block/alderwooddoor_top', 'warlockery:item/alderwooddoor')
+    rowanwooddoor = @('warlockery:block/rowanwooddoor_bottom', 'warlockery:block/rowanwooddoor_top', 'warlockery:item/rowanwooddoor')
+    icedoor = @('warlockery:block/icedoor_bottom', 'warlockery:block/icedoor_top', 'warlockery:item/icedoor')
 }
 $plates = [ordered]@{
-    cstonepressureplate = 'minecraft:block/stone'
-    cwoodpressureplate = 'warlockery:block/hawthorn_planks'
     icepressureplate = 'minecraft:block/packed_ice'
     snowpressureplate = 'minecraft:block/snow'
 }
@@ -303,8 +302,7 @@ $stairs = [ordered]@{
     stairswoodrowan = 'warlockery:block/rowan_planks'
 }
 
-$doors.GetEnumerator() | ForEach-Object { Write-Door $_.Key $_.Value }
-$buttons.GetEnumerator() | ForEach-Object { Write-Button $_.Key $_.Value }
+$doors.GetEnumerator() | ForEach-Object { Write-Door $_.Key $_.Value[0] $_.Value[1] $_.Value[2] }
 $plates.GetEnumerator() | ForEach-Object { Write-PressurePlate $_.Key $_.Value }
 $fences.GetEnumerator() | ForEach-Object { Write-Fence $_.Key $_.Value }
 Write-FenceGate 'icefencegate' 'minecraft:block/packed_ice'
@@ -312,4 +310,4 @@ $slabs.GetEnumerator() | ForEach-Object { Write-Slab $_.Key $_.Value }
 $stairs.GetEnumerator() | ForEach-Object { Write-Stairs $_.Key $_.Value }
 Write-Ladder 'hex_ladder' 'minecraft:block/ladder'
 
-Write-Host 'Generated modern block states, models, item views, and loot for 26 shaped blocks.'
+Write-Host 'Generated modern block states, models, item views, and loot for shaped blocks.'
