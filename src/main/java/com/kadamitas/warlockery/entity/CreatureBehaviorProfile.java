@@ -46,7 +46,7 @@ public record CreatureBehaviorProfile(
             Feature.FAMILIAR_BOND, Feature.OWNER_AURA, Feature.PROTECT_OWNER, Feature.FIRE_MELEE),
         profile("flying_monkey", CreatureKind.STORM_SIMIAN, AuditStatus.COMPLETE,
             CreatureBehaviorTags.Items.COMPANION_BINDERS, 20,
-            Feature.FAMILIAR_BOND, Feature.WAYSTONE_TRAVEL, Feature.OWNER_AURA),
+            Feature.FAMILIAR_BOND, Feature.WAYSTONE_TRAVEL, Feature.OWNER_AURA, Feature.PROTECT_OWNER),
         profile("gulg", CreatureKind.FORGEWARDEN, AuditStatus.MODERN_EQUIVALENT,
             CreatureBehaviorTags.Items.HEART_OFFERINGS, 40,
             Feature.HEART_EMPOWERMENT, Feature.FORGE_AURA, Feature.FIRE_MELEE),

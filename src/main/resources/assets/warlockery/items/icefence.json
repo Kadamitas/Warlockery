@@ -1,6 +1,6 @@
-{
-  "model": {
-    "type": "minecraft:model",
-    "model": "warlockery:block/icefence_inventory"
-  }
+﻿{
+    "model":  {
+                  "type":  "minecraft:model",
+                  "model":  "warlockery:item/icefence"
+              }
 }

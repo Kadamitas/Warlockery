@@ -1,3 +1,6 @@
-{
-    "parent":  "warlockery:block/kettle"
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/kettle"
+                 }
 }

@@ -1,0 +1,25 @@
+{
+  "machine": "kettle",
+  "fluid": {
+    "ingredient": "#minecraft:water",
+    "amount": 250
+  },
+  "inputs": [
+    {
+      "ingredient": "warlockery:ingredient_infusion_base"
+    },
+    {
+      "ingredient": "#c:feathers"
+    },
+    {
+      "ingredient": "warlockery:ingredient_brew_hitchcock"
+    }
+  ],
+  "outputs": [
+    {
+      "item": "warlockery:brew_murderous_flock",
+      "count": 1
+    }
+  ],
+  "processing_time": 320
+}

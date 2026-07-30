@@ -11,7 +11,6 @@ import com.kadamitas.warlockery.item.UtilityItemFactory;
 import com.kadamitas.warlockery.item.SympatheticVialItem;
 import com.kadamitas.warlockery.item.TransformationItem;
 import com.kadamitas.warlockery.item.ArcaneFocusItem;
-import com.kadamitas.warlockery.item.SilverRepeaterItem;
 import com.kadamitas.warlockery.item.ResourceUtilityItemFactory;
 import com.kadamitas.warlockery.item.UtilityDeviceItemFactory;
 import com.kadamitas.warlockery.item.InfusedBrewItem;
@@ -31,9 +30,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ArrowItem;
-import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.ItemUseAnimation;
@@ -60,7 +57,7 @@ public final class ModItems {
     private static final Map<String, DeferredHolder<Item, ? extends Item>> MUTABLE_ITEMS = new LinkedHashMap<>();
     private static final Set<String> SINGLE_STACK_ITEMS = Set.of(
         "ritual_knife", "boline", "canesword", "coffin", "deathscowl", "deathshand", "divinerlava", "divinerwater",
-        "replication_staff", "silver_repeater", "hornofthehunt", "thorn_spear", "delvealloypickaxe", "mirror", "mysticbranch",
+        "replication_staff", "hornofthehunt", "thorn_spear", "delvealloypickaxe", "mirror", "mysticbranch",
         "playercompass", "stonebrokers_quiver", "shelfcompass", "silversword", "sympathetic_vial", "arcane_focus"
     );
     private static final Map<String, String> SEED_TO_CROP = Map.of(
@@ -104,8 +101,6 @@ public final class ModItems {
                     register(id, () -> ResourceUtilityItemFactory.create(properties(id), id));
                 } else if (UtilityItemFactory.supports(id)) {
                     register(id, () -> UtilityItemFactory.create(properties(id), id));
-                } else if ("silver_repeater".equals(id)) {
-                    register(id, () -> new SilverRepeaterItem(properties(id).durability(465)));
                 } else if (id.startsWith("chalk")) {
                     final String glyphId = switch (id) {
                         case "chalkinfernal" -> "circleglyphinfernal";
@@ -123,7 +118,11 @@ public final class ModItems {
 
         ContentCatalog.INGREDIENTS.forEach(catalogName -> {
             final String id = ContentCatalog.ingredientId(catalogName);
-            if (UtilityDeviceItemFactory.supports(id)) {
+            if ("ingredient_brew_soaring".equals(id)) {
+                register(id, () -> new Item(properties(id)));
+            } else if (BrewFactory.supportsLegacy(id)) {
+                register(id, () -> BrewFactory.createLegacy(properties(id), id));
+            } else if (UtilityDeviceItemFactory.supports(id)) {
                 register(id, () -> UtilityDeviceItemFactory.create(properties(id), id));
             } else if (ResourceUtilityItemFactory.supports(id)) {
                 register(id, () -> ResourceUtilityItemFactory.create(properties(id), id));
@@ -198,7 +197,6 @@ public final class ModItems {
             case "thorn_spear" -> properties.spear(
                 ToolMaterial.IRON, 0.95F, 0.95F, 0.6F, 2.5F, 11.0F, 6.75F, 5.1F, 11.25F, 4.6F
             );
-            case "silver_repeater" -> properties.durability(384).enchantable(1);
             default -> properties;
         };
 
@@ -251,6 +249,9 @@ public final class ModItems {
     }
 
     private static ArmorMaterial armorMaterial(final String id) {
+        if (id.startsWith("werewolf_hunter_")) {
+            return HunterArmorMaterials.forItem(id);
+        }
         if (id.contains("_dawn")) {
             return ArmorMaterials.DIAMOND;
         }
@@ -267,8 +268,8 @@ public final class ModItems {
         return switch (id) {
             case "stew" -> properties.stacksTo(1).food(food(10, 0.8F)).usingConvertsTo(Items.BOWL);
             case "stewraw" -> properties.stacksTo(1).food(food(4, 0.3F)).usingConvertsTo(Items.BOWL);
-            case "ingredient_muttonraw", "ingredient_odd_porkchop_raw" -> properties.food(food(3, 0.3F));
-            case "ingredient_muttoncooked", "ingredient_odd_porkchop_cooked" -> properties.food(food(8, 0.8F));
+            case "ingredient_odd_porkchop_raw" -> properties.food(food(3, 0.3F));
+            case "ingredient_odd_porkchop_cooked" -> properties.food(food(8, 0.8F));
             case "ingredient_sleeping_apple" -> properties.food(food(4, 0.3F)).component(
                 DataComponents.CONSUMABLE,
                 Consumable.builder()
@@ -298,7 +299,7 @@ public final class ModItems {
                     .animation(ItemUseAnimation.DRINK)
                     .sound(SoundEvents.GENERIC_DRINK)
                     .hasConsumeParticles(false)
-                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(effect, 20 * 90, 0)))
+                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(effect, brewDuration(id), 0)))
                     .build()
             ))
             .orElse(properties);
@@ -312,7 +313,7 @@ public final class ModItems {
             case "ingredient_brew_love" -> MobEffects.REGENERATION;
             case "ingredient_brew_raising" -> MobEffects.STRENGTH;
             case "ingredient_brew_revealing" -> MobEffects.GLOWING;
-            case "ingredient_brew_soaring" -> MobEffects.SLOW_FALLING;
+            case "ingredient_brew_soaring" -> ModEffects.SOARING;
             case "ingredient_brew_grotesque" -> MobEffects.RESISTANCE;
             case "ingredient_brew_murder_of_crows" -> MobEffects.BLINDNESS;
             case "ingredient_brew_ice", "ingredient_brew_sleep" -> MobEffects.SLOWNESS;
@@ -321,6 +322,10 @@ public final class ModItems {
             case "ingredient_brew_soul_hunger" -> MobEffects.HUNGER;
             default -> null;
         });
+    }
+
+    private static int brewDuration(final String id) {
+        return "ingredient_brew_soaring".equals(id) ? 20 * 60 * 120 : 20 * 90;
     }
 
     public static Optional<ItemLike> seedFor(final Block crop) {

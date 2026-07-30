@@ -1,6 +1,6 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "minecraft:item/zombie_spawn_egg"
-  }
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/ironbound_sentinel_spawn_egg"
+                 }
 }

@@ -1,6 +1,8 @@
-{
-    "parent":  "minecraft:block/cube_all",
+﻿{
+    "parent":  "minecraft:block/cube_bottom_top",
     "textures":  {
-                     "all":  "warlockery:block/altar"
+                     "bottom":  "warlockery:block/pitdirt",
+                     "side":  "warlockery:block/pitgrass_side",
+                     "top":  "warlockery:block/pitgrass_top"
                  }
 }

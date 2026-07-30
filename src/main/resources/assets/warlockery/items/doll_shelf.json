@@ -1,6 +1,6 @@
-{
+﻿{
     "model":  {
                   "type":  "minecraft:model",
-                  "model":  "warlockery:block/doll_shelf"
+                  "model":  "warlockery:item/doll_shelf"
               }
 }

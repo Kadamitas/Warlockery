@@ -1,7 +1,41 @@
 {
-    "variants":  {
-                     "":  {
-                              "model":  "warlockery:block/circleglyphritual"
-                          }
-                 }
+  "multipart": [
+    {
+      "apply": {
+        "model": "warlockery:block/circleglyphritual"
+      }
+    },
+    {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphritual_north"
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphritual_east"
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphritual_south"
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphritual_west"
+      }
+    }
+  ]
 }

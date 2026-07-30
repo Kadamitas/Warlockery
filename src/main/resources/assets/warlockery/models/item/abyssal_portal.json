@@ -1,3 +1,6 @@
-{
-    "parent":  "warlockery:block/abyssal_portal"
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/abyssal_portal"
+                 }
 }

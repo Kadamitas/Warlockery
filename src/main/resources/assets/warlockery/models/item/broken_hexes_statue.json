@@ -1,3 +1,6 @@
-{
-    "parent":  "warlockery:block/broken_hexes_statue"
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/broken_hexes_statue"
+                 }
 }

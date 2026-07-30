@@ -85,16 +85,14 @@ final class CommonTagResourcesTest {
         assertTag(tag("minecraft/tags/item/pickaxes.json", "warlockery:delvealloypickaxe"));
         assertTag(tag("c/tags/item/armors.json", "#c:armors/humanoid"));
         assertTag(tag("c/tags/item/armors/humanoid.json", "warlockery:delvealloyhelm", "warlockery:iceslippers"));
-        assertTag(tag("c/tags/item/tools/ranged_weapon.json", "warlockery:silver_repeater"));
-        assertTag(tag("minecraft/tags/item/enchantable/crossbow.json", "warlockery:silver_repeater"));
     }
 
     @Test
-    void silverRepeaterUsesAnExtensibleNonRecursiveBaseTag() {
-        assertTag(tag("warlockery/tags/item/silver_repeater_bases.json", "minecraft:crossbow"));
-        final String recipe = readString(DATA.resolve("warlockery/recipe/silver_repeater.json"));
-        assertTrue(recipe.contains("#warlockery:silver_repeater_bases"));
-        assertFalse(recipe.contains("#c:tools/crossbow"));
+    void silverBoltsUseTheVanillaArrowFamilyWithoutAParallelCrossbow() {
+        assertTag(tag("minecraft/tags/item/arrows.json", "warlockery:ingredient_bolt_silver"));
+        assertTag(tag("warlockery/tags/item/silver_projectiles.json", "warlockery:ingredient_bolt_silver"));
+        assertFalse(Files.exists(DATA.resolve("warlockery/tags/item/silver_repeater_bases.json")));
+        assertFalse(Files.exists(DATA.resolve("warlockery/recipe/silver_repeater.json")));
     }
 
     @Test

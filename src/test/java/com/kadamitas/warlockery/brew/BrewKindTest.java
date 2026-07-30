@@ -20,7 +20,7 @@ final class BrewKindTest {
             assertTrue(ids.add(kind.id()));
             assertEquals(kind, BrewKind.require(kind.id()));
         });
-        assertEquals(127, ids.size());
+        assertEquals(128, ids.size());
         assertTrue(BrewKind.find("missing").isEmpty());
     }
 

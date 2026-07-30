@@ -1,6 +1,6 @@
-{
-  "model": {
-    "type": "minecraft:model",
-    "model": "warlockery:item/rowan_sapling"
-  }
+﻿{
+    "model":  {
+                  "type":  "minecraft:model",
+                  "model":  "warlockery:item/rowan_sapling"
+              }
 }

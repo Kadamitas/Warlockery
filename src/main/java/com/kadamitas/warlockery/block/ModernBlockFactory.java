@@ -23,12 +23,7 @@ public final class ModernBlockFactory {
     private static final Map<String, Specification> SPECIFICATIONS = Map.ofEntries(
         entry("alderwooddoor", Shape.DOOR, Family.WOOD),
         entry("rowanwooddoor", Shape.DOOR, Family.WOOD),
-        entry("cwoodendoor", Shape.DOOR, Family.WOOD),
         entry("icedoor", Shape.DOOR, Family.ICE),
-        entry("cbuttonstone", Shape.BUTTON, Family.STONE),
-        entry("cbuttonwood", Shape.BUTTON, Family.WOOD),
-        entry("cstonepressureplate", Shape.PRESSURE_PLATE, Family.STONE),
-        entry("cwoodpressureplate", Shape.PRESSURE_PLATE, Family.WOOD),
         entry("icepressureplate", Shape.PRESSURE_PLATE, Family.ICE),
         entry("snowpressureplate", Shape.PRESSURE_PLATE, Family.SNOW),
         entry("icefence", Shape.FENCE, Family.ICE),

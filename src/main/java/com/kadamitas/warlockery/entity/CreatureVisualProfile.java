@@ -22,10 +22,11 @@ public record CreatureVisualProfile(
             case UMBRAL_SIGIL -> profile(0.7F, 0.7F, Archetype.SPIRIT);
             case ELDRITCH_WATCHER -> profile(0.8F, 1.1F, Archetype.SPIRIT);
             case FAMILIAR -> profile(0.6F, 0.8F, Archetype.SPIRIT);
-            case IMP, POLTERGEIST -> profile(0.6F, 0.9F, Archetype.SPIRIT);
+            case IMP -> profile(0.65F, 1.05F, Archetype.IMP);
+            case POLTERGEIST -> profile(0.6F, 0.9F, Archetype.SPIRIT);
             case SPECTRE -> profile(0.65F, 1.8F, Archetype.SPIRIT);
             case SPIRIT, LOST_SOUL -> profile(0.55F, 0.9F, Archetype.SPIRIT);
-            case STORM_SIMIAN -> profile(0.8F, 0.9F, Archetype.SPIRIT);
+            case STORM_SIMIAN -> profile(0.85F, 1.15F, Archetype.SIMIAN);
             case CAT -> profile(0.6F, 0.7F, Archetype.FELINE);
             case OWL -> profile(0.65F, 0.8F, Archetype.AVIAN);
             case TOAD -> profile(0.55F, 0.45F, Archetype.AMPHIBIAN);
@@ -75,6 +76,8 @@ public record CreatureVisualProfile(
         ARTHROPOD,
         CREEPER,
         LYCAN,
+        IMP,
+        SIMIAN,
         SPIRIT
     }
 }

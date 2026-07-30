@@ -1,6 +1,255 @@
-{
-    "parent":  "minecraft:block/cube_all",
+﻿{
+    "parent":  "minecraft:block/block",
+    "ambientocclusion":  false,
     "textures":  {
-                     "all":  "warlockery:block/trent"
-                 }
+                     "particle":  "warlockery:block/trent",
+                     "wood":  "warlockery:block/trent",
+                     "leaf":  "warlockery:block/trent_leaves"
+                 },
+    "elements":  [
+                     {
+                         "from":  [
+                                      3,
+                                      0,
+                                      3
+                                  ],
+                         "to":  [
+                                    13,
+                                    2,
+                                    13
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#wood"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#wood"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      6,
+                                      2,
+                                      6
+                                  ],
+                         "to":  [
+                                    10,
+                                    13,
+                                    10
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#wood"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#wood"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      1,
+                                      6,
+                                      6
+                                  ],
+                         "to":  [
+                                    7,
+                                    9,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#wood"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#wood"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         6,
+                                                         8,
+                                                         8
+                                                     ],
+                                          "axis":  "z",
+                                          "angle":  -22.5,
+                                          "rescale":  true
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      9,
+                                      6,
+                                      6
+                                  ],
+                         "to":  [
+                                    15,
+                                    9,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#wood"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#wood"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#wood"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#wood"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         10,
+                                                         8,
+                                                         8
+                                                     ],
+                                          "axis":  "z",
+                                          "angle":  22.5,
+                                          "rescale":  true
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      4,
+                                      11,
+                                      4
+                                  ],
+                         "to":  [
+                                    12,
+                                    16,
+                                    12
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#leaf"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#leaf"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#leaf"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#leaf"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#leaf"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#leaf"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      2,
+                                      13,
+                                      6
+                                  ],
+                         "to":  [
+                                    14,
+                                    16,
+                                    10
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#leaf"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#leaf"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#leaf"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#leaf"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#leaf"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#leaf"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      6,
+                                      12,
+                                      2
+                                  ],
+                         "to":  [
+                                    10,
+                                    16,
+                                    14
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#leaf"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#leaf"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#leaf"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#leaf"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#leaf"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#leaf"
+                                                }
+                                   }
+                     }
+                 ]
 }

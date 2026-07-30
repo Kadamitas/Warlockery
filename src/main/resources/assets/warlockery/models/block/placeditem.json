@@ -2,6 +2,6 @@
     "parent":  "minecraft:block/carpet",
     "render_type":  "minecraft:cutout",
     "textures":  {
-                     "wool":  "warlockery:block/altar"
+                     "wool":  "warlockery:block/placeditem"
                  }
 }

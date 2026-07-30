@@ -1,6 +1,6 @@
-{
-  "model": {
-    "type": "minecraft:model",
-    "model": "warlockery:block/snowslab"
-  }
+﻿{
+    "model":  {
+                  "type":  "minecraft:model",
+                  "model":  "warlockery:item/snowslab"
+              }
 }

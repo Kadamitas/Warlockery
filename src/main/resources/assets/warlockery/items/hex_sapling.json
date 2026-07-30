@@ -1,6 +1,6 @@
-{
+﻿{
     "model":  {
                   "type":  "minecraft:model",
-                  "model":  "warlockery:block/hex_sapling"
+                  "model":  "warlockery:item/hex_sapling"
               }
 }

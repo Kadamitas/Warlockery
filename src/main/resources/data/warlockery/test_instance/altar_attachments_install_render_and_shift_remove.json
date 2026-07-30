@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:altar_attachments_install_render_and_shift_remove",
+  "environment": "minecraft:default",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 100
+}

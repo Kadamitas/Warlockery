@@ -1,6 +1,6 @@
-{
-  "model": {
-    "type": "minecraft:model",
-    "model": "warlockery:block/icestockade_inventory"
-  }
+﻿{
+    "model":  {
+                  "type":  "minecraft:model",
+                  "model":  "warlockery:item/icestockade"
+              }
 }

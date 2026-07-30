@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 final class EveryBrewRegistrationTest {
@@ -53,6 +54,14 @@ final class EveryBrewRegistrationTest {
                 DynamicTest.dynamicTest("success dispatches through registration and kettle output", () -> successContract(kind))
             )
         ));
+    }
+
+    @Test
+    void everyBuiltInBrewHasItsOwnColor() {
+        assertEquals(BrewKind.builtIns().size(), BrewKind.builtIns().stream()
+            .map(BrewKind::color)
+            .distinct()
+            .count());
     }
 
     private static void failureContract(final BrewKind kind) {
@@ -83,12 +92,22 @@ final class EveryBrewRegistrationTest {
             .getAsJsonObject("model");
         assertEquals("minecraft:model", definition.get("type").getAsString());
         assertEquals("warlockery:item/" + itemId, definition.get("model").getAsString());
-        assertEquals("minecraft:potion", definition.getAsJsonArray("tints").get(0)
-            .getAsJsonObject().get("type").getAsString());
+        final String textureId = switch (itemId) {
+            case "brew_combustion" -> "brew_fuel";
+            case "brew_endless_water" -> "brew_water";
+            default -> "brew_splash_bottle";
+        };
+        if (textureId.equals("brew_splash_bottle")) {
+            final JsonObject tint = definition.getAsJsonArray("tints").get(0).getAsJsonObject();
+            assertEquals("minecraft:potion", tint.get("type").getAsString());
+            assertEquals(0xFF000000 | kind.color(), tint.get("default").getAsInt());
+        } else {
+            assertFalse(definition.has("tints"));
+        }
         final JsonObject model = readJson(ASSETS.resolve("models/item/" + itemId + ".json"));
-        assertEquals("warlockery:item/brew_splash_bottle", model.getAsJsonObject("textures")
+        assertEquals("warlockery:item/" + textureId, model.getAsJsonObject("textures")
             .get("layer0").getAsString());
-        final BufferedImage texture = readImage(ASSETS.resolve("textures/item/brew_splash_bottle.png"));
+        final BufferedImage texture = readImage(ASSETS.resolve("textures/item/" + textureId + ".png"));
         assertEquals(16, texture.getWidth());
         assertEquals(16, texture.getHeight());
         final int[] pixels = texture.getRGB(0, 0, 16, 16, null, 0, 16);

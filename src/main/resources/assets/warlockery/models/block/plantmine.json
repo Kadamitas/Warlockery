@@ -2,6 +2,6 @@
     "parent":  "minecraft:block/cross",
     "render_type":  "minecraft:cutout",
     "textures":  {
-                     "cross":  "warlockery:block/altar"
+                     "cross":  "warlockery:block/plantmine"
                  }
 }

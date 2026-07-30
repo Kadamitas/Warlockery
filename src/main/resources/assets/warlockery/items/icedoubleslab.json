@@ -1,6 +1,6 @@
-{
-  "model": {
-    "type": "minecraft:model",
-    "model": "warlockery:block/icedoubleslab"
-  }
+﻿{
+    "model":  {
+                  "type":  "minecraft:model",
+                  "model":  "warlockery:item/icedoubleslab"
+              }
 }

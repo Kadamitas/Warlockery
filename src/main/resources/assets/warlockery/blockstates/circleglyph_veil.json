@@ -1,7 +1,41 @@
 {
-    "variants":  {
-                     "":  {
-                              "model":  "warlockery:block/circleglyph_veil"
-                          }
-                 }
+  "multipart": [
+    {
+      "apply": {
+        "model": "warlockery:block/circleglyph_veil"
+      }
+    },
+    {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyph_veil_north"
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyph_veil_east"
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyph_veil_south"
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyph_veil_west"
+      }
+    }
+  ]
 }

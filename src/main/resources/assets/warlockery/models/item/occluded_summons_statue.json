@@ -1,3 +1,6 @@
-{
-    "parent":  "warlockery:block/occluded_summons_statue"
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/occluded_summons_statue"
+                 }
 }

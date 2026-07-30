@@ -24,9 +24,13 @@ Rite of Total Eclipse holds the server clock at night for its listed duration an
 
 ## Dolls and sympathetic links
 
-Craft a blank Doll into the required specialized type, then use it on the creature it should represent. A glint and lore line confirm the binding. Protection dolls activate only for their matching lethal hazard. The Death Guard is the general fallback. It sets health to one and applies Minecraft's Regeneration, Absorption, and Fire Resistance recovery bundle without sending the Totem animation event.
+Craft a blank Doll into the required specialized type, then use it on the creature it should represent. Right-click air with a protection, mending, or guard doll to bind it to yourself. A glint and lore line confirm the binding. Protection dolls spend durability when they stop their matching lethal hazard. The Death Guard is the general fallback. It sets health to one and applies Minecraft's Regeneration, Absorption, and Fire Resistance recovery bundle without sending the Totem animation event.
 
-Earth Guard recognizes falls, falling blocks, anvils, pointed dripstone, Elytra collisions, and mace smashes. Water Guard restores air and Water Breathing. Hunger Guard restores both hunger and saturation. Fire Guard clears fire, grants Fire Resistance, and attempts to move the target from lava to nearby safe footing. Tool and Armor Mending Dolls exchange one point of doll durability for two points of equipment durability. Hex Guard blocks circle hexes. Hexing Doll retains prick, shove, ignite, and drown actions. Blood Link splits damage. Doll Guard can preserve another one-use guard.
+Earth Guard recognizes falls, falling blocks, anvils, pointed dripstone, Elytra collisions, and mace smashes. Water Guard restores air and Water Breathing. Hunger Guard restores both hunger and saturation. Fire Guard clears fire, grants Fire Resistance, and attempts to move the target from lava to nearby safe footing. Tool and Armor Mending Dolls exchange one point of doll durability for two points of equipment durability. Hex Guard blocks circle hexes. Hexing Doll retains prick, shove, ignite, and drown actions. Blood Link splits damage. Doll Guard blocks attempts to corrupt protective dolls.
+
+Doll Shelves accept dolls and sympathetic containers through shared item tags. A shelf with a bound doll keeps its chunk available across restarts, so the doll can protect its owner or mend the online owner's equipment outside the shelf chunk. Shelved mending runs once per second and duplicate dolls do not multiply the repair rate. Removing the last bound doll releases that ticket.
+
+Place a Ritual Knife, Candelabra, Chalice, or Pentacle item onto the top of an altar to attach it visibly and apply its supported altar effect. Each altar block holds four nonconflicting attachments. Shift-right-click removes the latest attachment without consuming it.
 
 The compact left-side panel lists bound dolls and remaining charges. A green pulse marks an activation. Harmful hex and effect durations use the custom hex sigil below the doll entries.
 

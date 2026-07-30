@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "warlockery:ingredient_muttoncooked",
+    "minecraft:cooked_mutton",
     "warlockery:ingredient_odd_porkchop_cooked"
   ]
 }

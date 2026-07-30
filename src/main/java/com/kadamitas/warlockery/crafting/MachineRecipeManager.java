@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.crafting;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.brew.custom.CustomBrewDefinitionManager;
 import com.kadamitas.warlockery.compat.jei.JeiRecipeRefreshSignal;
 import com.kadamitas.warlockery.util.IngredientAllocator;
 import com.kadamitas.warlockery.util.FluidIngredient;
@@ -10,6 +11,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Comparator;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +34,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 public final class MachineRecipeManager extends SimpleJsonResourceReloadListener<MachineRecipeDefinition> {
     public static final MachineRecipeManager INSTANCE = new MachineRecipeManager();
     private volatile Map<Identifier, MachineRecipeDefinition> recipes = Map.of();
+    private volatile Map<String, List<ItemIngredient>> inputsByMachine = Map.of();
     private volatile long revision;
 
     private MachineRecipeManager() {
@@ -44,7 +47,7 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         final ResourceManager resourceManager,
         final ProfilerFiller profiler
     ) {
-        recipes = Collections.unmodifiableMap(definitions.entrySet().stream()
+        final Map<Identifier, MachineRecipeDefinition> validRecipes = Collections.unmodifiableMap(definitions.entrySet().stream()
             .filter(entry -> validate(entry.getKey(), entry.getValue()))
             .sorted(Map.Entry.comparingByKey())
             .collect(Collectors.toMap(
@@ -53,6 +56,18 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
                 (_, replacement) -> replacement,
                 LinkedHashMap::new
             )));
+        recipes = validRecipes;
+        inputsByMachine = Collections.unmodifiableMap(validRecipes.values().stream().collect(Collectors.groupingBy(
+            MachineRecipeDefinition::machine,
+            LinkedHashMap::new,
+            Collectors.flatMapping(
+                recipe -> recipe.inputs().stream()
+                    .map(MachineRecipeDefinition.Input::ingredient)
+                    .map(ItemIngredient::parse)
+                    .flatMap(Optional::stream),
+                Collectors.collectingAndThen(Collectors.toCollection(LinkedHashSet::new), List::copyOf)
+            )
+        )));
         revision++;
         Warlockery.LOGGER.info("Loaded {} Warlockery machine recipes", recipes.size());
         JeiRecipeRefreshSignal.publish();
@@ -100,6 +115,16 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
             }
             return input.ingredient().startsWith("#c:") || input.ingredient().startsWith("#minecraft:") ? 1 : 2;
         }).sum();
+    }
+
+    public boolean acceptsInput(final MachineProfile profile, final ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        final boolean recipeIngredient = inputsByMachine.getOrDefault(profile.recipeType(), List.of()).stream()
+            .anyMatch(ingredient -> ingredient.matches(stack));
+        return recipeIngredient || "cauldron".equals(profile.recipeType())
+            && CustomBrewDefinitionManager.INSTANCE.acceptsInput(stack);
     }
 
     public Diagnostic diagnose(final MachineProfile profile, final NonNullList<ItemStack> inventory) {

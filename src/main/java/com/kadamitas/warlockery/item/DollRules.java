@@ -17,4 +17,16 @@ public final class DollRules {
     public static int repairedDamage(final int damage) {
         return Math.max(0, damage - DURABILITY_REPAIRED_PER_CHARGE);
     }
+
+    public static boolean canApplyToSelf(final DollAbility ability) {
+        return switch (ability) {
+            case DollAbility.LethalProtection ignored -> true;
+            case DollAbility.Mending ignored -> true;
+            case DollAbility.HexGuard ignored -> true;
+            case DollAbility.DollGuard ignored -> true;
+            case DollAbility.None ignored -> false;
+            case DollAbility.ActiveHex ignored -> false;
+            case DollAbility.DamageLink ignored -> false;
+        };
+    }
 }

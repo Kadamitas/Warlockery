@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/door_top_right_open",
   "textures": {
-    "bottom": "warlockery:block/rowan_planks",
-    "top": "warlockery:block/rowan_planks"
+    "top": "warlockery:block/rowanwooddoor_top",
+    "bottom": "warlockery:block/rowanwooddoor_bottom"
   }
 }

@@ -4,6 +4,7 @@ import com.kadamitas.warlockery.brew.custom.CustomBrewRuntime;
 import java.util.Objects;
 import net.minecraft.core.Position;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,6 +29,15 @@ public final class BrewItem extends SplashPotionItem {
 
     public BrewKind kind() {
         return kind;
+    }
+
+    @Override
+    public Component getName(final ItemStack stack) {
+        return displayName(descriptionId);
+    }
+
+    static Component displayName(final String descriptionId) {
+        return Component.translatable(Objects.requireNonNull(descriptionId, "descriptionId"));
     }
 
     public BrewRuntime.ImpactResult onImpact(

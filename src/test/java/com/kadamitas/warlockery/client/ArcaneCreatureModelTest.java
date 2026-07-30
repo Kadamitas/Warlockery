@@ -21,17 +21,19 @@ final class ArcaneCreatureModelTest {
 
     @Test
     void restoredFamiliesHaveEnoughGeometryForRecognizableSilhouettes() {
-        final Map<Archetype, Long> minimumParts = Map.of(
-            Archetype.FELINE, 7L,
-            Archetype.AVIAN, 7L,
-            Archetype.AMPHIBIAN, 6L,
-            Archetype.MOUNT, 7L,
-            Archetype.CANINE, 7L,
-            Archetype.PLANTLING, 7L,
-            Archetype.PLANT_BRUTE, 7L,
-            Archetype.ARTHROPOD, 10L,
-            Archetype.LYCAN, 7L,
-            Archetype.BOSS, 7L
+        final Map<Archetype, Long> minimumParts = Map.ofEntries(
+            Map.entry(Archetype.FELINE, 7L),
+            Map.entry(Archetype.AVIAN, 7L),
+            Map.entry(Archetype.AMPHIBIAN, 6L),
+            Map.entry(Archetype.MOUNT, 7L),
+            Map.entry(Archetype.CANINE, 7L),
+            Map.entry(Archetype.PLANTLING, 7L),
+            Map.entry(Archetype.PLANT_BRUTE, 7L),
+            Map.entry(Archetype.ARTHROPOD, 10L),
+            Map.entry(Archetype.LYCAN, 7L),
+            Map.entry(Archetype.BOSS, 7L),
+            Map.entry(Archetype.IMP, 9L),
+            Map.entry(Archetype.SIMIAN, 9L)
         );
         minimumParts.forEach((archetype, minimum) ->
             assertTrue(solidPartCount(ArcaneCreatureModel.createLayer(archetype).bakeRoot()) >= minimum, archetype.name())

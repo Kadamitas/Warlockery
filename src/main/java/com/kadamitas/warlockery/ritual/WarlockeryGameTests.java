@@ -1,21 +1,33 @@
 package com.kadamitas.warlockery.ritual;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
+import com.kadamitas.warlockery.block.entity.DollShelfBlockEntity;
 import com.kadamitas.warlockery.block.entity.MagicMachineBlockEntity;
+import com.kadamitas.warlockery.block.ConnectedGlyphBlock;
 import com.kadamitas.warlockery.block.WolfAltarRuntime;
 import com.kadamitas.warlockery.brew.BrewEffectSpec;
+import com.kadamitas.warlockery.brew.BrewKind;
+import com.kadamitas.warlockery.brew.BrewRuntime;
 import com.kadamitas.warlockery.brew.custom.CustomBrewDelivery;
 import com.kadamitas.warlockery.brew.custom.CustomBrewFormula;
 import com.kadamitas.warlockery.brew.custom.CustomBrewRuntime;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
-import com.kadamitas.warlockery.entity.SpiritMob;
+import com.kadamitas.warlockery.entity.ImpEntity;
+import com.kadamitas.warlockery.entity.LycanVillagerEntity;
+import com.kadamitas.warlockery.entity.StormSimianEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.item.DollItem;
+import com.kadamitas.warlockery.item.DollMendingSchedule;
+import com.kadamitas.warlockery.item.DollRules;
+import com.kadamitas.warlockery.crafting.AltarUpgradeResolver;
 import com.kadamitas.warlockery.transformation.SupernaturalProgression;
+import com.kadamitas.warlockery.transformation.SupernaturalForm;
+import com.kadamitas.warlockery.transformation.SupernaturalState;
 import java.util.UUID;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -38,6 +50,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
@@ -50,14 +63,19 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.monster.zombie.ZombieVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public final class WarlockeryGameTests {
     private WarlockeryGameTests() {
@@ -152,10 +170,70 @@ public final class WarlockeryGameTests {
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "summon_imp")
         );
         final boolean spawned = !helper.getLevel().getEntitiesOfClass(
-            SpiritMob.class, new AABB(center).inflate(8.0),
-            entity -> entity.creatureKind() == ArcaneCreature.CreatureKind.IMP
+            ImpEntity.class, new AABB(center).inflate(8.0)
         ).isEmpty();
         helper.assertTrue(spawned, "summon_imp must create a native Warlockery imp");
+        helper.succeed();
+    }
+
+    public static void murderousFlockSpawnsTargetedHexBats(final GameTestHelper helper) {
+        final BlockPos relativeCenter = new BlockPos(1, 1, 1);
+        final BlockPos center = helper.absolutePos(relativeCenter);
+        final Zombie target = helper.spawn(EntityTypes.ZOMBIE, relativeCenter);
+        final BrewRuntime.ImpactResult result = BrewRuntime.handleImpact(
+            helper.getLevel(), BrewKind.MURDEROUS_FLOCK, Vec3.atCenterOf(center), null, null
+        );
+        final List<Mob> flock = helper.getLevel().getEntitiesOfClass(
+            Mob.class,
+            new AABB(center).inflate(8.0),
+            entity -> entity instanceof ArcaneCreature creature
+                && creature.creatureKind() == ArcaneCreature.CreatureKind.HEX_BAT
+        );
+        helper.assertTrue(result.affectedEntities() >= 3, "murderous flock must report its summoned bats");
+        helper.assertTrue(flock.size() >= 3, "murderous flock must summon at least three hex bats");
+        helper.assertTrue(flock.stream().allMatch(entity -> entity.getTarget() == target),
+            "every summoned hex bat must acquire a nearby victim");
+        helper.succeed();
+    }
+
+    public static void wingedCreaturesUseCustomEntityClasses(final GameTestHelper helper) {
+        final BlockPos impPos = helper.absolutePos(new BlockPos(1, 1, 1));
+        final BlockPos simianPos = helper.absolutePos(new BlockPos(2, 1, 1));
+        final Entity imp = ModEntities.ALL.get("imp").get().spawn(
+            helper.getLevel(), impPos, EntitySpawnReason.TRIGGERED
+        );
+        final Entity simian = ModEntities.ALL.get("storm_simian").get().spawn(
+            helper.getLevel(), simianPos, EntitySpawnReason.TRIGGERED
+        );
+        helper.assertTrue(imp instanceof ImpEntity, "imp registry must instantiate the custom imp");
+        helper.assertTrue(simian instanceof StormSimianEntity,
+            "storm simian registry must instantiate the custom simian");
+        helper.assertFalse(imp instanceof Vex, "imp must not reuse the Vex entity implementation");
+        helper.assertFalse(simian instanceof Vex, "storm simian must not reuse the Vex entity implementation");
+        helper.succeed();
+    }
+
+    public static void lycanVillagerTradesOnlyWithWerewolves(final GameTestHelper helper) {
+        final BlockPos position = helper.absolutePos(new BlockPos(1, 1, 1));
+        final Entity created = ModEntities.ALL.get("lycan_villager").get().spawn(
+            helper.getLevel(), position, EntitySpawnReason.TRIGGERED
+        );
+        helper.assertTrue(created instanceof LycanVillagerEntity, "lycan villager must use its trade-gated class");
+        final LycanVillagerEntity villager = (LycanVillagerEntity) created;
+        helper.assertTrue(villager.getOffers().size() >= 3, "lycan villager must stock werewolf supplies");
+
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        player.snapTo(position.getX() + 1.0, position.getY(), position.getZ() + 0.5);
+        SupernaturalState.setForm(player, SupernaturalForm.NONE);
+        villager.mobInteract(player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(player.containerMenu == player.inventoryMenu,
+            "non-werewolves must not open the lycan villager trade menu");
+
+        SupernaturalState.setForm(player, SupernaturalForm.WEREWOLF);
+        villager.mobInteract(player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(player.containerMenu != player.inventoryMenu,
+            "werewolves must be able to open the lycan villager trade menu");
+        player.closeContainer();
         helper.succeed();
     }
 
@@ -327,8 +405,8 @@ public final class WarlockeryGameTests {
         final WerewolfHunterEntity hunter = helper.spawn(
             ModEntities.WEREWOLF_HUNTER.get(), new BlockPos(1, 1, 1), EntitySpawnReason.NATURAL
         );
-        helper.assertTrue(hunter.getMainHandItem().is(ModItems.ALL.get("silver_repeater").get()),
-            "werewolf hunter must carry the Silver Repeater");
+        helper.assertTrue(hunter.getMainHandItem().is(Items.CROSSBOW),
+            "werewolf hunter must carry a vanilla crossbow");
         helper.assertTrue(hunter.getOffhandItem().is(ModItems.ALL.get("ingredient_bolt_silver").get()),
             "werewolf hunter must carry silver bolts");
         helper.succeed();
@@ -367,7 +445,8 @@ public final class WarlockeryGameTests {
         helper.assertValueEqual(player.getHealth(), 1.0F, "death guard recovery health");
         helper.assertTrue(player.hasEffect(MobEffects.REGENERATION), "death guard must use vanilla Totem regeneration");
         helper.assertTrue(player.hasEffect(MobEffects.ABSORPTION), "death guard must use vanilla Totem absorption");
-        helper.assertTrue(doll.isEmpty(), "one-use death guard must be consumed");
+        helper.assertFalse(doll.isEmpty(), "death guard must remain reusable after activation");
+        helper.assertValueEqual(doll.getDamageValue(), 1, "death guard durability spent");
         helper.succeed();
     }
 
@@ -392,9 +471,179 @@ public final class WarlockeryGameTests {
         final ItemStack sword = new ItemStack(Items.IRON_SWORD);
         sword.setDamageValue(10);
         player.setItemInHand(InteractionHand.MAIN_HAND, sword);
-        ((DollItem) doll.getItem()).inventoryTick(doll, helper.getLevel(), player, null);
+        helper.assertTrue(
+            DollItem.tryMendBoundEquipment(doll, helper.getLevel(), player),
+            "bound mending doll must repair eligible equipment"
+        );
         helper.assertValueEqual(sword.getDamageValue(), 8, "durability repaired by one doll charge");
         helper.assertValueEqual(doll.getDamageValue(), 1, "mending doll durability spent");
+        helper.succeed();
+    }
+
+    public static void shelvedMendingDollsRepairOncePerSecond(final GameTestHelper helper) {
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        final ItemStack sword = new ItemStack(Items.IRON_SWORD);
+        sword.setDamageValue(20);
+        player.setItemInHand(InteractionHand.MAIN_HAND, sword);
+
+        final ItemStack firstDoll = boundDoll(player, "tool_mending_doll");
+        final ItemStack secondDoll = boundDoll(player, "tool_mending_doll");
+        final BlockPos firstShelfPosition = new BlockPos(0, 1, 1);
+        final BlockPos secondShelfPosition = new BlockPos(2, 1, 1);
+        helper.setBlock(firstShelfPosition, ModBlocks.ALL.get("doll_shelf").get());
+        helper.setBlock(secondShelfPosition, ModBlocks.ALL.get("doll_shelf").get());
+        final DollShelfBlockEntity firstShelf = helper.getBlockEntity(
+            firstShelfPosition,
+            DollShelfBlockEntity.class
+        );
+        final DollShelfBlockEntity secondShelf = helper.getBlockEntity(
+            secondShelfPosition,
+            DollShelfBlockEntity.class
+        );
+        firstShelf.setItem(0, firstDoll);
+        secondShelf.setItem(0, secondDoll);
+
+        final int[] previousDamage = {sword.getDamageValue()};
+        final int[] repairs = {0};
+        final long[] previousRepairTick = {-1L};
+        helper.onEachTick(() -> {
+            final int currentDamage = sword.getDamageValue();
+            if (currentDamage == previousDamage[0]) {
+                return;
+            }
+            helper.assertValueEqual(
+                previousDamage[0] - currentDamage,
+                DollRules.DURABILITY_REPAIRED_PER_CHARGE,
+                "one shelf mending repair per cycle"
+            );
+            if (previousRepairTick[0] >= 0L) {
+                helper.assertTrue(
+                    helper.getTick() - previousRepairTick[0] >= DollMendingSchedule.INTERVAL_TICKS,
+                    "duplicate shelved dolls must not repair inside the same second"
+                );
+            }
+            repairs[0]++;
+            previousDamage[0] = currentDamage;
+            previousRepairTick[0] = helper.getTick();
+            helper.assertValueEqual(
+                firstDoll.getDamageValue() + secondDoll.getDamageValue(),
+                repairs[0],
+                "exactly one shelved doll charge per repair"
+            );
+            if (repairs[0] == 2) {
+                helper.succeed();
+            }
+        });
+    }
+
+    public static void selfAppliedDollRemainsActiveOnShelf(final GameTestHelper helper) {
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        final ItemStack doll = new ItemStack(ModItems.ALL.get("death_guard_doll").get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, doll);
+        ((DollItem) doll.getItem()).use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(DollItem.isBoundTo(doll, player), "right-clicking air must bind an eligible doll to its user");
+
+        final BlockPos shelfPosition = new BlockPos(1, 1, 1);
+        helper.setBlock(shelfPosition, ModBlocks.ALL.get("doll_shelf").get());
+        final DollShelfBlockEntity shelf = helper.getBlockEntity(shelfPosition, DollShelfBlockEntity.class);
+        helper.assertTrue(
+            shelf.canPlaceItem(0, new ItemStack(ModItems.ALL.get("sympathetic_vial").get())),
+            "doll shelves must accept sympathetic containers"
+        );
+        helper.assertFalse(shelf.canPlaceItem(0, new ItemStack(Items.COBBLESTONE)),
+            "doll shelves must reject unrelated items");
+        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        shelf.setItem(0, doll);
+        helper.assertTrue(shelf.requiresChunkTicket(), "a shelf containing a bound doll must retain its chunk");
+
+        player.setHealth(1.0F);
+        final LivingDamageEvent.Pre event = damageEvent(
+            player,
+            helper.getLevel().damageSources().generic(),
+            2.0F
+        );
+        DollItem.handleDamage(event);
+        helper.assertValueEqual(event.getNewDamage(), 0.0F, "a shelved death guard must prevent lethal damage");
+        helper.assertFalse(shelf.getItem(0).isEmpty(), "a shelved death guard must remain reusable");
+        helper.assertValueEqual(shelf.getItem(0).getDamageValue(), 1, "shelved doll durability spent");
+        shelf.setItem(0, ItemStack.EMPTY);
+        helper.assertFalse(shelf.requiresChunkTicket(), "an empty shelf must release its chunk ticket");
+        helper.succeed();
+    }
+
+    public static void altarAttachmentsInstallRenderAndShiftRemove(final GameTestHelper helper) {
+        final BlockPos relativePosition = new BlockPos(1, 1, 1);
+        final BlockPos position = helper.absolutePos(relativePosition);
+        helper.setBlock(relativePosition, ModBlocks.ALTAR.get());
+        final AltarBlockEntity altar = helper.getBlockEntity(relativePosition, AltarBlockEntity.class);
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        final BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(position), Direction.UP, position, false);
+
+        final ItemStack ritualKnife = new ItemStack(ModItems.ALL.get("ritual_knife").get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, ritualKnife);
+        helper.getLevel().getBlockState(position).useItemOn(
+            ritualKnife,
+            helper.getLevel(),
+            player,
+            InteractionHand.MAIN_HAND,
+            hit
+        );
+        helper.assertTrue(altar.hasRangeFocus(), "ritual knife attachment must activate the altar range focus");
+        helper.assertValueEqual(altar.attachmentCount(), 1, "ritual knife attachment count");
+
+        final ItemStack candelabra = new ItemStack(ModItems.ALL.get("candelabra").get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, candelabra);
+        helper.getLevel().getBlockState(position).useItemOn(
+            candelabra,
+            helper.getLevel(),
+            player,
+            InteractionHand.MAIN_HAND,
+            hit
+        );
+        helper.assertValueEqual(altar.attachmentCount(), 2, "altar upgrade attachment count");
+        helper.assertValueEqual(
+            AltarUpgradeResolver.resolve(altar.attachmentUpgrades()).rechargeMultiplier(),
+            2,
+            "attached candelabra recharge multiplier"
+        );
+        helper.assertValueEqual(altar.attachmentStacks().size(), 2, "client-visible attachment snapshots");
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        player.setShiftKeyDown(true);
+        helper.getLevel().getBlockState(position).useWithoutItem(helper.getLevel(), player, hit);
+        helper.assertValueEqual(altar.attachmentCount(), 1, "first shift-click removes the latest attachment");
+        helper.getLevel().getBlockState(position).useWithoutItem(helper.getLevel(), player, hit);
+        helper.assertValueEqual(altar.attachmentCount(), 0, "second shift-click removes the ritual knife");
+        helper.assertFalse(altar.hasRangeFocus(), "removing the ritual knife must clear the range focus");
+        player.setShiftKeyDown(false);
+        helper.succeed();
+    }
+
+    public static void chalkPlacesConnectedGlyphsAndSpendsDurability(final GameTestHelper helper) {
+        final BlockPos firstSupport = new BlockPos(0, 1, 1);
+        final BlockPos secondSupport = new BlockPos(1, 1, 1);
+        helper.setBlock(firstSupport, Blocks.STONE);
+        helper.setBlock(secondSupport, Blocks.STONE);
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        final ItemStack chalk = new ItemStack(ModItems.ALL.get("chalkritual").get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, chalk);
+
+        useOnTop(helper, player, firstSupport);
+        helper.assertTrue(
+            helper.getBlockState(firstSupport.above()).is(ModBlocks.ALL.get("circleglyphritual").get()),
+            "ritual chalk must place its ritual glyph"
+        );
+        helper.assertValueEqual(chalk.getDamageValue(), 1, "chalk durability after first glyph");
+
+        useOnTop(helper, player, secondSupport);
+        final BlockState firstGlyph = helper.getBlockState(firstSupport.above());
+        final BlockState secondGlyph = helper.getBlockState(secondSupport.above());
+        helper.assertTrue(firstGlyph.getValue(ConnectedGlyphBlock.EAST), "first glyph must connect east");
+        helper.assertTrue(secondGlyph.getValue(ConnectedGlyphBlock.WEST), "second glyph must connect west");
+        helper.assertValueEqual(chalk.getDamageValue(), 2, "chalk durability after second glyph");
+
+        useOnTop(helper, player, secondSupport);
+        helper.assertValueEqual(chalk.getDamageValue(), 2, "failed placement must not spend chalk durability");
         helper.succeed();
     }
 
@@ -504,6 +753,11 @@ public final class WarlockeryGameTests {
         );
 
         helper.assertValueEqual(
+            insert(top, 0, ItemResource.of(Items.IRON_SWORD), 1, false),
+            0,
+            "top pipe must reject items unrelated to every spinning-wheel recipe"
+        );
+        helper.assertValueEqual(
             insert(top, 0, ItemResource.of(Items.STRING), 8, false),
             8,
             "top pipe must simulate accepting recipe inputs"
@@ -547,6 +801,28 @@ public final class WarlockeryGameTests {
             "bottom pipe must extract finished output"
         );
         helper.assertTrue(machine.getItem(6).isEmpty(), "real extraction must remove output");
+
+        final BlockPos ovenRelative = new BlockPos(2, 1, 1);
+        helper.setBlock(ovenRelative, ModBlocks.ALL.get("alchemical_oven").get());
+        final MagicMachineBlockEntity oven = helper.getBlockEntity(ovenRelative, MagicMachineBlockEntity.class);
+        final ItemStack ovenInput = new ItemStack(ModItems.ALL.get("ingredient_odd_porkchop_raw").get());
+        helper.assertTrue(oven.canPlaceItem(0, ovenInput),
+            "exact recipe ingredients must enter input slots");
+        helper.assertTrue(!oven.canPlaceItem(0, new ItemStack(Items.COAL)),
+            "fuel must not enter ordinary input slots");
+        helper.assertTrue(oven.canPlaceItem(oven.machineProfile().fuelSlot(), new ItemStack(Items.COAL)),
+            "fuel must enter the dedicated fuel slot");
+        helper.assertTrue(!oven.canPlaceItem(oven.machineProfile().fuelSlot(), ovenInput),
+            "non-fuel recipe ingredients must not enter the dedicated fuel slot");
+        helper.assertTrue(!oven.canPlaceItem(oven.machineProfile().outputStart(), ovenInput),
+            "output slots must reject insertion");
+
+        final BlockPos cauldronRelative = new BlockPos(0, 1, 1);
+        helper.setBlock(cauldronRelative, ModBlocks.ALL.get("cauldron").get());
+        final MagicMachineBlockEntity cauldron = helper.getBlockEntity(cauldronRelative, MagicMachineBlockEntity.class);
+        final ItemStack customBrew = new ItemStack(ModItems.ALL.get("brew_murderous_flock").get());
+        helper.assertTrue(cauldron.canPlaceItem(0, customBrew),
+            "reloadable custom brew components must enter cauldron input slots");
         helper.succeed();
     }
 
@@ -650,6 +926,16 @@ public final class WarlockeryGameTests {
         final ItemStack stack = new ItemStack(ModItems.ALL.get(id).get());
         ((DollItem) stack.getItem()).interactLivingEntity(stack, player, player, InteractionHand.MAIN_HAND);
         return stack;
+    }
+
+    private static void useOnTop(
+        final GameTestHelper helper,
+        final ServerPlayer player,
+        final BlockPos relativeSupport
+    ) {
+        final BlockPos support = helper.absolutePos(relativeSupport);
+        final BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(support), Direction.UP, support, false);
+        player.getMainHandItem().getItem().useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, hit));
     }
 
     private static ServerPlayer connectedSurvivalPlayer(final GameTestHelper helper) {

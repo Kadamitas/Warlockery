@@ -83,6 +83,7 @@ kettle_brew_keep_inventory
 kettle_brew_level_land
 kettle_brew_love
 kettle_brew_moonshine
+kettle_brew_murderous_flock
 kettle_brew_night_vision
 kettle_brew_nightmare
 kettle_brew_overheating

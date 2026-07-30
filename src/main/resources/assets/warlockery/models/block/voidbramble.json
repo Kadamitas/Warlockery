@@ -1,6 +1,211 @@
-{
-    "parent":  "minecraft:block/cube_all",
+﻿{
+    "parent":  "minecraft:block/block",
+    "ambientocclusion":  false,
     "textures":  {
-                     "all":  "warlockery:block/void_bramble"
-                 }
+                     "particle":  "warlockery:block/voidbramble",
+                     "thorn":  "warlockery:block/voidbramble",
+                     "glow":  "warlockery:block/voidbramble_glow"
+                 },
+    "elements":  [
+                     {
+                         "from":  [
+                                      7,
+                                      0,
+                                      7
+                                  ],
+                         "to":  [
+                                    9,
+                                    16,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#thorn"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#thorn"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#thorn"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#thorn"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#thorn"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#thorn"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         8,
+                                                         8,
+                                                         8
+                                                     ],
+                                          "axis":  "z",
+                                          "angle":  45,
+                                          "rescale":  true
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      7,
+                                      0,
+                                      7
+                                  ],
+                         "to":  [
+                                    9,
+                                    16,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#thorn"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#thorn"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#thorn"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#thorn"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#thorn"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#thorn"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         8,
+                                                         8,
+                                                         8
+                                                     ],
+                                          "axis":  "z",
+                                          "angle":  -45,
+                                          "rescale":  true
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      7,
+                                      0,
+                                      7
+                                  ],
+                         "to":  [
+                                    9,
+                                    16,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#thorn"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#thorn"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#thorn"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#thorn"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#thorn"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#thorn"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         8,
+                                                         8,
+                                                         8
+                                                     ],
+                                          "axis":  "x",
+                                          "angle":  45,
+                                          "rescale":  true
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      7,
+                                      0,
+                                      7
+                                  ],
+                         "to":  [
+                                    9,
+                                    16,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#thorn"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#thorn"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#thorn"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#thorn"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#thorn"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#thorn"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         8,
+                                                         8,
+                                                         8
+                                                     ],
+                                          "axis":  "x",
+                                          "angle":  -45,
+                                          "rescale":  true
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      6,
+                                      6,
+                                      6
+                                  ],
+                         "to":  [
+                                    10,
+                                    10,
+                                    10
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#glow"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#glow"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#glow"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#glow"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#glow"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#glow"
+                                                }
+                                   }
+                     }
+                 ]
 }

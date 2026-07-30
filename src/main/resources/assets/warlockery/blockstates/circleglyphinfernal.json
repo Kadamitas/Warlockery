@@ -1,7 +1,41 @@
 {
-    "variants":  {
-                     "":  {
-                              "model":  "warlockery:block/circleglyphinfernal"
-                          }
-                 }
+  "multipart": [
+    {
+      "apply": {
+        "model": "warlockery:block/circleglyphinfernal"
+      }
+    },
+    {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphinfernal_north"
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphinfernal_east"
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphinfernal_south"
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphinfernal_west"
+      }
+    }
+  ]
 }

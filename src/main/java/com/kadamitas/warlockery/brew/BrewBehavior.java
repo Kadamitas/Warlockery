@@ -31,6 +31,7 @@ public enum BrewBehavior {
     WEAKEN_VAMPIRES("weaken_vampires"),
     HARM_DEMONS("harm_demons"),
     SUMMON_BATS("summon_bats"),
+    SUMMON_MURDEROUS_FLOCK("summon_murderous_flock"),
     BLIGHT("blight"),
     ERODE("erode"),
     FEAR("fear"),

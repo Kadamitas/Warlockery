@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.block.entity;
 
+import com.kadamitas.warlockery.block.AltarAttachmentRules;
 import com.kadamitas.warlockery.crafting.AltarUpgradeResolver;
 import com.kadamitas.warlockery.crafting.AltarUpgradeResolver.Modifiers;
 import com.kadamitas.warlockery.crafting.AltarUpgradeResolver.UpgradeClass;
@@ -10,15 +11,19 @@ import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.BlockItemTags;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,8 +43,10 @@ public final class AltarBlockEntity extends BlockEntity {
     private int capacityMultiplier = 1;
     private int rechargeMultiplier = 1;
     private int activeUpgradeCount;
-    private ItemStack rangeFocus = ItemStack.EMPTY;
-    private boolean rangeFocused;
+    private NonNullList<ItemStack> attachments = NonNullList.withSize(
+        AltarAttachmentRules.CAPACITY,
+        ItemStack.EMPTY
+    );
 
     public AltarBlockEntity(final BlockPos pos, final BlockState state) {
         super(ModBlockEntities.ALTAR.get(), pos, state);
@@ -66,7 +73,7 @@ public final class AltarBlockEntity extends BlockEntity {
                 level,
                 pos,
                 SEARCH_RADIUS,
-                scan.upgrades().stream()
+                Stream.concat(scan.upgrades().stream(), altar.attachmentUpgrades())
             );
             altar.environmentalPower = scan.power();
             altar.capacityMultiplier = modifiers.capacityMultiplier();
@@ -173,31 +180,101 @@ public final class AltarBlockEntity extends BlockEntity {
     }
 
     public boolean hasRangeFocus() {
-        return rangeFocused;
+        return attachments.stream().anyMatch(stack -> stack.is(WarlockeryTags.Items.ALTAR_RANGE_FOCI));
     }
 
     public boolean installRangeFocus(final ItemStack stack) {
-        if (!rangeFocus.isEmpty() || !stack.is(WarlockeryTags.Items.ALTAR_RANGE_FOCI)) {
-            return false;
-        }
-        rangeFocus = stack.copyWithCount(1);
-        rangeFocused = true;
-        synchronizeRangeFocus();
-        return true;
+        return stack.is(WarlockeryTags.Items.ALTAR_RANGE_FOCI) && installAttachment(stack);
     }
 
     public ItemStack removeRangeFocus() {
-        final ItemStack removed = rangeFocus;
-        rangeFocus = ItemStack.EMPTY;
-        rangeFocused = false;
-        synchronizeRangeFocus();
+        return IntStream.range(0, attachments.size())
+            .filter(slot -> attachments.get(slot).is(WarlockeryTags.Items.ALTAR_RANGE_FOCI))
+            .findFirst()
+            .stream()
+            .mapToObj(this::removeAttachment)
+            .findFirst()
+            .orElse(ItemStack.EMPTY);
+    }
+
+    public boolean supportsAttachment(final ItemStack stack) {
+        return stack.is(WarlockeryTags.Items.ALTAR_ATTACHMENTS)
+            || stack.is(WarlockeryTags.Items.ALTAR_RANGE_FOCI)
+            || AltarUpgradeResolver.classes(stack).findAny().isPresent();
+    }
+
+    public boolean installAttachment(final ItemStack stack) {
+        final int occupied = (int) attachments.stream().filter(item -> !item.isEmpty()).count();
+        final AltarAttachmentRules.Decision decision = AltarAttachmentRules.evaluate(
+            supportsAttachment(stack),
+            conflictsWithInstalledAttachment(stack),
+            occupied
+        );
+        if (!decision.accepted()) {
+            return false;
+        }
+        IntStream.range(0, attachments.size())
+            .filter(slot -> attachments.get(slot).isEmpty())
+            .findFirst()
+            .ifPresent(slot -> attachments.set(slot, stack.copyWithCount(1)));
+        synchronizeAttachments();
+        return true;
+    }
+
+    public ItemStack removeLastAttachment() {
+        final int slot = AltarAttachmentRules.lastOccupiedSlot(
+            attachments.stream().map(stack -> !stack.isEmpty()).toList()
+        );
+        return slot < 0 ? ItemStack.EMPTY : removeAttachment(slot);
+    }
+
+    public List<ItemStack> removeAllAttachments() {
+        final List<ItemStack> removed = attachments.stream()
+            .filter(stack -> !stack.isEmpty())
+            .map(ItemStack::copy)
+            .toList();
+        attachments = NonNullList.withSize(AltarAttachmentRules.CAPACITY, ItemStack.EMPTY);
+        synchronizeAttachments();
         return removed;
     }
 
-    private void synchronizeRangeFocus() {
+    public List<ItemStack> attachmentStacks() {
+        return attachments.stream()
+            .filter(stack -> !stack.isEmpty())
+            .map(ItemStack::copy)
+            .toList();
+    }
+
+    public int attachmentCount() {
+        return (int) attachments.stream().filter(stack -> !stack.isEmpty()).count();
+    }
+
+    public Stream<UpgradeClass> attachmentUpgrades() {
+        return attachments.stream().flatMap(AltarUpgradeResolver::classes);
+    }
+
+    private ItemStack removeAttachment(final int slot) {
+        final ItemStack removed = attachments.set(slot, ItemStack.EMPTY);
+        synchronizeAttachments();
+        return removed;
+    }
+
+    private boolean conflictsWithInstalledAttachment(final ItemStack candidate) {
+        if (candidate.is(WarlockeryTags.Items.ALTAR_RANGE_FOCI) && hasRangeFocus()) {
+            return true;
+        }
+        final Set<UpgradeClass> candidateClasses = AltarUpgradeResolver.classes(candidate)
+            .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        return attachments.stream()
+            .filter(stack -> !stack.isEmpty())
+            .anyMatch(stack -> stack.is(candidate.getItem())
+                || AltarUpgradeResolver.classes(stack).anyMatch(candidateClasses::contains));
+    }
+
+    private void synchronizeAttachments() {
         setChanged();
         if (level instanceof ServerLevel serverLevel) {
-            AltarRangeIndex.update(serverLevel, worldPosition, rangeFocused);
+            AltarRangeIndex.update(serverLevel, worldPosition, hasRangeFocus());
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
@@ -212,7 +289,7 @@ public final class AltarBlockEntity extends BlockEntity {
             capacityMultiplier,
             rechargeMultiplier,
             activeUpgradeCount,
-            rangeFocused
+            hasRangeFocus()
         );
     }
 
@@ -227,8 +304,13 @@ public final class AltarBlockEntity extends BlockEntity {
         capacityMultiplier = input.getIntOr("CapacityMultiplier", 1);
         rechargeMultiplier = input.getIntOr("RechargeMultiplier", 1);
         activeUpgradeCount = input.getIntOr("ActiveUpgradeCount", 0);
-        rangeFocus = input.read("RangeFocus", ItemStack.CODEC).orElse(ItemStack.EMPTY);
-        rangeFocused = input.getBooleanOr("RangeFocused", !rangeFocus.isEmpty());
+        attachments = NonNullList.withSize(AltarAttachmentRules.CAPACITY, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(input, attachments);
+        if (attachments.stream().allMatch(ItemStack::isEmpty)) {
+            input.read("RangeFocus", ItemStack.CODEC)
+                .filter(stack -> !stack.isEmpty())
+                .ifPresent(stack -> attachments.set(0, stack));
+        }
     }
 
     @Override
@@ -242,10 +324,7 @@ public final class AltarBlockEntity extends BlockEntity {
         output.putInt("CapacityMultiplier", capacityMultiplier);
         output.putInt("RechargeMultiplier", rechargeMultiplier);
         output.putInt("ActiveUpgradeCount", activeUpgradeCount);
-        if (!rangeFocus.isEmpty()) {
-            output.store("RangeFocus", ItemStack.CODEC, rangeFocus);
-        }
-        output.putBoolean("RangeFocused", rangeFocused);
+        ContainerHelper.saveAllItems(output, attachments);
     }
 
     @Override
@@ -255,17 +334,7 @@ public final class AltarBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
-        final CompoundTag tag = new CompoundTag();
-        tag.putInt("Power", power);
-        tag.putInt("Capacity", capacity);
-        tag.putBoolean("MultiblockValid", multiblockValid);
-        tag.putInt("ConnectedBlocks", connectedBlocks);
-        tag.putInt("EnvironmentalPower", environmentalPower);
-        tag.putInt("CapacityMultiplier", capacityMultiplier);
-        tag.putInt("RechargeMultiplier", rechargeMultiplier);
-        tag.putInt("ActiveUpgradeCount", activeUpgradeCount);
-        tag.putBoolean("RangeFocused", rangeFocused);
-        return tag;
+        return saveCustomOnly(registries);
     }
 
     private record EnvironmentScan(int power, Set<UpgradeClass> upgrades) {

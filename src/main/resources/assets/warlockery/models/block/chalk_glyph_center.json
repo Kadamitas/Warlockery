@@ -1,0 +1,55 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "#glyph"
+  },
+  "elements": [
+    {
+      "from": [
+        5.0,
+        0.0,
+        5.0
+      ],
+      "to": [
+        11.0,
+        0.5,
+        11.0
+      ],
+      "faces": {
+        "down": {
+          "texture": "#glyph",
+          "cullface": "down",
+          "uv": [
+            5.0,
+            5.0,
+            11.0,
+            11.0
+          ]
+        },
+        "up": {
+          "texture": "#glyph",
+          "uv": [
+            5.0,
+            5.0,
+            11.0,
+            11.0
+          ]
+        },
+        "north": {
+          "texture": "#glyph"
+        },
+        "south": {
+          "texture": "#glyph"
+        },
+        "west": {
+          "texture": "#glyph"
+        },
+        "east": {
+          "texture": "#glyph"
+        }
+      }
+    }
+  ]
+}

@@ -132,6 +132,10 @@ public final class CustomBrewDefinitionManager extends SimpleJsonResourceReloadL
         return Optional.ofNullable(definitions.get(id));
     }
 
+    public boolean acceptsInput(final ItemStack stack) {
+        return !stack.isEmpty() && match(stack).isPresent();
+    }
+
     public long revision() {
         return revision;
     }

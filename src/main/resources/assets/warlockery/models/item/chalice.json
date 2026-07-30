@@ -1,3 +1,6 @@
-{
-    "parent":  "warlockery:block/chalice"
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/chalice"
+                 }
 }

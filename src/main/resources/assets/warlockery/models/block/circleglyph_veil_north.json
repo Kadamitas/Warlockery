@@ -1,0 +1,7 @@
+{
+  "parent": "warlockery:block/chalk_glyph_north",
+  "textures": {
+    "glyph": "warlockery:block/circleglyph_veil",
+    "particle": "warlockery:block/circleglyph_veil"
+  }
+}

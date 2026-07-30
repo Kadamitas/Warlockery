@@ -9,6 +9,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 public final class WerewolfHunterEntity extends Pillager implements ArcaneCreature {
@@ -36,7 +37,7 @@ public final class WerewolfHunterEntity extends Pillager implements ArcaneCreatu
 
     @Override
     protected void populateDefaultEquipmentSlots(final RandomSource random, final DifficultyInstance difficulty) {
-        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(ModItems.ALL.get("silver_repeater").get()));
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
         this.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(ModItems.ALL.get("ingredient_bolt_silver").get(), 64));
     }
 }

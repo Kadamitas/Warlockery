@@ -1,6 +1,6 @@
-{
+﻿{
     "model":  {
                   "type":  "minecraft:model",
-                  "model":  "warlockery:block/circle"
+                  "model":  "warlockery:item/circle"
               }
 }

@@ -24,7 +24,7 @@ The compatibility catalog is stored in `src/main/resources/data/warlockery/compa
 | Magical fluid buckets | `c:buckets`; Spirit, Hollow Tears, Colored Brew Water, and Erosion Brew remain in their honest private fluid tags |
 | Navigation and storage tools | `minecraft:compasses` for both compasses and `minecraft:bundles` for the Brew Satchel |
 | Guide books | `warlockery:guide_books` for the eleven complete manuals and `minecraft:bookshelf_books` for chiseled bookshelf storage |
-| Bolts and repeater | `minecraft:arrows`, vanilla crossbow enchantability, and common ranged-weapon tags |
+| Bolts and crossbows | `minecraft:arrows` and Minecraft's vanilla crossbow |
 | Building forms | Common fence, wooden fence, fence gate, glass block, and furnace-workstation tags where the live block behavior matches |
 | Oven upgrades | `warlockery:machine_upgrades/fume_funnels`, its filtered tier, and `warlockery:alchemical_fumes` for compatible blocks and fume outputs |
 | Brazier conjurations | Reloadable machine recipes, `warlockery:brazier/*` ingredient tags, `warlockery:brazier_igniters`, sided item capability automation, redstone ignition, and comparator output |
@@ -48,7 +48,7 @@ Magical damage and brew gas participation use the private extension tags `warloc
 
 ## Projectiles and fuel
 
-Silver, holy, stake, splitting, and anti-magic bolts are `ArrowItem` instances in `minecraft:arrows`. The Silver Repeater extends vanilla `CrossbowItem` and delegates firing to the vanilla crossbow path. Throwing Rocks extend vanilla `SnowballItem`. Fixed brews extend `SplashPotionItem`.
+Silver, holy, stake, splitting, and anti-magic bolts are `ArrowItem` instances in `minecraft:arrows` and are fired by Minecraft's vanilla crossbow. Throwing Rocks extend vanilla `SnowballItem`. Fixed brews extend `SplashPotionItem`.
 
 The fixed Brew of Combustion supplies 2,400 burn ticks through `Item.getBurnTime(ItemStack, RecipeType, FuelValues)`, NeoForge 26.2's item fuel hook. The inactive `brew.fuel` registry placeholder is not advertised as fuel.
 

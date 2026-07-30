@@ -1,6 +1,6 @@
 {
     "parent":  "minecraft:item/generated",
     "textures":  {
-                     "layer0":  "warlockery:item/ingredient_odd_porkchop_cooked"
+                     "layer0":  "minecraft:item/cooked_porkchop"
                  }
 }

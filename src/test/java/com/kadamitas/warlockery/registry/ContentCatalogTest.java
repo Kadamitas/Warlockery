@@ -25,10 +25,14 @@ final class ContentCatalogTest {
     @Test
     void rebrandedContentUsesWarlockeryNames() {
         final Set<String> items = ContentCatalog.ITEMS.stream().map(ContentCatalog::modernize).collect(java.util.stream.Collectors.toUnmodifiableSet());
-        assertTrue(items.containsAll(Set.of("ritual_knife", "arcane_focus", "silver_repeater", "sympathetic_vial")));
+        final Set<String> blocks = ContentCatalog.BLOCKS.stream().map(ContentCatalog::modernize).collect(java.util.stream.Collectors.toUnmodifiableSet());
+        assertTrue(items.containsAll(Set.of("ritual_knife", "arcane_focus", "sympathetic_vial")));
+        assertFalse(items.contains("silver_repeater"));
         assertFalse(items.contains("arthana"));
         assertFalse(items.contains("handbow"));
         assertFalse(items.contains("taglockkit"));
+        assertFalse(blocks.contains("clever"));
+        assertFalse(blocks.contains("slurp"));
     }
 
     private static void assertUniqueAndValid(final List<String> ids) {

@@ -39,6 +39,7 @@ public record BrewKind(
     public static final BrewKind JUMP = effect("jump", 0x786297, "minecraft:jump_boost", 3_600, 1);
     public static final BrewKind FLOATING = effect("floating", 0xCEFFFF, "minecraft:levitation", 300, 0);
     public static final BrewKind SLOW_FALL = effect("slow_fall", 0xF3CFB9, "minecraft:slow_falling", 2_400, 0);
+    public static final BrewKind SOARING = effect("soaring", 0x79D8E4, "warlockery:soaring", 144_000, 0);
     public static final BrewKind BLINDNESS = effect("blindness", 0x1F1F23, "minecraft:blindness", 1_200, 0);
     public static final BrewKind INVISIBLE = effect("invisible", 0x7F8392, "minecraft:invisibility", 3_600, 0);
     public static final BrewKind NIGHT_VISION = effect("night_vision", 0x1F1FA1, "minecraft:night_vision", 3_600, 0);
@@ -48,7 +49,7 @@ public record BrewKind(
     public static final BrewKind POISON = effect("poison", 0x4E9331, "minecraft:poison", 900, 1);
     public static final BrewKind WITHER = effect("wither", 0x352A27, "minecraft:wither", 600, 1);
     public static final BrewKind WEAKNESS = effect("weakness", 0x484D48, "minecraft:weakness", 1_800, 1);
-    public static final BrewKind FULLNESS = effect("fullness", 0xF82423, "minecraft:saturation", 1, 1);
+    public static final BrewKind FULLNESS = effect("fullness", 0xE0A23A, "minecraft:saturation", 1, 1);
     public static final BrewKind PARALYSIS = effects("paralysis", 0x232F3D, List.of(
         new BrewEffectSpec("minecraft:slowness", 600, 5),
         new BrewEffectSpec("minecraft:mining_fatigue", 600, 3)
@@ -184,6 +185,9 @@ public record BrewKind(
     ), 5.0F, 1.0F, BrewBehavior.BLIGHT);
     public static final BrewKind BAT_BURST = world(
         "bat_burst", 0x29222F, 5.0F, 1.5F, BrewBehavior.SUMMON_BATS
+    );
+    public static final BrewKind MURDEROUS_FLOCK = world(
+        "murderous_flock", 0x24162F, 6.0F, 1.5F, BrewBehavior.SUMMON_MURDEROUS_FLOCK
     );
     public static final BrewKind CACTUS_THORNED = world(
         "cactus_thorned", 0x43832F, 4.0F, 1.0F, BrewBehavior.PLACE_THORNS
@@ -349,7 +353,7 @@ public record BrewKind(
         INFECTION, INFERNO, INK, INSECT_BANE, LEVEL_LAND, LOVE, OVERHEATING, PULVERIZE_ROCK,
         RAISE_LAND, RAISING, SINKING, SNOW_BURST, SPREAD_DEBUFFS, STEAL_BUFFS, THORNS, TRANSPOSE,
         TRANSPOSE_ORE, UNDEAD_BANE, UNDEADS_CURSE, VINES, WASTING,
-        BAT_BURST, CACTUS_THORNED, COMBUSTION, DISEASE, DISSIPATE_GAS, DRAIN_MAGIC,
+        BAT_BURST, MURDEROUS_FLOCK, CACTUS_THORNED, COMBUSTION, DISEASE, DISSIPATE_GAS, DRAIN_MAGIC,
         DURATION_BOOST, ENDLESS_WATER, FORTUNE, FROGS_LEG, GRUES_PREY, MOONSHINE,
         PART_LAVA, PART_WATER, PLANTING, POISON_TOAD, RAISE_DEAD, VINES_FLAMMABLE, VOLATILITY,
         ABSORB_MAGIC, ATTRACT_ARROWS, BOTTLING, GAS_IMMUNITY, ENDER_INHIBITION, ILL_FITTING,

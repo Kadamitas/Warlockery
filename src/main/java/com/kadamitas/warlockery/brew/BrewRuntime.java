@@ -114,6 +114,7 @@ public final class BrewRuntime {
             case WEAKEN_VAMPIRES -> weakenVampires(context);
             case HARM_DEMONS -> harmTarget(context, Target.DEMON, 12.0F);
             case SUMMON_BATS -> summonBats(context);
+            case SUMMON_MURDEROUS_FLOCK -> summonMurderousFlock(context);
             case BLIGHT -> blight(context);
             case ERODE -> erode(context);
             case FEAR -> fear(context);
@@ -467,6 +468,29 @@ public final class BrewRuntime {
         for (int index = 0; index < requested; index++) {
             final BlockPos position = center.offset(index % 3 - 1, 1 + index / 6, index % 2 * 2 - 1);
             if (EntityTypes.BAT.spawn(context.level(), position, EntitySpawnReason.EVENT) != null) {
+                spawned++;
+            }
+        }
+        return new ImpactResult(spawned, 0, spawned > 0 ? 1 : 0);
+    }
+
+    private static ImpactResult summonMurderousFlock(final ImpactContext context) {
+        final BlockPos center = BlockPos.containing(context.center());
+        final int requested = Math.clamp((int) Math.ceil(context.potency() * 4.0F), 3, 8);
+        final List<LivingEntity> targets = living(context).stream()
+            .filter(entity -> entity != context.owner())
+            .toList();
+        int spawned = 0;
+        for (int index = 0; index < requested; index++) {
+            final BlockPos position = center.offset(index % 3 - 1, 1 + index / 4, index % 2 * 2 - 1);
+            final Entity entity = ModEntities.ALL.get("hex_bat").get().spawn(
+                context.level(), position, EntitySpawnReason.EVENT
+            );
+            if (entity instanceof Mob mob) {
+                targets.stream()
+                    .min(Comparator.comparingDouble(mob::distanceToSqr))
+                    .ifPresent(mob::setTarget);
+                mob.setPersistenceRequired();
                 spawned++;
             }
         }

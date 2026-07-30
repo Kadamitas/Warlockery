@@ -1,6 +1,6 @@
 {
     "parent":  "minecraft:item/generated",
     "textures":  {
-                     "layer0":  "warlockery:item/polynesia_charm"
+                     "layer0":  "warlockery:item/beast_speech_charm"
                  }
 }

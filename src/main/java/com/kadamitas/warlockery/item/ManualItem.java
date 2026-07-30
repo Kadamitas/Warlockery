@@ -1,6 +1,8 @@
 package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.registry.ModItems;
+import java.util.Optional;
+import java.util.stream.IntStream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -25,10 +27,14 @@ public final class ManualItem extends Item {
 
     @Override
     public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+        final ItemStack heldStack = player.getItemInHand(hand);
+        if (ManualProgress.isTornPage(profile)) {
+            return useImmortalPage(level, player, heldStack);
+        }
         final boolean createsBiomeNote = "bookbiomes2".equals(profile.id()) && player.isShiftKeyDown();
         if (!createsBiomeNote) {
             if (level.isClientSide()) {
-                ManualScreenBridge.open(profile);
+                ManualScreenBridge.open(ManualView.from(profile, heldStack));
             }
             return InteractionResult.SUCCESS;
         }
@@ -64,5 +70,49 @@ public final class ManualItem extends Item {
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.SUCCESS;
+    }
+
+    private static InteractionResult useImmortalPage(
+        final Level level,
+        final Player player,
+        final ItemStack page
+    ) {
+        if (level.isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
+        final Optional<ItemStack> observations = observationsIn(player);
+        if (observations.isEmpty()) {
+            player.sendOverlayMessage(Component.translatable("message.warlockery.immortal_page.missing_book")
+                .withStyle(ChatFormatting.RED));
+            return InteractionResult.FAIL;
+        }
+        final ItemStack book = observations.orElseThrow();
+        final ManualProfile bookProfile = ((ManualItem) book.getItem()).profile();
+        final ManualProgress.RevealResult result = ManualProgress.revealNext(bookProfile, book);
+        if (result.status() == ManualProgress.RevealStatus.COMPLETE) {
+            player.sendOverlayMessage(Component.translatable("message.warlockery.immortal_page.complete")
+                .withStyle(ChatFormatting.YELLOW));
+            return InteractionResult.FAIL;
+        }
+        if (result.status() != ManualProgress.RevealStatus.REVEALED) {
+            return InteractionResult.FAIL;
+        }
+        if (!player.hasInfiniteMaterials()) {
+            page.shrink(1);
+        }
+        final String revealedSection = result.section().orElseThrow();
+        player.sendOverlayMessage(Component.translatable(
+            "message.warlockery.immortal_page.revealed",
+            Component.translatable(bookProfile.translatedSectionTitleKey(revealedSection))
+        ).withStyle(ChatFormatting.GREEN));
+        return InteractionResult.SUCCESS;
+    }
+
+    private static Optional<ItemStack> observationsIn(final Player player) {
+        return IntStream.range(0, player.getInventory().getContainerSize())
+            .mapToObj(player.getInventory()::getItem)
+            .filter(stack -> stack.getItem() instanceof ManualItem manual
+                && ManualProgress.isObservations(manual.profile()))
+            .findFirst();
     }
 }

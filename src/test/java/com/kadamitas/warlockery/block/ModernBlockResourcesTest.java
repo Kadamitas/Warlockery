@@ -32,13 +32,23 @@ class ModernBlockResourcesTest {
     @Test
     void stateVariantsCoverEveryModernShape() {
         assertEquals(32, variants("alderwooddoor"));
-        assertEquals(24, variants("cbuttonwood"));
         assertEquals(2, variants("icepressureplate"));
         assertEquals(16, variants("icefencegate"));
         assertEquals(3, variants("iceslab"));
         assertEquals(40, variants("icestairs"));
         assertEquals(4, variants("hex_ladder"));
         assertEquals(5, readJson(ASSETS.resolve("blockstates/icefence.json")).getAsJsonArray("multipart").size());
+    }
+
+    @Test
+    void removedVanillaDuplicatesHaveNoResources() {
+        Stream.of(
+            "cbuttonstone", "cbuttonwood", "csnowpressureplate",
+            "cstonepressureplate", "cwoodendoor", "cwoodpressureplate"
+        ).forEach(id -> {
+            assertTrue(Files.notExists(ASSETS.resolve("blockstates/" + id + ".json")), id);
+            assertTrue(Files.notExists(ASSETS.resolve("items/" + id + ".json")), id);
+        });
     }
 
     @Test

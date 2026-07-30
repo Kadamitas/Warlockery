@@ -23,8 +23,13 @@ public final class ReplicationChargeItem extends SplashPotionItem {
     public ReplicationChargeItem(final Properties properties) {
         super(properties.stacksTo(16).component(
             DataComponents.POTION_CONTENTS,
-            new PotionContents(Optional.empty(), Optional.of(0xBFEFFF), java.util.List.of(), Optional.of("replication_charge"))
+            new PotionContents(Optional.empty(), Optional.of(0xBFEFFF), java.util.List.of(), Optional.empty())
         ));
+    }
+
+    @Override
+    public Component getName(final ItemStack stack) {
+        return Component.translatable("item.warlockery.replication_charge");
     }
 
     @Override

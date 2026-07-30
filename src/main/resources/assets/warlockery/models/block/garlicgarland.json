@@ -1,6 +1,203 @@
-{
-    "parent":  "minecraft:block/cube_all",
+﻿{
+    "parent":  "minecraft:block/block",
+    "ambientocclusion":  false,
     "textures":  {
-                     "all":  "warlockery:block/garlicgarland"
-                 }
+                     "particle":  "warlockery:block/garlicgarland",
+                     "cord":  "warlockery:block/garlicgarland_cord",
+                     "garlic":  "warlockery:block/garlicgarland"
+                 },
+    "elements":  [
+                     {
+                         "from":  [
+                                      1,
+                                      13,
+                                      7
+                                  ],
+                         "to":  [
+                                    15,
+                                    15,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#cord"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#cord"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#cord"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#cord"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#cord"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#cord"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      2,
+                                      7,
+                                      6
+                                  ],
+                         "to":  [
+                                    6,
+                                    13,
+                                    10
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#garlic"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#garlic"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#garlic"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#garlic"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#garlic"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#garlic"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      6,
+                                      5,
+                                      6
+                                  ],
+                         "to":  [
+                                    10,
+                                    12,
+                                    10
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#garlic"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#garlic"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#garlic"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#garlic"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#garlic"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#garlic"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      10,
+                                      7,
+                                      6
+                                  ],
+                         "to":  [
+                                    14,
+                                    13,
+                                    10
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#garlic"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#garlic"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#garlic"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#garlic"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#garlic"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#garlic"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3,
+                                      5,
+                                      7
+                                  ],
+                         "to":  [
+                                    5,
+                                    8,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#cord"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#cord"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#cord"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#cord"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#cord"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#cord"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      11,
+                                      5,
+                                      7
+                                  ],
+                         "to":  [
+                                    13,
+                                    8,
+                                    9
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#cord"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#cord"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#cord"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#cord"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#cord"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#cord"
+                                                }
+                                   }
+                     }
+                 ]
 }

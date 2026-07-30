@@ -29,7 +29,7 @@ public final class BiomeNoteItem extends Item {
         final var biome = key.orElseThrow().identifier();
         BiomeNoteState.write(context.getItemInHand(), biome);
         context.getItemInHand().set(DataComponents.CUSTOM_NAME, Component.translatable(
-            "item.warlockery.biomenote",
+            "item.warlockery.biomenote.recorded",
             biome.toString()
         ));
         context.getItemInHand().set(DataComponents.LORE, new ItemLore(java.util.List.of(

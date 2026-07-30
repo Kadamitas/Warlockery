@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.registry;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.block.AltarBlock;
+import com.kadamitas.warlockery.block.ConnectedGlyphBlock;
 import com.kadamitas.warlockery.block.DisturbedCottonBlock;
 import com.kadamitas.warlockery.block.ErosionBrewLiquidBlock;
 import com.kadamitas.warlockery.block.MagicMachineBlock;
@@ -52,6 +53,9 @@ public final class ModBlocks {
         final BlockBehaviour.Properties properties = properties(id);
         if ("altar".equals(id)) {
             return new AltarBlock(properties);
+        }
+        if (ConnectedGlyphBlock.supports(id)) {
+            return new ConnectedGlyphBlock(properties.noCollision().noOcclusion().instabreak().sound(SoundType.STONE));
         }
         if (MachineProfiles.isMachineBlock(id)) {
             return new MagicMachineBlock(properties);
@@ -129,6 +133,9 @@ public final class ModBlocks {
         }
         if (ContentCatalog.NON_SOLID.contains(id)) {
             properties.noCollision().noOcclusion();
+        }
+        if (SculptedBlockCatalog.contains(id)) {
+            properties.noOcclusion();
         }
         if (id.contains("light") || id.contains("glow") || id.contains("ember") || id.contains("portal")) {
             properties.lightLevel(_ -> 12);

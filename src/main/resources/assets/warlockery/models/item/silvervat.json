@@ -1,3 +1,6 @@
-{
-    "parent":  "warlockery:block/silvervat"
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "warlockery:item/silvervat"
+                 }
 }

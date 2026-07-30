@@ -1,6 +1,373 @@
-{
-    "parent":  "minecraft:block/cube_all",
+﻿{
+    "parent":  "minecraft:block/block",
+    "ambientocclusion":  false,
     "textures":  {
-                     "all":  "warlockery:block/statueofworship"
-                 }
+                     "particle":  "warlockery:block/statueofworship",
+                     "stone":  "warlockery:block/statueofworship",
+                     "metal":  "warlockery:block/statueofworship_metal"
+                 },
+    "elements":  [
+                     {
+                         "from":  [
+                                      1,
+                                      0,
+                                      1
+                                  ],
+                         "to":  [
+                                    15,
+                                    2,
+                                    15
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#stone"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#stone"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      2,
+                                      2,
+                                      2
+                                  ],
+                         "to":  [
+                                    14,
+                                    4,
+                                    14
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#metal"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#metal"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#metal"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#metal"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#metal"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#metal"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      4,
+                                      4,
+                                      4
+                                  ],
+                         "to":  [
+                                    12,
+                                    11,
+                                    12
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#stone"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#stone"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      2,
+                                      7,
+                                      5
+                                  ],
+                         "to":  [
+                                    5,
+                                    12,
+                                    11
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#stone"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#stone"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      11,
+                                      7,
+                                      5
+                                  ],
+                         "to":  [
+                                    14,
+                                    12,
+                                    11
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#stone"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#stone"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      5,
+                                      11,
+                                      5
+                                  ],
+                         "to":  [
+                                    11,
+                                    15,
+                                    11
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#stone"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#stone"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      3,
+                                      12,
+                                      6
+                                  ],
+                         "to":  [
+                                    5,
+                                    14,
+                                    10
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#stone"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#stone"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      11,
+                                      12,
+                                      6
+                                  ],
+                         "to":  [
+                                    13,
+                                    14,
+                                    10
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#stone"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#stone"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#stone"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#stone"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      4,
+                                      15,
+                                      6
+                                  ],
+                         "to":  [
+                                    12,
+                                    16,
+                                    10
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#metal"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#metal"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#metal"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#metal"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#metal"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#metal"
+                                                }
+                                   }
+                     },
+                     {
+                         "from":  [
+                                      2,
+                                      3,
+                                      2
+                                  ],
+                         "to":  [
+                                    4,
+                                    14,
+                                    4
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#metal"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#metal"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#metal"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#metal"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#metal"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#metal"
+                                                }
+                                   },
+                         "rotation":  {
+                                          "origin":  [
+                                                         3,
+                                                         8,
+                                                         3
+                                                     ],
+                                          "axis":  "z",
+                                          "angle":  -22.5,
+                                          "rescale":  true
+                                      }
+                     },
+                     {
+                         "from":  [
+                                      1,
+                                      12,
+                                      1
+                                  ],
+                         "to":  [
+                                    5,
+                                    14,
+                                    5
+                                ],
+                         "faces":  {
+                                       "down":  {
+                                                    "texture":  "#metal"
+                                                },
+                                       "up":  {
+                                                  "texture":  "#metal"
+                                              },
+                                       "north":  {
+                                                     "texture":  "#metal"
+                                                 },
+                                       "south":  {
+                                                     "texture":  "#metal"
+                                                 },
+                                       "west":  {
+                                                    "texture":  "#metal"
+                                                },
+                                       "east":  {
+                                                    "texture":  "#metal"
+                                                }
+                                   }
+                     }
+                 ]
 }

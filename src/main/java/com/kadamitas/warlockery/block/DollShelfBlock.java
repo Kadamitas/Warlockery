@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.entity.DollShelfBlockEntity;
+import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
@@ -9,6 +10,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -37,6 +40,17 @@ public final class DollShelfBlock extends BaseEntityBlock {
     }
 
     @Override
+    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(
+        final Level level,
+        final BlockState state,
+        final BlockEntityType<T> type
+    ) {
+        return level.isClientSide()
+            ? null
+            : createTickerHelper(type, ModBlockEntities.DOLL_SHELF.get(), DollShelfBlockEntity::serverTick);
+    }
+
+    @Override
     protected InteractionResult useWithoutItem(
         final BlockState state,
         final Level level,
@@ -58,6 +72,7 @@ public final class DollShelfBlock extends BaseEntityBlock {
         final boolean moved
     ) {
         if (level.getBlockEntity(pos) instanceof DollShelfBlockEntity shelf) {
+            shelf.releaseChunkTicket();
             net.minecraft.world.Containers.dropContents(level, pos, shelf);
         }
         super.affectNeighborsAfterRemoval(state, level, pos, moved);

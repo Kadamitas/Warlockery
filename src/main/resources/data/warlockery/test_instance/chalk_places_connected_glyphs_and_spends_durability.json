@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:chalk_places_connected_glyphs_and_spends_durability",
+  "environment": "minecraft:default",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 100
+}

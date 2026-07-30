@@ -2,7 +2,6 @@ package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
-import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -48,20 +47,24 @@ public final class AltarBlock extends BaseEntityBlock {
         final InteractionHand hand,
         final BlockHitResult hitResult
     ) {
-        if (!stack.is(WarlockeryTags.Items.ALTAR_RANGE_FOCI)) {
+        if (!(level.getBlockEntity(pos) instanceof AltarBlockEntity altar) || !altar.supportsAttachment(stack)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        if (!(level.getBlockEntity(pos) instanceof AltarBlockEntity altar) || !altar.installRangeFocus(stack)) {
-            player.sendOverlayMessage(Component.translatable("message.warlockery.altar.focus_occupied"));
+        if (!altar.installAttachment(stack)) {
+            player.sendOverlayMessage(Component.translatable("message.warlockery.altar.attachment_occupied"));
             return InteractionResult.FAIL;
         }
+        final Component attachmentName = stack.getHoverName();
         if (!player.hasInfiniteMaterials()) {
             stack.shrink(1);
         }
-        player.sendOverlayMessage(Component.translatable("message.warlockery.altar.focus_installed"));
+        player.sendOverlayMessage(Component.translatable(
+            "message.warlockery.altar.attachment_installed",
+            attachmentName
+        ));
         return InteractionResult.SUCCESS;
     }
 
@@ -79,12 +82,15 @@ public final class AltarBlock extends BaseEntityBlock {
         final BlockHitResult hitResult
     ) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof AltarBlockEntity altar) {
-            if (player.isShiftKeyDown() && altar.hasRangeFocus()) {
-                final ItemStack removed = altar.removeRangeFocus();
+            if (player.isShiftKeyDown() && altar.attachmentCount() > 0) {
+                final ItemStack removed = altar.removeLastAttachment();
                 if (!player.getInventory().add(removed)) {
                     popResource(level, pos.above(), removed);
                 }
-                player.sendOverlayMessage(Component.translatable("message.warlockery.altar.focus_removed"));
+                player.sendOverlayMessage(Component.translatable(
+                    "message.warlockery.altar.attachment_removed",
+                    removed.getHoverName()
+                ));
                 return InteractionResult.SUCCESS;
             }
             player.sendSystemMessage(Component.translatable(
@@ -103,8 +109,8 @@ public final class AltarBlock extends BaseEntityBlock {
         final BlockPos pos,
         final boolean moved
     ) {
-        if (level.getBlockEntity(pos) instanceof AltarBlockEntity altar && altar.hasRangeFocus()) {
-            popResource(level, pos, altar.removeRangeFocus());
+        if (level.getBlockEntity(pos) instanceof AltarBlockEntity altar) {
+            altar.removeAllAttachments().forEach(stack -> popResource(level, pos, stack));
         }
         super.affectNeighborsAfterRemoval(state, level, pos, moved);
     }

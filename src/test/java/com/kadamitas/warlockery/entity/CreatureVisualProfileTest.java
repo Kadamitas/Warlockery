@@ -48,4 +48,12 @@ final class CreatureVisualProfileTest {
     void lostSoulUsesTheSpiritEntityAndRendererFamily() {
         assertEquals(Archetype.SPIRIT, CreatureVisualProfile.forKind(CreatureKind.LOST_SOUL).archetype());
     }
+
+    @Test
+    void impAndStormSimianNoLongerUseTheVexShapedSpiritFamily() {
+        assertEquals(Archetype.IMP, CreatureVisualProfile.forKind(CreatureKind.IMP).archetype());
+        assertEquals(Archetype.SIMIAN, CreatureVisualProfile.forKind(CreatureKind.STORM_SIMIAN).archetype());
+        assertNotEquals(Archetype.SPIRIT, CreatureVisualProfile.forKind(CreatureKind.IMP).archetype());
+        assertNotEquals(Archetype.SPIRIT, CreatureVisualProfile.forKind(CreatureKind.STORM_SIMIAN).archetype());
+    }
 }
