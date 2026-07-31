@@ -1,5 +1,8 @@
 package com.kadamitas.warlockery.brew;
 
+import com.kadamitas.warlockery.brew.custom.CustomBrewCloudRules;
+import com.kadamitas.warlockery.brew.custom.CustomBrewDelivery;
+
 import com.kadamitas.warlockery.brew.BrewTargeting.Target;
 import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import com.kadamitas.warlockery.registry.ModBlocks;
@@ -8,8 +11,10 @@ import com.kadamitas.warlockery.registry.ModFluids;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.ritual.hex.HexKind;
 import com.kadamitas.warlockery.ritual.hex.HexRuntime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -31,11 +36,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.monster.zombie.ZombieVillager;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -58,6 +67,7 @@ import org.jspecify.annotations.Nullable;
 public final class BrewRuntime {
     private static final int MAX_AREA_BLOCKS = 2_048;
     private static final int MAX_CONNECTED_BLOCKS = 256;
+    static final int MAX_FORCED_GROWTH_STEPS = 32;
     private static final Consumer<LivingEntity> NO_CONFIGURATION = entity -> {
     };
 
@@ -71,13 +81,36 @@ public final class BrewRuntime {
         final @Nullable Entity directSource,
         final @Nullable Entity owner
     ) {
+        return handleImpact(level, kind, center, directSource, owner, null);
+    }
+
+    public static ImpactResult handleImpactTo(
+        final ServerLevel level,
+        final BrewKind kind,
+        final Vec3 center,
+        final @Nullable Entity directSource,
+        final @Nullable Entity owner,
+        final LivingEntity target
+    ) {
+        return handleImpact(level, kind, center, directSource, owner, target);
+    }
+
+    private static ImpactResult handleImpact(
+        final ServerLevel level,
+        final BrewKind kind,
+        final Vec3 center,
+        final @Nullable Entity directSource,
+        final @Nullable Entity owner,
+        final @Nullable LivingEntity target
+    ) {
         final ImpactContext context = new ImpactContext(
             level,
             center,
             kind.radius(),
             kind.potency(),
             directSource,
-            owner
+            owner,
+            target
         );
         return kind.behaviors().stream()
             .map(behavior -> apply(behavior, context))
@@ -99,6 +132,7 @@ public final class BrewRuntime {
             case REPEL_ANIMALS -> repelAnimals(context);
             case FELL_LOGS -> fellLogs(context);
             case PRUNE_LEAVES -> pruneLeaves(context);
+            case WASTE -> waste(context);
             case HARVEST_CROPS -> harvestCrops(context);
             case TILL_SOIL -> tillSoil(context);
             case REVEAL -> reveal(context);
@@ -137,6 +171,7 @@ public final class BrewRuntime {
             case PLACE_WATER -> placeWater(context);
             case DARKNESS_PREY -> darknessPrey(context);
             case MOONLIGHT -> moonlight(context);
+            case APPLY_MOONSHINE -> applyMarker(context, BrewMarkerKind.MOONSHINE);
             case PART_WATER -> partWater(context);
             case PART_LAVA -> partLava(context);
             case PLANT_DROPS -> plantDrops(context);
@@ -165,11 +200,11 @@ public final class BrewRuntime {
             case APPLY_REPEL_ATTACKER -> applyMarker(context, BrewMarkerKind.REPEL_ATTACKER);
             case APPLY_RESIZING -> applyMarker(context, BrewMarkerKind.RESIZING);
             case SHIFT_SEASONS -> shiftSeasons(context);
-            case SUMMON_ABYSSAL_REGENT -> summonLeonardShade(context);
+            case SUMMON_ABYSSAL_REGENT -> summonArchfiendShade(context);
             case APPLY_TINT_SKIN -> applyTint(context);
             case APPLY_WEREWOLF_LOCK -> applyWerewolfLock(context);
             case APPLY_DISEASE -> applyMarker(context, BrewMarkerKind.DISEASE);
-            case APPLY_INFECTION -> applyMarker(context, BrewMarkerKind.INFECTION);
+            case APPLY_INFECTION -> infect(context);
             case APPLY_SINKING -> applyMarker(context, BrewMarkerKind.SINKING);
             case APPLY_SUNLIGHT_CURSE -> applyMarker(
                 context,
@@ -195,21 +230,26 @@ public final class BrewRuntime {
     }
 
     private static ImpactResult grow(final ImpactContext context) {
-        final int changed = mutateArea(context, MAX_AREA_BLOCKS, (pos, state) -> {
-            if (!(state.getBlock() instanceof BonemealableBlock growable)) {
-                return false;
-            }
-            if (!BrewRules.canGrow(
-                true,
-                growable.isValidBonemealTarget(context.level(), pos, state),
-                growable.isBonemealSuccess(context.level(), context.level().getRandom(), pos, state)
-            )) {
-                return false;
-            }
-            growable.performBonemeal(context.level(), context.level().getRandom(), pos, state);
-            return true;
-        });
+        final int changed = mutateArea(
+            context,
+            MAX_AREA_BLOCKS,
+            (pos, state) -> forceToMaturity(context.level(), pos)
+        );
         return ImpactResult.blocks(changed);
+    }
+
+    static boolean forceToMaturity(final ServerLevel level, final BlockPos pos) {
+        boolean changed = false;
+        for (int step = 0; step < MAX_FORCED_GROWTH_STEPS; step++) {
+            final BlockState state = level.getBlockState(pos);
+            if (!(state.getBlock() instanceof BonemealableBlock growable)
+                || !growable.isValidBonemealTarget(level, pos, state)) {
+                break;
+            }
+            growable.performBonemeal(level, level.getRandom(), pos, state);
+            changed |= !level.getBlockState(pos).equals(state);
+        }
+        return changed;
     }
 
     private static ImpactResult extinguish(final ImpactContext context) {
@@ -360,6 +400,20 @@ public final class BrewRuntime {
         return ImpactResult.blocks(changed);
     }
 
+    private static ImpactResult waste(final ImpactContext context) {
+        final List<LivingEntity> affected = living(context).stream()
+            .filter(entity -> entity instanceof Player || entity instanceof Enemy)
+            .toList();
+        affected.forEach(entity -> {
+            if (entity instanceof Player) {
+                entity.addEffect(new MobEffectInstance(MobEffects.HUNGER, 1_200, 1));
+            } else {
+                entity.addEffect(new MobEffectInstance(MobEffects.WITHER, 600, 1));
+            }
+        });
+        return ImpactResult.entities(affected.size()).plus(pruneLeaves(context));
+    }
+
     private static ImpactResult harvestCrops(final ImpactContext context) {
         final int changed = mutateArea(context, MAX_AREA_BLOCKS, (pos, state) -> {
             final boolean crop = state.is(BlockTags.CROPS);
@@ -473,7 +527,7 @@ public final class BrewRuntime {
         final BlockPos center = BlockPos.containing(context.center());
         final int requested = Math.clamp((int) Math.ceil(context.potency() * 4.0F), 3, 8);
         final List<LivingEntity> targets = living(context).stream()
-            .filter(entity -> entity != context.owner())
+            .filter(entity -> canAffectOwner(context, entity))
             .toList();
         int spawned = 0;
         for (int index = 0; index < requested; index++) {
@@ -518,7 +572,7 @@ public final class BrewRuntime {
             entity.hurtServer(
                 context.level(),
                 context.level().damageSources().magic(),
-                4.0F * context.potency()
+                8.0F * context.potency()
             );
             BrewMarkerState.apply(entity, BrewMarkerKind.EROSION);
             EquipmentSlot.VALUES.stream()
@@ -526,10 +580,14 @@ public final class BrewRuntime {
                 .filter(entry -> entry.getValue().isDamageableItem())
                 .forEach(entry -> entry.getValue().hurtAndBreak(2, entity, entry.getKey()));
         });
-        final int blocks = mutateArea(context, Math.clamp((int) (24 * context.potency()), 8, 96), (pos, state) ->
-            state.is(WarlockeryTags.Blocks.BREW_ERODIBLE)
-                && context.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState())
-        );
+        final int blocks = mutateArea(context, Math.clamp((int) (24 * context.potency()), 8, 96), (pos, state) -> {
+            if (!state.is(WarlockeryTags.Blocks.BREW_ERODIBLE)) {
+                return false;
+            }
+            return state.is(Blocks.OBSIDIAN)
+                ? context.level().destroyBlock(pos, true, context.owner(), MAX_CONNECTED_BLOCKS)
+                : context.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        });
         final BlockPos fluidPosition = BlockPos.containing(context.center());
         final boolean fluidPlaced = context.level().getBlockState(fluidPosition).canBeReplaced()
             && context.level().setBlockAndUpdate(fluidPosition, ModFluids.EROSION_SOURCE.get().defaultFluidState().createLegacyBlock());
@@ -538,7 +596,7 @@ public final class BrewRuntime {
 
     private static ImpactResult fear(final ImpactContext context) {
         final List<LivingEntity> entities = living(context).stream()
-            .filter(entity -> entity != context.owner())
+            .filter(entity -> canAffectOwner(context, entity))
             .toList();
         entities.forEach(entity -> {
             if (entity instanceof Mob mob) {
@@ -556,7 +614,7 @@ public final class BrewRuntime {
     private static ImpactResult pullToOwner(final ImpactContext context) {
         final Vec3 destination = context.owner() == null ? context.center() : context.owner().position();
         final List<LivingEntity> entities = living(context).stream()
-            .filter(entity -> entity != context.owner())
+            .filter(entity -> canAffectOwner(context, entity))
             .toList();
         entities.forEach(entity -> {
             entity.addDeltaMovement(BrewPhysics.radialVelocity(
@@ -680,7 +738,58 @@ public final class BrewRuntime {
             animal.setInLove(owner);
             animal.heal(2.0F);
         });
-        return ImpactResult.entities(candidates.size());
+        final List<Villager> villagers = context.target() == null
+            ? context.level().getEntitiesOfClass(
+                Villager.class,
+                AABB.ofSize(context.center(), context.radius() * 2.0, context.radius() * 1.5, context.radius() * 2.0),
+                villager -> villager.isAlive() && !villager.isBaby()
+                    && villager.distanceToSqr(context.center()) <= context.radius() * context.radius()
+            )
+            : context.target() instanceof Villager villager && villager.isAlive() && !villager.isBaby()
+                ? List.of(villager)
+                : List.of();
+        villagers.forEach(villager -> {
+            villager.getInventory().addItem(new ItemStack(Items.BREAD, 3));
+        });
+        final int enthralledOffspring = breedEnthralledZombies(context);
+        return ImpactResult.entities(candidates.size() + villagers.size() + enthralledOffspring);
+    }
+
+    private static int breedEnthralledZombies(final ImpactContext context) {
+        if (context.owner() == null || context.target() != null) {
+            return 0;
+        }
+        final List<Zombie> enthralled = context.level().getEntitiesOfClass(
+            Zombie.class,
+            AABB.ofSize(context.center(), context.radius() * 2.0, context.radius() * 1.5, context.radius() * 2.0),
+            zombie -> zombie.isAlive()
+                && !zombie.isBaby()
+                && zombie.distanceToSqr(context.center()) <= context.radius() * context.radius()
+                && CreatureBehaviorState.isOwnedBy(zombie, context.owner().getUUID())
+        );
+        final int offspring = BrewTerrainRules.enthralledOffspringCount(enthralled.size());
+        int spawned = 0;
+        for (int index = 0; index < offspring; index++) {
+            final Zombie first = enthralled.get(index * 2);
+            final Zombie second = enthralled.get(index * 2 + 1);
+            final ZombieVillager child = EntityTypes.ZOMBIE_VILLAGER.create(context.level(), EntitySpawnReason.BREEDING);
+            if (child == null) {
+                continue;
+            }
+            child.setBaby(true);
+            child.snapTo(
+                (first.getX() + second.getX()) * 0.5,
+                Math.max(first.getY(), second.getY()),
+                (first.getZ() + second.getZ()) * 0.5,
+                first.getYRot(),
+                0.0F
+            );
+            CreatureBehaviorState.bind(child, context.owner().getUUID());
+            if (context.level().addFreshEntity(child)) {
+                spawned++;
+            }
+        }
+        return spawned;
     }
 
     private static ImpactResult pulverizeRock(final ImpactContext context) {
@@ -809,20 +918,64 @@ public final class BrewRuntime {
     }
 
     private static ImpactResult placeThorns(final ImpactContext context) {
-        final int changed = mutateArea(context, 96, (pos, state) -> {
-            if (!state.canBeReplaced()) {
-                return false;
+        final BlockPos center = BlockPos.containing(context.center());
+        final boolean hasToad = hasOwnedFamiliar(context, "toad");
+        final int cactusHeight = hasToad ? 4 : 3;
+        int changed = 0;
+        final List<BlockPos> supports = BrewArea.sphere(center, (int) Math.ceil(context.radius()))
+            .filter(pos -> context.level().getBlockState(pos).is(WarlockeryTags.Blocks.BREW_THORN_SUPPORTS))
+            .sorted(Comparator.comparingDouble(pos -> pos.distSqr(center)))
+            .limit(32)
+            .toList();
+        for (BlockPos support : supports) {
+            if (context.level().getBlockState(support).is(BlockTags.SAND)) {
+                for (int height = 1; height <= cactusHeight; height++) {
+                    final BlockPos pos = support.above(height);
+                    final BlockState cactus = Blocks.CACTUS.defaultBlockState();
+                    if (!context.level().getBlockState(pos).canBeReplaced() || !cactus.canSurvive(context.level(), pos)) {
+                        break;
+                    }
+                    changed += context.level().setBlockAndUpdate(pos, cactus) ? 1 : 0;
+                }
+                continue;
             }
-            final BlockState support = context.level().getBlockState(pos.below());
-            if (!support.is(WarlockeryTags.Blocks.BREW_THORN_SUPPORTS)) {
-                return false;
+            final BlockPos pos = support.above();
+            final BlockState berry = Blocks.SWEET_BERRY_BUSH.defaultBlockState().setValue(BlockStateProperties.AGE_3, 3);
+            if (context.level().getBlockState(pos).canBeReplaced()
+                && berry.canSurvive(context.level(), pos)
+                && context.level().setBlockAndUpdate(pos, berry)) {
+                changed++;
             }
-            final BlockState thorn = support.is(BlockTags.SAND)
-                ? Blocks.CACTUS.defaultBlockState()
-                : Blocks.SWEET_BERRY_BUSH.defaultBlockState().setValue(BlockStateProperties.AGE_3, 3);
-            return thorn.canSurvive(context.level(), pos) && context.level().setBlockAndUpdate(pos, thorn);
-        });
-        return ImpactResult.blocks(changed);
+        }
+        final List<LivingEntity> trapped = living(context).stream()
+            .filter(entity -> canAffectOwner(context, entity))
+            .toList();
+        for (LivingEntity entity : trapped) {
+            entity.addEffect(new MobEffectInstance(
+                MobEffects.SLOWNESS,
+                BrewTerrainRules.thornTrapDuration(hasToad),
+                4
+            ));
+            final BlockPos feet = entity.blockPosition();
+            for (BlockPos offset : BrewTerrainRules.thornCageOffsets(hasToad)) {
+                final BlockPos position = feet.offset(offset);
+                final BlockState berry = Blocks.SWEET_BERRY_BUSH.defaultBlockState()
+                    .setValue(BlockStateProperties.AGE_3, 3);
+                if (context.level().getBlockState(position).canBeReplaced()
+                    && berry.canSurvive(context.level(), position)
+                    && context.level().setBlockAndUpdate(position, berry)) {
+                    changed++;
+                }
+            }
+            final BlockState centerBerry = Blocks.SWEET_BERRY_BUSH.defaultBlockState()
+                .setValue(BlockStateProperties.AGE_3, 3);
+            if (context.level().getBlockState(feet).canBeReplaced()
+                && centerBerry.canSurvive(context.level(), feet)
+                && context.level().setBlockAndUpdate(feet, centerBerry)) {
+                changed++;
+            }
+        }
+        return new ImpactResult(trapped.size(), changed, 0);
     }
 
     private static ImpactResult randomTeleport(final ImpactContext context) {
@@ -880,19 +1033,80 @@ public final class BrewRuntime {
     }
 
     private static ImpactResult placeVines(final ImpactContext context) {
-        final List<Direction> directions = List.of(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST);
-        final int changed = mutateArea(context, 128, (pos, state) -> {
-            if (!state.canBeReplaced()) {
-                return false;
+        final BlockPos center = BlockPos.containing(context.center());
+        final boolean hasToad = hasOwnedFamiliar(context, "toad");
+        final int radius = Math.clamp((int) Math.ceil(context.radius()) + BrewTerrainRules.vineStepReach(hasToad), 1, 12);
+        final List<BlockPos> candidates = BrewArea.sphere(center, radius)
+            .filter(pos -> context.level().getBlockState(pos).canBeReplaced()
+                || context.level().getBlockState(pos).is(BlockTags.LEAVES))
+            .sorted(Comparator.comparingDouble(pos -> pos.distSqr(center)))
+            .limit(256)
+            .toList();
+        final Set<BlockPos> candidateSet = Set.copyOf(candidates);
+        final Set<BlockPos> placed = new HashSet<>();
+        int changed = 0;
+        for (BlockPos seed : candidates.stream().filter(pos -> pos.distSqr(center) <= 4.0).limit(8).toList()) {
+            final Optional<BlockState> vine = vineFor(context.level(), seed);
+            if (vine.isPresent() && context.level().setBlockAndUpdate(seed, vine.orElseThrow())) {
+                placed.add(seed);
+                changed++;
             }
-            return directions.stream().filter(direction -> VineBlock.isAcceptableNeighbour(
-                context.level(), pos.relative(direction), direction
-            )).findFirst().map(direction -> context.level().setBlockAndUpdate(
-                pos,
-                Blocks.VINE.defaultBlockState().setValue(VineBlock.getPropertyForFace(direction), true)
-            )).orElse(false);
-        });
+        }
+        for (int pass = 0; pass < radius * 2 && changed < 128; pass++) {
+            final Set<BlockPos> additions = new HashSet<>();
+            for (BlockPos source : List.copyOf(placed)) {
+                final BlockState sourceState = context.level().getBlockState(source);
+                for (Direction wallFace : vineFaces(sourceState)) {
+                    for (BlockPos offset : BrewTerrainRules.vineTraversalOffsets(wallFace, hasToad)) {
+                        final BlockPos target = source.offset(offset);
+                        if (!candidateSet.contains(target) || placed.contains(target) || additions.contains(target)) {
+                            continue;
+                        }
+                        final Optional<BlockState> vine = vineFor(context.level(), target);
+                        if (vine.isPresent() && context.level().setBlockAndUpdate(target, vine.orElseThrow())) {
+                            additions.add(target);
+                            changed++;
+                        }
+                    }
+                }
+            }
+            if (additions.isEmpty()) {
+                break;
+            }
+            placed.addAll(additions);
+        }
         return ImpactResult.blocks(changed);
+    }
+
+    private static List<Direction> vineFaces(final BlockState state) {
+        if (!state.is(Blocks.VINE)) {
+            return List.of();
+        }
+        return BrewTerrainRules.wallFaces().stream()
+            .filter(direction -> state.getValue(VineBlock.getPropertyForFace(direction)))
+            .toList();
+    }
+
+    private static Optional<BlockState> vineFor(final ServerLevel level, final BlockPos position) {
+        for (Direction direction : BrewTerrainRules.wallFaces()) {
+            if (VineBlock.isAcceptableNeighbour(level, position.relative(direction), direction)) {
+                return Optional.of(Blocks.VINE.defaultBlockState()
+                    .setValue(VineBlock.getPropertyForFace(direction), true));
+            }
+        }
+        final BlockState above = level.getBlockState(position.above());
+        if (!above.is(Blocks.VINE)) {
+            return Optional.empty();
+        }
+        BlockState hanging = Blocks.VINE.defaultBlockState();
+        boolean connected = false;
+        for (Direction direction : BrewTerrainRules.wallFaces()) {
+            if (above.getValue(VineBlock.getPropertyForFace(direction))) {
+                hanging = hanging.setValue(VineBlock.getPropertyForFace(direction), true);
+                connected = true;
+            }
+        }
+        return connected && hanging.canSurvive(level, position) ? Optional.of(hanging) : Optional.empty();
     }
 
     private static ImpactResult dissipateGas(final ImpactContext context) {
@@ -906,7 +1120,13 @@ public final class BrewRuntime {
         spectral.forEach(entity -> entity.hurtServer(
             context.level(), context.level().damageSources().magic(), 12.0F * context.potency()
         ));
-        return new ImpactResult(spectral.size(), blocks, blocks > 0 ? 1 : 0);
+        final List<AreaEffectCloud> clouds = context.level().getEntitiesOfClass(
+            AreaEffectCloud.class,
+            AABB.ofSize(context.center(), context.radius() * 2.0, context.radius() * 1.5, context.radius() * 2.0),
+            cloud -> CustomBrewCloudRules.isDelivery(cloud, CustomBrewDelivery.GAS)
+        );
+        clouds.forEach(Entity::discard);
+        return new ImpactResult(spectral.size(), blocks, blocks > 0 || !clouds.isEmpty() ? 1 : 0);
     }
 
     private static ImpactResult drainReserves(final ImpactContext context) {
@@ -1080,7 +1300,7 @@ public final class BrewRuntime {
             }
         }
         final List<LivingEntity> targets = living(context).stream()
-            .filter(entity -> entity != context.owner())
+            .filter(entity -> canAffectOwner(context, entity))
             .filter(entity -> !entity.typeHolder().is(WarlockeryTags.EntityTypes.HEX_TOADS))
             .toList();
         targets.forEach(entity -> entity.addEffect(new MobEffectInstance(MobEffects.POISON, 600, 1)));
@@ -1090,12 +1310,17 @@ public final class BrewRuntime {
     private static ImpactResult raiseDead(final ImpactContext context) {
         final BlockPos center = BlockPos.containing(context.center());
         final Optional<LivingEntity> target = living(context).stream()
-            .filter(entity -> entity != context.owner())
+            .filter(entity -> canAffectOwner(context, entity))
             .filter(entity -> !entity.typeHolder().is(EntityTypeTags.UNDEAD))
             .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(context.center())));
         int spawned = 0;
-        for (int index = 0; index < 3; index++) {
+        final int count = context.level().getRandom().nextIntBetweenInclusive(1, 3);
+        for (int index = 0; index < count; index++) {
             final BlockPos position = center.offset(index - 1, 1, index % 2 * 2 - 1);
+            if (!context.level().getBlockState(position).canBeReplaced()
+                || !context.level().getBlockState(position.above()).canBeReplaced()) {
+                continue;
+            }
             final Entity corpse = ModEntities.ALL.get("corpse").get().spawn(
                 context.level(), position, EntitySpawnReason.EVENT
             );
@@ -1117,7 +1342,7 @@ public final class BrewRuntime {
     private static ImpactResult summonOwls(final ImpactContext context) {
         final BlockPos center = BlockPos.containing(context.center());
         final Optional<LivingEntity> target = living(context).stream()
-            .filter(entity -> entity != context.owner())
+            .filter(entity -> canAffectOwner(context, entity))
             .filter(entity -> isBodegaTarget(
                 entity.typeHolder().is(BrewCompatibilityTags.EntityTypes.BODEGA_TARGETS),
                 entity instanceof Enemy,
@@ -1126,7 +1351,7 @@ public final class BrewRuntime {
             ))
             .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(context.center())));
         int spawned = 0;
-        for (int index = 0; index < 6; index++) {
+        for (int index = 0; index < 3; index++) {
             final BlockPos position = center.offset(index % 3 - 1, 1 + index / 3, index % 2 * 2 - 1);
             final Entity owl = ModEntities.ALL.get("owl").get().spawn(
                 context.level(), position, EntitySpawnReason.EVENT
@@ -1170,10 +1395,73 @@ public final class BrewRuntime {
             .filter(pos -> context.level().getBlockEntity(pos) == null)
             .filter(pos -> context.level().getBlockState(pos).canBeReplaced())
             .toList();
-        final int changed = (int) path.stream()
+        final int branches = (int) path.stream()
             .filter(pos -> context.level().setBlockAndUpdate(pos, branch))
             .count();
-        return ImpactResult.blocks(changed);
+        final BlockState leaves = ModBlocks.ALL.get("hex_leaves").get().defaultBlockState();
+        final int foliage = (int) java.util.stream.IntStream.range(0, path.size())
+            .filter(index -> index % 4 == 3 || index == path.size() - 1)
+            .mapToObj(path::get)
+            .flatMap(pos -> Direction.Plane.HORIZONTAL.stream().map(pos::relative))
+            .distinct()
+            .filter(pos -> context.level().getBlockState(pos).canBeReplaced())
+            .filter(pos -> context.level().setBlockAndUpdate(pos, leaves))
+            .count();
+        return ImpactResult.blocks(branches + foliage);
+    }
+
+    private static ImpactResult infect(final ImpactContext context) {
+        int affected = 0;
+        for (LivingEntity entity : living(context)) {
+            if (entity instanceof Villager villager) {
+                final ZombieVillager zombie = EntityTypes.ZOMBIE_VILLAGER.spawn(
+                    context.level(), villager.blockPosition(), EntitySpawnReason.CONVERSION
+                );
+                if (zombie == null) {
+                    continue;
+                }
+                zombie.setVillagerData(villager.getVillagerData());
+                zombie.setVillagerXp(villager.getVillagerXp());
+                zombie.setCustomName(villager.getCustomName());
+                villager.discard();
+                affected++;
+                continue;
+            }
+            entity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 10));
+            if (entity instanceof Mob mob) {
+                mob.getNavigation().stop();
+            }
+            BrewMarkerState.apply(entity, BrewMarkerKind.INFECTION);
+            affected++;
+        }
+        final int blocks = mutateArea(context, MAX_AREA_BLOCKS, (pos, state) -> infectionVariant(state)
+            .filter(replacement -> context.level().setBlockAndUpdate(pos, replacement))
+            .isPresent());
+        return new ImpactResult(affected, blocks, 0);
+    }
+
+    static Optional<BlockState> infectionVariant(final BlockState state) {
+        if (state.is(Blocks.STONE)) {
+            return Optional.of(Blocks.INFESTED_STONE.defaultBlockState());
+        }
+        if (state.is(Blocks.COBBLESTONE)) {
+            return Optional.of(Blocks.INFESTED_COBBLESTONE.defaultBlockState());
+        }
+        if (state.is(Blocks.STONE_BRICKS)) {
+            return Optional.of(Blocks.INFESTED_STONE_BRICKS.defaultBlockState());
+        }
+        return Optional.empty();
+    }
+
+    private static boolean hasOwnedFamiliar(final ImpactContext context, final String id) {
+        if (!(context.owner() instanceof LivingEntity owner)) {
+            return false;
+        }
+        return !context.level().getEntities(
+            ModEntities.ALL.get(id).get(),
+            new AABB(owner.blockPosition()).inflate(16.0),
+            familiar -> familiar.isAlive() && CreatureBehaviorState.isOwnedBy(familiar, owner.getUUID())
+        ).isEmpty();
     }
 
     private static ImpactResult substituteBlocks(final ImpactContext context) {
@@ -1191,12 +1479,26 @@ public final class BrewRuntime {
         final ItemEntity drop = offered.orElseThrow();
         final BlockItem blockItem = (BlockItem) drop.getItem().getItem();
         final BlockState replacement = blockItem.getBlock().defaultBlockState();
+        final BlockPos center = BlockPos.containing(context.center());
+        final Optional<Block> target = BrewArea.sphere(center, (int) Math.ceil(context.radius()))
+            .sorted(Comparator.comparingDouble(pos -> pos.distSqr(center)))
+            .map(context.level()::getBlockState)
+            .filter(state -> state.is(BrewCompatibilityTags.Blocks.SUBSTITUTABLE))
+            .map(BlockState::getBlock)
+            .findFirst();
+        if (target.isEmpty()) {
+            return ImpactResult.ZERO;
+        }
+        final Block targetBlock = target.orElseThrow();
         final int limit = Math.min(64, drop.getItem().getCount());
         final int changed = mutateArea(context, limit, (pos, state) ->
-            context.level().getBlockEntity(pos) == null
-                && state.is(BrewCompatibilityTags.Blocks.SUBSTITUTABLE)
-                && !state.is(replacement.getBlock())
-                && replacement.canSurvive(context.level(), pos)
+            canSubstitute(
+                state,
+                targetBlock,
+                replacement.getBlock(),
+                context.level().getBlockEntity(pos) != null,
+                replacement.canSurvive(context.level(), pos)
+            )
                 && context.level().setBlockAndUpdate(pos, replacement)
         );
         drop.getItem().shrink(changed);
@@ -1206,10 +1508,22 @@ public final class BrewRuntime {
         return new ImpactResult(changed > 0 ? 1 : 0, changed, changed > 0 ? 1 : 0);
     }
 
+    static boolean canSubstitute(
+        final BlockState state,
+        final Block target,
+        final Block replacement,
+        final boolean hasBlockEntity,
+        final boolean replacementCanSurvive
+    ) {
+        return !hasBlockEntity
+            && replacementCanSurvive
+            && state.is(target)
+            && !state.is(replacement);
+    }
+
     private static ImpactResult solidify(final ImpactContext context, final BlockState solid) {
         final int changed = mutateArea(context, 128, (pos, state) ->
-            state.getFluidState().is(WarlockeryTags.Fluids.HOLLOW_TEARS)
-                && state.getFluidState().isSource()
+            BrewRules.shouldSolidify(state.getFluidState().is(WarlockeryTags.Fluids.HOLLOW_TEARS))
                 && context.level().setBlockAndUpdate(pos, solid)
         );
         return ImpactResult.blocks(changed);
@@ -1217,27 +1531,45 @@ public final class BrewRuntime {
 
     private static ImpactResult erodeHollowTears(final ImpactContext context) {
         final BlockPos center = BlockPos.containing(context.center());
-        final List<BlockPos> sources = BrewArea.sphere(center, (int) Math.ceil(context.radius()))
+        final List<BlockPos> tears = BrewArea.sphere(center, (int) Math.ceil(context.radius()))
             .filter(pos -> context.level().getFluidState(pos).is(WarlockeryTags.Fluids.HOLLOW_TEARS))
-            .filter(pos -> context.level().getFluidState(pos).isSource())
             .sorted(Comparator.comparingDouble(pos -> pos.distSqr(center)))
-            .limit(16)
+            .limit(64)
             .toList();
-        final List<BlockPos> removable = sources.stream()
-            .flatMap(source -> java.util.stream.IntStream.range(0, 32).mapToObj(source::below))
+        final List<BlockPos> removable = tears.stream()
+            .flatMap(source -> erosionColumn(context, source).stream())
             .distinct()
-            .filter(context.level()::isLoaded)
-            .filter(pos -> context.level().getBlockEntity(pos) == null)
-            .filter(pos -> {
-                final BlockState state = context.level().getBlockState(pos);
-                return !state.isAir() && state.getDestroySpeed(context.level(), pos) >= 0.0F;
-            })
             .limit(128)
             .toList();
         final int changed = (int) removable.stream()
             .filter(pos -> context.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()))
             .count();
         return ImpactResult.blocks(changed);
+    }
+
+    private static List<BlockPos> erosionColumn(final ImpactContext context, final BlockPos tears) {
+        final List<BlockPos> removable = new ArrayList<>(32);
+        for (int depth = 1; depth <= 32; depth++) {
+            final BlockPos pos = tears.below(depth);
+            if (!context.level().isLoaded(pos)) {
+                break;
+            }
+            final BlockState state = context.level().getBlockState(pos);
+            final boolean blockEntity = context.level().getBlockEntity(pos) != null;
+            final float destroySpeed = state.getDestroySpeed(context.level(), pos);
+            if (blockEntity || destroySpeed < 0.0F) {
+                break;
+            }
+            if (BrewRules.canErodeBelowHollowTears(
+                state.getFluidState().is(WarlockeryTags.Fluids.HOLLOW_TEARS),
+                state.isAir(),
+                blockEntity,
+                destroySpeed
+            )) {
+                removable.add(pos.immutable());
+            }
+        }
+        return List.copyOf(removable);
     }
 
     private static ImpactResult applyMarker(final ImpactContext context, final BrewMarkerKind kind) {
@@ -1329,7 +1661,7 @@ public final class BrewRuntime {
         return biomeChanged ? landscape.plus(ImpactResult.event()) : landscape;
     }
 
-    private static ImpactResult summonLeonardShade(final ImpactContext context) {
+    private static ImpactResult summonArchfiendShade(final ImpactContext context) {
         final BlockPos position = BlockPos.containing(context.center()).above();
         final Entity summoned = ModEntities.ALL.get("emberhorn_archfiend").get().spawn(
             context.level(), position, EntitySpawnReason.EVENT
@@ -1338,7 +1670,7 @@ public final class BrewRuntime {
             return ImpactResult.ZERO;
         }
         living(context).stream()
-            .filter(entity -> entity != context.owner() && entity != mob)
+            .filter(entity -> canAffectOwner(context, entity) && entity != mob)
             .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(context.center())))
             .ifPresent(mob::setTarget);
         mob.setPersistenceRequired();
@@ -1368,6 +1700,9 @@ public final class BrewRuntime {
     }
 
     private static List<LivingEntity> living(final ImpactContext context) {
+        if (context.target() != null) {
+            return context.target().isAlive() ? List.of(context.target()) : List.of();
+        }
         final AABB area = AABB.ofSize(
             context.center(), context.radius() * 2.0, context.radius() * 1.5, context.radius() * 2.0
         );
@@ -1379,7 +1714,14 @@ public final class BrewRuntime {
         );
     }
 
+    private static boolean canAffectOwner(final ImpactContext context, final LivingEntity entity) {
+        return context.target() != null || entity != context.owner();
+    }
+
     private static List<Animal> animals(final ImpactContext context) {
+        if (context.target() != null) {
+            return context.target() instanceof Animal animal && animal.isAlive() ? List.of(animal) : List.of();
+        }
         final AABB area = AABB.ofSize(
             context.center(), context.radius() * 2.0, context.radius() * 1.5, context.radius() * 2.0
         );
@@ -1410,7 +1752,8 @@ public final class BrewRuntime {
         float radius,
         float potency,
         @Nullable Entity directSource,
-        @Nullable Entity owner
+        @Nullable Entity owner,
+        @Nullable LivingEntity target
     ) {
     }
 

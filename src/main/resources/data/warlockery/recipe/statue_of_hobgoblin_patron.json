@@ -8,7 +8,7 @@
   ],
   "key": {
     "S": "#c:stones",
-    "K": "#c:ingots/koboldite"
+    "K": "#c:ingots/goblinite"
   },
   "result": {
     "id": "warlockery:statueofworship"

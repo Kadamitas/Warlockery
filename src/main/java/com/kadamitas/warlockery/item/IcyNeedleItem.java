@@ -1,6 +1,9 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.dream.SpiritWorldRules;
+import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.ritual.ManifestationRuntime;
 import com.kadamitas.warlockery.ritual.hex.HexKind;
 import com.kadamitas.warlockery.ritual.hex.HexState;
 import net.minecraft.network.chat.Component;
@@ -24,6 +27,25 @@ public final class IcyNeedleItem extends Item {
     public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return InteractionResult.SUCCESS;
+        }
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+            && SpiritWorldRuntime.isDreaming(serverPlayer)) {
+            final ItemStack stack = player.getItemInHand(hand);
+            final int before = stack.getCount();
+            stack.consume(1, player);
+            final boolean returned = ManifestationRuntime.isActive(serverPlayer)
+                ? ManifestationRuntime.returnToSpiritWorld(
+                    serverPlayer,
+                    ManifestationRuntime.ReturnCause.ICY_NEEDLE
+                )
+                : SpiritWorldRuntime.wake(serverPlayer, SpiritWorldRules.WakeCause.ICY_NEEDLE);
+            if (returned) {
+                return InteractionResult.SUCCESS;
+            }
+            if (stack.getCount() < before) {
+                stack.grow(1);
+            }
+            return InteractionResult.FAIL;
         }
         final var nightmares = serverLevel.getEntitiesOfClass(
             Mob.class,

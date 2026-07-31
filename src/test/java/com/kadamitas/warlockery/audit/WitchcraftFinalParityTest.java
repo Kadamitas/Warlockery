@@ -131,8 +131,8 @@ final class WitchcraftFinalParityTest {
     private static void pathUi(final MagicPath path) {
         final int cost = MagicPathProfile.forPath(path).selfCost();
         assertEquals(
-            "message.warlockery.magic." + path.id() + ".ready",
-            MagicPathRules.decide(true, path.maximumReserve(), cost, true).messageKey(path)
+            "message.warlockery.magic.ready",
+            MagicPathRules.decide(true, path.maximumReserve(), cost, true).messageKey()
         );
     }
 

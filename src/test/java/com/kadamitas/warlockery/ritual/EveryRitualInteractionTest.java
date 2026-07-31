@@ -86,7 +86,7 @@ final class EveryRitualInteractionTest {
         final boolean met
     ) {
         final List<RitualManager.RequirementStatus> statuses = new ArrayList<>();
-        definition.glyphs().forEach((glyph, count) -> statuses.add(
+        ChalkCircleLayout.canonicalGlyphs(definition.glyphs()).forEach((glyph, count) -> statuses.add(
             new RitualManager.RequirementStatus("glyph", glyph, count, met ? count : 0, met)
         ));
         definition.requirements().ingredients().forEach(ingredient -> statuses.add(

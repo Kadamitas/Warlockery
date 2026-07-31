@@ -5,11 +5,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.kadamitas.warlockery.brew.BrewKind;
 import com.kadamitas.warlockery.item.ManualProfile;
+import com.kadamitas.warlockery.ritual.ChalkCircleLayout;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.ChatFormatting;
@@ -21,6 +23,8 @@ import net.minecraft.resources.Identifier;
 final class ManualArticleCatalog {
     private static final String RITUAL_PREFIX = "rite_";
     private static final String BREW_PREFIX = "brew_entry_";
+    private static final String BIOME_PREFIX = "biome_entry_";
+    private static final String MACHINE_RECIPE_PREFIX = "machine_recipe_";
 
     private ManualArticleCatalog() {
     }
@@ -32,26 +36,80 @@ final class ManualArticleCatalog {
         if (section.startsWith(BREW_PREFIX)) {
             return brew(section.substring(BREW_PREFIX.length()));
         }
-        return new Article(Component.translatable(manual.translatedSectionKey(section)), Map.of());
+        if (section.startsWith(BIOME_PREFIX)) {
+            return biome(section.substring(BIOME_PREFIX.length()));
+        }
+        if (section.startsWith(MACHINE_RECIPE_PREFIX)) {
+            return machineRecipe(section.substring(MACHINE_RECIPE_PREFIX.length()));
+        }
+        return new Article(
+            Component.translatable(manual.translatedSectionKey(section)),
+            Map.of(),
+            manualPictograms(manual, section)
+        );
+    }
+
+    private static Article biome(final String id) {
+        return new Article(Component.translatable(
+            "manual.warlockery.biome.entry",
+            Component.translatable("biome.minecraft." + id)
+        ), Map.of(), List.of());
+    }
+
+    private static Article machineRecipe(final String id) {
+        final JsonObject recipe = resource("/data/warlockery/warlockery_machine/" + id + ".json");
+        final MutableComponent body = Component.translatable(
+            "manual.warlockery.machine_recipe.entry",
+            humanize(recipe.get("machine").getAsString())
+        ).copy();
+        final JsonArray inputs = recipe.getAsJsonArray("inputs");
+        appendIngredients(body, inputs);
+        final java.util.List<String> workings = new java.util.ArrayList<>();
+        final JsonArray outputs = recipe.getAsJsonArray("outputs");
+        if (outputs != null) {
+            java.util.stream.StreamSupport.stream(outputs.spliterator(), false).forEach(element -> {
+                final JsonObject output = element.getAsJsonObject();
+                final int count = output.has("count") ? output.get("count").getAsInt() : 1;
+                workings.add("Produces " + count + "x " + ingredientName(output.get("item").getAsString()));
+            });
+        }
+        if (recipe.has("processing_time")) {
+            workings.add("Tends for " + decimal(recipe.get("processing_time").getAsInt() / 20.0F) + " seconds");
+        }
+        if (recipe.has("requires_fuel") && recipe.get("requires_fuel").getAsBoolean()) {
+            workings.add("Requires fuel");
+        }
+        append(body, "manual.warlockery.entry.workings", workings);
+        if (recipe.has("fluid")) {
+            final JsonObject fluid = recipe.getAsJsonObject("fluid");
+            append(body, "manual.warlockery.entry.fluid", java.util.List.of(
+                fluid.get("amount").getAsString() + " mB " + ingredientName(fluid.get("ingredient").getAsString())
+            ));
+        }
+        return new Article(body, Map.of(), pictograms(inputs));
     }
 
     private static Article ritual(final String id) {
         final JsonObject ritual = resource("/data/warlockery/ritual/" + id + ".json");
         final MutableComponent body = Component.translatable(ritual.get("description").getAsString()).copy();
-        final Map<String, Integer> glyphs = integers(ritual.getAsJsonObject("glyphs"));
-        append(body, "manual.warlockery.entry.glyphs", glyphs.entrySet().stream()
-            .map(entry -> humanizedGlyph(entry.getKey()) + " x" + entry.getValue())
-            .toList());
+        final Map<String, Integer> glyphs = ChalkCircleLayout.canonicalGlyphs(
+            integers(ritual.getAsJsonObject("glyphs"))
+        );
         if (ritual.has("power")) {
             append(body, "manual.warlockery.entry.altar_power", java.util.List.of(ritual.get("power").getAsString()));
         }
         final JsonObject requirements = ritual.has("requirements")
             ? ritual.getAsJsonObject("requirements")
             : new JsonObject();
-        appendIngredients(body, requirements.getAsJsonArray("ingredients"));
-        appendEntities(body, requirements.getAsJsonArray("entities"));
+        final JsonArray ingredients = requirements.getAsJsonArray("ingredients");
+        final JsonArray entities = requirements.getAsJsonArray("entities");
+        appendIngredients(body, ingredients);
+        appendEntities(body, entities);
         appendConditions(body, ritual, requirements);
-        return new Article(body, glyphs);
+        if ("glyph_transform".equals(ritual.get("action").getAsString())) {
+            body.append("\n").append(Component.translatable("manual.warlockery.glyph_transform.sizes"));
+        }
+        return new Article(body, glyphs, ritualPictograms(ritual, requirements, ingredients, entities));
     }
 
     private static Article brew(final String id) {
@@ -66,7 +124,8 @@ final class ManualArticleCatalog {
         body.append("\n");
         body.append(Component.translatable("manual.warlockery.brew.reach", decimal(kind.radius()), decimal(kind.potency())));
         final JsonObject recipe = resource("/data/warlockery/warlockery_machine/kettle_brew_" + id + ".json");
-        appendIngredients(body, recipe.getAsJsonArray("inputs"));
+        final JsonArray inputs = recipe.getAsJsonArray("inputs");
+        appendIngredients(body, inputs);
         if (recipe.has("fluid")) {
             final JsonObject fluid = recipe.getAsJsonObject("fluid");
             append(body, "manual.warlockery.entry.fluid", java.util.List.of(
@@ -76,7 +135,224 @@ final class ManualArticleCatalog {
         if (recipe.has("altar_power") && recipe.get("altar_power").getAsInt() > 0) {
             append(body, "manual.warlockery.entry.altar_power", java.util.List.of(recipe.get("altar_power").getAsString()));
         }
-        return new Article(body, Map.of());
+        return new Article(body, Map.of(), pictograms(inputs));
+    }
+
+    private static List<Pictogram> ritualPictograms(
+        final JsonObject ritual,
+        final JsonObject requirements,
+        final JsonArray ingredients,
+        final JsonArray entities
+    ) {
+        return java.util.stream.Stream.concat(
+            java.util.stream.Stream.concat(
+                java.util.stream.Stream.concat(
+                    java.util.stream.Stream.of(picture("warlockery:ritual_knife", 1)),
+                    conditionPictograms(ritual, requirements).stream()
+                ),
+                pictograms(ingredients).stream()
+            ),
+            entityPictograms(entities).stream()
+        ).toList();
+    }
+
+    private static List<Pictogram> conditionPictograms(
+        final JsonObject ritual,
+        final JsonObject requirements
+    ) {
+        final java.util.ArrayList<Pictogram> pictures = new java.util.ArrayList<>();
+        if ((ritual.has("night_only") && ritual.get("night_only").getAsBoolean())
+            || (requirements.has("full_moon") && requirements.get("full_moon").getAsBoolean())) {
+            pictures.add(picture("minecraft:clock", 1));
+        }
+        if (requirements.has("day_only") && requirements.get("day_only").getAsBoolean()) {
+            pictures.add(picture("minecraft:sunflower", 1));
+        }
+        if (requirements.has("raining") && requirements.get("raining").getAsBoolean()) {
+            pictures.add(picture("minecraft:water_bucket", 1));
+        }
+        if (requirements.has("thundering") && requirements.get("thundering").getAsBoolean()) {
+            pictures.add(picture("minecraft:lightning_rod", 1));
+        }
+        return List.copyOf(pictures);
+    }
+
+    private static List<Pictogram> pictograms(final JsonArray ingredients) {
+        if (ingredients == null || ingredients.isEmpty()) {
+            return List.of();
+        }
+        return java.util.stream.StreamSupport.stream(ingredients.spliterator(), false)
+            .map(element -> {
+                final JsonObject ingredient = element.getAsJsonObject();
+                final String raw = ingredient.get("ingredient").getAsString();
+                final int count = ingredient.has("count") ? ingredient.get("count").getAsInt() : 1;
+                return picture(representativeItem(raw), count);
+            })
+            .toList();
+    }
+
+    private static List<Pictogram> entityPictograms(final JsonArray entities) {
+        if (entities == null || entities.isEmpty()) {
+            return List.of();
+        }
+        return java.util.stream.StreamSupport.stream(entities.spliterator(), false)
+            .map(element -> {
+                final JsonObject entity = element.getAsJsonObject();
+                final String raw = entity.get("entity").getAsString();
+                final int count = entity.has("count") ? entity.get("count").getAsInt() : 1;
+                return picture(representativeEntity(raw), count);
+            })
+            .toList();
+    }
+
+    private static String representativeEntity(final String raw) {
+        if (raw.startsWith("#warlockery:death_binding/")) {
+            final String family = raw.substring(raw.lastIndexOf('/') + 1);
+            final String singular = family.endsWith("s") ? family.substring(0, family.length() - 1) : family;
+            return "warlockery:" + singular + "_spawn_egg";
+        }
+        final Identifier id = Identifier.tryParse(raw);
+        return id == null
+            ? "minecraft:egg"
+            : id.getNamespace() + ":" + id.getPath() + "_spawn_egg";
+    }
+
+    private static List<Pictogram> manualPictograms(final ManualProfile manual, final String section) {
+        if ("vampirebook".equals(manual.id())) {
+            return immortalPictograms(section);
+        }
+        if (section.startsWith("fetish_")) {
+            return List.of(picture(fetishItem(section), 1));
+        }
+        if (section.startsWith("plant_")) {
+            return List.of(picture(plantItem(section.substring("plant_".length())), 1));
+        }
+        return List.of();
+    }
+
+    private static List<Pictogram> immortalPictograms(final String section) {
+        return switch (section) {
+            case "nami" -> List.of(
+                picture("warlockery:nami_spawn_egg", 1),
+                picture("warlockery:wedding_ring", 1)
+            );
+            case "blood_audience", "vampire_level_1" -> List.of(
+                picture("warlockery:nami_spawn_egg", 1),
+                picture("minecraft:clock", 1),
+                picture("warlockery:ingredient_necro_stone", 1),
+                picture("warlockery:ingredient_drop_of_luck", 1),
+                picture("minecraft:wither_rose", 1),
+                picture("minecraft:ghast_tear", 1)
+            );
+            case "vampire_level_2" -> List.of(
+                picture("warlockery:ingredient_vbook_page", 1),
+                picture("warlockery:glassgoblet", 1)
+            );
+            case "vampire_level_3" -> List.of(
+                picture("warlockery:ingredient_vbook_page", 2),
+                picture("minecraft:villager_spawn_egg", 5)
+            );
+            case "vampire_level_4" -> List.of(
+                picture("warlockery:ingredient_vbook_page", 3),
+                picture("minecraft:clock", 4)
+            );
+            case "vampire_level_5" -> List.of(
+                picture("warlockery:ingredient_vbook_page", 4),
+                picture("warlockery:sungrenade", 10)
+            );
+            case "vampire_level_6" -> List.of(
+                picture("warlockery:ingredient_vbook_page", 5),
+                picture("minecraft:blaze_spawn_egg", 20)
+            );
+            case "vampire_level_7" -> List.of(
+                picture("warlockery:ingredient_vbook_page", 6),
+                picture("warlockery:nami_spawn_egg", 1),
+                picture("minecraft:poppy", 1)
+            );
+            case "vampire_level_8" -> List.of(
+                picture("warlockery:ingredient_vbook_page", 7),
+                picture("minecraft:bell", 4)
+            );
+            case "vampire_level_9" -> List.of(
+                picture("warlockery:ingredient_vbook_page", 8),
+                picture("minecraft:minecart", 5)
+            );
+            case "vampire_level_10" -> List.of(
+                picture("warlockery:ingredient_vbook_page", 9),
+                picture("warlockery:glassgoblet", 1),
+                picture("warlockery:coffin", 1)
+            );
+            default -> List.of();
+        };
+    }
+
+    private static String plantItem(final String id) {
+        return switch (id) {
+            case "artichoke" -> "warlockery:seedsartichoke";
+            case "belladonna" -> "warlockery:seedsbelladonna";
+            case "garlic" -> "warlockery:garlic";
+            case "mandrake" -> "warlockery:seedsmandrake";
+            case "dreamroot" -> "warlockery:seedsdreamroot";
+            case "snowbell" -> "warlockery:seedssnowbell";
+            case "wolfsbane" -> "warlockery:seedswolfsbane";
+            case "wormwood" -> "warlockery:seedswormwood";
+            case "somnian_cotton" -> "warlockery:somniancotton";
+            case "leaping_lily" -> "warlockery:leapinglily";
+            case "blood_rose" -> "warlockery:bloodrose";
+            case "void_bramble" -> "warlockery:voidbramble";
+            case "critter_snare" -> "warlockery:crittersnare";
+            default -> "warlockery:" + id.replace("_", "");
+        };
+    }
+
+    private static String fetishItem(final String section) {
+        return switch (section) {
+            case "fetish_scarecrow" -> "warlockery:scarecrow";
+            case "fetish_trent_effigy" -> "warlockery:trent";
+            case "fetish_alluring_skull" -> "warlockery:alluringskull";
+            case "fetish_statue_goddess" -> "warlockery:statuegoddess";
+            case "fetish_statue_worship" -> "warlockery:statueofworship";
+            case "fetish_statue_broken_hexes" -> "warlockery:broken_hexes_statue";
+            case "fetish_statue_occluded_summons" -> "warlockery:occluded_summons_statue";
+            case "fetish_doll_shelf" -> "warlockery:doll_shelf";
+            default -> "warlockery:" + section.substring("fetish_".length());
+        };
+    }
+
+    private static String representativeItem(final String raw) {
+        if (!raw.startsWith("#")) {
+            return raw;
+        }
+        final String tag = raw.substring(1);
+        if (tag.contains("ingots/gold")) {
+            return "minecraft:gold_ingot";
+        }
+        if (tag.contains("ingots/iron")) {
+            return "minecraft:iron_ingot";
+        }
+        if (tag.contains("ingots/silver")) {
+            return "warlockery:silver_ingot";
+        }
+        if (tag.contains("rods/wooden")) {
+            return "minecraft:stick";
+        }
+        if (tag.contains("logs")) {
+            return "minecraft:oak_log";
+        }
+        if (tag.contains("sapling")) {
+            return "minecraft:oak_sapling";
+        }
+        if (tag.contains("flower")) {
+            return "minecraft:poppy";
+        }
+        if (tag.contains("leather")) {
+            return "minecraft:leather";
+        }
+        return "minecraft:paper";
+    }
+
+    private static Pictogram picture(final String itemId, final int count) {
+        return new Pictogram(itemId, count);
     }
 
     private static void appendIngredients(final MutableComponent body, final JsonArray ingredients) {
@@ -172,15 +448,6 @@ final class ManualArticleCatalog {
             .orElseGet(() -> humanize(raw));
     }
 
-    private static String humanizedGlyph(final String id) {
-        return switch (id) {
-            case "circleglyphritual" -> "Ritual Chalk";
-            case "circleglyphinfernal" -> "Infernal Chalk";
-            case "circleglyph_veil" -> "Veil Chalk";
-            default -> humanize(id);
-        };
-    }
-
     private static String humanize(final String raw) {
         final String path = raw.substring(Math.max(raw.lastIndexOf(':'), raw.lastIndexOf('/')) + 1);
         final String words = path.replace('_', ' ').replace('-', ' ').strip();
@@ -236,13 +503,26 @@ final class ManualArticleCatalog {
         }
     }
 
-    record Article(Component body, Map<String, Integer> glyphs) {
+    record Article(Component body, Map<String, Integer> glyphs, List<Pictogram> pictograms) {
         Article {
             glyphs = Map.copyOf(glyphs);
+            pictograms = List.copyOf(pictograms);
         }
 
         boolean hasDiagram() {
             return !glyphs.isEmpty();
+        }
+
+        boolean hasPictograms() {
+            return !pictograms.isEmpty();
+        }
+    }
+
+    record Pictogram(String itemId, int count) {
+        Pictogram {
+            if (Identifier.tryParse(itemId) == null || count < 1) {
+                throw new IllegalArgumentException("Manual pictograms require an item and count");
+            }
         }
     }
 }

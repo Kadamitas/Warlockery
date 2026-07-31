@@ -1,0 +1,8 @@
+{
+  "parent": "warlockery:block/spinningwheel",
+  "textures": {
+    "particle": "warlockery:block/spinningwheel",
+    "wood": "warlockery:block/spinningwheel",
+    "thread": "warlockery:block/spinningwheel_thread_active"
+  }
+}

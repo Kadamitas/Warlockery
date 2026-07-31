@@ -24,7 +24,7 @@ final class PackagedJeiCatalogTest {
     @Test
     void packagedCatalogDecodesEveryMachineRecipe() {
         final var recipes = PackagedJeiCatalog.machines();
-        assertEquals(177, recipes.size());
+        assertEquals(178, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(recipe -> recipe.id()).distinct().count());
         assertTrue(recipes.stream().allMatch(recipe -> MachineProfiles.supportsRecipeType(recipe.recipe().machine())));
         assertTrue(recipes.stream().allMatch(recipe -> !recipe.recipe().inputs().isEmpty()));
@@ -34,7 +34,7 @@ final class PackagedJeiCatalogTest {
     @Test
     void packagedCatalogDecodesEveryCircleRite() {
         final var rituals = PackagedJeiCatalog.rituals();
-        assertEquals(101, rituals.size());
+        assertEquals(108, rituals.size());
         assertEquals(rituals.size(), rituals.stream().map(ritual -> ritual.id()).distinct().count());
         assertTrue(rituals.stream().allMatch(ritual -> !ritual.definition().title().isBlank()));
         assertTrue(rituals.stream().allMatch(ritual -> !ritual.definition().description().isBlank()));

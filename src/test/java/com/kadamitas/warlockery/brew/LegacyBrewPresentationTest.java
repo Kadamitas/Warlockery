@@ -8,10 +8,20 @@ import com.kadamitas.warlockery.registry.ContentCatalog;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import net.minecraft.SharedConstants;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.Bootstrap;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 final class LegacyBrewPresentationTest {
+    @BeforeAll
+    static void bootstrapMinecraft() {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+    }
+
     @Test
     void everyLegacyIngredientBrewUsesAWorkingModernFormula() {
         final Set<String> expected = ContentCatalog.INGREDIENTS.stream()
@@ -38,5 +48,10 @@ final class LegacyBrewPresentationTest {
         final Component name = BrewItem.displayName("item.warlockery.brew_animal_attraction");
         assertEquals(Component.translatable("item.warlockery.brew_animal_attraction"), name);
         assertFalse(name.getString().contains("effect.empty"));
+    }
+
+    @Test
+    void brewTooltipsSuppressVanillasEmptyNoEffectsLine() {
+        assertFalse(BrewItem.brewTooltipDisplay().shows(DataComponents.POTION_CONTENTS));
     }
 }

@@ -1,6 +1,8 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.registry.ModBlocks;
+import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -20,6 +22,22 @@ public final class SpiritLiquidBlock extends LiquidBlock {
     }
 
     @Override
+    protected void onPlace(
+        final BlockState state,
+        final Level level,
+        final BlockPos pos,
+        final BlockState oldState,
+        final boolean movedByPiston
+    ) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (!level.isClientSide() && SpiritWorldRuntime.isSpiritWorld(level)) {
+            SpiritPortalStructure.find(level, pos).ifPresent(layout -> layout.interior().forEach(interior ->
+                level.setBlockAndUpdate(interior, ModBlocks.ALL.get("spiritportal").get().defaultBlockState())
+            ));
+        }
+    }
+
+    @Override
     protected void entityInside(
         final BlockState state,
         final Level level,
@@ -29,13 +47,17 @@ public final class SpiritLiquidBlock extends LiquidBlock {
         final boolean isPrecise
     ) {
         if (!level.isClientSide() && entity instanceof LivingEntity living && living.tickCount % 20 == 0) {
-            living.addEffect(new MobEffectInstance(
-                living.typeHolder().is(WarlockeryTags.EntityTypes.NIGHTMARES) ? MobEffects.WEAKNESS : MobEffects.REGENERATION,
-                60,
-                0,
+            final ArcaneFluidRules.Outcome outcome = ArcaneFluidRules.flowingSpiritOutcome(
                 true,
-                true
-            ));
+                living.typeHolder().is(WarlockeryTags.EntityTypes.NIGHTMARES),
+                living.typeHolder().is(WarlockeryTags.EntityTypes.HOLLOW_TEARS_BENEFICIARIES)
+            );
+            if (outcome == ArcaneFluidRules.Outcome.HARM) {
+                living.invulnerableTime = 0;
+                living.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 1, true, true));
+            } else if (outcome == ArcaneFluidRules.Outcome.BENEFIT) {
+                living.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 0, true, true));
+            }
         }
     }
 }

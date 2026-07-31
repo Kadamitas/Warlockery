@@ -13,6 +13,8 @@ import com.kadamitas.warlockery.brew.custom.CustomBrewDelivery;
 import com.kadamitas.warlockery.brew.custom.CustomBrewFormula;
 import com.kadamitas.warlockery.brew.custom.CustomBrewRuntime;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
+import com.kadamitas.warlockery.entity.GoblinHostilityRules;
+import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.LycanVillagerEntity;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
@@ -24,10 +26,15 @@ import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.item.DollItem;
 import com.kadamitas.warlockery.item.DollMendingSchedule;
 import com.kadamitas.warlockery.item.DollRules;
+import com.kadamitas.warlockery.ritual.hex.HexKind;
+import com.kadamitas.warlockery.ritual.hex.HexRuntime;
+import com.kadamitas.warlockery.ritual.hex.HexState;
 import com.kadamitas.warlockery.crafting.AltarUpgradeResolver;
+import com.kadamitas.warlockery.transformation.SupernaturalAdvancement;
 import com.kadamitas.warlockery.transformation.SupernaturalProgression;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
+import com.kadamitas.warlockery.transformation.WerewolfProgressionRules;
 import java.util.UUID;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -53,6 +60,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.fluids.FluidStack;
@@ -66,6 +74,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -105,7 +114,7 @@ public final class WarlockeryGameTests {
     }
 
     public static void ritualCatalogLoads(final GameTestHelper helper) {
-        helper.assertValueEqual(RitualManager.INSTANCE.ids().size(), 101, "loaded ritual count");
+        helper.assertValueEqual(RitualManager.INSTANCE.ids().size(), 108, "loaded ritual count");
         helper.assertTrue(
             RitualManager.INSTANCE.ids().contains(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "sanctity")),
             "the built-in ritual catalog must remain loaded"
@@ -390,13 +399,36 @@ public final class WarlockeryGameTests {
     }
 
     public static void allRegisteredCreaturesInstantiate(final GameTestHelper helper) {
-        helper.assertValueEqual(ModEntities.ALL.size(), 47, "registered creature count");
+        helper.assertValueEqual(ModEntities.ALL.size(), 48, "registered creature count");
         ModEntities.ALL.forEach((id, registration) -> {
             final Entity entity = registration.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
             helper.assertTrue(entity != null, "entity factory returned null for " + id);
             if (entity != null) entity.discard();
         });
         helper.succeed();
+    }
+
+    public static void goblinsRaidVillagersWhileHobgoblinsRemainFriendly(final GameTestHelper helper) {
+        BlockPos.betweenClosedStream(new BlockPos(0, 0, 0), new BlockPos(2, 0, 2))
+            .forEach(position -> helper.setBlock(position, Blocks.STONE));
+        final HobgoblinEntity goblin = helper.spawn(
+            ModEntities.GOBLIN.get(), new BlockPos(0, 1, 0), EntitySpawnReason.NATURAL
+        );
+        final Villager villager = helper.spawn(EntityTypes.VILLAGER, new BlockPos(2, 1, 0));
+        final HobgoblinEntity hobgoblin = helper.spawn(
+            ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 2), EntitySpawnReason.NATURAL
+        );
+        helper.runAfterDelay(10, () -> {
+            helper.assertTrue(GoblinHostilityRules.canTarget(goblin.creatureKind(), villager.getType()),
+                "goblins must classify villagers as raid targets");
+            helper.assertTrue(!GoblinHostilityRules.canTarget(hobgoblin.creatureKind(), villager.getType()),
+                "travelling hobgoblins must not classify villagers as raid targets");
+            helper.assertTrue(hobgoblin.getTarget() == null,
+                "travelling hobgoblins must remain friendly around villagers");
+            helper.assertTrue(goblin.getTarget() == villager,
+                "goblins must acquire the local villager as a raid target");
+            helper.succeed();
+        });
     }
 
     public static void werewolfHunterCarriesSilverAmmunition(final GameTestHelper helper) {
@@ -410,25 +442,30 @@ public final class WarlockeryGameTests {
         helper.succeed();
     }
 
-    public static void wolfAltarFinalTrialAwardsHornOnce(final GameTestHelper helper) {
+    public static void wolfAltarFinalTrialCompletesOnce(final GameTestHelper helper) {
         final ServerPlayer player = connectedSurvivalPlayer(helper);
         final ItemStack offerings = new ItemStack(Items.BEEF, 2);
+        SupernaturalAdvancement.beginWerewolf(player);
         SupernaturalProgression.setLevel(player, SupernaturalProgression.Path.WEREWOLF, 9);
+        SupernaturalProgression.setCounter(
+            player,
+            SupernaturalProgression.Path.WEREWOLF,
+            WerewolfProgressionRules.Metric.TRUSTED_PREY_DEFEATED_WHILE_TRANSFORMED,
+            1
+        );
 
         final var finalTrial = WolfAltarRuntime.completeTrial(player, offerings);
-        helper.assertTrue(finalTrial.hornEarned(), "final Wolf Altar trial must award the horn");
+        helper.assertTrue(finalTrial.advanced(), "completed final Wolf Altar trial must advance");
         helper.assertValueEqual(
             SupernaturalProgression.level(player, SupernaturalProgression.Path.WEREWOLF),
             10,
             "werewolf level after final trial"
         );
-        helper.assertValueEqual(offerings.getCount(), 1, "offering consumed by final trial");
-        helper.assertValueEqual(hornCount(player), 1, "Horn of the Hunt reward count");
+        helper.assertValueEqual(offerings.getCount(), 2, "non-offering final trial must not consume held items");
 
         final var completedPath = WolfAltarRuntime.completeTrial(player, offerings);
         helper.assertFalse(completedPath.advanced(), "completed Wolf Altar path must not advance again");
-        helper.assertValueEqual(offerings.getCount(), 1, "completed path must not consume another offering");
-        helper.assertValueEqual(hornCount(player), 1, "completed path must not duplicate its horn");
+        helper.assertValueEqual(offerings.getCount(), 2, "completed path must not consume held items");
         helper.succeed();
     }
 
@@ -440,7 +477,11 @@ public final class WarlockeryGameTests {
         final LivingDamageEvent event = new LivingDamageEvent(player, helper.getLevel().damageSources().generic(), 20.0F);
         DollItem.handleDamage(event);
         helper.assertValueEqual(event.getAmount(), 0.0F, "lethal damage after death guard");
-        helper.assertValueEqual(player.getHealth(), 1.0F, "death guard recovery health");
+        helper.assertValueEqual(
+            player.getHealth(),
+            DollRules.restoredHealth(player.getMaxHealth()),
+            "death guard recovery health"
+        );
         helper.assertTrue(player.hasEffect(MobEffects.REGENERATION), "death guard must use vanilla Totem regeneration");
         helper.assertTrue(player.hasEffect(MobEffects.ABSORPTION), "death guard must use vanilla Totem absorption");
         helper.assertFalse(doll.isEmpty(), "death guard must remain reusable after activation");
@@ -601,7 +642,7 @@ public final class WarlockeryGameTests {
         helper.assertValueEqual(altar.attachmentCount(), 2, "altar upgrade attachment count");
         helper.assertValueEqual(
             AltarUpgradeResolver.resolve(altar.attachmentUpgrades()).rechargeMultiplier(),
-            2,
+            3,
             "attached candelabra recharge multiplier"
         );
         helper.assertValueEqual(altar.attachmentStacks().size(), 2, "client-visible attachment snapshots");
@@ -642,7 +683,189 @@ public final class WarlockeryGameTests {
 
         useOnTop(helper, player, secondSupport);
         helper.assertValueEqual(chalk.getDamageValue(), 2, "failed placement must not spend chalk durability");
+
+        final ItemStack infernalChalk = new ItemStack(ModItems.ALL.get("chalkinfernal").get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, infernalChalk);
+        useOnGlyph(helper, player, firstSupport.above());
+        helper.assertTrue(
+            helper.getBlockState(firstSupport.above()).is(ModBlocks.ALL.get("circleglyphinfernal").get()),
+            "a different chalk must overwrite a non-golden glyph"
+        );
+        helper.assertValueEqual(infernalChalk.getDamageValue(), 1, "replacement glyph must spend chalk durability");
+
+        final ItemStack goldenChalk = new ItemStack(ModItems.ALL.get("chalkheart").get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, goldenChalk);
+        useOnGlyph(helper, player, firstSupport.above());
+        helper.assertTrue(
+            helper.getBlockState(firstSupport.above()).is(ModBlocks.ALL.get("circle").get()),
+            "golden chalk must replace an ordinary glyph with a ritual heart"
+        );
+        helper.assertTrue(
+            RitualManager.isCircleCenter(helper.getLevel(), helper.absolutePos(firstSupport.above())),
+            "only a golden chalk heart must open and activate the ritual center"
+        );
+        helper.assertFalse(
+            RitualManager.isCircleCenter(helper.getLevel(), helper.absolutePos(secondSupport.above())),
+            "ordinary ring glyphs must not act as duplicate ritual centers"
+        );
+
+        final ItemStack replacementChalk = new ItemStack(ModItems.ALL.get("chalkritual").get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, replacementChalk);
+        useOnGlyph(helper, player, firstSupport.above());
+        helper.assertTrue(
+            helper.getBlockState(firstSupport.above()).is(ModBlocks.ALL.get("circle").get()),
+            "ordinary chalk must not overwrite a golden ritual heart"
+        );
+        helper.assertValueEqual(replacementChalk.getDamageValue(), 0, "protected golden glyph must not spend chalk");
+
+        final ItemStack goldenRingChalk = new ItemStack(ModItems.ALL.get("chalkheart").get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, goldenRingChalk);
+        player.setShiftKeyDown(true);
+        useOnGlyph(helper, player, secondSupport.above());
+        player.setShiftKeyDown(false);
+        helper.assertTrue(
+            helper.getBlockState(secondSupport.above()).is(ModBlocks.ALL.get("circleglyphgolden").get()),
+            "crouching with golden chalk must draw a golden ring glyph instead of another ritual heart"
+        );
+        helper.assertFalse(
+            RitualManager.isCircleCenter(helper.getLevel(), helper.absolutePos(secondSupport.above())),
+            "golden ring glyphs must not create duplicate ritual centers"
+        );
+        helper.assertValueEqual(goldenRingChalk.getDamageValue(), 1, "golden ring glyph must spend chalk durability");
         helper.succeed();
+    }
+
+    public static void unsupportedChalkVanishesWithoutDroppingGlyphItems(final GameTestHelper helper) {
+        final BlockPos support = new BlockPos(1, 1, 1);
+        final BlockPos glyph = support.above();
+        helper.setBlock(support, Blocks.STONE);
+        helper.setBlock(glyph, ModBlocks.ALL.get("circleglyphritual").get());
+
+        helper.setBlock(support, Blocks.AIR);
+
+        helper.assertTrue(helper.getBlockState(glyph).isAir(), "unsupported chalk must disappear");
+        helper.assertTrue(
+            helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(glyph).inflate(1.0D)).isEmpty(),
+            "chalk marks must never create collectible glyph items"
+        );
+        helper.assertFalse(ModItems.ALL.containsKey("circleglyphritual"), "glyph blocks must not have inventory items");
+        helper.succeed();
+    }
+
+    public static void scatteredChalkMarksDoNotFormARitualRing(final GameTestHelper helper) {
+        final BlockPos center = new BlockPos(8, 2, 8);
+        for (int x = -2; x <= 1; x++) {
+            for (int z = -2; z <= 1; z++) {
+                placeSupportedGlyph(helper, center.offset(x, 0, z), "circleglyphritual");
+            }
+        }
+        helper.assertFalse(
+            ChalkCircleLayout.matches(
+                helper.getLevel(),
+                helper.absolutePos(center),
+                java.util.Map.of("circleglyphritual", 8)
+            ),
+            "sixteen scattered marks must not substitute for an exact small ring"
+        );
+        helper.succeed();
+    }
+
+    public static void malformedChalkRingIsRejectedEvenWithTheRightCounts(final GameTestHelper helper) {
+        final BlockPos center = new BlockPos(8, 2, 8);
+        placeRing(helper, center, ChalkCircleLayout.Size.SMALL, "circleglyphritual");
+        final BlockPos wrongMark = center.offset(0, 0, ChalkCircleRules.SMALL_RADIUS);
+        placeSupportedGlyph(helper, wrongMark, "circleglyphinfernal");
+        placeSupportedGlyph(helper, center.offset(0, 0, 2), "circleglyphritual");
+        helper.assertFalse(
+            ChalkCircleLayout.matches(
+                helper.getLevel(),
+                helper.absolutePos(center),
+                java.util.Map.of("circleglyphritual", 8)
+            ),
+            "a misplaced replacement mark must not hide a broken ring"
+        );
+        helper.succeed();
+    }
+
+    public static void completeLargeChalkRingIsRecognized(final GameTestHelper helper) {
+        final BlockPos center = new BlockPos(8, 2, 8);
+        placeRing(helper, center, ChalkCircleLayout.Size.LARGE, "circleglyphritual");
+        helper.assertTrue(
+            ChalkCircleLayout.matches(
+                helper.getLevel(),
+                helper.absolutePos(center),
+                java.util.Map.of("circleglyphritual", 16)
+            ),
+            "all forty marks of the fifteen-wide circle must be recognized"
+        );
+        helper.succeed();
+    }
+
+    public static void glyphTransformationChangesOnlyTheSelectedRing(final GameTestHelper helper) {
+        final BlockPos center = new BlockPos(8, 2, 8);
+        placeRing(helper, center, ChalkCircleLayout.Size.SMALL, "circleglyphritual");
+        placeRing(helper, center, ChalkCircleLayout.Size.MEDIUM, "circleglyph_veil");
+        placeRing(helper, center, ChalkCircleLayout.Size.LARGE, "circleglyphinfernal");
+        helper.assertTrue(
+            RitualManager.transformGlyphRing(
+                helper.getLevel(),
+                helper.absolutePos(center),
+                ChalkCircleLayout.Size.MEDIUM,
+                Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "circleglyphritual")
+            ),
+            "a complete single-color selected ring must transform"
+        );
+        for (final BlockPos offset : ChalkCircleLayout.Size.SMALL.offsets()) {
+            helper.assertTrue(
+                helper.getBlockState(center.offset(offset)).is(ModBlocks.ALL.get("circleglyphritual").get()),
+                "the inner ring must be preserved"
+            );
+        }
+        for (final BlockPos offset : ChalkCircleLayout.Size.MEDIUM.offsets()) {
+            helper.assertTrue(
+                helper.getBlockState(center.offset(offset)).is(ModBlocks.ALL.get("circleglyphritual").get()),
+                "the selected ring must be recolored"
+            );
+        }
+        for (final BlockPos offset : ChalkCircleLayout.Size.LARGE.offsets()) {
+            helper.assertTrue(
+                helper.getBlockState(center.offset(offset)).is(ModBlocks.ALL.get("circleglyphinfernal").get()),
+                "the outer ring must be preserved"
+            );
+        }
+        placeSupportedGlyph(
+            helper,
+            center.offset(ChalkCircleLayout.Size.MEDIUM.offsets().getFirst()),
+            "circleglyph_veil"
+        );
+        helper.assertFalse(
+            RitualManager.transformGlyphRing(
+                helper.getLevel(),
+                helper.absolutePos(center),
+                ChalkCircleLayout.Size.MEDIUM,
+                Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "circleglyphinfernal")
+            ),
+            "a mixed-color ring must be rejected without changing it"
+        );
+        helper.succeed();
+    }
+
+    private static void placeRing(
+        final GameTestHelper helper,
+        final BlockPos center,
+        final ChalkCircleLayout.Size size,
+        final String glyph
+    ) {
+        size.offsets().stream().map(center::offset).forEach(position -> placeSupportedGlyph(helper, position, glyph));
+    }
+
+    private static void placeSupportedGlyph(
+        final GameTestHelper helper,
+        final BlockPos position,
+        final String glyph
+    ) {
+        helper.setBlock(position.below(), Blocks.STONE);
+        helper.setBlock(position, ModBlocks.ALL.get(glyph).get());
     }
 
     public static void hexGuardBlocksHostileHex(final GameTestHelper helper) {
@@ -651,6 +874,11 @@ public final class WarlockeryGameTests {
         player.getInventory().setItem(0, doll);
         helper.assertTrue(DollItem.tryBlockHex(player), "hex guard must report that it blocked the hex");
         helper.assertValueEqual(doll.getDamageValue(), 1, "hex guard durability spent");
+        HexRuntime.apply(player, HexKind.HEAT_METAL, 200);
+        helper.assertTrue(HexState.isActive(player, HexKind.HEAT_METAL), "Heat Metal must begin active");
+        HexRuntime.tick(new LivingEvent.LivingTickEvent(player));
+        helper.assertFalse(HexState.isActive(player, HexKind.HEAT_METAL), "hex guard must remove Heat Metal");
+        helper.assertValueEqual(doll.getDamageValue(), 2, "Heat Metal protection must spend durability");
         helper.succeed();
     }
 
@@ -824,14 +1052,6 @@ public final class WarlockeryGameTests {
         helper.succeed();
     }
 
-    private static int hornCount(final ServerPlayer player) {
-        return IntStream.range(0, player.getInventory().getContainerSize())
-            .mapToObj(player.getInventory()::getItem)
-            .filter(stack -> stack.is(ModItems.ALL.get("hornofthehunt").get()))
-            .mapToInt(ItemStack::getCount)
-            .sum();
-    }
-
     private static TagKey<Item> itemTag(final String path) {
         return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", path));
     }
@@ -856,6 +1076,16 @@ public final class WarlockeryGameTests {
     ) {
         final BlockPos support = helper.absolutePos(relativeSupport);
         final BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(support), Direction.UP, support, false);
+        player.getMainHandItem().getItem().useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, hit));
+    }
+
+    private static void useOnGlyph(
+        final GameTestHelper helper,
+        final ServerPlayer player,
+        final BlockPos relativeGlyph
+    ) {
+        final BlockPos glyph = helper.absolutePos(relativeGlyph);
+        final BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(glyph), Direction.UP, glyph, false);
         player.getMainHandItem().getItem().useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, hit));
     }
 

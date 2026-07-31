@@ -4,7 +4,7 @@
   "action": "imprisonment_ward",
   "power": 1000,
   "radius": 6,
-  "duration": 1800,
+  "duration": 2147483647,
   "amplifier": 4,
   "casting_time": 100,
   "glyphs": {

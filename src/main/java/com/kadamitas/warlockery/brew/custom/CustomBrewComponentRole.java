@@ -1,13 +1,10 @@
 package com.kadamitas.warlockery.brew.custom;
 
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-public enum CustomBrewComponentRole {
+public enum CustomBrewComponentRole implements StringIdentified {
     CAPACITY("capacity", 0),
     POWER("power", 1),
     DURATION("duration", 2),
@@ -18,13 +15,11 @@ public enum CustomBrewComponentRole {
     EFFECT("effect", 6),
     CONTAINER("container", 7);
 
-    private static final Map<String, CustomBrewComponentRole> BY_ID = Arrays.stream(values())
-        .collect(Collectors.toUnmodifiableMap(CustomBrewComponentRole::id, Function.identity()));
-    public static final Codec<CustomBrewComponentRole> CODEC = Codec.STRING.comapFlatMap(
-        id -> find(id).map(DataResult::success)
-            .orElseGet(() -> DataResult.error(() -> "Unknown custom brew component role: " + id)),
-        CustomBrewComponentRole::id
+    private static final EnumLookup<CustomBrewComponentRole> LOOKUP = EnumLookup.create(
+        "custom brew component role",
+        values()
     );
+    public static final Codec<CustomBrewComponentRole> CODEC = LOOKUP.codec();
 
     private final String id;
     private final int order;
@@ -43,6 +38,6 @@ public enum CustomBrewComponentRole {
     }
 
     public static java.util.Optional<CustomBrewComponentRole> find(final String id) {
-        return java.util.Optional.ofNullable(BY_ID.get(id));
+        return LOOKUP.find(id);
     }
 }

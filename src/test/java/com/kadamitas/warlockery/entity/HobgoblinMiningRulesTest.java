@@ -9,21 +9,21 @@ import org.junit.jupiter.api.Test;
 
 final class HobgoblinMiningRulesTest {
     @Test
-    void enhancedToolIsSixtyTimesFasterAndFindsKobolditeFiveTimesAsOften() {
+    void enhancedToolIsSixtyTimesFasterAndFindsGobliniteFiveTimesAsOften() {
         assertEquals(1_200, HobgoblinMiningRules.STANDARD.cooldownTicks());
         assertEquals(20, HobgoblinMiningRules.ENHANCED.cooldownTicks());
-        assertEquals(0.01F, HobgoblinMiningRules.STANDARD.kobolditeChance());
-        assertEquals(0.05F, HobgoblinMiningRules.ENHANCED.kobolditeChance());
+        assertEquals(0.01F, HobgoblinMiningRules.STANDARD.gobliniteChance());
+        assertEquals(0.05F, HobgoblinMiningRules.ENHANCED.gobliniteChance());
         assertEquals(HobgoblinMiningRules.STANDARD, HobgoblinMiningRules.profile(false));
         assertEquals(HobgoblinMiningRules.ENHANCED, HobgoblinMiningRules.profile(true));
     }
 
     @Test
-    void kobolditeChanceUsesStableExclusiveBoundaries() {
-        assertTrue(HobgoblinMiningRules.findsKoboldite(HobgoblinMiningRules.STANDARD, 0.009F));
-        assertFalse(HobgoblinMiningRules.findsKoboldite(HobgoblinMiningRules.STANDARD, 0.01F));
-        assertTrue(HobgoblinMiningRules.findsKoboldite(HobgoblinMiningRules.ENHANCED, 0.049F));
-        assertFalse(HobgoblinMiningRules.findsKoboldite(HobgoblinMiningRules.ENHANCED, 0.05F));
+    void gobliniteChanceUsesStableExclusiveBoundaries() {
+        assertTrue(HobgoblinMiningRules.findsGoblinite(HobgoblinMiningRules.STANDARD, 0.009F));
+        assertFalse(HobgoblinMiningRules.findsGoblinite(HobgoblinMiningRules.STANDARD, 0.01F));
+        assertTrue(HobgoblinMiningRules.findsGoblinite(HobgoblinMiningRules.ENHANCED, 0.049F));
+        assertFalse(HobgoblinMiningRules.findsGoblinite(HobgoblinMiningRules.ENHANCED, 0.05F));
     }
 
     @Test
@@ -47,7 +47,7 @@ final class HobgoblinMiningRulesTest {
         );
         assertThrows(
             IllegalArgumentException.class,
-            () -> HobgoblinMiningRules.findsKoboldite(HobgoblinMiningRules.ENHANCED, 1.0F)
+            () -> HobgoblinMiningRules.findsGoblinite(HobgoblinMiningRules.ENHANCED, 1.0F)
         );
         assertThrows(
             IllegalArgumentException.class,

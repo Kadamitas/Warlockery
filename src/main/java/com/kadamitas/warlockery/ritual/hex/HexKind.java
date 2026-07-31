@@ -1,24 +1,22 @@
 package com.kadamitas.warlockery.ritual.hex;
 
-import java.util.Arrays;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 
-public enum HexKind {
+public enum HexKind implements StringIdentified {
     MISFORTUNE("misfortune", effect(MobEffects.UNLUCK, 1)),
     INSANITY("insanity", effect(MobEffects.NAUSEA, 0), effect(MobEffects.DARKNESS, 0)),
     OVERHEATING("overheating", effect(MobEffects.WEAKNESS, 1)),
+    HEAT_METAL("heat_metal", effect(MobEffects.WEAKNESS, 0)),
     SINKING("sinking", effect(MobEffects.SLOWNESS, 1), effect(MobEffects.MINING_FATIGUE, 1)),
     WAKING_NIGHTMARE("nightmare", effect(MobEffects.DARKNESS, 0), effect(MobEffects.HUNGER, 1));
 
-    private static final Map<String, HexKind> BY_ID = Arrays.stream(values())
-        .collect(Collectors.toUnmodifiableMap(HexKind::id, Function.identity()));
+    private static final EnumLookup<HexKind> LOOKUP = EnumLookup.create("hex", values());
 
     private final String id;
     private final List<EffectSpec> markerEffects;
@@ -37,7 +35,7 @@ public enum HexKind {
     }
 
     public static Optional<HexKind> find(final String id) {
-        return Optional.ofNullable(BY_ID.get(id));
+        return LOOKUP.find(id);
     }
 
     private static EffectSpec effect(final Holder<MobEffect> effect, final int amplifier) {

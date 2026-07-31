@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.block;
 
-import java.util.Arrays;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
@@ -13,13 +14,14 @@ import net.minecraft.world.entity.monster.cubemob.MagmaCube;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.entity.monster.cubemob.Slime;
 
-public enum CritterSnarePayload implements StringRepresentable {
+public enum CritterSnarePayload implements StringRepresentable, StringIdentified {
     EMPTY("empty"),
     BAT("bat"),
     SILVERFISH("silverfish"),
     SLIME("slime"),
     MAGMA_CUBE("magma_cube");
 
+    private static final EnumLookup<CritterSnarePayload> LOOKUP = EnumLookup.create("critter snare payload", values());
     private final String id;
 
     CritterSnarePayload(final String id) {
@@ -43,10 +45,7 @@ public enum CritterSnarePayload implements StringRepresentable {
     }
 
     public static CritterSnarePayload byId(final String id) {
-        return Arrays.stream(values())
-            .filter(value -> value.id.equals(id))
-            .findFirst()
-            .orElse(EMPTY);
+        return LOOKUP.findOrElse(id, EMPTY);
     }
 
     public Optional<LivingEntity> create(final ServerLevel level) {
@@ -69,6 +68,11 @@ public enum CritterSnarePayload implements StringRepresentable {
 
     @Override
     public String getSerializedName() {
+        return id;
+    }
+
+    @Override
+    public String id() {
         return id;
     }
 }

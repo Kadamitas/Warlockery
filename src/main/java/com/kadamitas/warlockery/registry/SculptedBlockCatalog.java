@@ -16,6 +16,7 @@ public final class SculptedBlockCatalog {
         "cauldron",
         "chalice",
         "circle",
+        "circleglyphgolden",
         "circleglyph_veil",
         "circleglyphinfernal",
         "circleglyphritual",

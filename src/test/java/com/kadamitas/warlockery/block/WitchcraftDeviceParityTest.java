@@ -64,13 +64,15 @@ final class WitchcraftDeviceParityTest {
                 DynamicTest.dynamicTest("diagnostic", () -> {
                     final DreamWeaverRules.WakeReward reward = DreamWeaverRules.reward(mode, true);
                     assertFalse(reward.effect().isBlank());
-                    assertTrue(json("assets/warlockery/blockstates/dreamcatcher.json").has("multipart"));
+                    final JsonObject variants = json("assets/warlockery/blockstates/dreamcatcher.json")
+                        .getAsJsonObject("variants");
+                    assertTrue(variants.has("mode=" + mode.getSerializedName()));
                 }),
                 DynamicTest.dynamicTest("success", () -> {
                     assertTrue(DreamWeaverRules.canReward(true, 100, false, true));
                     assertNotEquals(mode, mode.next());
                     final DreamWeaverRules.WakeReward reward = DreamWeaverRules.reward(mode, false);
-                    assertEquals(mode == DreamWeaverMode.NIGHTMARES, reward.spawnNightmare());
+                    assertFalse(reward.spawnNightmare());
                 })
             )
         ));
@@ -81,6 +83,45 @@ final class WitchcraftDeviceParityTest {
         assertThrows(IllegalArgumentException.class, () ->
             new DreamWeaverRules.WakeReward(-1, 0.0F, "speed", false, false)
         );
+    }
+
+    @Test
+    void ironArmUsesHasteAndNearbyNightmareWeaversCorruptItToMiningFatigue() {
+        assertEquals("haste", DreamWeaverRules.reward(DreamWeaverMode.IRON_ARM, false, 0).effect());
+        assertEquals("mining_fatigue", DreamWeaverRules.reward(DreamWeaverMode.IRON_ARM, false, 1).effect());
+        assertEquals("haste", DreamWeaverRules.reward(DreamWeaverMode.IRON_ARM, true, 1).effect());
+    }
+
+    @Test
+    void nightmareWeaverProtectsDreamEntryButStillHasDocumentedWakingCosts() {
+        assertEquals("weakness", DreamWeaverRules.reward(DreamWeaverMode.NIGHTMARES, false, 1).effect());
+        assertEquals("blindness", DreamWeaverRules.reward(DreamWeaverMode.NIGHTMARES, false, 2).effect());
+        assertFalse(DreamWeaverRules.reward(DreamWeaverMode.NIGHTMARES, false, 2).spawnNightmare());
+        assertThrows(IllegalArgumentException.class, () ->
+            DreamWeaverRules.reward(DreamWeaverMode.NIGHTMARES, false, -1)
+        );
+    }
+
+    @Test
+    void intensityBoostsHelpfulWeaversAndNightmaresAddTheirSecondaryWeakness() {
+        final DreamWeaverRules.WakeReward fleet = DreamWeaverRules.reward(
+            DreamWeaverMode.FLEET_FOOT,
+            false,
+            0,
+            1
+        );
+        assertEquals(2, fleet.effects().getFirst().amplifier());
+        assertEquals(1_800, fleet.effects().getFirst().duration());
+        final DreamWeaverRules.WakeReward corruptedFleet = DreamWeaverRules.reward(
+            DreamWeaverMode.FLEET_FOOT,
+            false,
+            1,
+            1
+        );
+        assertEquals(List.of("slowness", "weakness"), corruptedFleet.effects().stream()
+            .map(DreamWeaverRules.EffectReward::id)
+            .toList());
+        assertEquals(12, DreamWeaverRules.reward(DreamWeaverMode.FASTING, false, 0, 1).nutrition());
     }
 
     @Test

@@ -1,6 +1,12 @@
-﻿{
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_hitchcock"
-              }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_hitchcock",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 2433326
+      }
+    ]
+  }
 }

@@ -1,0 +1,47 @@
+{
+  "title": "ritual.warlockery.blood_audience.title",
+  "description": "ritual.warlockery.blood_audience.description",
+  "action": "transform_nami",
+  "power": 5000,
+  "radius": 8,
+  "casting_time": 240,
+  "night_only": true,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyphinfernal": 16,
+    "circleglyph_veil": 8
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_necro_stone",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#warlockery:luck_essences",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:wither_rose",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:ghast_tear",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "entities": [
+      {
+        "entity": "warlockery:nami",
+        "count": 1,
+        "consume": false
+      }
+    ],
+    "full_moon": true,
+    "minimum_players": 1
+  }
+}

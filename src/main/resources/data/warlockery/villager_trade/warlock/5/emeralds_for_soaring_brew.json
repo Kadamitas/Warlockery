@@ -1,0 +1,7 @@
+{
+  "wants": {"id": "minecraft:emerald", "count": 18},
+  "gives": {"id": "warlockery:ingredient_brew_soaring"},
+  "max_uses": 6,
+  "xp": 20,
+  "reputation_discount": 0.05
+}

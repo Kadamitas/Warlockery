@@ -25,7 +25,11 @@ final class BrazierParityTest {
             )).getAsJsonObject();
             assertEquals("brazier", recipe.get("machine").getAsString());
             assertEquals(3, recipe.getAsJsonArray("inputs").size());
-            assertTrue(recipe.get("altar_power").getAsInt() > 0);
+            if (effect == BrazierEffectRuntime.Effect.DRAIN_GROWTH) {
+                assertEquals(0, recipe.get("altar_power").getAsInt());
+            } else {
+                assertTrue(recipe.get("altar_power").getAsInt() > 0);
+            }
             assertEquals("warlockery:ingredient_ash_wood",
                 recipe.getAsJsonArray("outputs").get(0).getAsJsonObject().get("item").getAsString());
         }

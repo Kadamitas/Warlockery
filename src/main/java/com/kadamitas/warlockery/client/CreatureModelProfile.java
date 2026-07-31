@@ -33,7 +33,7 @@ record CreatureModelProfile(
         BRAMBLE_COLOSSUS,
         CIRCLE_MAGE,
         CORPSE,
-        CRIMSON_MATRIARCH,
+        NAAMAH,
         DEATH,
         DEMON,
         DREAMROOT,
@@ -92,7 +92,7 @@ record CreatureModelProfile(
                 case TOAD -> Archetype.AMPHIBIAN;
                 case PALE_STEED, NIGHTMARE -> Archetype.MOUNT;
                 case HELLHOUND, FERAL_LYCAN -> Archetype.CANINE;
-                case PARASYTIC_LOUSE, ILLUSION_SPIDER, CRIMSON_MATRIARCH -> Archetype.ARTHROPOD;
+                case PARASYTIC_LOUSE, ILLUSION_SPIDER, NAAMAH -> Archetype.ARTHROPOD;
                 case ILLUSION_CREEPER -> Archetype.CREEPER;
                 case MANDRAKE -> Archetype.PLANTLING;
                 case DREAMROOT, BRAMBLE_COLOSSUS, ENT -> Archetype.PLANT_BRUTE;

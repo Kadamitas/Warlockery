@@ -3,7 +3,7 @@
   "category": "equipment",
   "pattern": [" I ", " S ", " S "],
   "key": {
-    "I": "#c:ingots/koboldite",
+    "I": "#c:ingots/goblinite",
     "S": "#c:rods/wooden"
   },
   "result": {

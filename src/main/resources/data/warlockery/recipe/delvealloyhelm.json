@@ -3,7 +3,7 @@
   "category": "equipment",
   "pattern": ["III", "I I"],
   "key": {
-    "I": "#c:ingots/koboldite"
+    "I": "#c:ingots/goblinite"
   },
   "result": {
     "id": "warlockery:delvealloyhelm"

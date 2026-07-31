@@ -1,28 +1,40 @@
 package com.kadamitas.warlockery.ritual;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
 import com.kadamitas.warlockery.compat.jei.JeiRecipeRefreshSignal;
 import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
 import com.kadamitas.warlockery.item.DollItem;
 import com.kadamitas.warlockery.block.FetishRuntime;
 import com.kadamitas.warlockery.block.FetishBindingRules;
+import com.kadamitas.warlockery.block.VoidBrambleBlock;
 import com.kadamitas.warlockery.block.FetishBindingState;
 import com.kadamitas.warlockery.block.FetishMode;
 import com.kadamitas.warlockery.block.StatueBlock;
+import com.kadamitas.warlockery.block.StatueWardData;
 import com.kadamitas.warlockery.item.CircleTalismanItem;
 import com.kadamitas.warlockery.item.BiomeNoteState;
 import com.kadamitas.warlockery.item.EquipmentSetEffects;
 import com.kadamitas.warlockery.item.SympatheticBinding;
+import com.kadamitas.warlockery.item.SeerCovenRuntime;
+import com.kadamitas.warlockery.item.SpectralStoneState;
+import com.kadamitas.warlockery.item.WaystoneState;
 import com.kadamitas.warlockery.magic.MagicPath;
 import com.kadamitas.warlockery.magic.MagicPathRuntime;
 import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import com.kadamitas.warlockery.entity.CreatureBehaviorTags;
 import com.kadamitas.warlockery.entity.DeathImpersonationRules;
 import com.kadamitas.warlockery.entity.FamiliarRecallRules;
+import com.kadamitas.warlockery.entity.NamiEntity;
+import com.kadamitas.warlockery.entity.NaamahEntity;
+import com.kadamitas.warlockery.registry.ModBlocks;
+import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.ritual.hex.BlightHex;
 import com.kadamitas.warlockery.ritual.hex.ToadRainHex;
+import com.kadamitas.warlockery.ritual.marriage.MarriageData;
+import com.kadamitas.warlockery.ritual.marriage.MarriageRuntime;
 import com.kadamitas.warlockery.util.IngredientAllocator;
 import com.kadamitas.warlockery.util.EntityTypeIngredient;
 import com.kadamitas.warlockery.util.ItemIngredient;
@@ -69,6 +81,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
@@ -90,6 +103,12 @@ import org.jspecify.annotations.Nullable;
 public final class RitualManager extends SimpleJsonResourceReloadListener<RitualDefinition> {
     private static final int REQUIRED_VOLCANIC_SOURCES = 4;
     private static final int VOLCANIC_SEARCH_DEPTH = 48;
+    private static final java.util.Set<String> TRANSFORMABLE_GLYPHS = java.util.Set.of(
+        "circleglyphritual", "circleglyphinfernal", "circleglyph_veil"
+    );
+    private static final java.util.Set<String> TRANSFORM_CHALKS = java.util.Set.of(
+        "chalkritual", "chalkinfernal", "chalk_veil"
+    );
     public static final RitualManager INSTANCE = new RitualManager();
     private volatile Map<Identifier, RitualDefinition> rituals = Map.of();
 
@@ -132,13 +151,22 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         if (definition == null || !diagnose(ritualId, definition, level, center, caster).ready()) {
             return false;
         }
+        final Optional<TransformSelection> transform = transformSelection(level, center, definition);
+        if (RitualAction.require(definition.action()) == RitualAction.GLYPH_TRANSFORM && transform.isEmpty()) {
+            return false;
+        }
         final RitualSessionData sessions = RitualSessionData.get(level);
         if (sessions.isActive(center) || !consumeAltarPower(level, center, definition.power())) {
             return false;
         }
-        consumeIngredients(level, center, definition.requirements().ingredients());
+        if (transform.isPresent()) {
+            consumeTransformChalk(level, center, transform.orElseThrow());
+        } else {
+            consumeIngredients(level, center, definition.requirements().ingredients());
+        }
         consumeEntityRequirements(level, center, definition.requirements().entities());
-        if (!sessions.start(center, ritualId, caster.getUUID(), definition.castingTime())) {
+        final int variant = transform.map(selection -> selection.size().ordinal() + 1).orElse(0);
+        if (!sessions.start(center, ritualId, caster.getUUID(), definition.castingTime(), variant)) {
             return false;
         }
         caster.sendSystemMessage(Component.translatable("message.warlockery.ritual.started"));
@@ -154,10 +182,19 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
     }
 
     boolean isSessionValid(final ServerLevel level, final BlockPos center, final Identifier ritualId) {
+        return isSessionValid(level, center, ritualId, 0);
+    }
+
+    boolean isSessionValid(
+        final ServerLevel level,
+        final BlockPos center,
+        final Identifier ritualId,
+        final int variant
+    ) {
         final RitualDefinition definition = rituals.get(ritualId);
         return definition != null
-            && hasValidAltar(level, center)
-            && matchesStructureAndWorld(definition, level, center, countGlyphs(level, center, 6));
+            && (definition.power() == 0 || hasValidAltar(level, center))
+            && matchesStructureAndWorld(definition, level, center, variant);
     }
 
     void complete(
@@ -166,9 +203,19 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final @Nullable Player caster,
         final Identifier ritualId
     ) {
+        complete(level, center, caster, ritualId, 0);
+    }
+
+    void complete(
+        final ServerLevel level,
+        final BlockPos center,
+        final @Nullable Player caster,
+        final Identifier ritualId,
+        final int variant
+    ) {
         final RitualDefinition definition = rituals.get(ritualId);
         if (definition != null) {
-            perform(level, center, caster, definition);
+            perform(level, center, caster, definition, variant);
         }
     }
 
@@ -176,8 +223,14 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final RitualDefinition definition,
         final ServerLevel level,
         final BlockPos center,
-        final Map<String, Long> nearbyGlyphs
+        final int variant
     ) {
+        if (SpiritWorldRuntime.isSpiritWorld(level)) {
+            return false;
+        }
+        if (!isCircleCenter(level, center)) {
+            return false;
+        }
         if (countRitualInhibitors(level, center, definition.radius()) > 0) {
             return false;
         }
@@ -191,11 +244,13 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             || requirements.thundering() && !level.isThundering()
             || !requirements.dimension().isBlank()
                 && !requirements.dimension().equals(level.dimension().identifier().toString())
-            || nearbyPlayers(level, center) < requirements.minimumPlayers()) {
+            || nearbyParticipants(level, center) < requirements.minimumPlayers()) {
             return false;
         }
-        return definition.glyphs().entrySet().stream()
-            .allMatch(required -> nearbyGlyphs.getOrDefault(required.getKey(), 0L) >= required.getValue())
+        final boolean chalkReady = RitualAction.require(definition.action()) == RitualAction.GLYPH_TRANSFORM
+            ? transformRing(level, center, definition, transformSize(definition, variant)).isPresent()
+            : ChalkCircleLayout.matches(level, center, definition.glyphs());
+        return chalkReady
             && actionEnvironmentReady(definition, level, center);
     }
 
@@ -233,6 +288,12 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         if (general.isPresent()) {
             return general;
         }
+        if (action == RitualAction.TRANSFORM_NAMI) {
+            final boolean present = unmarriedNami(level, center, definition.radius()).isPresent();
+            return Optional.of(new RequirementStatus(
+                "condition", "unmarried_nami", 1, present ? 1 : 0, present
+            ));
+        }
         if (action == RitualAction.CLEANSE) {
             final Optional<LivingEntity> target = boundTarget(level, center);
             final boolean active = target.map(entity -> HexBehaviors.isActive(entity, definition.target())).orElse(false);
@@ -254,9 +315,9 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             ));
         }
         if (action == RitualAction.BIND_FETISH) {
-            final boolean present = !spectralCandidates(level, center, definition.radius()).isEmpty();
+            final boolean present = FetishBindingRules.plan(spectralCounts(level, center, definition.radius())).isPresent();
             return Optional.of(new RequirementStatus(
-                "condition", "nearby_spectral", 1, present ? 1 : 0, present
+                "condition", "fetish_spectral_pattern", 1, present ? 1 : 0, present
             ));
         }
         if (action == RitualAction.BIND_ITEM) {
@@ -268,10 +329,46 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
                 "condition", "bound_sympathetic_sample", 1, present ? 1 : 0, present
             ));
         }
+        if (action == RitualAction.MARRIAGE) {
+            if (caster == null) {
+                return Optional.empty();
+            }
+            final MarriageData marriages = MarriageData.get(level);
+            if (marriages.isMarried(caster.getUUID())) {
+                return Optional.of(new RequirementStatus("condition", "unmarried_caster", 1, 0, false));
+            }
+            final Optional<LivingEntity> partner = marriageCandidate(level, center, caster, definition.radius());
+            final boolean available = partner.filter(entity -> entity instanceof NamiEntity nami
+                ? marriages.ownerForNami(nami.getUUID()).isEmpty() && marriages.hasAvailableDemonName()
+                : entity instanceof Player player && !marriages.isMarried(player.getUUID())).isPresent();
+            return Optional.of(new RequirementStatus(
+                "condition",
+                partner.isPresent() ? "unmarried_partner" : "marriage_partner",
+                1,
+                available ? 1 : 0,
+                available
+            ));
+        }
+        if (action == RitualAction.DIVORCE) {
+            if (caster == null) {
+                return Optional.empty();
+            }
+            final boolean married = MarriageData.get(level).isMarried(caster.getUUID());
+            return Optional.of(new RequirementStatus("condition", "existing_marriage", 1, married ? 1 : 0, married));
+        }
+        if ((action == RitualAction.TRANSFORM_WEREWOLF
+            || action == RitualAction.HEX && definition.target().equals("corrupt_doll")) && caster != null) {
+            final boolean present = ownedFamiliar(level, caster).isPresent();
+            return Optional.of(new RequirementStatus(
+                "condition", "owned_familiar", 1, present ? 1 : 0, present
+            ));
+        }
         if (action != RitualAction.BIND_ENTITY) {
             return Optional.empty();
         }
-        final boolean present = bindingCandidate(level, center, definition.radius(), definition.target()).isPresent();
+        final boolean present = definition.target().equals("spectral")
+            ? spectralBindingReady(level, center, definition.radius())
+            : bindingCandidate(level, center, definition.radius(), definition.target()).isPresent();
         return Optional.of(new RequirementStatus(
             "condition",
             "nearby_" + definition.target(),
@@ -304,11 +401,16 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             ));
         }
         if (action == RitualAction.PRIOR_INCARNATION) {
-            final int present = boundTargetId(level, center)
-                .map(player -> PriorIncarnationRuntime.countRecoverable(level, player))
+            final Optional<LivingEntity> target = boundTarget(level, center)
+                .filter(entity -> entity.level() == level)
+                .filter(entity -> entity.distanceToSqr(Vec3.atCenterOf(center)) <= (double) radius * radius);
+            final int present = target
+                .map(LivingEntity::getUUID)
+                .map(player -> PriorIncarnationRuntime.countRecoverable(level, center, player, 16))
                 .orElse(0);
             return Optional.of(new RequirementStatus(
-                "condition", "recoverable_death_drops", 1, present, present > 0
+                "condition", target.isPresent() ? "recoverable_death_drops" : "prior_incarnation_target",
+                1, present, present > 0
             ));
         }
         if (action == RitualAction.MANIFEST) {
@@ -337,6 +439,12 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
                 HuntsmanSummoningStructure.ready(present)
             ));
         }
+        if (action == RitualAction.SUMMON_ENTITY) {
+            final int blocked = blockedSummoningPositions(level, center);
+            return Optional.of(new RequirementStatus(
+                "condition", "summoning_space", 0, blocked, blocked == 0
+            ));
+        }
         return Optional.empty();
     }
 
@@ -347,21 +455,43 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final BlockPos center,
         final Player caster
     ) {
-        final Map<String, Long> glyphs = countGlyphs(level, center, 6);
         final ArrayList<RequirementStatus> statuses = new ArrayList<>();
-        definition.glyphs().entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(required -> {
-            final int present = Math.toIntExact(Math.min(Integer.MAX_VALUE, glyphs.getOrDefault(required.getKey(), 0L)));
-            statuses.add(new RequirementStatus("chalk", required.getKey(), required.getValue(), present,
-                present >= required.getValue()));
-        });
-
-        statuses.addAll(inspectIngredients(level, center, definition.requirements().ingredients()));
+        statuses.add(condition("spirit_world_circle_magic", !SpiritWorldRuntime.isSpiritWorld(level, caster)));
+        if (RitualAction.require(definition.action()) == RitualAction.GLYPH_TRANSFORM) {
+            final TransformInspection inspection = inspectTransform(level, center, definition);
+            statuses.add(new RequirementStatus(
+                "chalk",
+                inspection.sourceGlyph().orElse("chalk_ring"),
+                inspection.size().markCount(),
+                inspection.presentMarks(),
+                inspection.ringReady()
+            ));
+            statuses.add(new RequirementStatus(
+                "ingredient",
+                inspection.targetChalk(),
+                Math.clamp(inspection.matchingChalk(), 1, 3),
+                inspection.matchingChalk(),
+                inspection.matchingChalk() >= 1 && inspection.matchingChalk() <= 3
+            ));
+            statuses.add(condition("matching_transform_chalk", inspection.foreignChalk() == 0));
+        } else {
+            ChalkCircleLayout.rings(definition.glyphs()).forEach(ring -> {
+                final int present = ChalkCircleLayout.present(level, center, ring);
+                statuses.add(new RequirementStatus("chalk", ring.glyph(), ring.requiredCount(), present,
+                    present == ring.requiredCount()));
+            });
+            statuses.addAll(inspectIngredients(level, center, definition.requirements().ingredients()));
+        }
         statuses.addAll(inspectEntityRequirements(level, center, definition.requirements().entities()));
         final Optional<AltarBlockEntity> altar = findBestAltar(level, center);
-        statuses.add(new RequirementStatus("altar", "structure", 1, altar.isPresent() ? 1 : 0, altar.isPresent()));
+        final boolean altarRequired = definition.power() > 0;
+        statuses.add(new RequirementStatus(
+            "altar", "structure", altarRequired ? 1 : 0, altar.isPresent() ? 1 : 0,
+            !altarRequired || altar.isPresent()
+        ));
         final int altarPower = altar.map(AltarBlockEntity::getPower).orElse(0);
         statuses.add(new RequirementStatus("power", "altar_power", definition.power(), altarPower,
-            altarPower >= definition.power()));
+            definition.power() == 0 || altarPower >= definition.power()));
         if (definition.nightOnly()) {
             statuses.add(condition("night", level.isDarkOutside()));
         }
@@ -386,7 +516,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             ));
         }
         if (requirements.minimumPlayers() > 1) {
-            final int present = nearbyPlayers(level, center);
+            final int present = nearbyParticipants(level, center);
             statuses.add(new RequirementStatus(
                 "coven", "coven", requirements.minimumPlayers(), present, present >= requirements.minimumPlayers()
             ));
@@ -460,6 +590,102 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         }
     }
 
+    private static TransformInspection inspectTransform(
+        final ServerLevel level,
+        final BlockPos center,
+        final RitualDefinition definition
+    ) {
+        final String targetChalk = targetTransformChalk(definition).orElse("");
+        int matching = 0;
+        int foreign = 0;
+        for (final ItemEntity entity : level.getEntitiesOfClass(
+            ItemEntity.class,
+            new AABB(center).inflate(6.0),
+            ItemEntity::isAlive
+        )) {
+            final Identifier itemId = BuiltInRegistries.ITEM.getKey(entity.getItem().getItem());
+            if (itemId == null || !Warlockery.MOD_ID.equals(itemId.getNamespace())
+                || !TRANSFORM_CHALKS.contains(itemId.getPath())) {
+                continue;
+            }
+            if (targetChalk.equals(itemId.toString())) {
+                matching += entity.getItem().getCount();
+            } else {
+                foreign += entity.getItem().getCount();
+            }
+        }
+        final ChalkCircleLayout.Size size = matching >= 1 && matching <= 3
+            ? ChalkCircleLayout.Size.forOfferingCount(matching)
+            : transformSize(definition, 0);
+        final Optional<String> source = transformRing(level, center, definition, size);
+        return new TransformInspection(
+            targetChalk,
+            matching,
+            foreign,
+            size,
+            source,
+            ChalkCircleLayout.presentGlyphs(level, center, size, TRANSFORMABLE_GLYPHS)
+        );
+    }
+
+    private static Optional<TransformSelection> transformSelection(
+        final ServerLevel level,
+        final BlockPos center,
+        final RitualDefinition definition
+    ) {
+        if (RitualAction.require(definition.action()) != RitualAction.GLYPH_TRANSFORM) {
+            return Optional.empty();
+        }
+        final TransformInspection inspection = inspectTransform(level, center, definition);
+        return inspection.ready()
+            ? Optional.of(new TransformSelection(
+                inspection.targetChalk(),
+                1,
+                inspection.size()
+            ))
+            : Optional.empty();
+    }
+
+    private static Optional<String> targetTransformChalk(final RitualDefinition definition) {
+        return definition.requirements().ingredients().stream()
+            .map(RitualDefinition.Ingredient::ingredient)
+            .map(Identifier::tryParse)
+            .filter(java.util.Objects::nonNull)
+            .filter(id -> Warlockery.MOD_ID.equals(id.getNamespace()))
+            .filter(id -> TRANSFORM_CHALKS.contains(id.getPath()))
+            .map(Identifier::toString)
+            .findFirst();
+    }
+
+    private static void consumeTransformChalk(
+        final ServerLevel level,
+        final BlockPos center,
+        final TransformSelection selection
+    ) {
+        int remaining = selection.count();
+        for (final ItemEntity entity : level.getEntitiesOfClass(
+            ItemEntity.class,
+            new AABB(center).inflate(6.0),
+            ItemEntity::isAlive
+        )) {
+            if (remaining == 0) {
+                break;
+            }
+            final Identifier itemId = BuiltInRegistries.ITEM.getKey(entity.getItem().getItem());
+            if (itemId == null || !selection.targetChalk().equals(itemId.toString())) {
+                continue;
+            }
+            final int consumed = Math.min(remaining, entity.getItem().getCount());
+            entity.getItem().shrink(consumed);
+            remaining -= consumed;
+            if (entity.getItem().isEmpty()) {
+                entity.discard();
+            } else {
+                entity.setItem(entity.getItem());
+            }
+        }
+    }
+
     private static List<RequirementStatus> inspectEntityRequirements(
         final ServerLevel level,
         final BlockPos center,
@@ -512,8 +738,18 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             && level.isDarkOutside();
     }
 
-    private static int nearbyPlayers(final ServerLevel level, final BlockPos center) {
-        return level.getEntitiesOfClass(Player.class, new AABB(center).inflate(8.0), Player::isAlive).size();
+    static int nearbyParticipants(final ServerLevel level, final BlockPos center) {
+        return SeerCovenRuntime.countParticipants(level, center, SeerCovenRuntime.PARTICIPANT_RADIUS);
+    }
+
+    static int blockedSummoningPositions(final ServerLevel level, final BlockPos center) {
+        return (int) BlockPos.betweenClosedStream(
+                center.offset(-3, 1, -3),
+                center.offset(3, 4, 3)
+            )
+            .filter(position -> level.getBlockEntity(position) != null
+                || !level.getBlockState(position).canBeReplaced())
+            .count();
     }
 
     private static int countRitualInhibitors(
@@ -522,39 +758,46 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final int ritualRadius
     ) {
         final int radius = Math.clamp(ritualRadius + 4, 6, 16);
-        return Math.toIntExact(BlockPos.betweenClosedStream(
+        final int fixedInhibitors = Math.toIntExact(BlockPos.betweenClosedStream(
             center.offset(-radius, -radius, -radius),
             center.offset(radius, radius, radius)
         ).filter(pos -> {
             final BlockState state = level.getBlockState(pos);
-            if (!state.is(WarlockeryTags.Blocks.RITUAL_INHIBITORS)) {
+            if (!state.is(WarlockeryTags.Blocks.RITUAL_INHIBITORS)
+                || state.getBlock() instanceof VoidBrambleBlock) {
                 return false;
             }
             return !(state.getBlock() instanceof StatueBlock statue) || statue.occludes(state);
         }).count());
+        return ritualInhibitorCount(
+            fixedInhibitors,
+            VoidBrambleBlock.suppressesMagic(level, center),
+            StatueWardData.get(level).occludesSummoning(center)
+        );
+    }
+
+    static int ritualInhibitorCount(
+        final int fixedInhibitors,
+        final boolean voidBrambleSuppression,
+        final boolean statueSuppression
+    ) {
+        return Math.max(0, fixedInhibitors)
+            + (voidBrambleSuppression ? 1 : 0)
+            + (statueSuppression ? 1 : 0);
+    }
+
+    static int ritualInhibitorCount(final int fixedInhibitors, final boolean voidBrambleSuppression) {
+        return ritualInhibitorCount(fixedInhibitors, voidBrambleSuppression, false);
     }
 
     public static boolean isCircleCenter(final ServerLevel level, final BlockPos center) {
-        final Identifier id = BuiltInRegistries.BLOCK.getKey(level.getBlockState(center).getBlock());
-        return id != null && Warlockery.MOD_ID.equals(id.getNamespace())
-            && ("circle".equals(id.getPath()) || id.getPath().startsWith("circleglyph"));
-    }
-
-    private static Map<String, Long> countGlyphs(final ServerLevel level, final BlockPos center, final int radius) {
-        return BlockPos.betweenClosedStream(
-                center.offset(-radius, -1, -radius),
-                center.offset(radius, 1, radius)
-            )
-            .map(level::getBlockState)
-            .map(state -> BuiltInRegistries.BLOCK.getKey(state.getBlock()))
-            .filter(java.util.Objects::nonNull)
-            .filter(id -> Warlockery.MOD_ID.equals(id.getNamespace()))
-            .map(Identifier::getPath)
-            .filter(path -> path.startsWith("circleglyph") || "circle".equals(path))
-            .collect(Collectors.groupingBy(path -> path, Collectors.counting()));
+        return level.getBlockState(center).is(ModBlocks.ALL.get("circle").get());
     }
 
     private static boolean consumeAltarPower(final ServerLevel level, final BlockPos center, final int power) {
+        if (power == 0) {
+            return true;
+        }
         return findBestAltar(level, center).filter(altar -> altar.consumePower(power)).isPresent();
     }
 
@@ -576,7 +819,8 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final ServerLevel level,
         final BlockPos center,
         final @Nullable Player caster,
-        final RitualDefinition definition
+        final RitualDefinition definition,
+        final int variant
     ) {
         switch (RitualAction.require(definition.action())) {
             case EFFECT -> applyEffect(level, center, definition);
@@ -585,19 +829,22 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             case FERTILITY -> fertility(level, center, caster, definition);
             case FORESTATION -> forestation(level, center, definition);
             case NATURES_POWER -> restoreNature(level, center, definition.radius());
-            case BLIGHT -> BlightHex.apply(level, center, definition.radius(), definition.duration());
-            case TOAD_RAIN -> ToadRainHex.apply(
-                level,
-                center,
-                definition.radius(),
-                definition.count(),
-                definition.duration()
-            );
+            case BLIGHT -> applyBlight(level, center, caster, definition);
+            case TOAD_RAIN -> {
+                startRain(level, definition.duration());
+                ToadRainHex.apply(
+                    level,
+                    center,
+                    definition.radius(),
+                    definition.count(),
+                    definition.duration()
+                );
+            }
             case BANISH -> banish(level, center, definition.radius());
             case CALL_BEASTS -> callBeasts(level, center, definition);
             case CALL_FAMILIAR -> callFamiliar(level, center, caster);
             case ANGUISH_UNDEAD -> anguishUndead(level, center, definition);
-            case DRAIN_GROWTH -> drainGrowth(level, center, caster, definition.radius());
+            case DRAIN_GROWTH -> drainGrowth(level, center, definition.radius());
             case FORTIFY_UNDEAD -> fortifyUndead(level, center, definition);
             case GRAVEYARD_MIST -> graveyardMist(level, center, definition);
             case SUMMON_ENTITY -> summonEntities(level, center, caster, definition);
@@ -612,7 +859,14 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             case COOK -> cookItems(level, center, definition.radius());
             case ECLIPSE -> eclipse(level, center, definition);
             case REMOVE_VAMPIRISM -> removeVampirism(level, center, definition.radius());
-            case TRANSFORM_WEREWOLF -> transform(level, center, definition.radius(), SupernaturalForm.WEREWOLF);
+            case TRANSFORM_NAMI -> transformNami(level, center, caster, definition.radius());
+            case TRANSFORM_WEREWOLF -> transform(
+                level,
+                center,
+                caster,
+                definition.radius(),
+                SupernaturalForm.WEREWOLF
+            );
             case REMOVE_WEREWOLF -> removeWerewolf(level, center, definition.radius());
             case HEX -> applyHex(level, center, caster, definition);
             case CLEANSE -> cleanse(level, center, definition);
@@ -622,7 +876,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             case TELEPORT_WAYSTONE -> teleportToWaystone(level, center, caster);
             case TELEPORT_ENTITY -> teleportBoundEntity(level, center);
             case TRANSPOSE_ORE -> transposeOres(level, center, definition.radius());
-            case ICE_SPHERE -> iceSphere(level, center, definition.radius());
+            case ICE_SPHERE -> iceSphere(level, center, definition.radius(), nearbyParticipants(level, center));
             case MANIFEST -> manifest(level, center, definition);
             case IMPRISONMENT_WARD -> placeWard(level, center, definition, RitualWardType.IMPRISONMENT);
             case PROTECTION_WARD -> placeWard(level, center, definition, RitualWardType.PROTECTION);
@@ -634,7 +888,9 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             case BIND_ENTITY -> bindEntity(level, center, caster, definition);
             case BIND_FETISH -> bindFetish(level, center, definition);
             case BIND_ITEM -> bindItem(level, center, definition);
-            case GLYPH_TRANSFORM -> transformGlyphs(level, center, definition);
+            case MARRIAGE -> marry(level, center, caster, definition);
+            case DIVORCE -> divorce(level, center, caster);
+            case GLYPH_TRANSFORM -> transformGlyphs(level, center, definition, transformSize(definition, variant));
         }
         level.sendParticles(
             ParticleTypes.ENCHANT,
@@ -668,6 +924,14 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         weather.setThundering(true);
         weather.setRainTime(duration);
         weather.setThunderTime(duration);
+    }
+
+    private static void startRain(final ServerLevel level, final int duration) {
+        final var weather = level.getWeatherData();
+        weather.setRaining(true);
+        weather.setThundering(false);
+        weather.setRainTime(Math.max(200, duration));
+        weather.setThunderTime(0);
     }
 
     private static void clearWeather(final ServerLevel level, final int duration) {
@@ -789,9 +1053,18 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final BlockPos center,
         final RitualDefinition definition
     ) {
+        final BlockPos origin = nearbyItems(level, center).stream()
+            .map(ItemEntity::getItem)
+            .map(WaystoneState::read)
+            .flatMap(Optional::stream)
+            .filter(location -> location.dimension().equals(level.dimension().identifier()))
+            .map(WaystoneState.Location::position)
+            .findFirst()
+            .orElse(center);
+        level.getChunkAt(origin);
         BlockPos.betweenClosedStream(
-                center.offset(-definition.radius(), -2, -definition.radius()),
-                center.offset(definition.radius(), 3, definition.radius())
+                origin.offset(-definition.radius(), -2, -definition.radius()),
+                origin.offset(definition.radius(), 3, definition.radius())
             )
             .filter(pos -> level.getBlockState(pos).is(WarlockeryTags.Blocks.RITUAL_SAPLINGS))
             .map(BlockPos::immutable)
@@ -800,7 +1073,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             .forEach(pos -> forceGrow(level, pos, 3));
 
         int placed = 0;
-        for (BlockPos column : RitualTerrainPlan.forestColumns(center, definition.radius())) {
+        for (BlockPos column : RitualTerrainPlan.forestColumns(origin, definition.radius())) {
             if (placed >= Math.clamp(definition.count(), 1, 32)) {
                 break;
             }
@@ -861,7 +1134,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
                 center.getY() + 0.5,
                 center.getZ() + 0.5
             )))
-            .limit(Math.clamp(definition.count(), 1, 32))
+            .limit(Math.clamp(definition.count(), 1, 128))
             .forEach(mob -> mob.getNavigation().moveTo(
                 center.getX() + 0.5,
                 center.getY() + 0.5,
@@ -875,21 +1148,17 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final BlockPos center,
         final RitualDefinition definition
     ) {
-        level.getEntitiesOfClass(
-            LivingEntity.class,
-            new AABB(center).inflate(definition.radius()),
-            entity -> entity.typeHolder().is(EntityTypeTags.UNDEAD)
-        ).forEach(entity -> {
-            entity.hurtServer(level, level.damageSources().magic(), 6.0F + definition.amplifier() * 2.0F);
-            entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, definition.duration(), Math.max(1, definition.amplifier())));
-            entity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, definition.duration(), Math.max(1, definition.amplifier())));
-        });
+        level.getEntitiesOfClass(LivingEntity.class, new AABB(center).inflate(definition.radius()))
+            .forEach(entity -> entity.addEffect(new MobEffectInstance(
+                MobEffects.STRENGTH,
+                definition.duration(),
+                Math.max(0, definition.amplifier())
+            )));
     }
 
     private static void drainGrowth(
         final ServerLevel level,
         final BlockPos center,
-        final @Nullable Player caster,
         final int radius
     ) {
         final long drained = BlockPos.betweenClosedStream(center.offset(-radius, -2, -radius), center.offset(radius, 3, radius))
@@ -906,10 +1175,11 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
                 return 1L;
             })
             .sum();
-        if (caster != null && drained > 0) {
-            caster.heal(Math.min(20.0F, drained * 0.5F));
-            caster.getFoodData().eat(Math.min(20, (int) (drained / 2)), Math.min(1.0F, drained / 20.0F));
-        }
+        level.getEntitiesOfClass(
+            LivingEntity.class,
+            new AABB(center).inflate(radius),
+            entity -> entity.typeHolder().is(EntityTypeTags.UNDEAD)
+        ).forEach(entity -> entity.heal(Math.min(20.0F, drained * 0.5F)));
     }
 
     private static void fortifyUndead(
@@ -917,15 +1187,12 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final BlockPos center,
         final RitualDefinition definition
     ) {
-        level.getEntitiesOfClass(
-            LivingEntity.class,
-            new AABB(center).inflate(definition.radius()),
-            entity -> entity.typeHolder().is(EntityTypeTags.UNDEAD)
-        ).forEach(entity -> {
-            entity.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, definition.duration(), definition.amplifier() + 1));
-            entity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, definition.duration(), definition.amplifier()));
-            entity.addEffect(new MobEffectInstance(MobEffects.STRENGTH, definition.duration(), definition.amplifier()));
-        });
+        level.getEntitiesOfClass(LivingEntity.class, new AABB(center).inflate(definition.radius()))
+            .forEach(entity -> entity.addEffect(new MobEffectInstance(
+                MobEffects.RESISTANCE,
+                definition.duration(),
+                Math.max(0, definition.amplifier())
+            )));
     }
 
     private static void graveyardMist(
@@ -993,12 +1260,67 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             }));
     }
 
+    static boolean transformNami(
+        final ServerLevel level,
+        final BlockPos center,
+        final @Nullable Player caster,
+        final int radius
+    ) {
+        final Optional<NamiEntity> candidate = unmarriedNami(level, center, radius);
+        if (candidate.isEmpty()) {
+            return false;
+        }
+        final NamiEntity nami = candidate.orElseThrow();
+        final var created = ModEntities.ALL.get("naamah").get().create(level, EntitySpawnReason.EVENT);
+        if (!(created instanceof NaamahEntity naamah)) {
+            return false;
+        }
+        naamah.snapTo(nami.getX(), nami.getY(), nami.getZ());
+        naamah.setYRot(nami.getYRot());
+        if (caster instanceof ServerPlayer player) {
+            naamah.getPersistentData().putString(
+                com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime.NAAMAH_TRIAL_OWNER,
+                player.getStringUUID()
+            );
+        }
+        if (!level.addFreshEntity(naamah)) {
+            return false;
+        }
+        nami.discard();
+        level.sendParticles(
+            ParticleTypes.FLAME,
+            naamah.getX(),
+            naamah.getEyeY(),
+            naamah.getZ(),
+            48,
+            0.45,
+            0.8,
+            0.45,
+            0.04
+        );
+        return true;
+    }
+
+    private static Optional<NamiEntity> unmarriedNami(
+        final ServerLevel level,
+        final BlockPos center,
+        final int radius
+    ) {
+        final MarriageData marriages = MarriageData.get(level);
+        return level.getEntitiesOfClass(
+                NamiEntity.class,
+                new AABB(center).inflate(Math.max(6, radius)),
+                nami -> nami.isAlive() && marriages.ownerForNami(nami.getUUID()).isEmpty()
+            ).stream()
+            .min(Comparator.comparingDouble(nami -> nami.distanceToSqr(Vec3.atCenterOf(center))));
+    }
+
     private static void callFamiliar(
         final ServerLevel level,
         final BlockPos center,
         final @Nullable Player caster
     ) {
-        if (caster == null) {
+        if (caster == null || FetishRuntime.protects(caster)) {
             return;
         }
         ownedFamiliar(level, caster).ifPresent(familiar -> familiar.teleport(new net.minecraft.world.level.portal.TeleportTransition(
@@ -1056,11 +1378,22 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         if (id == null) {
             return;
         }
-        BuiltInRegistries.BLOCK.get(id).ifPresent(holder -> java.util.stream.IntStream
-            .rangeClosed(0, Math.clamp(definition.count(), 1, 16))
-            .mapToObj(center::above)
-            .filter(pos -> level.getBlockState(pos).canBeReplaced())
-            .forEach(pos -> level.setBlockAndUpdate(pos, holder.value().defaultBlockState())));
+        BuiltInRegistries.BLOCK.get(id).ifPresent(holder -> {
+            final int radius = Math.clamp(definition.radius() / 3, 1, 4);
+            final int height = Math.clamp(definition.count(), 1, 16);
+            BlockPos.betweenClosedStream(
+                    center.offset(-radius, 0, -radius),
+                    center.offset(radius, height, radius)
+                )
+                .filter(pos -> {
+                    final int dx = pos.getX() - center.getX();
+                    final int dz = pos.getZ() - center.getZ();
+                    return dx * dx + dz * dz <= radius * radius;
+                })
+                .filter(pos -> level.getBlockEntity(pos) == null && level.getBlockState(pos).canBeReplaced())
+                .limit(2_048)
+                .forEach(pos -> level.setBlockAndUpdate(pos, holder.value().defaultBlockState()));
+        });
     }
 
     private static void createFissure(
@@ -1188,26 +1521,18 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final BlockPos center,
         final RitualDefinition definition
     ) {
-        java.util.stream.IntStream.range(0, Math.clamp(definition.count(), 1, 32)).forEach(index ->
-            BuiltInRegistries.ENTITY_TYPE
-                .getRandomElementOf(WarlockeryTags.EntityTypes.DEMONS, level.getRandom())
-                .map(holder -> holder.value().create(level, EntitySpawnReason.TRIGGERED))
-                .filter(java.util.Objects::nonNull)
-                .ifPresent(entity -> {
-                    final double angle = Math.PI * 2.0 * index / Math.max(1, definition.count());
-                    final double distance = Math.max(2.0, definition.radius() * 0.6);
-                    final int x = center.getX() + (int) Math.round(Math.cos(angle) * distance);
-                    final int z = center.getZ() + (int) Math.round(Math.sin(angle) * distance);
-                    final int y = Math.max(
-                        center.getY() + 1,
-                        level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z)
-                    );
-                    entity.snapTo(x + 0.5, y, z + 0.5);
-                    level.addFreshEntity(entity);
-                })
-        );
+        final BlockPos destination = nearbyItems(level, center).stream()
+            .map(ItemEntity::getItem)
+            .map(WaystoneState::read)
+            .flatMap(Optional::stream)
+            .filter(location -> location.dimension().equals(level.dimension().identifier()))
+            .map(WaystoneState.Location::position)
+            .findFirst()
+            .orElse(center);
+        level.getChunkAt(destination);
+        HellRiftData.get(level).open(level, destination, center, definition.radius(), definition.duration());
         final BlockState controlledFire = Blocks.SOUL_CAMPFIRE.defaultBlockState();
-        RitualTerrainPlan.fireRing(center, definition.radius(), definition.count()).forEach(column ->
+        RitualTerrainPlan.fireRing(destination, definition.radius(), definition.count()).forEach(column ->
             findControlledFirePosition(level, column, controlledFire)
                 .ifPresent(pos -> level.setBlockAndUpdate(pos, controlledFire))
         );
@@ -1302,24 +1627,49 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
     private static void removeVampirism(final ServerLevel level, final BlockPos center, final int radius) {
         targetPlayers(level, center, radius).stream()
             .filter(player -> SupernaturalState.getForm(player) == SupernaturalForm.VAMPIRE)
-            .forEach(player -> SupernaturalState.setForm(player, SupernaturalForm.NONE));
+            .forEach(com.kadamitas.warlockery.transformation.SupernaturalProgression::cure);
     }
 
     private static void removeWerewolf(final ServerLevel level, final BlockPos center, final int radius) {
         targetPlayers(level, center, radius).stream()
             .filter(player -> SupernaturalState.getForm(player) == SupernaturalForm.WEREWOLF)
-            .forEach(player -> SupernaturalState.setForm(player, SupernaturalForm.NONE));
+            .forEach(com.kadamitas.warlockery.transformation.SupernaturalProgression::cure);
     }
 
     private static void transform(
         final ServerLevel level,
         final BlockPos center,
+        final @Nullable Player caster,
         final int radius,
         final SupernaturalForm form
     ) {
         targetPlayers(level, center, radius).stream()
             .filter(player -> SupernaturalState.getForm(player) == SupernaturalForm.NONE)
-            .forEach(player -> SupernaturalState.setForm(player, form));
+            .filter(player -> !protectedFromHex(player, caster))
+            .forEach(player -> {
+                if (form == SupernaturalForm.WEREWOLF) {
+                    com.kadamitas.warlockery.transformation.SupernaturalAdvancement.beginWerewolf(player);
+                } else if (form == SupernaturalForm.VAMPIRE) {
+                    com.kadamitas.warlockery.transformation.SupernaturalAdvancement.beginVampire(player);
+                }
+            });
+    }
+
+    private static void applyBlight(
+        final ServerLevel level,
+        final BlockPos center,
+        final @Nullable Player caster,
+        final RitualDefinition definition
+    ) {
+        final boolean intercepted = level.getEntitiesOfClass(
+                Player.class,
+                new AABB(center).inflate(definition.radius()),
+                Player::isAlive
+            ).stream()
+            .anyMatch(player -> protectedFromHex(player, caster));
+        if (!intercepted) {
+            BlightHex.apply(level, center, definition.radius(), definition.duration());
+        }
     }
 
     private static void applyHex(
@@ -1329,31 +1679,153 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final RitualDefinition definition
     ) {
         targetLiving(level, center, definition.radius()).forEach(target -> {
-            if (FetishRuntime.protects(target)) {
-                if (target instanceof ServerPlayer player) {
-                    player.sendSystemMessage(Component.translatable("message.warlockery.fetish.hex_blocked"));
-                }
-                return;
-            }
-            if (EquipmentSetEffects.tryBlockHex(target)) {
-                if (target instanceof ServerPlayer player) {
-                    player.sendSystemMessage(Component.translatable("message.warlockery.hunter_armor.hex_blocked"));
-                }
-                return;
-            }
-            if (DollItem.tryBlockHex(target, caster)) {
-                if (target instanceof ServerPlayer player) {
-                    player.sendSystemMessage(Component.translatable("message.warlockery.doll.hex_blocked"));
-                }
+            if (protectedFromHex(target, caster)) {
                 return;
             }
             HexBehaviors.forTarget(definition.target()).apply(target, definition.duration());
         });
     }
 
+    private static boolean protectedFromHex(
+        final LivingEntity target,
+        final @Nullable LivingEntity caster
+    ) {
+        if (FetishRuntime.protects(target)) {
+            if (target instanceof ServerPlayer player) {
+                player.sendSystemMessage(Component.translatable("message.warlockery.fetish.hex_blocked"));
+            }
+            return true;
+        }
+        if (EquipmentSetEffects.tryBlockHex(target)) {
+            if (target instanceof ServerPlayer player) {
+                player.sendSystemMessage(Component.translatable("message.warlockery.hunter_armor.hex_blocked"));
+            }
+            return true;
+        }
+        if (!DollItem.tryBlockHex(target, caster)) {
+            return false;
+        }
+        if (target instanceof ServerPlayer player) {
+            player.sendSystemMessage(Component.translatable("message.warlockery.doll.hex_blocked"));
+        }
+        return true;
+    }
+
     private static void cleanse(final ServerLevel level, final BlockPos center, final RitualDefinition definition) {
         targetLiving(level, center, definition.radius())
             .forEach(target -> HexBehaviors.forTarget(definition.target()).remove(target));
+    }
+
+    private static void marry(
+        final ServerLevel level,
+        final BlockPos center,
+        final @Nullable Player caster,
+        final RitualDefinition definition
+    ) {
+        if (!(caster instanceof ServerPlayer player)) {
+            return;
+        }
+        final Optional<LivingEntity> candidate = marriageCandidate(level, center, player, definition.radius());
+        if (candidate.isEmpty()) {
+            player.sendSystemMessage(Component.translatable("message.warlockery.marriage.missing_partner"));
+            return;
+        }
+        final MarriageData marriages = MarriageData.get(level);
+        final LivingEntity partner = candidate.orElseThrow();
+        final MarriageData.MarriageResult result;
+        if (partner instanceof ServerPlayer other) {
+            result = marriages.marryPlayers(player.getUUID(), other.getUUID());
+            if (result == MarriageData.MarriageResult.SUCCESS) {
+                other.sendSystemMessage(Component.translatable("message.warlockery.marriage.bound", player.getDisplayName()));
+                bindWeddingRings(level, center, player.getDisplayName(), other.getDisplayName());
+            }
+        } else if (partner instanceof NamiEntity nami) {
+            result = marriages.marryNami(player.getUUID(), nami.getUUID());
+            if (result == MarriageData.MarriageResult.SUCCESS) {
+                final String spouseName = marriages.bond(player.getUUID()).orElseThrow().spouseName();
+                nami.acceptMarriage(player, spouseName);
+                bindWeddingRings(level, center, player.getDisplayName(), Component.literal(spouseName));
+            }
+        } else {
+            result = MarriageData.MarriageResult.INVALID_PARTNER;
+        }
+        if (result == MarriageData.MarriageResult.SUCCESS) {
+            player.sendSystemMessage(Component.translatable("message.warlockery.marriage.bound", partner.getDisplayName()));
+        } else {
+            player.sendSystemMessage(Component.translatable("message.warlockery.marriage.failed." + result.name().toLowerCase()));
+        }
+    }
+
+    private static void divorce(
+        final ServerLevel level,
+        final BlockPos center,
+        final @Nullable Player caster
+    ) {
+        if (!(caster instanceof ServerPlayer player)) {
+            return;
+        }
+        final Optional<MarriageData.Bond> removed = MarriageData.get(level).divorce(player.getUUID());
+        if (removed.isEmpty()) {
+            player.sendSystemMessage(Component.translatable("message.warlockery.divorce.not_married"));
+            return;
+        }
+        final MarriageData.Bond bond = removed.orElseThrow();
+        if (bond.isNami()) {
+            for (final ServerLevel serverLevel : level.getServer().getAllLevels()) {
+                if (serverLevel.getEntity(bond.partnerUuid()) instanceof NamiEntity nami) {
+                    nami.divorce();
+                    break;
+                }
+            }
+        } else {
+            final ServerPlayer partner = level.getServer().getPlayerList().getPlayer(bond.partnerUuid());
+            if (partner != null) {
+                partner.sendSystemMessage(Component.translatable("message.warlockery.divorce.complete"));
+            }
+        }
+        player.sendSystemMessage(Component.translatable("message.warlockery.divorce.complete"));
+        level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(6.0), ItemEntity::isAlive).stream()
+            .filter(entity -> MarriageRuntime.isWeddingRing(entity.getItem()))
+            .findFirst()
+            .ifPresent(entity -> entity.getItem().shrink(1));
+    }
+
+    private static Optional<LivingEntity> marriageCandidate(
+        final ServerLevel level,
+        final BlockPos center,
+        final Player caster,
+        final int radius
+    ) {
+        final Optional<LivingEntity> bound = boundTarget(level, center)
+            .filter(target -> target != caster)
+            .filter(target -> target instanceof ServerPlayer || target instanceof NamiEntity);
+        if (bound.isPresent()) {
+            return bound;
+        }
+        final Optional<LivingEntity> player = level.getEntitiesOfClass(
+                ServerPlayer.class,
+                new AABB(center).inflate(radius),
+                target -> target != caster
+            ).stream()
+            .min(Comparator.comparingDouble(target -> target.distanceToSqr(Vec3.atCenterOf(center))))
+            .map(LivingEntity.class::cast);
+        return player.or(() -> MarriageRuntime.nearestUnmarriedNami(level, center, radius).map(LivingEntity.class::cast));
+    }
+
+    private static void bindWeddingRings(
+        final ServerLevel level,
+        final BlockPos center,
+        final Component first,
+        final Component second
+    ) {
+        level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(6.0), ItemEntity::isAlive).stream()
+            .map(ItemEntity::getItem)
+            .filter(MarriageRuntime::isWeddingRing)
+            .findFirst()
+            .ifPresent(stack -> stack.set(
+                DataComponents.LORE,
+                new ItemLore(List.of(Component.translatable("tooltip.warlockery.wedding_ring.bound", first, second)))
+            ));
     }
 
     private static List<Player> targetPlayers(final ServerLevel level, final BlockPos center, final int radius) {
@@ -1424,7 +1896,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final BlockPos center,
         final @Nullable Player caster
     ) {
-        if (caster == null) {
+        if (caster == null || FetishRuntime.protects(caster)) {
             return;
         }
         nearbyItems(level, center).stream().map(ItemEntity::getItem)
@@ -1447,7 +1919,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
     }
 
     private static void teleportBoundEntity(final ServerLevel level, final BlockPos center) {
-        boundTarget(level, center).ifPresent(target ->
+        boundTarget(level, center).filter(target -> !FetishRuntime.protects(target)).ifPresent(target ->
             target.teleportTo(center.getX() + 0.5, center.getY() + 1.0, center.getZ() + 0.5));
     }
 
@@ -1463,8 +1935,13 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             });
     }
 
-    private static void iceSphere(final ServerLevel level, final BlockPos center, final int radius) {
-        final int safeRadius = Math.clamp(radius, 2, 8);
+    private static void iceSphere(
+        final ServerLevel level,
+        final BlockPos center,
+        final int radius,
+        final int participants
+    ) {
+        final int safeRadius = Math.clamp(radius + Math.max(0, participants - 3), 2, 8);
         BlockPos.betweenClosedStream(center.offset(-safeRadius, -safeRadius, -safeRadius), center.offset(safeRadius, safeRadius, safeRadius))
             .filter(pos -> {
                 final double distance = Math.sqrt(pos.distSqr(center));
@@ -1473,6 +1950,15 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             .filter(pos -> level.getBlockEntity(pos) == null && level.getBlockState(pos).canBeReplaced())
             .limit(1_024)
             .forEach(pos -> level.setBlockAndUpdate(pos, Blocks.PACKED_ICE.defaultBlockState()));
+        BlockPos.betweenClosedStream(
+                center.offset(-safeRadius + 1, -safeRadius + 1, -safeRadius + 1),
+                center.offset(safeRadius - 1, safeRadius - 1, safeRadius - 1)
+            )
+            .filter(pos -> pos.distSqr(center) < (safeRadius - 0.75) * (safeRadius - 0.75))
+            .filter(pos -> level.getBlockEntity(pos) == null)
+            .filter(pos -> !level.getFluidState(pos).isEmpty())
+            .limit(1_024)
+            .forEach(pos -> level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()));
     }
 
     private static void manifest(final ServerLevel level, final BlockPos center, final RitualDefinition definition) {
@@ -1483,7 +1969,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
                 level,
                 center,
                 dreamer,
-                definition.duration()
+                ManifestationRules.durationTicks(definition.duration(), nearbyParticipants(level, center))
             ));
     }
 
@@ -1501,6 +1987,14 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final RitualDefinition definition
     ) {
         MagicPathRuntime.recharge(targetPlayers(level, center, definition.radius()), definition.power());
+        RitualWardData.get(level).place(
+            level,
+            RitualWardType.RECHARGE,
+            center,
+            definition.radius(),
+            level.getGameTime() + definition.duration(),
+            true
+        );
     }
 
     private static void bindEntity(
@@ -1509,6 +2003,10 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final @Nullable Player caster,
         final RitualDefinition definition
     ) {
+        if (definition.target().equals("spectral")) {
+            bindSpectralStone(level, center, definition.radius());
+            return;
+        }
         if (caster == null) {
             return;
         }
@@ -1521,25 +2019,74 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         });
     }
 
+    private static boolean spectralBindingReady(
+        final ServerLevel level,
+        final BlockPos center,
+        final int radius
+    ) {
+        final List<SpectralStoneState> stones = nearbyItems(level, center).stream()
+            .map(ItemEntity::getItem)
+            .filter(stack -> stack.is(ModItems.ALL.get("spectralstone").get()))
+            .map(SpectralStoneState::read)
+            .toList();
+        if (stones.isEmpty()) {
+            return false;
+        }
+        final RitualCandidateIndex<Identifier, Mob> candidates = RitualCandidateIndex.create(
+            spectralCandidates(level, center, radius),
+            entity -> BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType())
+        );
+        return stones.stream().anyMatch(state -> candidates.anyKey(state::canCapture));
+    }
+
+    private static void bindSpectralStone(
+        final ServerLevel level,
+        final BlockPos center,
+        final int radius
+    ) {
+        final Optional<ItemStack> stone = nearbyItems(level, center).stream()
+            .map(ItemEntity::getItem)
+            .filter(stack -> stack.is(ModItems.ALL.get("spectralstone").get()))
+            .findFirst();
+        if (stone.isEmpty()) {
+            return;
+        }
+        final ItemStack stack = stone.orElseThrow();
+        final SpectralStoneState initialState = SpectralStoneState.read(stack);
+        final Optional<Map.Entry<Identifier, List<Mob>>> compatible = RitualCandidateIndex.create(
+            spectralCandidates(level, center, radius),
+            entity -> BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType())
+        ).largestMatching(initialState::canCapture);
+        if (compatible.isEmpty()) {
+            return;
+        }
+        final Map.Entry<Identifier, List<Mob>> selection = compatible.orElseThrow();
+        SpectralStoneState state = initialState;
+        final int count = Math.min(SpectralStoneState.CAPACITY - state.captured().size(), selection.getValue().size());
+        for (int index = 0; index < count; index++) {
+            state = state.with(selection.getKey());
+            selection.getValue().get(index).discard();
+        }
+        state.write(stack);
+    }
+
     private static void bindFetish(
         final ServerLevel level,
         final BlockPos center,
         final RitualDefinition definition
     ) {
-        final Map<String, Mob> candidates = spectralCandidates(level, center, definition.radius()).stream()
-            .collect(Collectors.toMap(
-                RitualManager::spectralKind,
-                entity -> entity,
-                (first, _) -> first
-            ));
-        final Optional<FetishMode> mode = FetishBindingRules.select(candidates.keySet());
+        final RitualCandidateIndex<String, Mob> candidates = RitualCandidateIndex.create(
+            spectralCandidates(level, center, definition.radius()),
+            RitualManager::spectralKind
+        );
+        final Optional<FetishBindingRules.BindingPlan> plan = FetishBindingRules.plan(candidates.counts());
         final Identifier id = Identifier.tryParse(definition.target());
-        if (mode.isEmpty() || id == null) {
+        if (plan.isEmpty() || id == null) {
             return;
         }
         BuiltInRegistries.ITEM.get(id).ifPresent(holder -> {
             final ItemStack output = new ItemStack(holder.value());
-            FetishBindingState.write(output, mode.orElseThrow());
+            FetishBindingState.write(output, plan.orElseThrow().mode());
             level.addFreshEntity(new ItemEntity(
                 level,
                 center.getX() + 0.5,
@@ -1547,8 +2094,21 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
                 center.getZ() + 0.5,
                 output
             ));
-            candidates.values().forEach(Mob::discard);
+            plan.orElseThrow().requirements().forEach((kind, count) ->
+                candidates.candidates(kind).stream().limit(count).forEach(Mob::discard)
+            );
         });
+    }
+
+    private static Map<String, Integer> spectralCounts(
+        final ServerLevel level,
+        final BlockPos center,
+        final int radius
+    ) {
+        return RitualCandidateIndex.create(
+            spectralCandidates(level, center, radius),
+            RitualManager::spectralKind
+        ).counts();
     }
 
     private static List<Mob> spectralCandidates(
@@ -1620,7 +2180,8 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             type,
             center,
             definition.radius(),
-            level.getGameTime() + definition.duration()
+            level.getGameTime() + definition.duration(),
+            definition.power() > 0
         );
     }
 
@@ -1658,7 +2219,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final Optional<java.util.UUID> target = boundTargetId(level, center)
             .or(() -> Optional.ofNullable(caster).map(Player::getUUID));
         final PriorIncarnationRuntime.RecoveryReport report = target
-            .map(player -> PriorIncarnationRuntime.recover(level, center, player))
+            .map(player -> PriorIncarnationRuntime.recover(level, center, player, 16))
             .orElse(PriorIncarnationRuntime.RecoveryReport.EMPTY);
         if (caster != null) {
             caster.sendSystemMessage(Component.translatable(
@@ -1671,30 +2232,71 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         }
     }
 
-    private static void transformGlyphs(final ServerLevel level, final BlockPos center, final RitualDefinition definition) {
+    private static void transformGlyphs(
+        final ServerLevel level,
+        final BlockPos center,
+        final RitualDefinition definition,
+        final ChalkCircleLayout.Size size
+    ) {
         final Identifier targetId = Identifier.tryParse(definition.target());
-        if (targetId == null) {
-            return;
+        if (targetId != null) {
+            transformGlyphRing(level, center, size, targetId);
         }
-        BuiltInRegistries.BLOCK.get(targetId).ifPresent(target -> BlockPos.betweenClosedStream(
-                center.offset(-6, -1, -6), center.offset(6, 1, 6)
-            )
-            .filter(pos -> !pos.equals(center))
-            .filter(pos -> {
-                final Identifier existing = BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock());
-                return Warlockery.MOD_ID.equals(existing.getNamespace())
-                    && (existing.getPath().startsWith("circleglyph") || "circle".equals(existing.getPath()));
-            })
-            .limit(64)
-            .forEach(pos -> level.setBlockAndUpdate(pos, target.value().defaultBlockState())));
+    }
+
+    static boolean transformGlyphRing(
+        final ServerLevel level,
+        final BlockPos center,
+        final ChalkCircleLayout.Size size,
+        final Identifier targetId
+    ) {
+        final Optional<net.minecraft.core.Holder.Reference<Block>> target = BuiltInRegistries.BLOCK.get(targetId);
+        if (target.isEmpty() || ChalkCircleLayout.uniformGlyph(level, center, size)
+            .filter(TRANSFORMABLE_GLYPHS::contains)
+            .filter(source -> !source.equals(targetId.getPath()))
+            .isEmpty()) {
+            return false;
+        }
+        size.offsets().stream()
+            .map(center::offset)
+            .forEach(position -> level.setBlockAndUpdate(position, target.orElseThrow().value().defaultBlockState()));
+        return true;
+    }
+
+    private static ChalkCircleLayout.Size transformSize(
+        final RitualDefinition definition,
+        final int variant
+    ) {
+        if (variant >= 1 && variant <= ChalkCircleLayout.Size.values().length) {
+            return ChalkCircleLayout.Size.forOfferingCount(variant);
+        }
+        return ChalkCircleLayout.rings(definition.glyphs()).getFirst().size();
+    }
+
+    private static Optional<String> transformRing(
+        final ServerLevel level,
+        final BlockPos center,
+        final RitualDefinition definition,
+        final ChalkCircleLayout.Size size
+    ) {
+        final Identifier target = Identifier.tryParse(definition.target());
+        if (target == null) {
+            return Optional.empty();
+        }
+        return ChalkCircleLayout.uniformGlyph(level, center, size)
+            .filter(TRANSFORMABLE_GLYPHS::contains)
+            .filter(source -> !source.equals(target.getPath()));
     }
 
     private static int specificity(final RitualDefinition definition) {
-        return definition.glyphs().values().stream().mapToInt(Integer::intValue).sum();
+        return ChalkCircleLayout.canonicalGlyphs(definition.glyphs()).values().stream()
+            .mapToInt(Integer::intValue)
+            .sum();
     }
 
     private static boolean validate(final Identifier id, final RitualDefinition definition) {
         final boolean basic = RitualValidator.isStructurallyValid(definition)
+            && definition.glyphs().size() <= ChalkCircleLayout.Size.values().length
             && definition.glyphs().entrySet().stream().allMatch(entry ->
                 BuiltInRegistries.BLOCK.containsKey(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, entry.getKey())))
             && definition.requirements().ingredients().stream().allMatch(ingredient ->
@@ -1740,6 +2342,30 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
 
     public Optional<Entry> byId(final Identifier id) {
         return Optional.ofNullable(rituals.get(id)).map(definition -> new Entry(id, definition));
+    }
+
+    private record TransformInspection(
+        String targetChalk,
+        int matchingChalk,
+        int foreignChalk,
+        ChalkCircleLayout.Size size,
+        Optional<String> sourceGlyph,
+        int presentMarks
+    ) {
+        private boolean ringReady() {
+            return sourceGlyph.isPresent() && presentMarks == size.markCount();
+        }
+
+        private boolean ready() {
+            return !targetChalk.isBlank()
+                && matchingChalk >= 1
+                && matchingChalk <= 3
+                && foreignChalk == 0
+                && ringReady();
+        }
+    }
+
+    private record TransformSelection(String targetChalk, int count, ChalkCircleLayout.Size size) {
     }
 
     public record Entry(Identifier id, RitualDefinition definition) {

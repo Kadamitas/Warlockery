@@ -7,6 +7,7 @@ import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import net.minecraft.world.InteractionHand;
 import org.junit.jupiter.api.Test;
 
 final class VampireInitiationRulesTest {
@@ -32,6 +33,14 @@ final class VampireInitiationRulesTest {
             VampireInitiationRules.Status.READY,
             VampireInitiationRules.assess(true, SupernaturalForm.NONE)
         );
+    }
+
+    @Test
+    void oneHandOwnsEachInitiationInteraction() {
+        assertEquals(InteractionHand.MAIN_HAND, VampireInitiationRules.preferredHand(false, false));
+        assertEquals(InteractionHand.MAIN_HAND, VampireInitiationRules.preferredHand(true, false));
+        assertEquals(InteractionHand.MAIN_HAND, VampireInitiationRules.preferredHand(true, true));
+        assertEquals(InteractionHand.OFF_HAND, VampireInitiationRules.preferredHand(false, true));
     }
 
     @Test

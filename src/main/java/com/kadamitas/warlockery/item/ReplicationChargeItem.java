@@ -81,8 +81,9 @@ public final class ReplicationChargeItem extends SplashPotionItem {
                     duplicate.setCustomName(Component.translatable(
                         "entity.warlockery.reflection_of", target.getDisplayName()
                     ));
-                    if (getOwner() instanceof LivingEntity owner) {
-                        duplicate.setTarget(owner);
+                    duplicate.setTarget(target);
+                    if (target instanceof Mob original) {
+                        original.setTarget(duplicate);
                     }
                     duplicate.getPersistentData().putString("WarlockeryReflectedTarget", target.getStringUUID());
                     level.addFreshEntity(duplicate);

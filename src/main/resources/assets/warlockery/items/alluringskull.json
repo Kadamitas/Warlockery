@@ -1,6 +1,6 @@
-﻿{
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/alluringskull"
-              }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/alluringskull"
+  }
 }

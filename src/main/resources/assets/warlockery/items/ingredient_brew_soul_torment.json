@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_soul_torment"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_soul_torment",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 9385054
+      }
+    ]
+  }
 }

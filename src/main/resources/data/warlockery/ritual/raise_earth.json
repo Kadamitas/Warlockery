@@ -13,12 +13,12 @@
   "requirements": {
     "ingredients": [
       {
-        "ingredient": "#c:stones",
-        "count": 8,
+        "ingredient": "warlockery:ingredient_brew_sprouting",
+        "count": 1,
         "consume": true
       },
       {
-        "ingredient": "#warlockery:world_souls",
+        "ingredient": "minecraft:cactus",
         "count": 1,
         "consume": true
       }

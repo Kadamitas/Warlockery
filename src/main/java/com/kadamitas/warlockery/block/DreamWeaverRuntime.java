@@ -23,7 +23,8 @@ public final class DreamWeaverRuntime {
             return;
         }
         final Optional<BlockPos> sleeping = player.getSleepingPos();
-        final Optional<Weaver> weaver = sleeping.flatMap(pos -> nearest(level, pos));
+        final java.util.List<Weaver> weavers = sleeping.map(pos -> nearby(level, pos)).orElseGet(java.util.List::of);
+        final Optional<Weaver> weaver = sleeping.flatMap(pos -> nearest(pos, weavers));
         if (!DreamWeaverRules.canReward(
             true,
             player.getSleepTimer(),
@@ -32,10 +33,10 @@ public final class DreamWeaverRuntime {
         )) {
             return;
         }
-        apply(level, player, sleeping.orElseThrow(), weaver.orElseThrow().mode());
+        apply(level, player, sleeping.orElseThrow(), weaver.orElseThrow().mode(), weavers);
     }
 
-    private static Optional<Weaver> nearest(final ServerLevel level, final BlockPos bed) {
+    private static java.util.List<Weaver> nearby(final ServerLevel level, final BlockPos bed) {
         return BlockPos.betweenClosedStream(
                 bed.offset(-DreamWeaverRules.SEARCH_RADIUS, -DreamWeaverRules.SEARCH_RADIUS, -DreamWeaverRules.SEARCH_RADIUS),
                 bed.offset(DreamWeaverRules.SEARCH_RADIUS, DreamWeaverRules.SEARCH_RADIUS, DreamWeaverRules.SEARCH_RADIUS)
@@ -44,30 +45,37 @@ public final class DreamWeaverRuntime {
             .filter(pos -> pos.distSqr(bed) <= DreamWeaverRules.SEARCH_RADIUS * DreamWeaverRules.SEARCH_RADIUS)
             .map(pos -> new Weaver(pos.immutable(), level.getBlockState(pos)))
             .filter(weaver -> weaver.state().getBlock() instanceof DreamWeaverBlock)
-            .min(Comparator.comparingDouble(weaver -> weaver.pos().distSqr(bed)));
+            .toList();
+    }
+
+    private static Optional<Weaver> nearest(final BlockPos bed, final java.util.List<Weaver> weavers) {
+        return weavers.stream().min(Comparator.comparingDouble(weaver -> weaver.pos().distSqr(bed)));
     }
 
     private static void apply(
         final ServerLevel level,
         final ServerPlayer player,
         final BlockPos bed,
-        final DreamWeaverMode mode
+        final DreamWeaverMode mode,
+        final java.util.List<Weaver> weavers
     ) {
         final boolean protectedDream = hasProtectivePlant(level, bed);
-        final DreamWeaverRules.WakeReward reward = DreamWeaverRules.reward(mode, protectedDream);
+        final int nightmareWeavers = Math.toIntExact(weavers.stream()
+            .filter(weaver -> weaver.mode() == DreamWeaverMode.NIGHTMARES)
+            .count());
+        final int intensityWeavers = Math.toIntExact(weavers.stream()
+            .filter(weaver -> weaver.mode() == DreamWeaverMode.INTENSITY)
+            .count());
+        final DreamWeaverRules.WakeReward reward = DreamWeaverRules.reward(
+            mode,
+            protectedDream,
+            nightmareWeavers,
+            intensityWeavers
+        );
         if (reward.nutrition() > 0) {
             player.getFoodData().eat(reward.nutrition(), reward.saturationModifier());
         }
-        switch (reward.effect()) {
-            case "regeneration" -> player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 600, 1));
-            case "saturation" -> player.addEffect(new MobEffectInstance(MobEffects.SATURATION, 1, 1));
-            case "speed" -> player.addEffect(new MobEffectInstance(MobEffects.SPEED, 2_400, 1));
-            case "night_vision" -> player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 6_000, 0));
-            case "strength" -> player.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 2_400, 1));
-            case "absorption" -> player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 2_400, 1));
-            case "darkness" -> player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 300, 0));
-            default -> throw new IllegalStateException("Unsupported dream reward: " + reward.effect());
-        }
+        reward.effects().forEach(effect -> applyEffect(player, effect));
         if (reward.spawnNightmare()) {
             spawnNightmare(level, player, bed);
         }
@@ -77,6 +85,29 @@ public final class DreamWeaverRuntime {
                 : "message.warlockery.dream_weaver.wake",
             Component.translatable("dream_weaver_mode.warlockery." + mode.getSerializedName())
         ));
+    }
+
+    private static void applyEffect(
+        final ServerPlayer player,
+        final DreamWeaverRules.EffectReward effect
+    ) {
+        final var type = switch (effect.id()) {
+            case "regeneration" -> MobEffects.REGENERATION;
+            case "saturation" -> MobEffects.SATURATION;
+            case "speed" -> MobEffects.SPEED;
+            case "night_vision" -> MobEffects.NIGHT_VISION;
+            case "haste" -> MobEffects.HASTE;
+            case "mining_fatigue" -> MobEffects.MINING_FATIGUE;
+            case "poison" -> MobEffects.POISON;
+            case "hunger" -> MobEffects.HUNGER;
+            case "slowness" -> MobEffects.SLOWNESS;
+            case "weakness" -> MobEffects.WEAKNESS;
+            case "blindness" -> MobEffects.BLINDNESS;
+            case "absorption" -> MobEffects.ABSORPTION;
+            case "darkness" -> MobEffects.DARKNESS;
+            default -> throw new IllegalStateException("Unsupported dream reward: " + effect.id());
+        };
+        player.addEffect(new MobEffectInstance(type, effect.duration(), effect.amplifier()));
     }
 
     private static boolean hasProtectivePlant(final ServerLevel level, final BlockPos bed) {

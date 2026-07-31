@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_depths"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_depths",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 3382694
+      }
+    ]
+  }
 }

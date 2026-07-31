@@ -21,6 +21,11 @@ public final class ManifestationRules {
         return new Decision(true, Diagnostic.READY);
     }
 
+    public static int durationTicks(final int baseDuration, final int participants) {
+        final long duration = Math.max(20, baseDuration) + (long) Math.max(0, participants - 1) * 500L;
+        return (int) Math.min(Integer.MAX_VALUE, duration);
+    }
+
     public enum Diagnostic {
         MISSING_BOUND_TARGET("bound_sleeping_target"),
         TARGET_AWAKE("sleeping_target"),

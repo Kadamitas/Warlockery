@@ -64,6 +64,34 @@ final class RitualWardParityTest {
             Vec3.ZERO
         );
         assertTrue(repelled.x > 0.0);
+        assertTrue(RitualWardRules.boundaryVelocity(
+            Vec3.ZERO,
+            6,
+            new Vec3(5.8, 0.0, 0.0),
+            new Vec3(0.5, 0.0, 0.0)
+        ).x < 0.0);
+        assertTrue(RitualWardRules.boundaryVelocity(
+            Vec3.ZERO,
+            6,
+            new Vec3(6.2, 0.0, 0.0),
+            new Vec3(-0.5, 0.0, 0.0)
+        ).x > 0.0);
+    }
+
+    @Test
+    void sustainedWardsUseLegacyPerSecondPowerRates() {
+        assertEquals(24, RitualWardRules.powerPerSecond(RitualWardType.PROTECTION, 6));
+        assertEquals(28, RitualWardRules.powerPerSecond(RitualWardType.PROTECTION, 12));
+        assertEquals(40, RitualWardRules.powerPerSecond(RitualWardType.RECHARGE, 6));
+        assertEquals(16, RitualWardRules.powerPerSecond(RitualWardType.IMPRISONMENT, 6));
+        assertEquals(16, RitualWardRules.powerPerSecond(RitualWardType.SANCTITY, 6));
+    }
+
+    @Test
+    void protectionVariantsUseWardsAndPortableProtectionNeedsNoAltarPower() {
+        assertEquals("protection_ward", ritual("barrier_large").get("action").getAsString());
+        assertEquals("protection_ward", ritual("barrier_portable").get("action").getAsString());
+        assertEquals(0, ritual("barrier_portable").get("power").getAsInt());
     }
 
     @Test

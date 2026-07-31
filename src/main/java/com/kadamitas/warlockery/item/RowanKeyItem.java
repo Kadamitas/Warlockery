@@ -11,11 +11,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.InteractionHand;
 
 public final class RowanKeyItem extends Item {
+    public static final int UNLIMITED_CAPACITY = Integer.MAX_VALUE;
+
     private final int capacity;
 
     public RowanKeyItem(final Properties properties, final int capacity) {
         super(properties.stacksTo(1));
         this.capacity = capacity;
+    }
+
+    public boolean isKeyring() {
+        return capacity == UNLIMITED_CAPACITY;
     }
 
     public InteractionResult interactDoor(
@@ -31,7 +37,7 @@ public final class RowanKeyItem extends Item {
             return InteractionResult.SUCCESS;
         }
         if (state.doors().size() >= capacity) {
-            show(player, UtilityDecision.failure("keyring_full"));
+            show(player, UtilityDecision.failure(capacity <= 1 ? "already_bound" : "keyring_full"));
             return InteractionResult.FAIL;
         }
         if (!level.isClientSide()) {
@@ -58,7 +64,7 @@ public final class RowanKeyItem extends Item {
         final RowanKeyState current = RowanKeyState.read(ring);
         final RowanKeyState merged = current.merge(RowanKeyState.read(source), capacity);
         if (merged.equals(current)) {
-            show(player, UtilityDecision.failure(current.doors().size() >= capacity ? "keyring_full" : "already_bound"));
+            show(player, UtilityDecision.failure("already_bound"));
             return InteractionResult.FAIL;
         }
         if (!level.isClientSide()) {

@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_congealed_spirit"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_congealed_spirit",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 9298146
+      }
+    ]
+  }
 }

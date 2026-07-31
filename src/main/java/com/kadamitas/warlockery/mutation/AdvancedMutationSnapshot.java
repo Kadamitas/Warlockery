@@ -13,7 +13,9 @@ public record AdvancedMutationSnapshot(
     int matureCardinalMandrakes,
     int toadHosts,
     int creeperHosts,
-    int livingMandrakes
+    int livingMandrakes,
+    int batSnares,
+    int wolfHosts
 ) {
     public AdvancedMutationSnapshot {
         if (IntStream.of(
@@ -25,9 +27,41 @@ public record AdvancedMutationSnapshot(
             matureCardinalMandrakes,
             toadHosts,
             creeperHosts,
-            livingMandrakes
+            livingMandrakes,
+            batSnares,
+            wolfHosts
         ).anyMatch(value -> value < 0)) {
             throw new IllegalArgumentException("Mutation counts must be nonnegative");
         }
+    }
+
+    public AdvancedMutationSnapshot(
+        final boolean cobweb,
+        final boolean water,
+        final int slimeSnares,
+        final int diagonalGrasspers,
+        final int mutandisExtremis,
+        final int chargedAttunedStones,
+        final int focusedWill,
+        final int matureCardinalMandrakes,
+        final int toadHosts,
+        final int creeperHosts,
+        final int livingMandrakes
+    ) {
+        this(
+            cobweb,
+            water,
+            slimeSnares,
+            diagonalGrasspers,
+            mutandisExtremis,
+            chargedAttunedStones,
+            focusedWill,
+            matureCardinalMandrakes,
+            toadHosts,
+            creeperHosts,
+            livingMandrakes,
+            0,
+            0
+        );
     }
 }

@@ -1,4 +1,4 @@
 {
-  "type":"minecraft:blasting","category":"misc","ingredient":"#c:raw_materials/koboldite",
+  "type":"minecraft:blasting","category":"misc","ingredient":"#c:raw_materials/goblinite",
   "result":{"id":"warlockery:ingredient_delvealloyingot"},"experience":1.0,"cookingtime":100
 }

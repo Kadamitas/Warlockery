@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.compat.jei;
 
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.ritual.ChalkCircleLayout;
 import com.kadamitas.warlockery.ritual.RitualDefinition;
 import com.kadamitas.warlockery.ritual.RitualManager;
 import java.util.ArrayList;
@@ -45,18 +46,22 @@ final class RitualRecipeCategory extends AbstractRecipeCategory<RitualManager.En
             final RitualDefinition.Ingredient ingredient = ingredients.get(index);
             final var slot = builder.addInputSlot(4 + index * 20, 48).setStandardSlotBackground();
             JeiIngredients.addItem(slot, ingredient.ingredient(), ingredient.count());
+            if ("glyph_transform".equals(definition.action())) {
+                slot.addRichTooltipCallback((_, tooltip) ->
+                    tooltip.add(Component.translatable("jei.warlockery.ritual.glyph_transform_sizes")));
+            }
             if (!ingredient.consume()) {
                 slot.addRichTooltipCallback((_, tooltip) ->
                     tooltip.add(Component.translatable("jei.warlockery.ritual.not_consumed")));
             }
         }
         int glyphIndex = 0;
-        for (final var glyph : definition.glyphs().entrySet()) {
-            final var block = ModBlocks.ALL.get(glyph.getKey());
+        for (final ChalkCircleLayout.Ring ring : ChalkCircleLayout.rings(definition.glyphs())) {
+            final var block = ModBlocks.ALL.get(ring.glyph());
             if (block != null) {
                 builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 4 + glyphIndex * 20, 70)
                     .setStandardSlotBackground()
-                    .add(new ItemStack(block.get(), glyph.getValue()))
+                    .add(new ItemStack(block.get(), ring.requiredCount()))
                     .addRichTooltipCallback((_, tooltip) ->
                         tooltip.add(Component.translatable("jei.warlockery.ritual.not_consumed")));
                 glyphIndex++;

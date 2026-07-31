@@ -62,7 +62,22 @@ final class ManualLayoutTest {
             )
         );
 
-        final int finalChapterBottom = layout.sectionListTop() + (layout.sectionRows() - 1) * 24 + 20;
+        final List<ManualLayout.Bounds> chapterControls = layout.chapterControls();
+        assertEquals(3, chapterControls.size());
+        chapterControls.forEach(control -> {
+            assertTrue(control.x() >= layout.navigationLeft());
+            assertTrue(control.right() <= layout.navigationRight());
+            assertEquals(18, control.height());
+        });
+        IntStream.range(0, chapterControls.size()).forEach(left ->
+            IntStream.range(left + 1, chapterControls.size()).forEach(right ->
+                assertFalse(chapterControls.get(left).overlaps(chapterControls.get(right)))
+            )
+        );
+
+        final int finalChapterBottom = layout.sectionListTop()
+            + (layout.sectionRows() - 1) * layout.sectionRowHeight()
+            + layout.sectionButtonHeight();
         assertTrue(finalChapterBottom < layout.bottom());
     }
 

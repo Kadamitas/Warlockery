@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.ritual;
 
-import java.util.Arrays;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.Optional;
 
 public final class BindingRules {
@@ -25,12 +26,13 @@ public final class BindingRules {
         return new Decision(true, Diagnostic.READY);
     }
 
-    public enum Variant {
+    public enum Variant implements StringIdentified {
         FAMILIAR("familiar"),
         SPECTRAL("spectral"),
         STATUE("statue"),
         BLOODED_WAYSTONE("blooded_waystone");
 
+        private static final EnumLookup<Variant> LOOKUP = EnumLookup.create("binding variant", values());
         private final String id;
 
         Variant(final String id) {
@@ -42,7 +44,7 @@ public final class BindingRules {
         }
 
         public static Optional<Variant> find(final String id) {
-            return Arrays.stream(values()).filter(variant -> variant.id.equals(id)).findFirst();
+            return LOOKUP.find(id);
         }
     }
 

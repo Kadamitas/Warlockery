@@ -4,7 +4,16 @@ import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
+import com.kadamitas.warlockery.item.EquipmentSetEffects;
+import com.kadamitas.warlockery.magic.MagicPathState;
+import java.util.Comparator;
+import java.util.stream.StreamSupport;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
@@ -15,12 +24,15 @@ public final class CreatureCombat {
     }
 
     public static void handleDamage(final LivingDamageEvent event) {
+        if (event.getAmount() <= 0.0F) {
+            return;
+        }
         final ItemStack projectile = event.getSource().getDirectEntity() instanceof AbstractArrow arrow
             ? arrow.getPickupItemStackOrigin() : ItemStack.EMPTY;
         final ItemStack weapon = event.getSource().getWeaponItem();
         final boolean silver = projectile.is(WarlockeryTags.Items.SILVER_PROJECTILES)
             || weapon != null && weapon.is(WarlockeryTags.Items.SILVER_WEAPONS);
-        final boolean stake = projectile.is(ModItems.ALL.get("ingredient_bolt_stake").get());
+        final boolean wooden = projectile.is(ModItems.ALL.get("ingredient_bolt_stake").get());
         final boolean holy = projectile.is(ModItems.ALL.get("ingredient_bolt_holy").get());
         final boolean antiMagic = projectile.is(ModItems.ALL.get("ingredient_bolt_anti_magic").get());
 
@@ -29,55 +41,101 @@ public final class CreatureCombat {
                 creature.creatureKind(),
                 event.getAmount(),
                 silver,
-                stake,
+                wooden,
                 holy,
                 creature instanceof SpiritMob,
                 isWerewolfTarget(event.getEntity())
             ));
+            applyPairedPatronProtection(event, creature.creatureKind());
         } else if (silver && isWerewolfTarget(event.getEntity())) {
             event.setAmount(event.getAmount() * 2.0F);
         }
-        if (antiMagic) {
-            event.getEntity().removeAllEffects();
+        final boolean nullifyingHunterShot = antiMagic
+            && event.getSource().getEntity() instanceof Player shooter
+            && EquipmentSetEffects.wearsCompleteHunterSet(shooter);
+        if (nullifyingHunterShot) {
+            event.getEntity().getActiveEffects().stream()
+                .map(effect -> effect.getEffect())
+                .filter(effect -> !persistsThroughNullification(effect))
+                .toList()
+                .forEach(event.getEntity()::removeEffect);
+            if (event.getEntity() instanceof Player target) {
+                MagicPathState.active(target).forEach(path -> {
+                    final int reserve = MagicPathState.reserve(target, path);
+                    MagicPathState.spend(target, path, (reserve + 2) / 3);
+                });
+            }
         }
+        final ItemStack meleeWeapon = event.getSource().getWeaponItem();
+        if (meleeWeapon != null
+            && meleeWeapon.is(ModItems.ALL.get("ingredient_stake").get())
+            && isVampireTarget(event.getEntity())
+            && event.getEntity().isSleeping()) {
+            event.setAmount(Math.max(event.getAmount(), event.getEntity().getMaxHealth() * 100.0F));
+        }
+        transferDamageToFamiliar(event);
     }
 
     public static float adjustedDamage(
         final ArcaneCreature.CreatureKind kind,
         final float baseDamage,
         final boolean silver,
-        final boolean stake,
+        final boolean wooden,
         final boolean holy,
         final boolean spirit
     ) {
-        return adjustedDamage(kind, baseDamage, silver, stake, holy, spirit, isWerewolfKind(kind));
+        return adjustedDamage(kind, baseDamage, silver, wooden, holy, spirit, isWerewolfKind(kind));
     }
 
     private static float adjustedDamage(
         final ArcaneCreature.CreatureKind kind,
         final float baseDamage,
         final boolean silver,
-        final boolean stake,
+        final boolean wooden,
         final boolean holy,
         final boolean spirit,
         final boolean werewolfTarget
     ) {
         final boolean silverWeakness = silver && werewolfTarget;
-        final boolean stakeWeakness = stake && kind.isVampiric();
-        float damage = kind.isSupernatural() && !silverWeakness && !stakeWeakness
+        final boolean woodenWeakness = wooden && kind.isWoodenVulnerable();
+        final boolean consecratedWeakness = holy && (kind.isUndead() || kind.isDemonic() || spirit);
+        float damage = kind.isSupernatural() && !silverWeakness && !woodenWeakness && !consecratedWeakness
             ? Math.max(0.25F, baseDamage * 0.15F)
             : baseDamage;
         if (silverWeakness) damage *= 2.0F;
-        if (stake && kind.isVampiric()) damage *= 2.5F;
-        if (stake && kind.isWoodenVulnerable()) damage *= 2.0F;
-        if (holy && (kind.isUndead() || kind.isDemonic() || spirit)) damage *= 2.0F;
-        return damage;
+        if (woodenWeakness) damage *= 2.0F;
+        if (consecratedWeakness) damage *= 1.5F;
+        return kind == ArcaneCreature.CreatureKind.DEATH ? DeathCombatRules.capIncoming(damage) : damage;
     }
 
-    private static boolean isWerewolfTarget(final LivingEntity target) {
+    public static boolean isNullifyingHunterShot(final LivingDamageEvent event) {
+        return event.getSource().getDirectEntity() instanceof AbstractArrow arrow
+            && arrow.getPickupItemStackOrigin().is(ModItems.ALL.get("ingredient_bolt_anti_magic").get())
+            && event.getSource().getEntity() instanceof Player shooter
+            && EquipmentSetEffects.wearsCompleteHunterSet(shooter);
+    }
+
+    static boolean persistsThroughNullification(final Holder<MobEffect> effect) {
+        return effect == MobEffects.POISON || effect == MobEffects.WITHER;
+    }
+
+    public static boolean isWerewolfTarget(final LivingEntity target) {
         return target.typeHolder().is(WarlockeryTags.EntityTypes.WEREWOLVES)
             || target instanceof Player player && SupernaturalState.getForm(player) == SupernaturalForm.WEREWOLF
             || target instanceof ArcaneCreature creature && isWerewolfKind(creature.creatureKind());
+    }
+
+    public static boolean isVampireTarget(final LivingEntity target) {
+        return target.typeHolder().is(WarlockeryTags.EntityTypes.VAMPIRES)
+            || target instanceof Player player && SupernaturalState.getForm(player) == SupernaturalForm.VAMPIRE
+            || target instanceof ArcaneCreature creature && creature.creatureKind().isVampiric();
+    }
+
+    public static void capDeathDamage(final LivingDamageEvent event) {
+        if (event.getEntity() instanceof ArcaneCreature creature
+            && creature.creatureKind() == ArcaneCreature.CreatureKind.DEATH) {
+            event.setAmount(DeathCombatRules.capIncoming(event.getAmount()));
+        }
     }
 
     private static boolean isWerewolfKind(final ArcaneCreature.CreatureKind kind) {
@@ -90,5 +148,58 @@ public final class CreatureCombat {
         final ItemStack weapon = event.getSource().getWeaponItem();
         return projectile.is(WarlockeryTags.Items.SILVER_PROJECTILES)
             || weapon != null && weapon.is(WarlockeryTags.Items.SILVER_WEAPONS);
+    }
+
+    private static void applyPairedPatronProtection(
+        final LivingDamageEvent event,
+        final ArcaneCreature.CreatureKind kind
+    ) {
+        final var counterpart = GoblinBossRules.counterpart(kind);
+        if (counterpart.isEmpty() || !(event.getEntity().level() instanceof ServerLevel level)) {
+            return;
+        }
+        final double distanceSquared = level.getEntitiesOfClass(
+            LivingEntity.class,
+            event.getEntity().getBoundingBox().inflate(16.0),
+            candidate -> candidate != event.getEntity()
+                && candidate instanceof ArcaneCreature arcane
+                && arcane.creatureKind() == counterpart.orElseThrow()
+        ).stream().mapToDouble(event.getEntity()::distanceToSqr).min().orElse(Double.POSITIVE_INFINITY);
+        event.setAmount(event.getAmount() * GoblinBossRules.pairedDamageMultiplier(distanceSquared));
+    }
+
+    private static void transferDamageToFamiliar(final LivingDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)
+            || !(player.level() instanceof ServerLevel playerLevel)
+            || event.getAmount() <= 0.0F) {
+            return;
+        }
+        final var target = StreamSupport.stream(playerLevel.getServer().getAllLevels().spliterator(), false)
+            .flatMap(level -> StreamSupport.stream(level.getAllEntities().spliterator(), false)
+                .filter(Mob.class::isInstance)
+                .map(Mob.class::cast)
+                .map(mob -> new FamiliarTarget(level, mob)))
+            .filter(candidate -> candidate.mob() instanceof ArcaneCreature familiar
+                && FamiliarBondRules.isClassicFamiliar(familiar.creatureKind())
+                && CreatureBehaviorState.isOwnedBy(candidate.mob(), player.getUUID()))
+            .min(Comparator.comparingDouble(candidate -> candidate.priority(player)))
+            .orElse(null);
+        if (target == null) {
+            return;
+        }
+        final boolean sameDimension = target.level() == playerLevel;
+        final double distanceSquared = sameDimension
+            ? player.distanceToSqr(target.mob())
+            : Double.POSITIVE_INFINITY;
+        final float transferred = event.getAmount()
+            * FamiliarBondRules.transferredDamageFraction(sameDimension, distanceSquared);
+        event.setAmount(event.getAmount() - transferred);
+        target.mob().hurtServer(target.level(), target.mob().damageSources().generic(), transferred);
+    }
+
+    private record FamiliarTarget(ServerLevel level, Mob mob) {
+        private double priority(final Player player) {
+            return level == player.level() ? player.distanceToSqr(mob) : Double.MAX_VALUE;
+        }
     }
 }

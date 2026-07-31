@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 final class IngredientAllocatorTest {
@@ -75,6 +76,24 @@ final class IngredientAllocatorTest {
             (stack, ingredient) -> stack.item().equals(ingredient)
         );
         assertThrows(IllegalStateException.class, () -> allocation.applyTo(List.of(0), (_, _) -> { }));
+    }
+
+    @Test
+    void reusablePlansBuildMatchersOnceAndKeepTheirInputsImmutable() {
+        final AtomicInteger matcherFactories = new AtomicInteger();
+        final IngredientAllocationPlan<Stack> plan = IngredientAllocationPlan.create(
+            List.of(new Requirement("minecraft:stone", 2)),
+            requirement -> {
+                matcherFactories.incrementAndGet();
+                return stack -> stack.item().equals(requirement.ingredient());
+            }
+        );
+
+        assertTrue(plan.allocate(List.of(new Stack("minecraft:stone", 2)), Stack::count).complete());
+        assertFalse(plan.allocate(List.of(new Stack("minecraft:stone", 1)), Stack::count).complete());
+        assertEquals(1, matcherFactories.get());
+        assertThrows(UnsupportedOperationException.class, () -> plan.requirements().clear());
+        assertThrows(UnsupportedOperationException.class, () -> plan.matchers().clear());
     }
 
     private record Requirement(String ingredient, int count) implements CountedIngredient {

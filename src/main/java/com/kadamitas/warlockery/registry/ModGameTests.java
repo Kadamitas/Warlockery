@@ -1,7 +1,19 @@
 package com.kadamitas.warlockery.registry;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.brew.CauldronChalkCircleGameTests;
+import com.kadamitas.warlockery.brew.SolidifyingBrewGameTests;
+import com.kadamitas.warlockery.dream.SpiritWorldGameTests;
+import com.kadamitas.warlockery.item.CircleTalismanGameTests;
+import com.kadamitas.warlockery.item.BroomFlightGameTests;
+import com.kadamitas.warlockery.item.BroomMotionGameTests;
+import com.kadamitas.warlockery.item.SpiritLocatorGameTests;
+import com.kadamitas.warlockery.item.VeilWaystoneGameTests;
 import com.kadamitas.warlockery.ritual.WarlockeryGameTests;
+import com.kadamitas.warlockery.ritual.NamiRitualGameTests;
+import com.kadamitas.warlockery.ritual.SeerCovenGameTests;
+import com.kadamitas.warlockery.transformation.SupernaturalProgressionGameTests;
+import com.kadamitas.warlockery.world.VillageGuardGameTests;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -13,10 +25,26 @@ public final class ModGameTests {
 
     static {
         REGISTRY.register("ritual_catalog_loads", () -> WarlockeryGameTests::ritualCatalogLoads);
+        REGISTRY.register("blood_audience_transforms_unmarried_nami",
+            () -> NamiRitualGameTests::bloodAudienceTransformsUnmarriedNami);
+        REGISTRY.register("blood_audience_protects_married_nami",
+            () -> NamiRitualGameTests::bloodAudienceProtectsMarriedNami);
+        REGISTRY.register("broom_mount_stores_damages_and_returns_exact_stack",
+            () -> BroomFlightGameTests::mountStoresDamagesAndReturnsTheExactBroom);
+        REGISTRY.register("broom_logout_returns_stack_before_player_save",
+            () -> BroomFlightGameTests::logoutReturnsBroomBeforePlayerSave);
+        REGISTRY.register("broom_legacy_creative_flight_state_is_removed",
+            () -> BroomFlightGameTests::legacyCreativeFlightStateIsRemovedOnLogin);
+        REGISTRY.register("broom_death_uses_vanilla_drop_keep_and_vanishing_rules",
+            () -> BroomFlightGameTests::deathUsesVanillaDropKeepAndVanishingRules);
+        REGISTRY.register("broom_mount_moves_forward_and_keeps_its_rider",
+            () -> BroomMotionGameTests::mountedBroomMovesForwardAndKeepsItsRider);
         REGISTRY.register("ritual_sessions_reject_duplicate_centers",
             () -> WarlockeryGameTests::ritualSessionsRejectDuplicateCenters);
         REGISTRY.register("drinkable_custom_brew_applies_its_formula",
             () -> WarlockeryGameTests::drinkableCustomBrewAppliesItsFormula);
+        REGISTRY.register("cauldron_reads_exact_independent_chalk_rings",
+            () -> CauldronChalkCircleGameTests::cauldronReadsExactIndependentChalkRings);
         REGISTRY.register("sanctity_ward_repels_hostiles_immediately",
             () -> WarlockeryGameTests::sanctityWardRepelsHostilesImmediately);
         REGISTRY.register("summon_imp_creates_warlockery_creature",
@@ -43,10 +71,22 @@ public final class ModGameTests {
             () -> WarlockeryGameTests::forestationPlacesTaggedSaplings);
         REGISTRY.register("all_registered_creatures_instantiate",
             () -> WarlockeryGameTests::allRegisteredCreaturesInstantiate);
+        REGISTRY.register("goblins_raid_villagers_while_hobgoblins_remain_friendly",
+            () -> WarlockeryGameTests::goblinsRaidVillagersWhileHobgoblinsRemainFriendly);
+        REGISTRY.register("hobgoblin_trading_bypasses_village_guard_commissioning",
+            () -> VillageGuardGameTests::hobgoblinTradingBypassesVillageGuardCommissioning);
+        REGISTRY.register("goblin_trading_retains_its_customer",
+            () -> VillageGuardGameTests::goblinTradingRetainsItsCustomer);
+        REGISTRY.register("goblin_families_produce_matching_babies",
+            () -> VillageGuardGameTests::goblinFamiliesProduceMatchingBabies);
+        REGISTRY.register("goblin_raid_wave_is_grouped_and_coordinated",
+            () -> VillageGuardGameTests::goblinRaidWaveIsGroupedAndCoordinated);
+        REGISTRY.register("hobgoblins_flee_human_villagers_and_keep_custom_professions",
+            () -> VillageGuardGameTests::hobgoblinsFleeHumanVillagersAndKeepCustomProfessions);
         REGISTRY.register("werewolf_hunter_carries_silver_ammunition",
             () -> WarlockeryGameTests::werewolfHunterCarriesSilverAmmunition);
-        REGISTRY.register("wolf_altar_final_trial_awards_horn_once",
-            () -> WarlockeryGameTests::wolfAltarFinalTrialAwardsHornOnce);
+        REGISTRY.register("wolf_altar_final_trial_completes_once",
+            () -> WarlockeryGameTests::wolfAltarFinalTrialCompletesOnce);
         REGISTRY.register("death_guard_uses_totem_recovery_without_vanilla_trigger",
             () -> WarlockeryGameTests::deathGuardUsesTotemRecoveryWithoutVanillaTrigger);
         REGISTRY.register("hunger_guard_restores_hunger_and_saturation",
@@ -61,6 +101,22 @@ public final class ModGameTests {
             () -> WarlockeryGameTests::altarAttachmentsInstallRenderAndShiftRemove);
         REGISTRY.register("chalk_places_connected_glyphs_and_spends_durability",
             () -> WarlockeryGameTests::chalkPlacesConnectedGlyphsAndSpendsDurability);
+        REGISTRY.register("unsupported_chalk_vanishes_without_dropping_glyph_items",
+            () -> WarlockeryGameTests::unsupportedChalkVanishesWithoutDroppingGlyphItems);
+        REGISTRY.register("circle_talisman_captures_and_restores_full_large_ring",
+            () -> CircleTalismanGameTests::circleTalismanCapturesAndRestoresFullLargeRing);
+        REGISTRY.register("circle_talisman_missing_support_fails_atomically",
+            () -> CircleTalismanGameTests::circleTalismanMissingSupportFailsAtomically);
+        REGISTRY.register("circle_talisman_occupied_target_fails_atomically",
+            () -> CircleTalismanGameTests::circleTalismanOccupiedTargetFailsAtomically);
+        REGISTRY.register("scattered_chalk_marks_do_not_form_a_ritual_ring",
+            () -> WarlockeryGameTests::scatteredChalkMarksDoNotFormARitualRing);
+        REGISTRY.register("malformed_chalk_ring_is_rejected_even_with_the_right_counts",
+            () -> WarlockeryGameTests::malformedChalkRingIsRejectedEvenWithTheRightCounts);
+        REGISTRY.register("complete_large_chalk_ring_is_recognized",
+            () -> WarlockeryGameTests::completeLargeChalkRingIsRecognized);
+        REGISTRY.register("glyph_transformation_changes_only_the_selected_ring",
+            () -> WarlockeryGameTests::glyphTransformationChangesOnlyTheSelectedRing);
         REGISTRY.register("hex_guard_blocks_hostile_hex",
             () -> WarlockeryGameTests::hexGuardBlocksHostileHex);
         REGISTRY.register("hex_behavior_applies_and_removes_its_effect",
@@ -75,6 +131,50 @@ public final class ModGameTests {
             () -> WarlockeryGameTests::pipeAutomationUsesSidedItemHandlers);
         REGISTRY.register("fluid_pipes_connect_to_liquid_machines",
             () -> WarlockeryGameTests::fluidPipesConnectToLiquidMachines);
+        REGISTRY.register("seer_stone_calls_only_the_owners_recruited_circle_mages",
+            () -> SeerCovenGameTests::seerStoneCallsOnlyTheOwnersRecruitedCircleMages);
+        REGISTRY.register("seer_stone_leaves_ordinary_divination_available",
+            () -> SeerCovenGameTests::seerStoneLeavesOrdinaryDivinationAvailable);
+        REGISTRY.register("failed_veil_binding_reports_only_once_per_drop",
+            () -> VeilWaystoneGameTests::failedVeilBindingReportsOnlyOncePerDrop);
+        REGISTRY.register("spirit_locator_requires_an_exact_ritual_chalk_ring",
+            () -> SpiritLocatorGameTests::spiritLocatorRequiresAnExactRitualChalkRing);
+        REGISTRY.register("veil_ring_binds_waystones_to_its_center",
+            () -> VeilWaystoneGameTests::veilRingBindsWaystonesToItsCenter);
+        REGISTRY.register("veil_ring_transposes_living_and_dropped_travellers",
+            () -> VeilWaystoneGameTests::veilRingTransposesLivingAndDroppedTravellers);
+        REGISTRY.register("solidifying_stone_converts_every_hollow_tears_state",
+            () -> SolidifyingBrewGameTests::stoneConvertsEveryHollowTearsState);
+        REGISTRY.register("solidifying_dirt_converts_every_hollow_tears_state",
+            () -> SolidifyingBrewGameTests::dirtConvertsEveryHollowTearsState);
+        REGISTRY.register("solidifying_sand_converts_every_hollow_tears_state",
+            () -> SolidifyingBrewGameTests::sandConvertsEveryHollowTearsState);
+        REGISTRY.register("solidifying_sandstone_converts_every_hollow_tears_state",
+            () -> SolidifyingBrewGameTests::sandstoneConvertsEveryHollowTearsState);
+        REGISTRY.register("solidifying_erosion_clears_terrain_below_every_hollow_tears_state",
+            () -> SolidifyingBrewGameTests::erosionClearsTerrainBelowEveryHollowTearsState);
+        REGISTRY.register("vampire_path_initiates_diagnoses_and_advances",
+            () -> SupernaturalProgressionGameTests::vampirePathInitiatesDiagnosesAndAdvances);
+        REGISTRY.register("vampire_creation_rejects_foreign_goblet_then_completes_path",
+            () -> SupernaturalProgressionGameTests::vampireCreationRejectsForeignGobletThenCompletesPath);
+        REGISTRY.register("werewolf_altar_diagnoses_and_advances",
+            () -> SupernaturalProgressionGameTests::werewolfAltarDiagnosesAndAdvances);
+        REGISTRY.register("spirit_world_entry_creates_state_body_and_diagnostic",
+            () -> SpiritWorldGameTests::entryCreatesStateBodyAndDiagnostic);
+        REGISTRY.register("spirit_world_carry_in_and_exports_restore_without_duplication",
+            () -> SpiritWorldGameTests::carryInAndExportsRestoreWithoutDuplication);
+        REGISTRY.register("sleeping_apple_forces_only_a_standard_nightmare",
+            () -> SpiritWorldGameTests::sleepingAppleForcesOnlyAStandardNightmare);
+        REGISTRY.register("icy_needle_wakes_and_is_spent",
+            () -> SpiritWorldGameTests::icyNeedleWakesAndIsSpent);
+        REGISTRY.register("fatal_dream_damage_wakes_before_death",
+            () -> SpiritWorldGameTests::fatalDreamDamageWakesBeforeDeath);
+        REGISTRY.register("destroyed_sleeping_body_forces_wake",
+            () -> SpiritWorldGameTests::destroyedBodyForcesWake);
+        REGISTRY.register("spirit_world_inhibits_every_circle_ritual",
+            () -> SpiritWorldGameTests::spiritWorldInhibitsEveryCircleRitual);
+        REGISTRY.register("demonic_nightmare_flag_persists_in_session",
+            () -> SpiritWorldGameTests::demonicNightmareFlagPersistsInSession);
     }
 
     private ModGameTests() {

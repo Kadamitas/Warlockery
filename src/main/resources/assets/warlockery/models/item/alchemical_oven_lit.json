@@ -1,6 +1,3 @@
-﻿{
-    "parent":  "minecraft:item/generated",
-    "textures":  {
-                     "layer0":  "warlockery:item/alchemical_oven_lit"
-                 }
+{
+  "parent": "warlockery:block/alchemical_oven_lit"
 }

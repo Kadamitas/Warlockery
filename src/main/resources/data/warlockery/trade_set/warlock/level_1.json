@@ -1,0 +1,8 @@
+{
+  "amount": 2,
+  "random_sequence": "warlockery:trade_set/warlock/level_1",
+  "trades": [
+    "warlockery:warlock/1/belladonna_seeds_for_emerald",
+    "warlockery:warlock/1/emeralds_for_healing_brew"
+  ]
+}

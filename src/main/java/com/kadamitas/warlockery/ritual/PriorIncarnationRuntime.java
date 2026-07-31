@@ -42,7 +42,18 @@ public final class PriorIncarnationRuntime {
     }
 
     public static int countRecoverable(final ServerLevel destination, final UUID player) {
-        return recordAndDrops(destination, player).map(RecordAndDrops::drops).map(List::size).orElse(0);
+        return recordAndDrops(destination, player, Optional.empty(), Integer.MAX_VALUE)
+            .map(RecordAndDrops::drops).map(List::size).orElse(0);
+    }
+
+    public static int countRecoverable(
+        final ServerLevel destination,
+        final BlockPos center,
+        final UUID player,
+        final int range
+    ) {
+        return recordAndDrops(destination, player, Optional.of(center), range)
+            .map(RecordAndDrops::drops).map(List::size).orElse(0);
     }
 
     public static RecoveryReport recover(
@@ -50,7 +61,30 @@ public final class PriorIncarnationRuntime {
         final BlockPos center,
         final UUID player
     ) {
-        final Optional<RecordAndDrops> resolved = recordAndDrops(destination, player);
+        final Optional<RecordAndDrops> resolved = recordAndDrops(
+            destination,
+            player,
+            Optional.empty(),
+            Integer.MAX_VALUE
+        );
+        return recover(destination, center, player, resolved);
+    }
+
+    public static RecoveryReport recover(
+        final ServerLevel destination,
+        final BlockPos center,
+        final UUID player,
+        final int range
+    ) {
+        return recover(destination, center, player, recordAndDrops(destination, player, Optional.of(center), range));
+    }
+
+    private static RecoveryReport recover(
+        final ServerLevel destination,
+        final BlockPos center,
+        final UUID player,
+        final Optional<RecordAndDrops> resolved
+    ) {
         if (resolved.isEmpty()) {
             return RecoveryReport.EMPTY;
         }
@@ -81,7 +115,9 @@ public final class PriorIncarnationRuntime {
 
     private static Optional<RecordAndDrops> recordAndDrops(
         final ServerLevel destination,
-        final UUID player
+        final UUID player,
+        final Optional<BlockPos> requiredCenter,
+        final int range
     ) {
         final Optional<PriorIncarnationData.DeathRecord> record = PriorIncarnationData.get(destination).find(player);
         if (record.isEmpty()) {
@@ -92,11 +128,16 @@ public final class PriorIncarnationRuntime {
         if (dimension == null) {
             return Optional.empty();
         }
+        final BlockPos deathPos = BlockPos.of(death.position());
+        if (requiredCenter.isPresent()
+            && (!dimension.equals(destination.dimension().identifier())
+                || deathPos.distSqr(requiredCenter.orElseThrow()) > (double) range * range)) {
+            return Optional.empty();
+        }
         final ServerLevel source = destination.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, dimension));
         if (source == null) {
             return Optional.empty();
         }
-        final BlockPos deathPos = BlockPos.of(death.position());
         source.getChunkAt(deathPos);
         final List<ItemEntity> drops = source.getEntitiesOfClass(
             ItemEntity.class,

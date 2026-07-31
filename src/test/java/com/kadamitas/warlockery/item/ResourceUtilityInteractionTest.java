@@ -46,12 +46,16 @@ final class ResourceUtilityInteractionTest {
             "mutator",
             "seedsdreamroot",
             "ingredient_apple_wormy",
+            "ingredient_artichoke",
             "ingredient_attuned_stone",
             "ingredient_attuned_stone_charged",
             "ingredient_bat_ball",
             "ingredient_berries_rowan",
             "ingredient_bone_needle",
+            "ingredient_creeper_heart",
+            "ingredient_graveyard_dust",
             "ingredient_icy_needle",
+            "ingredient_purified_milk",
             "ingredient_bramble_colossus_seed",
             "ingredient_rock",
             "ingredient_redstone_soup",
@@ -76,7 +80,7 @@ final class ResourceUtilityInteractionTest {
             suite("village_spirit", this::emptyVillageSpiritFails, this::villageSpiritUiExists, this::villageSpiritStateRoundTrips),
             suite("rock", this::ordinarySnowballsAreNotTaggedRocks, this::rockUsesPrivateExtensionTag, this::rockHasRenewableRecipe),
             suite("flowing_spirit", this::spiritRecipeRequiresAltarPower, this::spiritUiAndFluidTagExist, this::spiritBucketHasMachineRoute),
-            suite("koboldite_dust", this::koboldDustCannotBypassItsFormTag, this::koboldMiningTagExists, this::koboldDustHasRenewableMobRoute)
+            suite("goblinite_dust", this::goblinDustCannotBypassItsFormTag, this::goblinMiningTagExists, this::goblinDustHasRenewableMobRoute)
         );
     }
 
@@ -224,15 +228,15 @@ final class ResourceUtilityInteractionTest {
             .contains("#warlockery:spirit"));
     }
 
-    private void koboldDustCannotBypassItsFormTag() {
-        assertFalse(read(DATA.resolve("c/tags/item/dusts/koboldite.json")).contains("warlockery:raw_delvealloy"));
+    private void goblinDustCannotBypassItsFormTag() {
+        assertFalse(read(DATA.resolve("c/tags/item/dusts/goblinite.json")).contains("warlockery:raw_delvealloy"));
     }
 
-    private void koboldMiningTagExists() {
+    private void goblinMiningTagExists() {
         assertTrue(read(DATA.resolve("warlockery/tags/block/hobgoblin_mineables.json")).contains("#c:cobblestones"));
     }
 
-    private void koboldDustHasRenewableMobRoute() {
+    private void goblinDustHasRenewableMobRoute() {
         final String source = read(Path.of("src/main/java/com/kadamitas/warlockery/entity/HobgoblinEntity.java"));
         assertTrue(source.contains("HOBGOBLIN_MINEABLES"));
         assertTrue(source.contains("ingredient_delvealloydust"));

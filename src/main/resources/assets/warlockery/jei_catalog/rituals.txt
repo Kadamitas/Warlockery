@@ -11,6 +11,8 @@ bind_familiar
 bind_fetish
 bind_spectral
 bind_statue_player
+bind_trent
+bind_witch_ladder
 bind_waystone
 bind_waystone_player
 bind_waystone_portable
@@ -71,6 +73,8 @@ part_earth
 prior_incarnation
 rain_of_toads
 raise_earth
+raise_earth_large
+raise_earth_small
 recharge_infusion
 sanctity
 spectral_stone
@@ -80,7 +84,7 @@ storm_portable
 summon_banshee
 summon_cat_familiar
 summon_circle_mage
-summon_crimson_matriarch
+blood_audience
 summon_demon
 summon_familiar
 summon_forgewarden
@@ -99,3 +103,6 @@ teleport_entity
 teleport_waystone
 transpose_ore
 volcano
+hex_heat_metal
+marriage
+divorce

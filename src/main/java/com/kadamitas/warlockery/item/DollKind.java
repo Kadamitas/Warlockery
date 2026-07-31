@@ -1,12 +1,10 @@
 package com.kadamitas.warlockery.item;
 
-import java.util.Arrays;
-import java.util.Map;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-public enum DollKind {
+public enum DollKind implements StringIdentified {
     TEMPLATE(new DollDefinition("doll", new DollAbility.None(), 0)),
     EARTH_GUARD(lethal("earth_guard_doll", DollBehaviorFactory.earthGuard())),
     WATER_GUARD(lethal("water_guard_doll", DollBehaviorFactory.waterGuard())),
@@ -24,8 +22,7 @@ public enum DollKind {
         "armor_mending_doll", new DollAbility.Mending(DollAbility.RepairTarget.WORN), 128
     ));
 
-    private static final Map<String, DollKind> BY_ID = Arrays.stream(values())
-        .collect(Collectors.toUnmodifiableMap(DollKind::id, Function.identity()));
+    private static final EnumLookup<DollKind> LOOKUP = EnumLookup.create("doll", values());
 
     private final DollDefinition definition;
 
@@ -46,7 +43,7 @@ public enum DollKind {
     }
 
     public static Optional<DollKind> find(final String id) {
-        return Optional.ofNullable(BY_ID.get(id));
+        return LOOKUP.find(id);
     }
 
     private static DollDefinition lethal(final String id, final LethalDollBehavior behavior) {

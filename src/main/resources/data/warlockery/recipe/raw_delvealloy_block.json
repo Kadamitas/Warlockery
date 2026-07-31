@@ -1,1 +1,1 @@
-{"type":"minecraft:crafting_shaped","category":"building","pattern":["RRR","RRR","RRR"],"key":{"R":"#c:raw_materials/koboldite"},"result":{"id":"warlockery:raw_delvealloy_block"}}
+{"type":"minecraft:crafting_shaped","category":"building","pattern":["RRR","RRR","RRR"],"key":{"R":"#c:raw_materials/goblinite"},"result":{"id":"warlockery:raw_delvealloy_block"}}

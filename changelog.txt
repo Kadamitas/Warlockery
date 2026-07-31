@@ -1,3 +1,15 @@
+Warlockery 1.2.0
+================
+
+- Added coordinated goblin raids on villages, goblin children, and clearer separation between hostile goblins and peaceful travelling hobgoblins.
+- Improved hobgoblin life in the world with village avoidance, fear of human villagers, reliable professions, stable trading, and goblin-inspired sounds and presentation.
+- Rebalanced goblinite trading and processing so its high-tier equipment takes substantially more emeralds and dust to obtain.
+- Reworked Nami and Naamah as distinct characters with new skins, identities, progression roles, interactions, and marriage behavior.
+- Rebuilt broom riding around responsive mounted controls, strong forward acceleration, deliberate base turning weight, graceful descent, and improved torque from the Brew of Soaring.
+- Expanded the in-game manuals with organized subchapters, clearer navigation, ritual diagrams, ingredient guidance, progression-aware entries, and broader coverage of plants, brews, biomes, devices, and supernatural paths.
+- Expanded vampire and werewolf progression, ritual coverage, village interactions, creature behavior, equipment, dolls, brews, and compatibility with modern Minecraft systems.
+- Refined machine interfaces, inventories, active-state visuals, ritual feedback, multiblock validation, models, textures, item art, sounds, and stability across the mod.
+
 Warlockery 1.1.0
 ================
 
@@ -7,7 +19,7 @@ Warlockery 1.1.0
 - Improved altars, chalk circles, doll shelves, and ritual displays with clearer interactions, rendered attachments, connected glyphs, and less UI clutter.
 - Expanded dolls with durability-based use, self-binding, shelf activation, restricted storage, and scheduled mending behavior.
 - Added distinct brew colors, restored missing brew presentation, improved custom brew validation, and added the murderous flock brew.
-- Improved creature models and behavior, including clothed Lycan and Kobold villagers, supernatural trading rules, and distinct flying creatures.
+- Improved creature models and behavior, including clothed Lycan and Goblin villagers, supernatural trading rules, and distinct flying creatures.
 - Removed obsolete developer items and redundant blocks, including the separate silver repeater in favor of vanilla crossbow compatibility.
 - Fixed altar breaking crashes, missing model bottoms, terrain x-ray gaps, item names, machine inventories, and several progression issues.
 - Expanded automated coverage for models, textures, manuals, brews, creatures, rituals, inventories, and multiblock interactions.
@@ -18,7 +30,7 @@ Warlockery 1.0.0
 - First stable public release for Forge 65.1.0, Minecraft 26.2, and Java 25.
 - Includes 101 data-driven rituals with interactive chalk-circle selection and requirement displays.
 - Includes fixed and custom brewing, ritual machines, altar power, dolls, hexes, vampires, and werewolves.
-- Includes 47 creature types, kobold village integration, biome-aware Ents, and silver-equipped Werewolf Hunters.
+- Includes 47 creature types, goblin village integration, biome-aware Ents, and silver-equipped Werewolf Hunters.
 - Includes Forge automation capabilities, common material tags, searchable in-game manuals, and original pixel art.
 - Adds optional JEI recipe-viewer integration when a compatible Forge JEI build is installed.
 - Adds English, French, Spanish, Brazilian Portuguese, German, Polish, Japanese, and Traditional Chinese for Taiwan.

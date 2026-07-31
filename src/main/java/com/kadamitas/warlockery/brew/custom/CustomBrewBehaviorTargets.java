@@ -13,6 +13,7 @@ public final class CustomBrewBehaviorTargets {
         BrewBehavior.EXPLODE,
         BrewBehavior.FELL_LOGS,
         BrewBehavior.PRUNE_LEAVES,
+        BrewBehavior.WASTE,
         BrewBehavior.HARVEST_CROPS,
         BrewBehavior.TILL_SOIL,
         BrewBehavior.PLACE_LILIES,
@@ -38,7 +39,8 @@ public final class CustomBrewBehaviorTargets {
         BrewBehavior.SOLIDIFY_DIRT,
         BrewBehavior.SOLIDIFY_SAND,
         BrewBehavior.SOLIDIFY_SANDSTONE,
-        BrewBehavior.SOLIDIFY_EROSION
+        BrewBehavior.SOLIDIFY_EROSION,
+        BrewBehavior.APPLY_INFECTION
     );
     private static final Set<BrewBehavior> ENTITIES = Set.of(
         BrewBehavior.EXTINGUISH,
@@ -59,6 +61,7 @@ public final class CustomBrewBehaviorTargets {
         BrewBehavior.HARM_DEMONS,
         BrewBehavior.SUMMON_BATS,
         BrewBehavior.BLIGHT,
+        BrewBehavior.WASTE,
         BrewBehavior.FEAR,
         BrewBehavior.PULL_TO_OWNER,
         BrewBehavior.HARM_INSECTS,
@@ -73,6 +76,7 @@ public final class CustomBrewBehaviorTargets {
         BrewBehavior.EXTEND_EFFECTS,
         BrewBehavior.DARKNESS_PREY,
         BrewBehavior.MOONLIGHT,
+        BrewBehavior.APPLY_MOONSHINE,
         BrewBehavior.SUMMON_POISON_TOADS,
         BrewBehavior.RAISE_DEAD,
         BrewBehavior.APPLY_ABSORB_MAGIC,

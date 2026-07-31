@@ -42,6 +42,17 @@ final class ManualUiIsolationTest {
     }
 
     @Test
+    void readerProvidesChapterDrillDownReturnAndPictographicInstructions() {
+        final String source = read(SCREEN);
+        assertTrue(source.contains("addChapterButtons(layout"));
+        assertTrue(source.contains("addSubchapterButtons(layout"));
+        assertTrue(source.contains("toggleChapterIndex()"));
+        assertTrue(source.contains("screen.warlockery.manual.table_of_contents"));
+        assertTrue(source.contains("graphics.fakeItem(stack"));
+        assertTrue(source.contains("drawCircleDiagram("));
+    }
+
+    @Test
     void playerFacingBooksDoNotReadLikeImplementationNotes() {
         final JsonObject language = JsonParser.parseString(read(LANGUAGE)).getAsJsonObject();
         final List<String> keys = List.of(

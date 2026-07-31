@@ -1,0 +1,6 @@
+{
+  "ingredient": "#warlockery:custom_brew/delivery/liquid",
+  "role": "delivery",
+  "delivery": "liquid",
+  "priority": 2
+}

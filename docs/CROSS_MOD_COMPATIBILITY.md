@@ -13,7 +13,7 @@ The compatibility catalog is stored in `src/main/resources/data/warlockery/compa
 | Family | Published contracts |
 | --- | --- |
 | Silver | `c:ores/silver`, raw material, ingot, dust, and storage block families |
-| Koboldite | Preferred `c:*/*/koboldite` tags with save-compatible `delvealloy` aliases for ore, raw material, ingot, nugget, dust, and storage forms |
+| Goblinite | Preferred `c:*/*/goblinite` tags with save-compatible `delvealloy` aliases for ore, raw material, ingot, nugget, dust, and storage forms |
 | Armor and tools | Vanilla armor slot and tool-family tags, `c:armors/humanoid`, `c:tools`, and the relevant enchantable tags |
 | Crops and seeds | `minecraft:crops`, `c:crops`, `c:seeds`, and `minecraft:villager_plantable_seeds` |
 | Alder, hawthorn, and rowan | Vanilla logs, burning logs, planks, leaves, saplings, shaped wood tags, and `c:natural_logs/overworld` |
@@ -55,6 +55,8 @@ The fixed Brew of Combustion supplies 2,400 burn ticks through `Item.getBurnTime
 ## Machine capabilities
 
 All nine machine block variants expose sided `ForgeCapabilities.ITEM_HANDLER` views. Top, bottom, and horizontal access use the machine slot layout. Distilleries, kettles, cauldrons, and silver vats also expose `ForgeCapabilities.FLUID_HANDLER` because their profiles store transferable fluids. Machines without a tank do not publish a fake fluid handler.
+
+The Silver Vat recognizes adjacent furnace recipes whose inputs use `c:ores/gold` and whose outputs use `c:ingots/gold`. Each completed smelt adds a Silver Deposit to the vat's ordinary output inventory, so a hopper or compatible item pipe can extract it from below.
 
 Forge 65.1.0 has no universal mana capability. Its built-in capability set provides energy, fluid handlers, fluid container handlers, and item handlers. Warlockery altar power is not Forge Energy and is not labeled as another mod's mana. Optional mana support requires a soft adapter for each external mana API.
 

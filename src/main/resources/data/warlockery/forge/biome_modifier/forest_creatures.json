@@ -8,6 +8,7 @@
   ],
   "spawners": [
     {"type":"warlockery:ent","weight":2,"minCount":1,"maxCount":1},
+    {"type":"warlockery:goblin","weight":3,"minCount":1,"maxCount":3},
     {"type":"warlockery:hobgoblin","weight":5,"minCount":1,"maxCount":3}
   ]
 }

@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_solid_sandstone"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_solid_sandstone",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 13217648
+      }
+    ]
+  }
 }

@@ -1,6 +1,8 @@
 package com.kadamitas.warlockery.block.entity;
 
 import com.kadamitas.warlockery.block.AltarAttachmentRules;
+import com.kadamitas.warlockery.block.AltarNatureRules;
+import com.kadamitas.warlockery.block.AltarNatureRules.Source;
 import com.kadamitas.warlockery.crafting.AltarUpgradeResolver;
 import com.kadamitas.warlockery.crafting.AltarUpgradeResolver.Modifiers;
 import com.kadamitas.warlockery.crafting.AltarUpgradeResolver.UpgradeClass;
@@ -10,7 +12,7 @@ import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import java.util.EnumSet;
-import java.util.HashSet;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -34,13 +36,13 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public final class AltarBlockEntity extends BlockEntity {
     private static final int SCAN_INTERVAL = 40;
-    private static final int SEARCH_RADIUS = 8;
+    private static final int SEARCH_RADIUS = 16;
     private int power;
     private int capacity;
     private boolean multiblockValid;
     private int connectedBlocks;
     private int environmentalPower;
-    private int capacityMultiplier = 1;
+    private double capacityMultiplier = 1.0;
     private int rechargeMultiplier = 1;
     private int activeUpgradeCount;
     private NonNullList<ItemStack> attachments = NonNullList.withSize(
@@ -65,8 +67,12 @@ public final class AltarBlockEntity extends BlockEntity {
             AltarRangeIndex.update(serverLevel, pos, altar.hasRangeFocus());
         }
         final AltarDisplay previous = altar.getDisplay();
-        altar.connectedBlocks = altar.countConnectedAltarBlocks(level, pos);
-        altar.multiblockValid = altar.connectedBlocks >= 6;
+        final AltarMultiblockLayout.Result layout = AltarMultiblockLayout.inspect(
+            pos,
+            candidate -> level.getBlockState(candidate).is(ModBlocks.ALTAR.get())
+        );
+        altar.connectedBlocks = layout.connectedBlocks();
+        altar.multiblockValid = layout.valid();
         if (altar.multiblockValid) {
             final EnvironmentScan scan = altar.scanEnvironment(level, pos);
             final Modifiers modifiers = AltarUpgradeResolver.discoverItems(
@@ -87,7 +93,7 @@ public final class AltarBlockEntity extends BlockEntity {
             altar.environmentalPower = 0;
             altar.capacity = 0;
             altar.power = 0;
-            altar.capacityMultiplier = 1;
+            altar.capacityMultiplier = 1.0;
             altar.rechargeMultiplier = 1;
             altar.activeUpgradeCount = 0;
         }
@@ -95,24 +101,6 @@ public final class AltarBlockEntity extends BlockEntity {
         if (!previous.equals(altar.getDisplay())) {
             level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
         }
-    }
-
-    private int countConnectedAltarBlocks(final Level level, final BlockPos origin) {
-        final Set<BlockPos> visited = new HashSet<>();
-        final Set<BlockPos> frontier = new HashSet<>(Set.of(origin));
-        while (!frontier.isEmpty() && visited.size() < 6) {
-            final BlockPos current = frontier.iterator().next();
-            frontier.remove(current);
-            if (visited.contains(current) || !level.getBlockState(current).is(ModBlocks.ALTAR.get())) {
-                continue;
-            }
-            visited.add(current);
-            frontier.add(current.north());
-            frontier.add(current.south());
-            frontier.add(current.east());
-            frontier.add(current.west());
-        }
-        return visited.size();
     }
 
     private EnvironmentScan scanEnvironment(final Level level, final BlockPos origin) {
@@ -126,20 +114,42 @@ public final class AltarBlockEntity extends BlockEntity {
             .finish();
     }
 
-    private static int powerValue(final BlockState state) {
+    private static Source powerSource(final BlockState state) {
         if (state.is(ResourceCompatibilityTags.Blocks.ALTAR_POWER_HEARTS)) {
-            return 40;
+            return Source.HEART;
         }
         if (state.is(BlockTags.LOGS)) {
-            return 3;
+            return Source.LOG;
         }
         if (state.is(BlockTags.LEAVES)) {
-            return 2;
+            return Source.LEAF;
         }
-        if (state.is(BlockTags.FLOWERS) || state.is(BlockItemTags.SAPLINGS.block())) {
-            return 4;
+        if (state.is(BlockTags.FLOWERS)) {
+            return Source.FLOWER;
         }
-        return state.isAir() ? 0 : 1;
+        if (state.is(BlockItemTags.SAPLINGS.block())) {
+            return Source.SAPLING;
+        }
+        if (state.is(BlockTags.CROPS)) {
+            return Source.CROP;
+        }
+        if (state.is(WarlockeryTags.Blocks.ALTAR_NATURAL_GROUND)) {
+            return Source.GROUND;
+        }
+        if (state.is(WarlockeryTags.Blocks.ALTAR_NATURAL_WATER)) {
+            return Source.WATER;
+        }
+        return state.is(WarlockeryTags.Blocks.ALTAR_NATURAL_POWER) ? Source.OTHER_NATURAL : null;
+    }
+
+    private static int powerValue(final Source source) {
+        return switch (source) {
+            case HEART -> 40;
+            case FLOWER, SAPLING -> 4;
+            case LOG -> 3;
+            case LEAF, CROP, WATER -> 2;
+            case GROUND, OTHER_NATURAL -> 1;
+        };
     }
 
     public boolean consumePower(final int requested) {
@@ -263,12 +273,13 @@ public final class AltarBlockEntity extends BlockEntity {
         if (candidate.is(WarlockeryTags.Items.ALTAR_RANGE_FOCI) && hasRangeFocus()) {
             return true;
         }
-        final Set<UpgradeClass> candidateClasses = AltarUpgradeResolver.classes(candidate)
+        final Set<AltarUpgradeResolver.UpgradeFamily> candidateFamilies = AltarUpgradeResolver.classes(candidate)
+            .map(UpgradeClass::family)
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
         return attachments.stream()
             .filter(stack -> !stack.isEmpty())
             .anyMatch(stack -> stack.is(candidate.getItem())
-                || AltarUpgradeResolver.classes(stack).anyMatch(candidateClasses::contains));
+                || AltarUpgradeResolver.classes(stack).map(UpgradeClass::family).anyMatch(candidateFamilies::contains));
     }
 
     private void synchronizeAttachments() {
@@ -301,7 +312,7 @@ public final class AltarBlockEntity extends BlockEntity {
         multiblockValid = input.getBooleanOr("MultiblockValid", false);
         connectedBlocks = input.getIntOr("ConnectedBlocks", 0);
         environmentalPower = input.getIntOr("EnvironmentalPower", 0);
-        capacityMultiplier = input.getIntOr("CapacityMultiplier", 1);
+        capacityMultiplier = input.getDoubleOr("CapacityMultiplier", 1.0);
         rechargeMultiplier = input.getIntOr("RechargeMultiplier", 1);
         activeUpgradeCount = input.getIntOr("ActiveUpgradeCount", 0);
         attachments = NonNullList.withSize(AltarAttachmentRules.CAPACITY, ItemStack.EMPTY);
@@ -321,7 +332,7 @@ public final class AltarBlockEntity extends BlockEntity {
         output.putBoolean("MultiblockValid", multiblockValid);
         output.putInt("ConnectedBlocks", connectedBlocks);
         output.putInt("EnvironmentalPower", environmentalPower);
-        output.putInt("CapacityMultiplier", capacityMultiplier);
+        output.putDouble("CapacityMultiplier", capacityMultiplier);
         output.putInt("RechargeMultiplier", rechargeMultiplier);
         output.putInt("ActiveUpgradeCount", activeUpgradeCount);
         ContainerHelper.saveAllItems(output, attachments);
@@ -343,15 +354,22 @@ public final class AltarBlockEntity extends BlockEntity {
     private static final class EnvironmentAccumulator {
         private int power;
         private final EnumSet<UpgradeClass> upgrades = EnumSet.noneOf(UpgradeClass.class);
+        private final EnumMap<Source, Integer> sourceCounts = new EnumMap<>(Source.class);
 
         private void accept(final BlockState state) {
-            power += powerValue(state);
+            final Source source = powerSource(state);
+            if (source != null) {
+                final int seen = sourceCounts.getOrDefault(source, 0);
+                power += AltarNatureRules.contribution(powerValue(source), seen);
+                sourceCounts.put(source, seen + 1);
+            }
             AltarUpgradeResolver.classes(state).forEach(upgrades::add);
         }
 
         private void combine(final EnvironmentAccumulator other) {
             power += other.power;
             upgrades.addAll(other.upgrades);
+            other.sourceCounts.forEach((source, count) -> sourceCounts.merge(source, count, Integer::sum));
         }
 
         private EnvironmentScan finish() {
@@ -365,7 +383,7 @@ public final class AltarBlockEntity extends BlockEntity {
         int environmentalPower,
         int power,
         int capacity,
-        int capacityMultiplier,
+        double capacityMultiplier,
         int rechargeMultiplier,
         int activeUpgradeCount,
         boolean rangeFocused

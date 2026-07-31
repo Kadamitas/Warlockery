@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.ritual;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.registry.ModSounds;
+import com.kadamitas.warlockery.util.DataParsing;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
@@ -49,10 +50,22 @@ public final class RitualSessionData extends SavedData {
         final UUID caster,
         final int castingTime
     ) {
+        return start(center, ritual, caster, castingTime, 0);
+    }
+
+    public boolean start(
+        final BlockPos center,
+        final Identifier ritual,
+        final UUID caster,
+        final int castingTime,
+        final int variant
+    ) {
         if (sessions.stream().anyMatch(session -> session.center() == center.asLong())) {
             return false;
         }
-        sessions.add(new Session(center.asLong(), ritual.toString(), caster.toString(), 0, Math.max(1, castingTime)));
+        sessions.add(new Session(
+            center.asLong(), ritual.toString(), caster.toString(), 0, Math.max(1, castingTime), variant
+        ));
         setDirty();
         return true;
     }
@@ -70,7 +83,7 @@ public final class RitualSessionData extends SavedData {
         for (Session session : sessions) {
             final Identifier ritualId = Identifier.tryParse(session.ritual());
             final BlockPos center = BlockPos.of(session.center());
-            if (ritualId == null || !RitualManager.INSTANCE.isSessionValid(level, center, ritualId)) {
+            if (ritualId == null || !RitualManager.INSTANCE.isSessionValid(level, center, ritualId, session.variant())) {
                 notifyCancelled(level, session, center);
                 continue;
             }
@@ -78,10 +91,12 @@ public final class RitualSessionData extends SavedData {
             final int elapsed = session.elapsed() + 1;
             emitProgressEffects(level, center, elapsed, session.castingTime());
             if (elapsed >= session.castingTime()) {
-                final var caster = parseUuid(session.caster()).map(level::getPlayerByUUID).orElse(null);
-                RitualManager.INSTANCE.complete(level, center, caster, ritualId);
+                final var caster = DataParsing.uuid(session.caster()).map(level::getPlayerByUUID).orElse(null);
+                RitualManager.INSTANCE.complete(level, center, caster, ritualId, session.variant());
             } else {
-                next.add(new Session(session.center(), session.ritual(), session.caster(), elapsed, session.castingTime()));
+                next.add(new Session(
+                    session.center(), session.ritual(), session.caster(), elapsed, session.castingTime(), session.variant()
+                ));
             }
         }
 
@@ -118,27 +133,20 @@ public final class RitualSessionData extends SavedData {
     }
 
     private static void notifyCancelled(final ServerLevel level, final Session session, final BlockPos center) {
-        parseUuid(session.caster()).map(level::getPlayerByUUID).ifPresent(player ->
+        DataParsing.uuid(session.caster()).map(level::getPlayerByUUID).ifPresent(player ->
             player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.warlockery.ritual.cancelled"))
         );
         level.sendParticles(ParticleTypes.SMOKE, center.getX() + 0.5, center.getY() + 0.2, center.getZ() + 0.5, 24, 1.0, 0.3, 1.0, 0.02);
     }
 
-    private static java.util.Optional<UUID> parseUuid(final String value) {
-        try {
-            return java.util.Optional.of(UUID.fromString(value));
-        } catch (IllegalArgumentException ignored) {
-            return java.util.Optional.empty();
-        }
-    }
-
-    private record Session(long center, String ritual, String caster, int elapsed, int castingTime) {
+    private record Session(long center, String ritual, String caster, int elapsed, int castingTime, int variant) {
         private static final Codec<Session> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.LONG.fieldOf("center").forGetter(Session::center),
             Codec.STRING.fieldOf("ritual").forGetter(Session::ritual),
             Codec.STRING.fieldOf("caster").forGetter(Session::caster),
             Codec.INT.optionalFieldOf("elapsed", 0).forGetter(Session::elapsed),
-            Codec.INT.fieldOf("casting_time").forGetter(Session::castingTime)
+            Codec.INT.fieldOf("casting_time").forGetter(Session::castingTime),
+            Codec.INT.optionalFieldOf("variant", 0).forGetter(Session::variant)
         ).apply(instance, Session::new));
     }
 }

@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "warlockery:universal_antidote",
     "warlockery:brew_absorb_magic",
     "warlockery:brew_absorption",
     "warlockery:brew_air_hike",

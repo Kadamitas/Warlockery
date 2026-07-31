@@ -1,9 +1,11 @@
 package com.kadamitas.warlockery.brew;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.brew.custom.CustomBrewCloudRuntime;
+import com.kadamitas.warlockery.brew.custom.CustomBrewTriggerData;
 import com.kadamitas.warlockery.magic.MagicPathState;
+import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
-import com.kadamitas.warlockery.ritual.ManifestationRuntime;
 import com.kadamitas.warlockery.ritual.hex.OverheatingRules;
 import com.kadamitas.warlockery.ritual.hex.SinkingRules;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
@@ -43,6 +45,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.TickEvent;
 
 public final class BrewPersistentRuntime {
@@ -71,9 +74,11 @@ public final class BrewPersistentRuntime {
         LivingDeathEvent.BUS.addListener(BrewPersistentRuntime::handleDeath);
         ProjectileImpactEvent.BUS.addListener(BrewPersistentRuntime::handleProjectileImpact);
         PlayerEvent.Clone.BUS.addListener(BrewPersistentRuntime::handleClone);
+        PlayerInteractEvent.RightClickBlock.BUS.addListener(CustomBrewTriggerData::handleBlockUse);
         TickEvent.LevelTickEvent.Post.BUS.addListener(event -> {
             if (event.level() instanceof ServerLevel level) {
                 BrewWorldData.get(level).tick(level);
+                CustomBrewTriggerData.get(level).tick(level);
             }
         });
         EntityTeleportEvent.EnderEntity.BUS.addListener(
@@ -93,6 +98,7 @@ public final class BrewPersistentRuntime {
             return;
         }
         BrewMarkerState.removeExpired(target);
+        CustomBrewCloudRuntime.tick(level, target);
         tickResizing(target);
         if (BrewMarkerState.isActive(target, BrewMarkerKind.SINKING)) {
             tickSinking(target);
@@ -122,6 +128,7 @@ public final class BrewPersistentRuntime {
         tickTint(level, target);
         tickWerewolfLock(target);
         tickSunlightCurse(level, target);
+        tickMoonshine(target);
         if (target.tickCount % 40 == 0) {
             tickContagion(level, target, BrewMarkerKind.DISEASE);
             tickContagion(level, target, BrewMarkerKind.INFECTION);
@@ -130,6 +137,9 @@ public final class BrewPersistentRuntime {
 
     public static void handleDamage(final LivingDamageEvent event) {
         final LivingEntity target = event.getEntity();
+        if (BrewMarkerState.isActive(target, BrewMarkerKind.MOONSHINE)) {
+            event.setAmount(BrewMarkerRules.moonshineDamage(event.getAmount()));
+        }
         final Entity source = event.getSource().getEntity();
         if (source instanceof LivingEntity attacker && attacker != target && event.getAmount() > 0.0F) {
             if (BrewMarkerState.isActive(attacker, BrewMarkerKind.POISON_WEAPON)) {
@@ -288,6 +298,12 @@ public final class BrewPersistentRuntime {
             .forEach(effect -> target.removeEffect(effect.getEffect()));
     }
 
+    private static void tickMoonshine(final LivingEntity target) {
+        if (target instanceof Player player && BrewMarkerState.isActive(target, BrewMarkerKind.MOONSHINE)) {
+            player.causeFoodExhaustion(BrewMarkerRules.moonshineExhaustion());
+        }
+    }
+
     private static void tickIllFitting(final LivingEntity target) {
         if (!BrewMarkerState.isActive(target, BrewMarkerKind.ILL_FITTING)) {
             return;
@@ -402,13 +418,8 @@ public final class BrewPersistentRuntime {
         }
         target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1, true, false, true));
         target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 40, 0, true, false, true));
-        if (target instanceof ServerPlayer player && player.isSleeping() && player.getSleepTimer() % 40 == 20) {
-            ManifestationRuntime.manifest(
-                level,
-                player.blockPosition().offset(2, 0, 0),
-                player,
-                Math.max(40, BrewMarkerState.remainingTicks(player, BrewMarkerKind.SLEEPING))
-            );
+        if (target instanceof ServerPlayer player && !SpiritWorldRuntime.isDreaming(player)) {
+            SpiritWorldRuntime.enterFromSleepingBrew(player);
         }
     }
 

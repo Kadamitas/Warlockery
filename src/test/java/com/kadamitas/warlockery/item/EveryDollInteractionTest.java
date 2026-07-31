@@ -2,15 +2,40 @@ package com.kadamitas.warlockery.item;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 final class EveryDollInteractionTest {
+    @Test
+    void hexGuardReplacesTheDuplicateHeatMetalProtectionDoll() {
+        final DollKind guard = DollKind.find("hex_guard_doll").orElseThrow();
+        assertTrue(guard.definition().ability() instanceof DollAbility.HexGuard);
+        assertEquals(32, guard.definition().durability());
+        assertTrue(DollRules.canApplyToSelf(guard.definition().ability()));
+        assertTrue(DollKind.find("voodoo_protection_doll").isEmpty());
+    }
+
+    @Test
+    void empoweredHexesRequireTwoDistinctHexguardDolls() {
+        assertFalse(HexGuardRules.hasRequiredGuards(1, 2));
+        assertTrue(HexGuardRules.hasRequiredGuards(2, 2));
+        assertThrows(IllegalArgumentException.class, () -> HexGuardRules.hasRequiredGuards(2, 0));
+    }
+
+    @Test
+    void corruptDollTargetsAtMostTenProtectionsAndDollGuardIntercepts() {
+        assertEquals(10, DollCorruptionRules.LEGACY_MAX_TARGETS);
+        assertEquals(10, DollCorruptionRules.plan(false, 14, DollCorruptionRules.LEGACY_MAX_TARGETS).dollsToDamage());
+        assertTrue(DollCorruptionRules.plan(true, 14, DollCorruptionRules.LEGACY_MAX_TARGETS).intercepted());
+    }
+
     @TestFactory
     Stream<DynamicContainer> oneSuitePerDoll() {
         return Stream.of(DollKind.values()).map(kind -> DynamicContainer.dynamicContainer(kind.id(), List.of(
@@ -49,6 +74,8 @@ final class EveryDollInteractionTest {
             }
             case DollAbility.LethalProtection ignored -> {
                 assertTrue(DollRules.isLethal(5.0F, 5.0F));
+                assertEquals(10.0F, DollRules.restoredHealth(20.0F));
+                assertEquals(6.0F, DollRules.restoredHealth(6.0F));
                 assertEquals(32, kind.definition().durability());
                 assertTrue(DollRules.canApplyToSelf(ignored));
             }

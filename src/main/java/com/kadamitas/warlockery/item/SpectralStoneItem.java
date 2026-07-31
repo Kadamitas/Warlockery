@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -9,6 +10,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -36,8 +38,13 @@ public final class SpectralStoneItem extends Item {
             show(player, decision);
             return InteractionResult.FAIL;
         }
+        final var targetType = BuiltInRegistries.ENTITY_TYPE.getKey(target.getType());
+        if (!state.canCapture(targetType)) {
+            show(player, target.getDisplayName(), false);
+            return InteractionResult.FAIL;
+        }
         if (!player.level().isClientSide()) {
-            state.with(BuiltInRegistries.ENTITY_TYPE.getKey(target.getType())).write(stack);
+            state.with(targetType).write(stack);
             target.discard();
             show(player, decision);
         }
@@ -61,6 +68,11 @@ public final class SpectralStoneItem extends Item {
                 return InteractionResult.FAIL;
             }
             entity.snapTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
+            if (entity instanceof Mob mob) {
+                CreatureBehaviorState.bind(mob, player.getUUID());
+                mob.setTarget(null);
+                mob.setPersistenceRequired();
+            }
             serverLevel.addFreshEntity(entity);
             state.withoutFirst().write(stack);
             show(player, UtilityDecision.success("released"));
@@ -77,6 +89,15 @@ public final class SpectralStoneItem extends Item {
         if (!player.level().isClientSide()) {
             player.sendOverlayMessage(Component.translatable(decision.messageKey("spectral_stone"))
                 .withStyle(decision.success() ? ChatFormatting.GREEN : ChatFormatting.RED));
+        }
+    }
+
+    private static void show(final Player player, final Component subject, final boolean success) {
+        if (!player.level().isClientSide()) {
+            player.sendOverlayMessage(Component.empty()
+                .append(success ? Component.literal("✓ ") : Component.literal("✗ "))
+                .append(subject)
+                .withStyle(success ? ChatFormatting.GREEN : ChatFormatting.RED));
         }
     }
 }

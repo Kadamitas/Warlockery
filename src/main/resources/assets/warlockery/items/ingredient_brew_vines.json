@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_vines"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_vines",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 3909991
+      }
+    ]
+  }
 }

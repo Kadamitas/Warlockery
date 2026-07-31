@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_sprouting"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_sprouting",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 5888363
+      }
+    ]
+  }
 }

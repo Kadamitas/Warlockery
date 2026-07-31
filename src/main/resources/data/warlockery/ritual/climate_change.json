@@ -3,13 +3,12 @@
   "description": "ritual.warlockery.climate_change.description",
   "action": "climate_shift",
   "power": 2600,
-  "radius": 6,
+  "radius": 15,
   "duration": 12000,
   "amplifier": 0,
   "casting_time": 100,
   "glyphs": {
-    "circleglyphritual": 16,
-    "circleglyph_veil": 16
+    "circleglyphritual": 16
   },
   "requirements": {
     "ingredients": [
@@ -24,6 +23,11 @@
         "consume": false
       },
       {
+        "ingredient": "warlockery:ingredient_seer_stone",
+        "count": 1,
+        "consume": false
+      },
+      {
         "ingredient": "#c:dusts/glowstone",
         "count": 4,
         "consume": true
@@ -34,6 +38,6 @@
     "raining": false,
     "thundering": false,
     "dimension": "",
-    "minimum_players": 4
+    "minimum_players": 5
   }
 }

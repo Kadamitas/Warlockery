@@ -1,7 +1,11 @@
 {
-    "variants":  {
-                     "":  {
-                              "model":  "warlockery:block/glintweed"
-                          }
-                 }
+  "variants": {
+    "hanging=false": {
+      "model": "warlockery:block/glintweed"
+    },
+    "hanging=true": {
+      "model": "warlockery:block/glintweed",
+      "x": 180
+    }
+  }
 }

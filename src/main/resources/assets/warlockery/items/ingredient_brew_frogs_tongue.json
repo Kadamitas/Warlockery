@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_frogs_tongue"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_frogs_tongue",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 7719219
+      }
+    ]
+  }
 }

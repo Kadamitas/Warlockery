@@ -90,7 +90,7 @@ final class CreatureModelVisualAuditTest {
             "familiars-and-vermin.png", 5,
             "infernal-and-bosses.png", 3,
             "verdant-creatures.png", 5,
-            "kobold-clans.png", 4,
+            "goblin-clans.png", 4,
             "illusions-and-anomalies.png", 3
         );
         final List<Concept> concepts = manifest.entrySet().stream().flatMap(entry -> {

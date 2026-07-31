@@ -4,7 +4,7 @@
   "action": "sanctity_ward",
   "power": 800,
   "radius": 6,
-  "duration": 2400,
+  "duration": 2147483647,
   "amplifier": 2,
   "casting_time": 100,
   "glyphs": {

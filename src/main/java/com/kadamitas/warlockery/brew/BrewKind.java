@@ -105,7 +105,7 @@ public record BrewKind(
     );
     public static final BrewKind FROST = hybrid("frost", 0xA8E5EF, List.of(
         new BrewEffectSpec("minecraft:slowness", 800, 2)
-    ), 5.0F, 1.0F, BrewBehavior.FREEZE);
+    ), 5.0F, 1.0F, BrewBehavior.FREEZE, BrewBehavior.ICE_SHELL);
     public static final BrewKind GROW_LILY = world(
         "grow_lily", 0x4D8F4D, 5.0F, 1.0F, BrewBehavior.PLACE_LILIES
     );
@@ -122,10 +122,10 @@ public record BrewKind(
     public static final BrewKind INFERNO = world(
         "inferno", 0xF04418, 7.0F, 2.0F, BrewBehavior.IGNITE, BrewBehavior.EXPLODE
     );
-    public static final BrewKind INK = hybrid("ink", 0x171522, List.of(
+    public static final BrewKind INK = effects("ink", 0x171522, List.of(
         new BrewEffectSpec("minecraft:blindness", 600, 0),
         new BrewEffectSpec("minecraft:slowness", 300, 1)
-    ), 5.0F, 1.0F, BrewBehavior.PLACE_WEB);
+    ));
     public static final BrewKind INSECT_BANE = world(
         "insect_bane", 0xB99437, 4.0F, 1.0F, BrewBehavior.HARM_INSECTS
     );
@@ -145,7 +145,7 @@ public record BrewKind(
         "raise_land", 0x745135, 4.0F, 1.0F, BrewBehavior.RAISE_LAND
     );
     public static final BrewKind RAISING = world(
-        "raising", 0x4D3B62, 6.0F, 1.0F, BrewBehavior.BUFF_UNDEAD
+        "raising", 0x4D3B62, 6.0F, 1.0F, BrewBehavior.RAISE_DEAD, BrewBehavior.BUFF_UNDEAD
     );
     public static final BrewKind SINKING = hybrid("sinking", 0x314B58, List.of(
         new BrewEffectSpec("minecraft:slowness", 1_200, 2),
@@ -179,10 +179,9 @@ public record BrewKind(
     public static final BrewKind VINES = world(
         "vines", 0x3F7C42, 5.0F, 1.0F, BrewBehavior.PLACE_VINES
     );
-    public static final BrewKind WASTING = hybrid("wasting", 0x4D4B22, List.of(
-        new BrewEffectSpec("minecraft:poison", 900, 1),
-        new BrewEffectSpec("minecraft:hunger", 1_200, 1)
-    ), 5.0F, 1.0F, BrewBehavior.BLIGHT);
+    public static final BrewKind WASTING = world(
+        "wasting", 0x4D4B22, 5.0F, 1.0F, BrewBehavior.WASTE
+    );
     public static final BrewKind BAT_BURST = world(
         "bat_burst", 0x29222F, 5.0F, 1.5F, BrewBehavior.SUMMON_BATS
     );
@@ -220,8 +219,14 @@ public record BrewKind(
     public static final BrewKind GRUES_PREY = world(
         "grues_prey", 0x191925, 5.0F, 1.0F, BrewBehavior.DARKNESS_PREY
     );
-    public static final BrewKind MOONSHINE = world(
-        "moonshine", 0xCCD7F4, 6.0F, 1.0F, BrewBehavior.MOONLIGHT
+    public static final BrewKind MOONSHINE = hybrid(
+        "moonshine",
+        0xCCD7F4,
+        List.of(new BrewEffectSpec("minecraft:nausea", 3_600, 0)),
+        6.0F,
+        1.0F,
+        BrewBehavior.MOONLIGHT,
+        BrewBehavior.APPLY_MOONSHINE
     );
     public static final BrewKind PART_LAVA = world(
         "part_lava", 0xD5531B, 5.0F, 1.0F, BrewBehavior.PART_LAVA
@@ -406,6 +411,10 @@ public record BrewKind(
 
     public boolean returnsAfterImpact() {
         return this == ENDLESS_WATER;
+    }
+
+    public boolean recoversOnMiss() {
+        return this == VINES || this == THORNS || this == BODEGA;
     }
 
     public PotionContents potionContents() {

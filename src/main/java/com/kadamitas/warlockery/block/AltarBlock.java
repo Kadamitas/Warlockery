@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
+import com.kadamitas.warlockery.registry.ModSounds;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.sounds.SoundSource;
 import org.jspecify.annotations.Nullable;
 
 public final class AltarBlock extends BaseEntityBlock {
@@ -65,6 +67,7 @@ public final class AltarBlock extends BaseEntityBlock {
             "message.warlockery.altar.attachment_installed",
             attachmentName
         ));
+        level.playSound(null, pos, ModSounds.ALTAR_ATTUNE.get(), SoundSource.BLOCKS, 0.55F, 1.15F);
         return InteractionResult.SUCCESS;
     }
 
@@ -91,6 +94,7 @@ public final class AltarBlock extends BaseEntityBlock {
                     "message.warlockery.altar.attachment_removed",
                     removed.getHoverName()
                 ));
+                level.playSound(null, pos, ModSounds.ALTAR_ATTUNE.get(), SoundSource.BLOCKS, 0.45F, 0.8F);
                 return InteractionResult.SUCCESS;
             }
             player.sendSystemMessage(Component.translatable(
@@ -98,6 +102,7 @@ public final class AltarBlock extends BaseEntityBlock {
                 altar.getPower(),
                 altar.getCapacity()
             ));
+            level.playSound(null, pos, ModSounds.ALTAR_ATTUNE.get(), SoundSource.BLOCKS, 0.4F, 1.0F);
         }
         return InteractionResult.SUCCESS;
     }

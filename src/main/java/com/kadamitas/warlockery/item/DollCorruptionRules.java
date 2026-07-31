@@ -1,6 +1,8 @@
 package com.kadamitas.warlockery.item;
 
 public final class DollCorruptionRules {
+    public static final int LEGACY_MAX_TARGETS = 10;
+
     private DollCorruptionRules() {
     }
 

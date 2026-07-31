@@ -1,12 +1,10 @@
 package com.kadamitas.warlockery.ritual;
 
-import java.util.Arrays;
-import java.util.Map;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-public enum RitualAction {
+public enum RitualAction implements StringIdentified {
     EFFECT("effect", Outcome.EFFECT),
     STORM("storm", Outcome.WEATHER),
     CLEAR_WEATHER("clear_weather", Outcome.WEATHER),
@@ -34,6 +32,7 @@ public enum RitualAction {
     COOK("cook", Outcome.ITEM_CONVERSION),
     ECLIPSE("eclipse", Outcome.WEATHER_AND_EFFECT),
     REMOVE_VAMPIRISM("remove_vampirism", Outcome.SUPERNATURAL_CURE),
+    TRANSFORM_NAMI("transform_nami", Outcome.SUPERNATURAL_TRANSFORMATION),
     TRANSFORM_WEREWOLF("transform_werewolf", Outcome.SUPERNATURAL_TRANSFORMATION),
     REMOVE_WEREWOLF("remove_werewolf", Outcome.SUPERNATURAL_CURE),
     HEX("hex", Outcome.HEX),
@@ -56,10 +55,11 @@ public enum RitualAction {
     BIND_ENTITY("bind_entity", Outcome.ITEM_BINDING),
     BIND_FETISH("bind_fetish", Outcome.ITEM_BINDING),
     BIND_ITEM("bind_item", Outcome.ITEM_BINDING),
+    MARRIAGE("marriage", Outcome.BOND),
+    DIVORCE("divorce", Outcome.BOND),
     GLYPH_TRANSFORM("glyph_transform", Outcome.TERRAIN);
 
-    private static final Map<String, RitualAction> BY_ID = Arrays.stream(values())
-        .collect(Collectors.toUnmodifiableMap(RitualAction::id, Function.identity()));
+    private static final EnumLookup<RitualAction> LOOKUP = EnumLookup.create("ritual action", values());
 
     private final String id;
     private final Outcome outcome;
@@ -78,7 +78,7 @@ public enum RitualAction {
     }
 
     public static Optional<RitualAction> find(final String id) {
-        return Optional.ofNullable(BY_ID.get(id));
+        return LOOKUP.find(id);
     }
 
     public static RitualAction require(final String id) {
@@ -107,6 +107,7 @@ public enum RitualAction {
         GROWTH_TRANSFER,
         WARD,
         BIOME,
-        INFUSION
+        INFUSION,
+        BOND
     }
 }

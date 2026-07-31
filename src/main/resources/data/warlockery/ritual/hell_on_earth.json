@@ -2,25 +2,43 @@
   "title": "ritual.warlockery.hell_on_earth.title",
   "description": "ritual.warlockery.hell_on_earth.description",
   "action": "hell_on_earth",
-  "power": 3600,
+  "power": 5000,
   "radius": 9,
-  "duration": 1200,
+  "duration": 2147483647,
   "amplifier": 0,
   "casting_time": 260,
   "glyphs": {
-    "circleglyphritual": 16,
-    "circleglyphinfernal": 16
+    "circleglyphritual": 8,
+    "circleglyphinfernal": 12,
+    "circleglyph_veil": 16
   },
   "requirements": {
     "ingredients": [
       {
-        "ingredient": "warlockery:ingredient_necro_stone",
+        "ingredient": "warlockery:ingredient_redstone_soup",
         "count": 1,
         "consume": true
       },
       {
-        "ingredient": "minecraft:rotten_flesh",
-        "count": 8,
+        "ingredient": "warlockery:demonheart",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_waystone",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:nether_star",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "entities": [
+      {
+        "entity": "minecraft:villager",
+        "count": 1,
         "consume": true
       }
     ],
@@ -32,5 +50,5 @@
     "minimum_players": 1
   },
   "night_only": true,
-  "count": 12
+  "count": 8
 }

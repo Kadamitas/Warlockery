@@ -28,34 +28,66 @@ final class ManualProgressTest {
     }
 
     @Test
-    void observationsBeginsWithOnlyTheInitiationChapter() {
+    void observationsBeginsWithNamiTheBloodAudienceAndTheFirstVampireLevel() {
         final ManualProfile observations = profile("vampirebook");
         final ItemStack book = bookStack();
 
-        assertEquals(1, ManualProgress.unlockedSectionCount(observations, book));
-        assertEquals(List.of("initiation"), ManualProgress.visibleSections(observations, book));
-        assertEquals(List.of("initiation"), ManualView.from(observations, book).sections());
+        assertEquals(3, ManualProgress.unlockedSectionCount(observations, book));
+        assertEquals(9, ManualProgress.requiredTornPages(observations, book));
+        assertEquals(List.of("nami", "blood_audience", "vampire_level_1"),
+            ManualProgress.visibleSections(observations, book));
+        assertEquals(List.of("nami", "blood_audience", "vampire_level_1"),
+            ManualView.from(observations, book).sections());
     }
 
     @Test
     void eachTornPageRevealsExactlyOneNextChapter() {
         final ManualProfile observations = profile("vampirebook");
         final ItemStack book = bookStack();
+        final ItemStack pages = new ItemStack(Holder.direct(Items.PAPER), 10);
 
-        final ManualProgress.RevealResult first = ManualProgress.revealNext(observations, book);
-        assertEquals(ManualProgress.RevealStatus.REVEALED, first.status());
-        assertEquals("blood", first.section().orElseThrow());
-        assertEquals(List.of("initiation", "blood"), ManualProgress.visibleSections(observations, book));
+        for (int level = 2; level <= 10; level++) {
+            final ManualProgress.RevealResult reveal = insertPage(observations, book, pages, false);
+            assertEquals(ManualProgress.RevealStatus.REVEALED, reveal.status());
+            assertEquals("vampire_level_" + level, reveal.section().orElseThrow());
+            assertEquals(level + 2, ManualProgress.unlockedSectionCount(observations, book));
+            assertEquals(10 - level, ManualProgress.requiredTornPages(observations, book));
+            assertEquals(11 - level, pages.getCount());
+        }
 
-        final ManualProgress.RevealResult second = ManualProgress.revealNext(observations, book);
-        assertEquals(ManualProgress.RevealStatus.REVEALED, second.status());
-        assertEquals("weaknesses", second.section().orElseThrow());
         assertEquals(observations.sections(), ManualProgress.visibleSections(observations, book));
+        assertEquals(0, ManualProgress.requiredTornPages(observations, book));
+        assertEquals(1, pages.getCount());
 
-        final ManualProgress.RevealResult complete = ManualProgress.revealNext(observations, book);
+        final ManualProgress.RevealResult complete = insertPage(observations, book, pages, false);
         assertEquals(ManualProgress.RevealStatus.COMPLETE, complete.status());
         assertTrue(complete.section().isEmpty());
         assertEquals(observations.sections(), ManualProgress.visibleSections(observations, book));
+        assertEquals(1, pages.getCount());
+    }
+
+    @Test
+    void onlyTornPagesCanAdvanceObservationsAndCreativeInsertionPreservesThem() {
+        final ManualProfile observations = profile("vampirebook");
+        final ItemStack book = bookStack();
+        final ItemStack fakePage = new ItemStack(Holder.direct(Items.PAPER));
+        final ManualProgress.RevealResult rejected = ManualProgress.insertTornPage(
+            observations,
+            book,
+            profile("ingredient_book_biomes"),
+            fakePage,
+            false
+        );
+
+        assertEquals(ManualProgress.RevealStatus.UNSUPPORTED, rejected.status());
+        assertEquals(List.of("nami", "blood_audience", "vampire_level_1"),
+            ManualProgress.visibleSections(observations, book));
+        assertEquals(1, fakePage.getCount());
+
+        final ItemStack creativePage = new ItemStack(Holder.direct(Items.PAPER));
+        assertEquals(ManualProgress.RevealStatus.REVEALED,
+            insertPage(observations, book, creativePage, true).status());
+        assertEquals(1, creativePage.getCount());
     }
 
     @Test
@@ -64,23 +96,28 @@ final class ManualProgressTest {
         final ItemStack book = bookStack();
 
         assertEquals(codex.sections(), ManualProgress.visibleSections(codex, book));
-        assertEquals(ManualProgress.RevealStatus.UNSUPPORTED, ManualProgress.revealNext(codex, book).status());
+        assertEquals(0, ManualProgress.requiredTornPages(codex, book));
+        assertEquals(ManualProgress.RevealStatus.UNSUPPORTED,
+            insertPage(codex, book, new ItemStack(Holder.direct(Items.PAPER)), false).status());
         assertEquals(codex.sections(), ManualProgress.visibleSections(codex, book));
     }
 
     @Test
     void tornPageUseIsTheOnlyProductionCallSiteThatCanRevealAChapter() throws Exception {
-        final var revealMethod = ManualProgress.class.getDeclaredMethod(
-            "revealNext",
+        final var insertionMethod = ManualProgress.class.getDeclaredMethod(
+            "insertTornPage",
             ManualProfile.class,
-            ItemStack.class
+            ItemStack.class,
+            ManualProfile.class,
+            ItemStack.class,
+            boolean.class
         );
-        assertFalse(Modifier.isPublic(revealMethod.getModifiers()));
+        assertFalse(Modifier.isPublic(insertionMethod.getModifiers()));
 
         try (var files = Files.walk(MAIN_JAVA)) {
             final List<Path> callSites = files
                 .filter(path -> path.toString().endsWith(".java"))
-                .filter(path -> read(path).contains("ManualProgress.revealNext("))
+                .filter(path -> read(path).contains("ManualProgress.insertTornPage("))
                 .toList();
             assertEquals(List.of(MAIN_JAVA.resolve(
                 "com/kadamitas/warlockery/item/ManualItem.java"
@@ -89,7 +126,7 @@ final class ManualProgressTest {
 
         final String manualItem = read(MAIN_JAVA.resolve("com/kadamitas/warlockery/item/ManualItem.java"));
         assertTrue(manualItem.contains("ManualProgress.isTornPage(profile)"));
-        assertTrue(manualItem.contains("page.shrink(1)"));
+        assertTrue(manualItem.contains("ManualProgress.insertTornPage("));
     }
 
     private static ManualProfile profile(final String id) {
@@ -98,6 +135,21 @@ final class ManualProgressTest {
 
     private static ItemStack bookStack() {
         return new ItemStack(Holder.direct(Items.BOOK));
+    }
+
+    private static ManualProgress.RevealResult insertPage(
+        final ManualProfile observations,
+        final ItemStack book,
+        final ItemStack page,
+        final boolean infiniteMaterials
+    ) {
+        return ManualProgress.insertTornPage(
+            observations,
+            book,
+            profile("ingredient_vbook_page"),
+            page,
+            infiniteMaterials
+        );
     }
 
     private static String read(final Path path) {

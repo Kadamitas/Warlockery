@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.util.DataParsing;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.resources.Identifier;
@@ -18,15 +19,7 @@ public final class CreatureBehaviorState {
     }
 
     public static Optional<UUID> owner(final Entity entity) {
-        final String value = entity.getPersistentData().getStringOr(OWNER, "");
-        if (value.isBlank()) {
-            return Optional.empty();
-        }
-        try {
-            return Optional.of(UUID.fromString(value));
-        } catch (IllegalArgumentException ignored) {
-            return Optional.empty();
-        }
+        return DataParsing.uuid(entity.getPersistentData().getStringOr(OWNER, ""));
     }
 
     public static boolean bind(final Entity entity, final UUID ownerId) {
@@ -40,6 +33,10 @@ public final class CreatureBehaviorState {
 
     public static boolean isOwnedBy(final Entity entity, final UUID ownerId) {
         return owner(entity).filter(ownerId::equals).isPresent();
+    }
+
+    public static void unbind(final Entity entity) {
+        entity.getPersistentData().remove(OWNER);
     }
 
     public static int empowerment(final Entity entity) {
@@ -62,7 +59,7 @@ public final class CreatureBehaviorState {
     }
 
     public static Optional<Identifier> sampleBlock(final Entity entity) {
-        return parseIdentifier(entity.getPersistentData().getStringOr(SAMPLE_BLOCK, ""));
+        return DataParsing.identifier(entity.getPersistentData().getStringOr(SAMPLE_BLOCK, ""));
     }
 
     public static void storeEffect(final Entity entity, final StoredEffect effect) {
@@ -72,12 +69,18 @@ public final class CreatureBehaviorState {
     }
 
     public static Optional<StoredEffect> storedEffect(final Entity entity) {
-        return parseIdentifier(entity.getPersistentData().getStringOr(STORED_EFFECT, ""))
+        return DataParsing.identifier(entity.getPersistentData().getStringOr(STORED_EFFECT, ""))
             .map(id -> new StoredEffect(
                 id,
                 Math.max(20, entity.getPersistentData().getIntOr(STORED_EFFECT_DURATION, 200)),
                 Math.max(0, entity.getPersistentData().getIntOr(STORED_EFFECT_AMPLIFIER, 0))
             ));
+    }
+
+    public static void clearStoredEffect(final Entity entity) {
+        entity.getPersistentData().remove(STORED_EFFECT);
+        entity.getPersistentData().remove(STORED_EFFECT_DURATION);
+        entity.getPersistentData().remove(STORED_EFFECT_AMPLIFIER);
     }
 
     public static Snapshot snapshot(final Entity entity) {
@@ -92,10 +95,6 @@ public final class CreatureBehaviorState {
         final int next = Math.min(6, impFavor(entity) + 1);
         entity.getPersistentData().putInt(IMP_FAVOR, next);
         return next;
-    }
-
-    private static Optional<Identifier> parseIdentifier(final String value) {
-        return value.isBlank() ? Optional.empty() : Optional.ofNullable(Identifier.tryParse(value));
     }
 
     public record EmpowermentResult(int before, int after) {

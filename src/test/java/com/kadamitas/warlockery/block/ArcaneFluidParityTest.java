@@ -25,6 +25,14 @@ final class ArcaneFluidParityTest {
     }
 
     @Test
+    void flowingSpiritHealsMortalsAndWeakensNightmaresUndeadAndDemons() {
+        assertEquals(ArcaneFluidRules.Outcome.NONE, ArcaneFluidRules.flowingSpiritOutcome(false, true, true));
+        assertEquals(ArcaneFluidRules.Outcome.BENEFIT, ArcaneFluidRules.flowingSpiritOutcome(true, false, false));
+        assertEquals(ArcaneFluidRules.Outcome.HARM, ArcaneFluidRules.flowingSpiritOutcome(true, true, false));
+        assertEquals(ArcaneFluidRules.Outcome.HARM, ArcaneFluidRules.flowingSpiritOutcome(true, false, true));
+    }
+
+    @Test
     void fluidAndCreatureFamiliesAreDataPackExtensible() throws IOException {
         assertTrue(values("fluid/hollow_tears.json") >= 2);
         assertTrue(values("entity_type/hollow_tears_beneficiaries.json") >= 2);

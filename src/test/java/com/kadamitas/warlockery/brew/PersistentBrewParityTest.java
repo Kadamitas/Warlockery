@@ -52,6 +52,7 @@ final class PersistentBrewParityTest {
         marked("werewolf_lock", BrewBehavior.APPLY_WEREWOLF_LOCK, BrewMarkerKind.WEREWOLF_LOCK, "lockedForm"),
         marked("disease", BrewBehavior.APPLY_DISEASE, BrewMarkerKind.DISEASE, "tickContagion"),
         marked("infection", BrewBehavior.APPLY_INFECTION, BrewMarkerKind.INFECTION, "tickContagion"),
+        marked("moonshine", BrewBehavior.APPLY_MOONSHINE, BrewMarkerKind.MOONSHINE, "tickMoonshine"),
         marked("sinking", BrewBehavior.APPLY_SINKING, BrewMarkerKind.SINKING, "tickSinking"),
         marked("undeads_curse", BrewBehavior.APPLY_SUNLIGHT_CURSE, BrewMarkerKind.SUNLIGHT_CURSE, "tickSunlightCurse"),
         marked("volatility", BrewBehavior.APPLY_VOLATILITY, BrewMarkerKind.VOLATILITY, "ExplosionInteraction.NONE")
@@ -77,6 +78,8 @@ final class PersistentBrewParityTest {
         assertEquals(8, BrewMarkerRules.contagionLimit(BrewMarkerKind.DISEASE));
         assertEquals(4, BrewMarkerRules.contagionLimit(BrewMarkerKind.INFECTION));
         assertEquals(3, BrewMarkerRules.season(72_000L));
+        assertEquals(5.0F, BrewMarkerRules.moonshineDamage(10.0F));
+        assertTrue(BrewMarkerRules.moonshineExhaustion() > 0.0F);
     }
 
     @Test

@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_murder_of_crows"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_murder_of_crows",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 1513763
+      }
+    ]
+  }
 }

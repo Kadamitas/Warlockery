@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_soaring"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_soaring",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 5227736
+      }
+    ]
+  }
 }

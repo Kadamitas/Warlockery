@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    { "apply": { "model": "warlockery:block/circleglyphgolden" } },
+    { "when": { "north": "true" }, "apply": { "model": "warlockery:block/circleglyphgolden_north" } },
+    { "when": { "east": "true" }, "apply": { "model": "warlockery:block/circleglyphgolden_east" } },
+    { "when": { "south": "true" }, "apply": { "model": "warlockery:block/circleglyphgolden_south" } },
+    { "when": { "west": "true" }, "apply": { "model": "warlockery:block/circleglyphgolden_west" } }
+  ]
+}

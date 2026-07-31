@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public final class AdvancedMutationRules {
-    public static final int REQUIRED_SLIME_SNARES = 2;
+    public static final int REQUIRED_SLIME_SNARES = 4;
+    public static final int REQUIRED_BAT_SNARES = 4;
     public static final int REQUIRED_GRASSPERS = 4;
     public static final int REQUIRED_TOAD_EXTREMIS = 3;
     public static final int REQUIRED_MINEDRAKE_EXTREMIS = 2;
@@ -28,6 +29,15 @@ public final class AdvancedMutationRules {
                 requirement("mutandis_extremis", "Mutandis Extremis", snapshot.mutandisExtremis(), REQUIRED_TOAD_EXTREMIS),
                 requirement("attuned_stone", "a charged Attuned Stone", snapshot.chargedAttunedStones(), 1),
                 requirement("feline_host", "a cat or ocelot host", snapshot.toadHosts(), 1)
+            );
+            case OWL -> List.of(
+                requirement("cobweb", "a cobweb", snapshot.cobweb() ? 1 : 0, 1),
+                requirement("water", "water beneath the cobweb", snapshot.water() ? 1 : 0, 1),
+                requirement("bat_snares", "bat-filled Critter Snares", snapshot.batSnares(), REQUIRED_BAT_SNARES),
+                requirement("grasspers", "diagonal Grasspers", snapshot.diagonalGrasspers(), REQUIRED_GRASSPERS),
+                requirement("mutandis_extremis", "Mutandis Extremis", snapshot.mutandisExtremis(), REQUIRED_TOAD_EXTREMIS),
+                requirement("attuned_stone", "a charged Attuned Stone", snapshot.chargedAttunedStones(), 1),
+                requirement("canine_host", "a wolf host", snapshot.wolfHosts(), 1)
             );
             case MINEDRAKE -> List.of(
                 requirement("cobweb", "a cobweb", snapshot.cobweb() ? 1 : 0, 1),
@@ -73,6 +83,7 @@ public final class AdvancedMutationRules {
     ) {
         return switch (kind) {
             case TOAD -> snapshot.slimeSnares() * 2 + snapshot.toadHosts() * 4;
+            case OWL -> snapshot.batSnares() * 2 + snapshot.wolfHosts() * 4;
             case MINEDRAKE -> snapshot.matureCardinalMandrakes() * 2
                 + snapshot.focusedWill() * 2
                 + snapshot.creeperHosts() * 4

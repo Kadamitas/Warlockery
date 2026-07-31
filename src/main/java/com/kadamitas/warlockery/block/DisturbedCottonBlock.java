@@ -6,6 +6,7 @@ import com.kadamitas.warlockery.ritual.hex.HexKind;
 import com.kadamitas.warlockery.ritual.hex.HexState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
@@ -32,11 +33,15 @@ public final class DisturbedCottonBlock extends Block {
         final @Nullable BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
-        super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
         if (!level.isClientSide() && qualifies(player, level)) {
+            player.awardStat(Stats.BLOCK_MINED.get(this));
+            player.causeFoodExhaustion(0.005F);
             popResource(level, pos, new ItemStack(ModItems.ALL.get("ingredient_disturbed_cotton").get()));
             player.sendOverlayMessage(Component.translatable("message.warlockery.disturbed_cotton.harvested"));
-        } else if (!level.isClientSide()) {
+            return;
+        }
+        super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
+        if (!level.isClientSide()) {
             player.sendOverlayMessage(Component.translatable("message.warlockery.disturbed_cotton.dormant"));
         }
     }

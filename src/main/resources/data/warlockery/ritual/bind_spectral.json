@@ -16,7 +16,7 @@
       {
         "ingredient": "warlockery:spectralstone",
         "count": 1,
-        "consume": true
+        "consume": false
       },
       {
         "ingredient": "warlockery:ingredient_spectral_dust",

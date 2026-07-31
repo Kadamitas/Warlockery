@@ -1,7 +1,9 @@
 package com.kadamitas.warlockery.network;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.item.FlyingBroomItem;
 import com.kadamitas.warlockery.ritual.RitualManager;
+import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -26,17 +28,30 @@ public final class ModNetwork {
     };
     private static Consumer<DollActivationPayload> clientDollHandler = payload -> {
     };
+    private static Consumer<SupernaturalSnapshotPayload> clientSupernaturalHandler = payload -> {
+    };
 
     private static final SimpleChannel CHANNEL = ChannelBuilder
         .named(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "main"))
-        .networkProtocolVersion(1)
+        .networkProtocolVersion(4)
         .simpleChannel()
         .play()
         .clientbound()
         .addMain(OpenRitualScreenPayload.class, OpenRitualScreenPayload.STREAM_CODEC, ModNetwork::handleOpenScreen)
         .addMain(DollActivationPayload.class, DollActivationPayload.STREAM_CODEC, ModNetwork::handleDollActivation)
+        .addMain(
+            SupernaturalSnapshotPayload.class,
+            SupernaturalSnapshotPayload.STREAM_CODEC,
+            ModNetwork::handleSupernaturalSnapshot
+        )
         .serverbound()
         .addMain(RitualActionPayload.class, RitualActionPayload.STREAM_CODEC, ModNetwork::handleRitualAction)
+        .addMain(
+            SupernaturalActionPayload.class,
+            SupernaturalActionPayload.STREAM_CODEC,
+            ModNetwork::handleSupernaturalAction
+        )
+        .addMain(BroomControlPayload.class, BroomControlPayload.STREAM_CODEC, ModNetwork::handleBroomControl)
         .build();
 
     private ModNetwork() {
@@ -57,6 +72,10 @@ public final class ModNetwork {
         clientDollHandler = handler;
     }
 
+    public static void setClientSupernaturalHandler(final Consumer<SupernaturalSnapshotPayload> handler) {
+        clientSupernaturalHandler = handler;
+    }
+
     public static void notifyDollActivation(
         final ServerPlayer player,
         final String dollKind,
@@ -68,6 +87,35 @@ public final class ModNetwork {
         CHANNEL.send(
             new DollActivationPayload(dollKind, Math.clamp(displayTicks, 1, 20 * 10)),
             PacketDistributor.PLAYER.with(player)
+        );
+    }
+
+    public static void sendSupernaturalSnapshot(
+        final ServerPlayer player,
+        final SupernaturalSnapshot snapshot
+    ) {
+        if (player.connection == null) {
+            return;
+        }
+        CHANNEL.send(
+            new SupernaturalSnapshotPayload(snapshot),
+            PacketDistributor.PLAYER.with(player)
+        );
+    }
+
+    public static void requestSupernaturalAction(final SupernaturalAction action) {
+        CHANNEL.send(new SupernaturalActionPayload(action), PacketDistributor.SERVER.noArg());
+    }
+
+    public static void requestBroomControl(
+        final int strafe,
+        final int forward,
+        final boolean ascend,
+        final boolean gliding
+    ) {
+        CHANNEL.send(
+            new BroomControlPayload((byte) Math.clamp(strafe, -1, 1), (byte) Math.clamp(forward, -1, 1), ascend, gliding),
+            PacketDistributor.SERVER.noArg()
         );
     }
 
@@ -104,6 +152,47 @@ public final class ModNetwork {
     ) {
         if (context.isClientSide()) {
             clientDollHandler.accept(payload);
+        }
+    }
+
+    private static void handleSupernaturalSnapshot(
+        final SupernaturalSnapshotPayload payload,
+        final CustomPayloadEvent.Context context
+    ) {
+        if (context.isClientSide()) {
+            clientSupernaturalHandler.accept(payload);
+        }
+    }
+
+    private static void handleSupernaturalAction(
+        final SupernaturalActionPayload payload,
+        final CustomPayloadEvent.Context context
+    ) {
+        final ServerPlayer player = context.getSender();
+        if (player == null) {
+            return;
+        }
+        switch (payload.action()) {
+            case CYCLE -> SupernaturalProgressionRuntime.cyclePower(player);
+            case ACTIVATE -> SupernaturalProgressionRuntime.activateSelectedPower(player);
+        }
+    }
+
+    private static void handleBroomControl(
+        final BroomControlPayload payload,
+        final CustomPayloadEvent.Context context
+    ) {
+        final ServerPlayer player = context.getSender();
+        if (player != null) {
+            FlyingBroomItem.setControls(
+                player,
+                new com.kadamitas.warlockery.item.FlyingBroomRules.ControlInput(
+                    Math.clamp(payload.strafe(), -1, 1),
+                    Math.clamp(payload.forward(), -1, 1),
+                    payload.ascend()
+                ),
+                payload.gliding()
+            );
         }
     }
 
@@ -180,6 +269,119 @@ public final class ModNetwork {
             );
     }
 
+    public enum SupernaturalAction {
+        CYCLE,
+        ACTIVATE
+    }
+
+    public record SupernaturalActionPayload(SupernaturalAction action) {
+        public static final StreamCodec<RegistryFriendlyByteBuf, SupernaturalActionPayload> STREAM_CODEC =
+            StreamCodec.of(
+                (output, value) -> output.writeByte(value.action().ordinal()),
+                input -> new SupernaturalActionPayload(actionAt(input.readUnsignedByte()))
+            );
+
+        private static SupernaturalAction actionAt(final int ordinal) {
+            return ordinal >= 0 && ordinal < SupernaturalAction.values().length
+                ? SupernaturalAction.values()[ordinal]
+                : SupernaturalAction.CYCLE;
+        }
+    }
+
+    public record BroomControlPayload(byte strafe, byte forward, boolean ascend, boolean gliding) {
+        public static final StreamCodec<RegistryFriendlyByteBuf, BroomControlPayload> STREAM_CODEC =
+            StreamCodec.of(
+                (output, value) -> {
+                    output.writeByte(value.strafe());
+                    output.writeByte(value.forward());
+                    output.writeBoolean(value.ascend());
+                    output.writeBoolean(value.gliding());
+                },
+                input -> new BroomControlPayload(
+                    input.readByte(),
+                    input.readByte(),
+                    input.readBoolean(),
+                    input.readBoolean()
+                )
+            );
+    }
+
+    public record SupernaturalSnapshot(
+        String identity,
+        int level,
+        int resource,
+        int maxResource,
+        String selectedPower,
+        String shape,
+        String questTitle,
+        String questProgress,
+        int selectedPowerCharges,
+        int powerCooldownTicks,
+        String magicPath,
+        int magicResource,
+        int magicMaxResource
+    ) {
+        public SupernaturalSnapshot(
+            final String identity,
+            final int level,
+            final int resource,
+            final int maxResource,
+            final String selectedPower,
+            final String shape,
+            final String questTitle,
+            final String questProgress
+        ) {
+            this(identity, level, resource, maxResource, selectedPower, shape, questTitle, questProgress,
+                -1, 0, "", 0, 0);
+        }
+
+        public SupernaturalSnapshot {
+            identity = safe(identity);
+            level = Math.clamp(level, 0, 10);
+            maxResource = Math.max(0, maxResource);
+            resource = Math.clamp(resource, 0, maxResource);
+            selectedPower = safe(selectedPower);
+            shape = safe(shape);
+            questTitle = safe(questTitle);
+            questProgress = safe(questProgress);
+            selectedPowerCharges = Math.max(-1, selectedPowerCharges);
+            powerCooldownTicks = Math.max(0, powerCooldownTicks);
+            magicPath = safe(magicPath);
+            magicMaxResource = Math.max(0, magicMaxResource);
+            magicResource = Math.clamp(magicResource, 0, magicMaxResource);
+        }
+
+        public boolean active() {
+            return !identity.isBlank()
+                && !"none".equalsIgnoreCase(identity)
+                && !identity.endsWith(".none");
+        }
+
+        public float resourceFraction() {
+            return maxResource == 0 ? 0.0F : (float) resource / maxResource;
+        }
+
+        public boolean magicActive() {
+            return !magicPath.isBlank() && magicMaxResource > 0;
+        }
+
+        public float magicResourceFraction() {
+            return magicMaxResource == 0 ? 0.0F : (float) magicResource / magicMaxResource;
+        }
+
+        private static String safe(final String value) {
+            return value == null ? "" : value;
+        }
+    }
+
+    public record SupernaturalSnapshotPayload(SupernaturalSnapshot snapshot) {
+        public static final StreamCodec<RegistryFriendlyByteBuf, SupernaturalSnapshotPayload> STREAM_CODEC =
+            StreamCodec.of(
+                (output, value) -> writeSnapshot(output, value.snapshot()),
+                input -> new SupernaturalSnapshotPayload(readSnapshot(input))
+            );
+    }
+
     private static RitualManager.RitualOption readOption(final RegistryFriendlyByteBuf input) {
         final String id = input.readUtf(MAX_STRING);
         final String title = input.readUtf(MAX_STRING);
@@ -221,5 +423,42 @@ public final class ModNetwork {
             output.writeBoolean(requirement.met());
         });
         output.writeBoolean(option.ready());
+    }
+
+    private static SupernaturalSnapshot readSnapshot(final RegistryFriendlyByteBuf input) {
+        return new SupernaturalSnapshot(
+            input.readUtf(MAX_STRING),
+            input.readVarInt(),
+            input.readVarInt(),
+            input.readVarInt(),
+            input.readUtf(MAX_STRING),
+            input.readUtf(MAX_STRING),
+            input.readUtf(MAX_STRING),
+            input.readUtf(MAX_STRING),
+            input.readVarInt(),
+            input.readVarInt(),
+            input.readUtf(MAX_STRING),
+            input.readVarInt(),
+            input.readVarInt()
+        );
+    }
+
+    private static void writeSnapshot(
+        final RegistryFriendlyByteBuf output,
+        final SupernaturalSnapshot snapshot
+    ) {
+        output.writeUtf(snapshot.identity(), MAX_STRING);
+        output.writeVarInt(snapshot.level());
+        output.writeVarInt(snapshot.resource());
+        output.writeVarInt(snapshot.maxResource());
+        output.writeUtf(snapshot.selectedPower(), MAX_STRING);
+        output.writeUtf(snapshot.shape(), MAX_STRING);
+        output.writeUtf(snapshot.questTitle(), MAX_STRING);
+        output.writeUtf(snapshot.questProgress(), MAX_STRING);
+        output.writeVarInt(snapshot.selectedPowerCharges());
+        output.writeVarInt(snapshot.powerCooldownTicks());
+        output.writeUtf(snapshot.magicPath(), MAX_STRING);
+        output.writeVarInt(snapshot.magicResource());
+        output.writeVarInt(snapshot.magicMaxResource());
     }
 }

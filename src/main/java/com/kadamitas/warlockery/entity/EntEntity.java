@@ -1,16 +1,22 @@
 package com.kadamitas.warlockery.entity;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -59,6 +65,16 @@ public final class EntEntity extends IronGolem implements ArcaneCreature {
                 .min(java.util.Comparator.comparingDouble(this::distanceToSqr))
                 .ifPresent(this::setTarget);
         }
+        if (EntRules.shouldFertilizeGround(tickCount, getId())) {
+            fertilizeGround(level);
+        }
+    }
+
+    @Override
+    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
+        final boolean axeAttack = source.getWeaponItem() != null && source.getWeaponItem().is(ItemTags.AXES);
+        final boolean nonPlayerMobAttack = source.getEntity() instanceof Mob && !(source.getEntity() instanceof Player);
+        return super.hurtServer(level, source, EntRules.incomingDamage(amount, axeAttack, nonPlayerMobAttack));
     }
 
     @Override
@@ -92,6 +108,34 @@ public final class EntEntity extends IronGolem implements ArcaneCreature {
         setHealth(Math.clamp((float) (traits.maxHealth() * healthRatio), 1.0F, getMaxHealth()));
     }
 
+    private void fertilizeGround(final ServerLevel level) {
+        BlockPos.betweenClosedStream(
+                blockPosition().offset(-EntRules.FERTILIZE_RADIUS, -1, -EntRules.FERTILIZE_RADIUS),
+                blockPosition().offset(EntRules.FERTILIZE_RADIUS, 1, EntRules.FERTILIZE_RADIUS)
+            )
+            .filter(pos -> level.getBlockState(pos).getBlock() instanceof BonemealableBlock)
+            .limit(EntRules.MAX_FERTILIZED_BLOCKS)
+            .forEach(pos -> {
+                final var state = level.getBlockState(pos);
+                final BonemealableBlock growable = (BonemealableBlock) state.getBlock();
+                if (!growable.isValidBonemealTarget(level, pos, state)) {
+                    return;
+                }
+                growable.performBonemeal(level, level.getRandom(), pos, state);
+                level.sendParticles(
+                    ParticleTypes.HAPPY_VILLAGER,
+                    pos.getX() + 0.5D,
+                    pos.getY() + 0.75D,
+                    pos.getZ() + 0.5D,
+                    4,
+                    0.3D,
+                    0.2D,
+                    0.3D,
+                    0.0D
+                );
+            });
+    }
+
     private void setBaseValue(
         final net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute,
         final double value
@@ -103,15 +147,15 @@ public final class EntEntity extends IronGolem implements ArcaneCreature {
     }
 
     public enum EntVariant {
-        OAK("oak", 0xFFFFFFFF, new EntTraits(100.0, 15.0, 0.25, 2.0)),
-        BIRCH("birch", 0xFFF1E4B8, new EntTraits(88.0, 13.0, 0.29, 1.0)),
-        SPRUCE("spruce", 0xFF77906A, new EntTraits(112.0, 16.0, 0.23, 4.0)),
-        JUNGLE("jungle", 0xFF5FAF61, new EntTraits(104.0, 17.0, 0.27, 2.0)),
-        DARK_OAK("dark_oak", 0xFF73583F, new EntTraits(120.0, 18.0, 0.21, 6.0)),
-        ACACIA("acacia", 0xFFE08A52, new EntTraits(92.0, 15.0, 0.30, 1.0)),
-        MANGROVE("mangrove", 0xFF8A554C, new EntTraits(110.0, 14.0, 0.22, 5.0)),
-        CHERRY("cherry", 0xFFF1A8B8, new EntTraits(90.0, 13.0, 0.28, 1.0)),
-        PALE_OAK("pale_oak", 0xFFD8DED1, new EntTraits(108.0, 16.0, 0.24, 3.0));
+        OAK("oak", 0xFFFFFFFF, new EntTraits(EntRules.MAX_HEALTH, 15.0, 0.25, 2.0)),
+        BIRCH("birch", 0xFFF1E4B8, new EntTraits(EntRules.MAX_HEALTH, 13.0, 0.29, 1.0)),
+        SPRUCE("spruce", 0xFF77906A, new EntTraits(EntRules.MAX_HEALTH, 16.0, 0.23, 4.0)),
+        JUNGLE("jungle", 0xFF5FAF61, new EntTraits(EntRules.MAX_HEALTH, 17.0, 0.27, 2.0)),
+        DARK_OAK("dark_oak", 0xFF73583F, new EntTraits(EntRules.MAX_HEALTH, 18.0, 0.21, 6.0)),
+        ACACIA("acacia", 0xFFE08A52, new EntTraits(EntRules.MAX_HEALTH, 15.0, 0.30, 1.0)),
+        MANGROVE("mangrove", 0xFF8A554C, new EntTraits(EntRules.MAX_HEALTH, 14.0, 0.22, 5.0)),
+        CHERRY("cherry", 0xFFF1A8B8, new EntTraits(EntRules.MAX_HEALTH, 13.0, 0.28, 1.0)),
+        PALE_OAK("pale_oak", 0xFFD8DED1, new EntTraits(EntRules.MAX_HEALTH, 16.0, 0.24, 3.0));
 
         private final String serializedName;
         private final int tint;

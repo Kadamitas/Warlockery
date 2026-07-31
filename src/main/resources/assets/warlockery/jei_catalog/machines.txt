@@ -4,6 +4,7 @@ brazier_drain_growth
 brazier_fortification_of_the_corpse
 brazier_graveyard_mist
 brazier_summon_banshee
+brazier_summon_poltergeist
 brazier_summon_spectre
 cauldron_colored_brew_water
 cauldron_drop_of_luck

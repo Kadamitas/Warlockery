@@ -11,9 +11,6 @@
       "rolls": 1,
       "conditions": [
         {
-          "condition": "minecraft:killed_by_player"
-        },
-        {
           "condition": "minecraft:random_chance_with_enchanted_bonus",
           "enchanted_chance": {
             "type": "minecraft:linear",
@@ -29,23 +26,28 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "warlockery:hex_sapling"
+          "name": "warlockery:alder_sapling"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "warlockery:hawthorn_sapling"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "warlockery:rowan_sapling"
         }
       ],
       "rolls": 1,
       "conditions": [
         {
-          "condition": "minecraft:killed_by_player"
-        },
-        {
           "condition": "minecraft:random_chance_with_enchanted_bonus",
           "enchanted_chance": {
             "type": "minecraft:linear",
-            "base": 0.25,
+            "base": 0.3,
             "per_level_above_first": 0.075
           },
           "enchantment": "minecraft:looting",
-          "unenchanted_chance": 0.15
+          "unenchanted_chance": 0.2
         }
       ]
     }

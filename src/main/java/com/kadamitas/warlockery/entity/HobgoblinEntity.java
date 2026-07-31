@@ -1,28 +1,43 @@
 package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.registry.ModSounds;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.world.GoblinRaidRuntime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.Container;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -31,6 +46,7 @@ import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -40,17 +56,45 @@ import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public class HobgoblinEntity extends Villager implements ArcaneCreature {
     private final CreatureKind kind;
     private final CreatureBehavior behavior;
-    private KoboldProfession koboldProfession = KoboldProfession.PROSPECTOR;
+    private GoblinProfession goblinProfession = GoblinProfession.PROSPECTOR;
     private int prospectingCooldown;
+    private @Nullable BlockPos raidCenter;
+    private int raidWave;
+    private boolean raidLeader;
 
     public HobgoblinEntity(final EntityType<? extends Villager> type, final Level level, final CreatureKind kind) {
         super(type, level);
         this.kind = kind;
         this.behavior = CreatureBehaviorFactory.create(kind);
+        if (GoblinLifecycleRules.fleesHumanVillagers(kind)) {
+            this.goalSelector.addGoal(1, new AvoidEntityGoal<>(
+                this,
+                Villager.class,
+                target -> !isTrading() && GoblinHostilityRules.isHumanVillager(target.getType()),
+                12.0F,
+                0.85,
+                1.25,
+                target -> true
+            ));
+        }
+        if (GoblinHostilityRules.raidsVillagers(kind)) {
+            this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0, true));
+            this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(
+                this,
+                Villager.class,
+                1,
+                false,
+                false,
+                (target, serverLevel) -> GoblinHostilityRules.canTarget(kind, target.getType())
+                    && behavior.canAttack(this, target)
+            ));
+        }
         if (isPatronBoss()) {
             this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.1, true));
             this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(
@@ -67,26 +111,57 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
         return kind;
     }
 
-    public KoboldProfession koboldProfession() {
-        return koboldProfession;
+    public GoblinProfession goblinProfession() {
+        return goblinProfession;
     }
 
     public void assignProfessionFromVillage() {
-        this.koboldProfession = Arrays.stream(KoboldProfession.values())
+        this.goblinProfession = Arrays.stream(GoblinProfession.values())
             .filter(role -> this.level().getBlockStates(this.getBoundingBox().inflate(10)).anyMatch(state -> state.is(role.workstation)))
             .min(Comparator.comparingInt(Enum::ordinal))
-            .orElse(KoboldProfession.PROSPECTOR);
-        this.setCustomName(Component.translatable("entity.warlockery.hobgoblin.profession." + koboldProfession.id));
+            .orElseGet(() -> GoblinProfession.values()[random.nextInt(GoblinProfession.values().length)]);
+        refreshDisplayName();
+        this.getOffers().clear();
+    }
+
+    public void assignRandomProfession() {
+        this.goblinProfession = GoblinProfession.values()[random.nextInt(GoblinProfession.values().length)];
+        refreshDisplayName();
         this.getOffers().clear();
     }
 
     @Override
+    public @Nullable SpawnGroupData finalizeSpawn(
+        final ServerLevelAccessor level,
+        final DifficultyInstance difficulty,
+        final EntitySpawnReason spawnReason,
+        final @Nullable SpawnGroupData groupData
+    ) {
+        final SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
+        assignRandomProfession();
+        syncVanillaProfession(level.registryAccess());
+        return result;
+    }
+
+    public static boolean checkNaturalSpawnRules(
+        final EntityType<HobgoblinEntity> type,
+        final ServerLevelAccessor level,
+        final EntitySpawnReason spawnReason,
+        final BlockPos position,
+        final RandomSource random
+    ) {
+        return GoblinLifecycleRules.canSpawnNaturally(
+            CreatureKind.HOBGOBLIN,
+            level.getLevel().isVillage(position)
+        ) && Mob.checkMobSpawnRules(type, level, spawnReason, position, random);
+    }
+
+    @Override
     protected void updateTrades(final ServerLevel level) {
-        final var emerald = new ItemCost(Items.EMERALD, 1);
-        switch (koboldProfession) {
+        switch (goblinProfession) {
             case MINER -> {
                 this.getOffers().add(new MerchantOffer(new ItemCost(Items.COAL, 12), new ItemStack(Items.EMERALD), 16, 2, 0.05F));
-                this.getOffers().add(new MerchantOffer(emerald, new ItemStack(ModItems.ALL.get("raw_delvealloy").get(), 2), 8, 8, 0.12F));
+                this.getOffers().add(new MerchantOffer(new ItemCost(Items.EMERALD, 8), new ItemStack(ModItems.ALL.get("raw_delvealloy").get()), 8, 8, 0.12F));
                 this.getOffers().add(new MerchantOffer(
                     new ItemCost(ModItems.ALL.get("ingredient_delvealloydust").get(), 8),
                     new ItemStack(Items.EMERALD),
@@ -97,7 +172,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
             }
             case SMITH -> {
                 this.getOffers().add(new MerchantOffer(new ItemCost(ModItems.ALL.get("raw_delvealloy").get(), 4), new ItemStack(Items.EMERALD), 12, 5, 0.08F));
-                this.getOffers().add(new MerchantOffer(new ItemCost(Items.EMERALD, 18), new ItemStack(ModItems.ALL.get("delvealloypickaxe").get()), 2, 20, 0.2F));
+                this.getOffers().add(new MerchantOffer(new ItemCost(Items.EMERALD, 32), new ItemStack(ModItems.ALL.get("delvealloypickaxe").get()), 2, 20, 0.2F));
             }
             case SHAMAN -> {
                 this.getOffers().add(new MerchantOffer(new ItemCost(Items.REDSTONE, 8), new ItemStack(ModItems.ALL.get("ingredient_whiff_of_magic").get()), 12, 8, 0.08F));
@@ -106,25 +181,36 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
             case PROSPECTOR -> {
                 this.getOffers().add(new MerchantOffer(new ItemCost(ModItems.ALL.get("raw_silver").get(), 5), new ItemStack(Items.EMERALD), 12, 5, 0.08F));
                 this.getOffers().add(new MerchantOffer(
-                    new ItemCost(ModItems.ALL.get("ingredient_delvealloydust").get(), 9),
+                    new ItemCost(ModItems.ALL.get("ingredient_delvealloydust").get(), 18),
                     new ItemStack(ModItems.ALL.get("ingredient_delvealloynugget").get()),
                     12,
                     12,
                     0.12F
                 ));
-                this.getOffers().add(new MerchantOffer(new ItemCost(Items.EMERALD, 3), new ItemStack(ModItems.ALL.get("ingredient_delvealloynugget").get(), 4), 12, 8, 0.12F));
+                this.getOffers().add(new MerchantOffer(new ItemCost(Items.EMERALD, 12), new ItemStack(ModItems.ALL.get("ingredient_delvealloynugget").get()), 12, 8, 0.12F));
             }
         }
     }
 
     @Override
     protected void customServerAiStep(final ServerLevel level) {
+        syncVanillaProfession(level.registryAccess());
         super.customServerAiStep(level);
+        if (isTrading()) {
+            getNavigation().stop();
+            setTarget(null);
+        }
         behavior.tick(this, level);
+        if (kind == CreatureKind.GOBLIN) {
+            GoblinRaidRuntime.coordinate(this, level);
+        }
+        if (fleeHumanVillager(level)) {
+            return;
+        }
         if (tickCount % 20 == 0) {
             performServitudeWork(level);
         }
-        if (koboldProfession != KoboldProfession.MINER || isTrading() || isNoAi()) {
+        if (goblinProfession != GoblinProfession.MINER || isTrading() || isNoAi()) {
             return;
         }
         if (!getMainHandItem().is(WarlockeryTags.Items.HOBGOBLIN_MINING_TOOLS)) {
@@ -188,12 +274,72 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
         }
         final ItemStack supplied = player.getItemInHand(hand);
         if (!supplied.is(WarlockeryTags.Items.HOBGOBLIN_MINING_TOOLS)) {
-            return super.mobInteract(player, hand);
+            if (level() instanceof ServerLevel serverLevel) {
+                syncVanillaProfession(serverLevel.registryAccess());
+            }
+            final InteractionResult result = super.mobInteract(player, hand);
+            if (isTrading()) {
+                getNavigation().stop();
+                setTarget(null);
+            }
+            return result;
         }
         if (level() instanceof ServerLevel serverLevel) {
             equipMiningTool(serverLevel, player, supplied);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public @Nullable Villager getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+        if (!(partner instanceof HobgoblinEntity other) || !GoblinLifecycleRules.canReproduce(kind, other.kind)) {
+            return null;
+        }
+        final Entity offspring = getType().create(level, EntitySpawnReason.BREEDING);
+        if (!(offspring instanceof HobgoblinEntity child)) {
+            return null;
+        }
+        child.goblinProfession = random.nextBoolean() ? goblinProfession : other.goblinProfession;
+        child.syncVanillaProfession(level.registryAccess());
+        child.setVillagerDataFinalized(true);
+        child.refreshDisplayName();
+        return child;
+    }
+
+    @Override
+    public EntityDimensions getDefaultDimensions(final Pose pose) {
+        final EntityDimensions dimensions = getType().getDimensions();
+        return isBaby() ? dimensions.scale(GoblinLifecycleRules.BABY_DIMENSION_SCALE) : dimensions;
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return (isTrading() ? soundSet().trade() : soundSet().ambient()).get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(final DamageSource source) {
+        return soundSet().hurt().get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return soundSet().death().get();
+    }
+
+    @Override
+    public SoundEvent getNotifyTradeSound() {
+        return soundSet().trade().get();
+    }
+
+    @Override
+    protected SoundEvent getTradeUpdatedSound(final boolean validTrade) {
+        return (validTrade ? soundSet().trade() : soundSet().reject()).get();
+    }
+
+    @Override
+    public void playWorkSound() {
+        makeSound(soundSet().work().get());
     }
 
     @Override
@@ -205,16 +351,65 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
 
     @Override
     public boolean canAttack(final LivingEntity target) {
+        if (GoblinLifecycleRules.fleesHumanVillagers(kind)
+            && GoblinHostilityRules.isHumanVillager(target.getType())) {
+            return false;
+        }
+        if (GoblinHostilityRules.canTarget(kind, target.getType())) {
+            return behavior.canAttack(this, target);
+        }
         return behavior.canAttack(this, target) && super.canAttack(target);
+    }
+
+    public void joinVillageRaid(final BlockPos center, final int wave, final boolean leader) {
+        raidCenter = center.immutable();
+        raidWave = wave;
+        raidLeader = leader;
+        setPersistenceRequired();
+    }
+
+    public void leaveVillageRaid() {
+        raidCenter = null;
+        raidWave = 0;
+        raidLeader = false;
+    }
+
+    public Optional<BlockPos> raidCenter() {
+        return Optional.ofNullable(raidCenter);
+    }
+
+    public int raidWave() {
+        return raidWave;
+    }
+
+    public boolean isRaidLeader() {
+        return raidLeader;
+    }
+
+    public boolean isVillageRaider() {
+        return kind == CreatureKind.GOBLIN && raidCenter != null && raidWave > 0;
     }
 
     @Override
     public boolean doHurtTarget(final ServerLevel level, final Entity target) {
-        final boolean hurt = super.doHurtTarget(level, target);
+        final boolean hurt = PrimaryAttackModifier.withDamageBonus(
+            this,
+            behavior.attackDamageBonus(this, level),
+            () -> super.doHurtTarget(level, target)
+        );
         if (hurt) {
             behavior.afterAttack(this, level, target);
         }
         return hurt;
+    }
+
+    @Override
+    public boolean causeFallDamage(
+        final double fallDistance,
+        final float damageModifier,
+        final DamageSource damageSource
+    ) {
+        return false;
     }
 
     @Override
@@ -292,7 +487,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
     }
 
     private boolean isPatronBoss() {
-        return KoboldBossRules.isBoss(kind);
+        return GoblinBossRules.isBoss(kind);
     }
 
     private boolean isMineable(final ServerLevel level, final BlockPos position, final ItemStack tool) {
@@ -327,7 +522,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
     ) {
         state.spawnAfterBreak(level, position, tool, false);
         processedDrops(level, state, drops, profile).forEach(stack -> Block.popResource(level, position, stack));
-        if (HobgoblinMiningRules.findsKoboldite(profile, random.nextFloat())) {
+        if (HobgoblinMiningRules.findsGoblinite(profile, random.nextFloat())) {
             Block.popResource(level, position, new ItemStack(ModItems.ALL.get("ingredient_delvealloydust").get()));
         }
     }
@@ -382,30 +577,102 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
     @Override
     protected void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        output.putString("WarlockeryKoboldProfession", koboldProfession.id);
+        output.putString("WarlockeryGoblinProfession", goblinProfession.id);
         output.putInt("WarlockeryProspectingCooldown", prospectingCooldown);
+        if (raidCenter != null) {
+            output.putLong("WarlockeryGoblinRaidCenter", raidCenter.asLong());
+            output.putInt("WarlockeryGoblinRaidWave", raidWave);
+            output.putBoolean("WarlockeryGoblinRaidLeader", raidLeader);
+        }
     }
 
     @Override
     protected void readAdditionalSaveData(final ValueInput input) {
         super.readAdditionalSaveData(input);
-        koboldProfession = KoboldProfession.byId(input.getStringOr("WarlockeryKoboldProfession", "prospector"));
+        goblinProfession = GoblinProfession.byId(input.getStringOr("WarlockeryGoblinProfession", "prospector"));
         prospectingCooldown = input.getIntOr("WarlockeryProspectingCooldown", 0);
+        final long encodedCenter = input.getLongOr("WarlockeryGoblinRaidCenter", Long.MIN_VALUE);
+        raidCenter = encodedCenter == Long.MIN_VALUE ? null : BlockPos.of(encodedCenter);
+        raidWave = input.getIntOr("WarlockeryGoblinRaidWave", 0);
+        raidLeader = input.getBooleanOr("WarlockeryGoblinRaidLeader", false);
+        if (!hasCustomName()) {
+            refreshDisplayName();
+        }
     }
 
-    public enum KoboldProfession {
-        MINER("miner", Blocks.STONECUTTER), SMITH("smith", Blocks.BLAST_FURNACE),
-        SHAMAN("shaman", Blocks.BREWING_STAND), PROSPECTOR("prospector", Blocks.CARTOGRAPHY_TABLE);
+    private void syncVanillaProfession(final HolderGetter.Provider registries) {
+        if (getVillagerXp() == 0) {
+            setVillagerXp(1);
+        }
+        if (getVillagerData().profession().is(goblinProfession.engineProfession())) {
+            return;
+        }
+        setVillagerData(getVillagerData().withProfession(registries, goblinProfession.engineProfession()));
+        setVillagerDataFinalized(true);
+    }
+
+    private void refreshDisplayName() {
+        final String species = kind == CreatureKind.GOBLIN ? "goblin" : "hobgoblin";
+        setCustomName(Component.translatable("entity.warlockery." + species + ".profession." + goblinProfession.id));
+        setCustomNameVisible(true);
+    }
+
+    private ModSounds.CreatureSoundSet soundSet() {
+        return kind == CreatureKind.GOBLIN ? ModSounds.GOBLIN : ModSounds.HOBGOBLIN;
+    }
+
+    private boolean fleeHumanVillager(final ServerLevel level) {
+        if (!GoblinLifecycleRules.fleesHumanVillagers(kind) || isTrading()) {
+            return false;
+        }
+        final Optional<Villager> nearestHuman = level.getEntitiesOfClass(
+                Villager.class,
+                getBoundingBox().inflate(12.0, 4.0, 12.0),
+                villager -> GoblinHostilityRules.isHumanVillager(villager.getType())
+            ).stream()
+            .min(Comparator.comparingDouble(this::distanceToSqr));
+        if (nearestHuman.isEmpty()) {
+            return false;
+        }
+        final Vec3 separation = position().subtract(nearestHuman.orElseThrow().position()).multiply(1.0, 0.0, 1.0);
+        if (separation.lengthSqr() > 1.0E-4) {
+            final Vec3 escapeVelocity = separation.normalize().scale(0.18);
+            setDeltaMovement(escapeVelocity.x, getDeltaMovement().y, escapeVelocity.z);
+        }
+        if (tickCount % 10 == 0 || getNavigation().isDone()) {
+            final Vec3 escape = DefaultRandomPos.getPosAway(this, 16, 7, nearestHuman.orElseThrow().position());
+            if (escape != null) {
+                getNavigation().moveTo(escape.x, escape.y, escape.z, 1.25);
+            }
+        }
+        return true;
+    }
+
+    public enum GoblinProfession {
+        MINER("miner", Blocks.STONECUTTER, VillagerProfession.MASON),
+        SMITH("smith", Blocks.BLAST_FURNACE, VillagerProfession.ARMORER),
+        SHAMAN("shaman", Blocks.BREWING_STAND, VillagerProfession.CLERIC),
+        PROSPECTOR("prospector", Blocks.CARTOGRAPHY_TABLE, VillagerProfession.CARTOGRAPHER);
 
         private final String id;
         private final net.minecraft.world.level.block.Block workstation;
+        private final ResourceKey<VillagerProfession> engineProfession;
 
-        KoboldProfession(final String id, final net.minecraft.world.level.block.Block workstation) {
+        GoblinProfession(
+            final String id,
+            final net.minecraft.world.level.block.Block workstation,
+            final ResourceKey<VillagerProfession> engineProfession
+        ) {
             this.id = id;
             this.workstation = workstation;
+            this.engineProfession = engineProfession;
         }
 
-        static KoboldProfession byId(final String id) {
+        public ResourceKey<VillagerProfession> engineProfession() {
+            return engineProfession;
+        }
+
+        static GoblinProfession byId(final String id) {
             return Arrays.stream(values()).filter(value -> value.id.equals(id)).findFirst().orElse(PROSPECTOR);
         }
     }

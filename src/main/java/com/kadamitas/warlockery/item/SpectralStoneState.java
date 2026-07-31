@@ -35,6 +35,11 @@ public record SpectralStoneState(List<Identifier> captured) {
         return new SpectralStoneState(java.util.stream.Stream.concat(captured.stream(), java.util.stream.Stream.of(entityType)).toList());
     }
 
+    public boolean canCapture(final Identifier entityType) {
+        return captured.size() < CAPACITY
+            && (captured.isEmpty() || captured.getFirst().equals(entityType));
+    }
+
     public SpectralStoneState withoutFirst() {
         return captured.isEmpty() ? this : new SpectralStoneState(captured.subList(1, captured.size()));
     }

@@ -1,0 +1,30 @@
+{
+  "title": "ritual.warlockery.bind_trent.title",
+  "description": "ritual.warlockery.bind_trent.description",
+  "action": "bind_fetish",
+  "power": 2200,
+  "radius": 6,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 100,
+  "glyphs": {
+    "circleglyphritual": 12,
+    "circleglyphinfernal": 12
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:trent",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_spectral_dust",
+        "count": 3,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  },
+  "target": "warlockery:trent"
+}

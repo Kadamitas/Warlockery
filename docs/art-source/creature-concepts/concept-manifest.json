@@ -19,16 +19,16 @@
       "prompt": "Five compact familiar and vermin forms: midnight moon-charmed cat, cream and chestnut broad-browed owl, gold-eyed moss toad, angular violet-black rune bat, and pale segmented hooked louse with a red feeding core."
     },
     "infernal-and-bosses.png": {
-      "creatures": ["demon", "emberhorn_archfiend", "crimson_matriarch", "abyssal_regent", "death", "ironbound_sentinel"],
-      "prompt": "Six boss silhouettes: obsidian-brass demon soldier, massive lava-armored archfiend, four-armed crimson chitin matriarch, coral-crowned abyssal regent, bone-masked Death with an original crescent scythe, and shield-shouldered rune sentinel."
+      "creatures": ["demon", "emberhorn_archfiend", "naamah", "abyssal_regent", "death", "ironbound_sentinel"],
+      "prompt": "Six boss silhouettes: obsidian-brass demon soldier, massive lava-armored archfiend, flame-crowned Naamah, coral-crowned abyssal regent, bone-masked Death with an original crescent scythe, and shield-shouldered rune sentinel."
     },
     "verdant-creatures.png": {
       "creatures": ["ent", "mandrake", "dreamroot", "bramble_colossus", "thorned_pursuer"],
       "prompt": "Five plant creatures: asymmetric branch-antlered ent, shouting root-child mandrake, indigo bulb-crowned dreamroot, huge hooked bramble colossus, and agile antler-masked vine-whip pursuer."
     },
-    "kobold-clans.png": {
+    "goblin-clans.png": {
       "creatures": ["hobgoblin", "goblin", "stonebroker", "forgewarden"],
-      "prompt": "Four fully clothed mining villagers: lamp-helmet prospector with pick harness, smaller ore runner with satchel, stocky geode-armored Stonebroker with ledger pouch, and dark koboldite Forgewarden with brass furnace mask and tool belt."
+      "prompt": "Four fully clothed mining villagers: lamp-helmet prospector with pick harness, smaller ore runner with satchel, stocky geode-armored Stonebroker with ledger pouch, and dark goblinite Forgewarden with brass furnace mask and tool belt."
     },
     "illusions-and-anomalies.png": {
       "creatures": ["illusion_creeper", "illusion_spider", "illusion_zombie"],

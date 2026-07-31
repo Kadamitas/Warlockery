@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonParser;
+import com.kadamitas.warlockery.ritual.ChalkCircleLayout;
 import com.kadamitas.warlockery.ritual.RitualAction;
 import com.kadamitas.warlockery.ritual.RitualDefinition;
 import com.kadamitas.warlockery.ritual.RitualManager;
@@ -85,7 +86,7 @@ final class CreatureAcquisitionIntegrityTest {
         final boolean met
     ) {
         final List<RitualManager.RequirementStatus> statuses = new ArrayList<>();
-        definition.glyphs().forEach((glyph, count) -> statuses.add(
+        ChalkCircleLayout.canonicalGlyphs(definition.glyphs()).forEach((glyph, count) -> statuses.add(
             new RitualManager.RequirementStatus("chalk", glyph, count, met ? count : 0, met)
         ));
         definition.requirements().ingredients().forEach(ingredient -> statuses.add(

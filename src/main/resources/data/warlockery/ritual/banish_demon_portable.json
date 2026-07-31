@@ -2,7 +2,7 @@
   "title": "ritual.warlockery.banish_demon_portable.title",
   "description": "ritual.warlockery.banish_demon_portable.description",
   "action": "banish",
-  "power": 1600,
+  "power": 0,
   "radius": 10,
   "duration": 1200,
   "amplifier": 0,

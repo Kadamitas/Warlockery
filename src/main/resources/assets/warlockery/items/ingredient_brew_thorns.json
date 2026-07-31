@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_thorns"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_thorns",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 2519871
+      }
+    ]
+  }
 }

@@ -14,7 +14,7 @@ $entities = [ordered]@{
     circle_mage='Circle Mage'; umbral_sigil='Umbral Sigil'; death='Death'; pale_steed="Pale Steed"; demon='Demon'
     eldritch_watcher='Eldritch Watcher'; spectral_familiar='Spectral Familiar'; blood_thrall='Blood Thrall'; hellhound='Hellhound'
     thorned_pursuer='Thorned Pursuer'; illusion_creeper='Illusion Creeper'; illusion_spider='Illusion Spider'
-    illusion_zombie='Illusion Zombie'; imp='Flame Imp'; emberhorn_archfiend='Emberhorn Archfiend'; crimson_matriarch='Crimson Matriarch'
+    illusion_zombie='Illusion Zombie'; imp='Flame Imp'; emberhorn_archfiend='Emberhorn Archfiend'; naamah='Naamah'
     abyssal_regent='Abyssal Regent'; lost_soul='Lost Soul'; parasytic_louse='Parasytic Louse'; mandrake='Mandrake'
     dreamroot='Dreamroot'; glass_doppelganger='Glass Doppelganger'; nightmare='Nightmare'; owl='Owl'; poltergeist='Poltergeist'
     echo_shade='Echo Shade'; spectre='Spectre'; spirit='Spirit'; toad='Toad'; bramble_colossus='Bramble Colossus'; vampire='Vampire'
@@ -101,12 +101,17 @@ foreach ($entry in $entities.GetEnumerator()) {
     $lang["entity.warlockery.$($entry.Key)"] = $entry.Value
     $lang["item.warlockery.$($entry.Key)_spawn_egg"] = "$($entry.Value) Spawn Egg"
 }
-$lang['item.warlockery.raw_silver']='Raw Silver'; $lang['item.warlockery.silver_ingot']='Silver Ingot'; $lang['item.warlockery.raw_delvealloy']='Raw Delvealloy'
+$lang['item.warlockery.raw_silver']='Raw Silver'; $lang['item.warlockery.silver_ingot']='Silver Ingot'; $lang['item.warlockery.raw_delvealloy']='Raw Goblinite'
 $lang['block.warlockery.silver_ore']='Silver Ore'; $lang['block.warlockery.deepslate_silver_ore']='Deepslate Silver Ore'
 $lang['block.warlockery.raw_silver_block']='Block of Raw Silver'; $lang['block.warlockery.silver_block']='Block of Silver'
-$lang['block.warlockery.delvealloy_ore']='Delvealloy Ore'; $lang['block.warlockery.deepslate_delvealloy_ore']='Deepslate Delvealloy Ore'
-$lang['block.warlockery.raw_delvealloy_block']='Block of Raw Delvealloy'; $lang['block.warlockery.delvealloy_block']='Block of Delvealloy'
-foreach ($role in @('miner','smith','shaman','prospector')) { $lang["entity.warlockery.hobgoblin.profession.$role"] = "Hobgoblin $([cultureinfo]::InvariantCulture.TextInfo.ToTitleCase($role))" }
+$lang['block.warlockery.delvealloy_ore']='Goblinite Ore'; $lang['block.warlockery.deepslate_delvealloy_ore']='Deepslate Goblinite Ore'
+$lang['block.warlockery.raw_delvealloy_block']='Block of Raw Goblinite'; $lang['block.warlockery.delvealloy_block']='Block of Goblinite'
+foreach ($species in @('goblin','hobgoblin')) {
+    foreach ($role in @('miner','smith','shaman','prospector')) {
+        $title = [cultureinfo]::InvariantCulture.TextInfo.ToTitleCase($role)
+        $lang["entity.warlockery.$species.profession.$role"] = "$([cultureinfo]::InvariantCulture.TextInfo.ToTitleCase($species)) $title"
+    }
+}
 foreach ($tree in @('oak','birch','spruce','jungle','dark_oak','acacia','mangrove','cherry','pale_oak')) { $lang["entity.warlockery.ent.variant.$tree"] = "$([cultureinfo]::InvariantCulture.TextInfo.ToTitleCase($tree.Replace('_',' '))) Ent" }
 Write-Json $langPath $lang
 

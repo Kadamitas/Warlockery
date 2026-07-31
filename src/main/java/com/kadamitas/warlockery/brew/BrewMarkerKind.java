@@ -1,12 +1,10 @@
 package com.kadamitas.warlockery.brew;
 
-import java.util.Arrays;
-import java.util.Map;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-public enum BrewMarkerKind {
+public enum BrewMarkerKind implements StringIdentified {
     ABSORB_MAGIC("absorb_magic", 2_400),
     ATTRACT_ARROWS("attract_arrows", 1_200),
     BREW_GAS_IMMUNITY("brew_gas_immunity", 3_600),
@@ -35,10 +33,10 @@ public enum BrewMarkerKind {
     SLEEPING("sleeping", 6_000),
     SNOW_TRAIL("snow_trail", 1_200),
     DEPTHS("depths", 3_600),
+    MOONSHINE("moonshine", 3_600),
     GROTESQUE("grotesque", 1_200);
 
-    private static final Map<String, BrewMarkerKind> BY_ID = Arrays.stream(values())
-        .collect(Collectors.toUnmodifiableMap(BrewMarkerKind::id, Function.identity()));
+    private static final EnumLookup<BrewMarkerKind> LOOKUP = EnumLookup.create("brew marker", values());
 
     private final String id;
     private final int defaultDuration;
@@ -57,6 +55,6 @@ public enum BrewMarkerKind {
     }
 
     public static Optional<BrewMarkerKind> find(final String id) {
-        return Optional.ofNullable(BY_ID.get(id));
+        return LOOKUP.find(id);
     }
 }

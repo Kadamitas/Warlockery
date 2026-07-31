@@ -50,11 +50,15 @@ public final class MagicPathRules {
         public String id() {
             return id;
         }
+
+        public String messageKey() {
+            return "message.warlockery.magic." + id;
+        }
     }
 
     public record Decision(boolean success, Diagnostic diagnostic, int reserveSpent) {
-        public String messageKey(final MagicPath path) {
-            return "message.warlockery.magic." + path.id() + "." + diagnostic.id();
+        public String messageKey() {
+            return diagnostic.messageKey();
         }
     }
 }

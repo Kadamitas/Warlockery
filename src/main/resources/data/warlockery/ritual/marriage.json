@@ -1,0 +1,17 @@
+{
+  "title": "ritual.warlockery.marriage.title",
+  "description": "ritual.warlockery.marriage.description",
+  "action": "marriage",
+  "power": 4200,
+  "radius": 6,
+  "casting_time": 200,
+  "glyphs": {"circleglyphgolden": 24},
+  "requirements": {
+    "ingredients": [
+      {"ingredient": "warlockery:wedding_ring", "count": 2, "consume": false},
+      {"ingredient": "warlockery:ingredient_golden_thread", "count": 1, "consume": true},
+      {"ingredient": "minecraft:wither_rose", "count": 1, "consume": true},
+      {"ingredient": "minecraft:honey_bottle", "count": 1, "consume": true}
+    ]
+  }
+}

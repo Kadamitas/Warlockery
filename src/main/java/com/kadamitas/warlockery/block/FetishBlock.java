@@ -11,6 +11,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.level.BlockGetter;
@@ -29,6 +32,7 @@ public final class FetishBlock extends Block {
     public static final BooleanProperty ENABLED = BooleanProperty.create("enabled");
     public static final BooleanProperty ALARM = BooleanProperty.create("alarm");
     public static final BooleanProperty BOUND = BooleanProperty.create("bound");
+    public static final EnumProperty<DyeColor> ROBE = EnumProperty.create("robe", DyeColor.class);
 
     public FetishBlock(final BlockBehaviour.Properties properties) {
         super(properties);
@@ -36,7 +40,8 @@ public final class FetishBlock extends Block {
             .setValue(MODE, FetishMode.DISORIENTATION)
             .setValue(ENABLED, false)
             .setValue(ALARM, false)
-            .setValue(BOUND, false));
+            .setValue(BOUND, false)
+            .setValue(ROBE, DyeColor.BROWN));
     }
 
     @Override
@@ -46,7 +51,7 @@ public final class FetishBlock extends Block {
 
     @Override
     protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(MODE, ENABLED, ALARM, BOUND);
+        builder.add(MODE, ENABLED, ALARM, BOUND, ROBE);
     }
 
     @Override
@@ -67,7 +72,7 @@ public final class FetishBlock extends Block {
         final BlockState oldState,
         final boolean movedByPiston
     ) {
-        if (!level.isClientSide() && state.getValue(BOUND) && state.getValue(ENABLED)) {
+        if (!level.isClientSide() && (!state.getValue(BOUND) || state.getValue(ENABLED))) {
             level.scheduleTick(pos, this, FetishRules.TICK_INTERVAL);
         }
     }
@@ -83,8 +88,18 @@ public final class FetishBlock extends Block {
         final BlockHitResult hitResult
     ) {
         final boolean focus = itemStack.is(WitchcraftCompatibilityTags.CONFIGURATION_FOCI);
+        final boolean dye = itemStack.getItem() instanceof DyeItem;
         if (level.isClientSide()) {
-            return focus ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+            return focus || dye ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+        }
+        if (itemStack.getItem() instanceof DyeItem dyeItem) {
+            final String dyeId = BuiltInRegistries.ITEM.getKey(dyeItem).getPath();
+            final String colorName = dyeId.endsWith("_dye") ? dyeId.substring(0, dyeId.length() - 4) : dyeId;
+            level.setBlockAndUpdate(pos, state.setValue(ROBE, DyeColor.byName(colorName, DyeColor.BROWN)));
+            if (!player.hasInfiniteMaterials()) {
+                itemStack.shrink(1);
+            }
+            return InteractionResult.SUCCESS;
         }
         if (!focus) {
             show(player, FetishRules.Diagnostic.WRONG_FOCUS, state.getValue(MODE));
@@ -141,7 +156,12 @@ public final class FetishBlock extends Block {
         final BlockPos pos,
         final RandomSource random
     ) {
-        if (!state.getValue(BOUND) || !state.getValue(ENABLED)) {
+        if (!state.getValue(BOUND)) {
+            FetishRuntime.attractZombies(level, pos);
+            level.scheduleTick(pos, this, FetishRules.TICK_INTERVAL);
+            return;
+        }
+        if (!state.getValue(ENABLED)) {
             return;
         }
         final boolean alarm = FetishRuntime.tick(level, pos, state.getValue(MODE));

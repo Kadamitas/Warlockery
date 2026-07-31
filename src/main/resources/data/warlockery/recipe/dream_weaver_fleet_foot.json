@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": ["warlockery:dreamcatcher", "minecraft:rabbit_foot"],
+  "result": { "id": "warlockery:dream_weaver_fleet_foot" }
+}

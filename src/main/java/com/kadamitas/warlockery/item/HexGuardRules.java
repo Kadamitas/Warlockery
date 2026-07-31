@@ -16,6 +16,13 @@ public final class HexGuardRules {
         return new Resolution(true, retaliates, retaliates ? Diagnostic.BLOCKED_AND_RETALIATED : Diagnostic.BLOCKED);
     }
 
+    public static boolean hasRequiredGuards(final int available, final int required) {
+        if (available < 0 || required < 1) {
+            throw new IllegalArgumentException("Hex guard counts must be nonnegative and require at least one doll");
+        }
+        return available >= required;
+    }
+
     public enum Diagnostic {
         UNPROTECTED("unprotected"),
         BLOCKED("blocked"),

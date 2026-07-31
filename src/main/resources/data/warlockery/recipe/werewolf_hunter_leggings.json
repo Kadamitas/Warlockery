@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "LSL",
+    "L L",
+    "L L"
+  ],
+  "key": {
+    "L": "warlockery:ingredient_nullifiedleather",
+    "S": "#c:ingots/silver"
+  },
+  "result": {
+    "id": "warlockery:werewolf_hunter_leggings"
+  }
+}

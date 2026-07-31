@@ -40,16 +40,17 @@ final class ManualLibraryTest {
             ? translations.get(key).getAsString()
             : key;
         assertTrue(ids(ManualProfile.search("circle magic", resolver)).contains("ingredient_book_circle_magic"));
+        assertEquals(List.of("ingredient_book_burning"), ids(ManualProfile.search("bound fetishes", resolver)));
         assertEquals(List.of("ingredient_book_herbology"), ids(ManualProfile.search("safe harvest", resolver)));
-        assertEquals(List.of("vampirebook"), ids(ManualProfile.search("holy bolts", resolver)));
+        assertEquals(List.of("vampirebook"), ids(ManualProfile.search("blood sense", resolver)));
         assertTrue(ManualProfile.search("no such manual text", resolver).isEmpty());
     }
 
     @Test
     void chapterNavigationCyclesInBothDirections() {
         final ManualProfile profile = ManualProfile.find("cauldronbook").orElseThrow();
-        assertEquals("delivery", profile.adjacentSection("custom_brews", 1));
-        assertEquals("brew_entry_solidify_erosion", profile.adjacentSection("custom_brews", -1));
+        assertEquals("antidotes", profile.adjacentSection("custom_brews", 1));
+        assertEquals(profile.sections().getLast(), profile.adjacentSection("custom_brews", -1));
         assertEquals("brew_entry_heal", profile.adjacentSection("diagnostics", 1));
     }
 
@@ -58,9 +59,15 @@ final class ManualLibraryTest {
         final JsonObject translations = translations();
         ManualProfile.profiles().forEach(profile -> {
             assertTrue(translations.has(profile.translatedTitleKey()), profile.translatedTitleKey());
+            profile.chapters().forEach(chapter ->
+                assertTrue(translations.has(chapter.titleKey()), chapter.titleKey()));
             profile.sections().forEach(section -> {
-                assertTrue(translations.has(profile.translatedSectionTitleKey(section)),
-                    profile.translatedSectionTitleKey(section));
+                assertTrue(
+                    section.startsWith("biome_entry_")
+                        ? profile.translatedSectionTitleKey(section).startsWith("biome.minecraft.")
+                        : translations.has(profile.translatedSectionTitleKey(section)),
+                    profile.translatedSectionTitleKey(section)
+                );
                 assertTrue(translations.has(profile.translatedSectionKey(section)),
                     profile.translatedSectionKey(section));
                 assertFalse(translations.get(profile.translatedSectionKey(section)).getAsString().isBlank());
@@ -77,7 +84,7 @@ final class ManualLibraryTest {
             packagedRituals = paths.filter(path -> path.toString().endsWith(".json")).count();
         }
         assertEquals(packagedRituals, indexedRituals);
-        assertEquals(101, indexedRituals);
+        assertEquals(108, indexedRituals);
     }
 
     @Test
@@ -86,6 +93,64 @@ final class ManualLibraryTest {
         final long indexedBrews = codex.sections().stream().filter(section -> section.startsWith("brew_entry_")).count();
         assertEquals(BrewKind.builtIns().size(), indexedBrews);
         assertEquals(128, indexedBrews);
+    }
+
+    @Test
+    void supernaturalProgressionsPublishOrderedInitiationAndLevelSubchapters() {
+        final ManualProfile observations = ManualProfile.find("vampirebook").orElseThrow();
+        assertEquals(
+            java.util.stream.Stream.concat(
+                java.util.stream.Stream.of("nami", "blood_audience"),
+                java.util.stream.IntStream.rangeClosed(1, 10).mapToObj(level -> "vampire_level_" + level)
+            ).toList(),
+            observations.sections()
+        );
+        assertEquals(List.of("vampire_awakening", "vampire_trials", "vampire_ascendance"),
+            observations.chapters().stream().map(ManualProfile.Chapter::id).toList());
+
+        final ManualProfile circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        final ManualProfile.Chapter lycanthropy = circles.chapters().stream()
+            .filter(chapter -> chapter.id().equals("lycanthropy_trials"))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(
+            java.util.stream.IntStream.rangeClosed(1, 10).mapToObj(level -> "werewolf_level_" + level).toList(),
+            lycanthropy.sections()
+        );
+    }
+
+    @Test
+    void supernaturalSubchaptersUseInWorldProseAndStateEveryBloodLimit() {
+        final JsonObject translations = translations();
+        final List<String> bloodCaps = List.of(
+            "750", "1,000", "1,250", "1,500", "1,750",
+            "2,000", "2,250", "2,500", "2,750", "3,000"
+        );
+        for (int level = 1; level <= 10; level++) {
+            final String vampire = translations.get(
+                "manual.warlockery.immortal.vampire_level_" + level
+            ).getAsString();
+            assertFalse(vampire.startsWith("Trial:"), "Vampire level " + level);
+            assertFalse(vampire.contains("Reward:"), "Vampire level " + level);
+            assertTrue(vampire.contains(bloodCaps.get(level - 1)), "Vampire level " + level);
+
+            final String werewolf = translations.get(
+                "manual.warlockery.circles.werewolf_level_" + level
+            ).getAsString();
+            assertTrue(werewolf.startsWith("Trial:"), "Werewolf level " + level);
+            assertTrue(werewolf.contains("Reward:"), "Werewolf level " + level);
+        }
+        assertTrue(translations.get("manual.warlockery.immortal.vampire_level_4").getAsString()
+            .contains("first three Torn Pages"));
+        assertTrue(translations.get("manual.warlockery.immortal.vampire_level_8").getAsString()
+            .contains("four distinct villages"));
+        final String finalTrial = translations.get("manual.warlockery.immortal.vampire_level_10").getAsString();
+        assertTrue(finalTrial.contains("all nine Torn Pages"));
+        assertTrue(finalTrial.contains("goblet"));
+        assertTrue(finalTrial.contains("coffin"));
+        assertTrue(translations.get("manual.warlockery.immortal.nami").getAsString().contains("marriage"));
+        assertTrue(translations.get("manual.warlockery.immortal.blood_audience").getAsString()
+            .contains("Naamah"));
     }
 
     private static List<String> ids(final List<ManualProfile> profiles) {

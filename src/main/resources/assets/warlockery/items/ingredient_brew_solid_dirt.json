@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_solid_dirt"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_solid_dirt",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 7951674
+      }
+    ]
+  }
 }

@@ -8,12 +8,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.phys.AABB;
 
@@ -28,6 +28,7 @@ public final class BrazierEffectRuntime {
         return Effect.fromRecipe(recipeId).map(effect -> switch (effect) {
             case SUMMON_SPECTRE -> summon(level, center, "spectre");
             case SUMMON_BANSHEE -> summon(level, center, "banshee");
+            case SUMMON_POLTERGEIST -> summon(level, center, "poltergeist");
             case GRAVEYARD_MIST -> graveyardMist(level, center);
             case ANGUISH_OF_THE_DEAD -> applyEffect(level, center, MobEffects.STRENGTH, 1);
             case FORTIFICATION_OF_THE_CORPSE -> applyEffect(level, center, MobEffects.RESISTANCE, 1);
@@ -109,18 +110,19 @@ public final class BrazierEffectRuntime {
                 return 1;
             })
             .sum();
-        final var undead = level.getEntitiesOfClass(
+        final var creatures = level.getEntitiesOfClass(
             LivingEntity.class,
             new AABB(center).inflate(RADIUS),
-            entity -> entity.typeHolder().is(EntityTypeTags.UNDEAD)
+            LivingEntity::isAlive
         );
-        undead.forEach(entity -> entity.heal(Math.min(20.0F, drained * 0.5F)));
-        return new Result(0, undead.size(), drained);
+        creatures.forEach(entity -> entity.heal(Math.min(20.0F, drained * 0.5F)));
+        return new Result(0, creatures.size(), drained);
     }
 
     public enum Effect {
         SUMMON_SPECTRE("brazier_summon_spectre"),
         SUMMON_BANSHEE("brazier_summon_banshee"),
+        SUMMON_POLTERGEIST("brazier_summon_poltergeist"),
         GRAVEYARD_MIST("brazier_graveyard_mist"),
         ANGUISH_OF_THE_DEAD("brazier_anguish_of_the_dead"),
         FORTIFICATION_OF_THE_CORPSE("brazier_fortification_of_the_corpse"),

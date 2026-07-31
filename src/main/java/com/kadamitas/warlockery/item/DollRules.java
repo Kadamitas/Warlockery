@@ -2,12 +2,17 @@ package com.kadamitas.warlockery.item;
 
 public final class DollRules {
     public static final int DURABILITY_REPAIRED_PER_CHARGE = 2;
+    public static final float PROTECTION_RECOVERY_HEALTH = 10.0F;
 
     private DollRules() {
     }
 
     public static boolean isLethal(final float health, final float finalDamage) {
         return finalDamage >= health;
+    }
+
+    public static float restoredHealth(final float maximumHealth) {
+        return Math.min(PROTECTION_RECOVERY_HEALTH, Math.max(1.0F, maximumHealth));
     }
 
     public static boolean needsRepair(final int damage, final int maxDamage) {

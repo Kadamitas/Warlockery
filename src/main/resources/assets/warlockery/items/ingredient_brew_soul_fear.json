@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_soul_fear"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_soul_fear",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 5127029
+      }
+    ]
+  }
 }

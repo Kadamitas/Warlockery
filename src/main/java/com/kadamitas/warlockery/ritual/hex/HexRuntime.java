@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.ritual.hex;
 
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.item.DollItem;
 import java.util.List;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
@@ -75,6 +76,7 @@ public final class HexRuntime {
             case MISFORTUNE -> tickMisfortune(level, target);
             case INSANITY -> tickHallucinations(level, target, kind, HallucinationRules.INSANITY, true);
             case OVERHEATING -> tickOverheating(level, target);
+            case HEAT_METAL -> tickHeatMetal(level, target);
             case SINKING -> tickSinking(target);
             case WAKING_NIGHTMARE -> tickHallucinations(
                 level,
@@ -116,6 +118,19 @@ public final class HexRuntime {
         }
         target.igniteForSeconds(3.0F);
         target.hurtServer(level, target.damageSources().onFire(), 1.0F);
+    }
+
+    private static void tickHeatMetal(final ServerLevel level, final LivingEntity target) {
+        if (DollItem.tryBlockHex(target)) {
+            HexState.remove(target, HexKind.HEAT_METAL);
+            clearEffects(target, HexKind.HEAT_METAL);
+            return;
+        }
+        if (target.tickCount % 20 != 0 || !HeatMetalRules.carriesAffectedMetal(target)) {
+            return;
+        }
+        target.igniteForSeconds(4.0F);
+        target.hurtServer(level, target.damageSources().onFire(), 2.0F);
     }
 
     private static void tickSinking(final LivingEntity target) {

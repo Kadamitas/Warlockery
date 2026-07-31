@@ -30,7 +30,7 @@ public final class GenerateOriginalAssets {
     private static final Color[] FROST = colors("111a2c", "1e3650", "315b76", "4f8fa3", "80c4cd", "c6eef0", "ecfbf8");
     private static final Color[] WOOD = colors("201510", "4a2a20", "754733", "9d6845", "c79a65", "e0bd83", "f0ddb0");
     private static final List<Color[]> PALETTES = List.of(ARCANE, VERDANT, INFERNAL, SILVER, FROST, WOOD);
-    private static final SpritePalette KOBOLDITE = new SpritePalette(
+    private static final SpritePalette GOBLINITE = new SpritePalette(
         new Color(0x09130F), new Color(0x173326), new Color(0x245A3B),
         new Color(0x3F8652), new Color(0x77BD67), new Color(0xB7E58D)
     );
@@ -40,6 +40,8 @@ public final class GenerateOriginalAssets {
 
     public static void main(final String[] args) throws Exception {
         final boolean polishOnly = Arrays.asList(args).contains("--polish");
+        final boolean goblinsOnly = Arrays.asList(args).contains("--goblins");
+        final boolean transformedWomenOnly = Arrays.asList(args).contains("--nami-naamah");
         final Path root = Arrays.stream(args)
             .filter(argument -> !argument.startsWith("--"))
             .findFirst()
@@ -52,6 +54,25 @@ public final class GenerateOriginalAssets {
         final Path lootRoot = root.resolve("src/main/resources/data/warlockery/loot_table/entities");
         if (!Files.isDirectory(textureRoot) || !Files.isDirectory(lootRoot)) {
             throw new IllegalArgumentException("Run from the Warlockery project root: " + root);
+        }
+
+        if (goblinsOnly) {
+            Files.createDirectories(entityRoot);
+            ImageIO.write(penguinGoblinTexture(false), "png", entityRoot.resolve("goblin.png").toFile());
+            ImageIO.write(penguinGoblinTexture(true), "png", entityRoot.resolve("hobgoblin.png").toFile());
+            final Path itemRoot = textureRoot.resolve("item");
+            ImageIO.write(itemTexture("goblin_spawn_egg.png", 16, 16, false), "png", itemRoot.resolve("goblin_spawn_egg.png").toFile());
+            ImageIO.write(itemTexture("hobgoblin_spawn_egg.png", 16, 16, false), "png", itemRoot.resolve("hobgoblin_spawn_egg.png").toFile());
+            System.out.println("Generated goblin and hobgoblin textures.");
+            return;
+        }
+
+        if (transformedWomenOnly) {
+            Files.createDirectories(entityRoot);
+            ImageIO.write(namiSkin(), "png", entityRoot.resolve("nami.png").toFile());
+            ImageIO.write(naamahSkin(), "png", entityRoot.resolve("naamah.png").toFile());
+            System.out.println("Generated Nami and Naamah slim-player skins.");
+            return;
         }
 
         if (polishOnly) {
@@ -142,9 +163,9 @@ public final class GenerateOriginalAssets {
             Map.entry("ingredient_graveyard_dust.png", dustSprite(colors("17151A", "3C3442", "66546B", "927A86", "B7A2A7", "D8C7C2"))),
             Map.entry("ingredient_silverdust.png", dustSprite(colors("11151B", "34404D", "5D6D7C", "8999A8", "BBC8D2", "F0F4F4"))),
             Map.entry("ingredient_spectral_dust.png", dustSprite(colors("101B19", "174138", "246858", "3D9474", "77C992", "C4F1C9"))),
-            Map.entry("ingredient_delvealloydust.png", dustSprite(KOBOLDITE.colors())),
-            Map.entry("deepslate_delvealloy_ore.png", kobolditeMineralBlockSprite(false)),
-            Map.entry("raw_delvealloy_block.png", kobolditeMineralBlockSprite(true)),
+            Map.entry("ingredient_delvealloydust.png", dustSprite(GOBLINITE.colors())),
+            Map.entry("deepslate_delvealloy_ore.png", gobliniteMineralBlockSprite(false)),
+            Map.entry("raw_delvealloy_block.png", gobliniteMineralBlockSprite(true)),
             Map.entry("coffin.png", coffinSprite(new SpritePalette(colors("170F12", "342028", "56313A", "7B4550", "AE6A65", "D69C78")), false)),
             Map.entry("coffinblock.png", coffinSprite(new SpritePalette(colors("1C130E", "41271B", "6A3D27", "925A36", "BC8150", "E0B878")), false)),
             Map.entry("vcoffin.png", coffinSprite(new SpritePalette(colors("100B10", "241220", "4A1830", "79233E", "AD3650", "D98A79")), true)),
@@ -167,17 +188,17 @@ public final class GenerateOriginalAssets {
             Map.entry("circleglyphritual.png", glyphItemSprite(new Color(0x78899C), new Color(0xECF7FF), GlyphMotif.RITUAL)),
             Map.entry("circleglyphinfernal.png", glyphItemSprite(new Color(0x9D2632), new Color(0xFF7355), GlyphMotif.INFERNAL)),
             Map.entry("circleglyph_veil.png", glyphItemSprite(new Color(0x287C8E), new Color(0x8FE9E9), GlyphMotif.VEIL)),
-            Map.entry("delvealloysword.png", kobolditeToolSprite(ToolShape.SWORD)),
-            Map.entry("delvealloyaxe.png", kobolditeToolSprite(ToolShape.AXE)),
-            Map.entry("delvealloypickaxe.png", kobolditeToolSprite(ToolShape.PICKAXE)),
-            Map.entry("delvealloyshovel.png", kobolditeToolSprite(ToolShape.SHOVEL)),
-            Map.entry("delvealloyhoe.png", kobolditeToolSprite(ToolShape.HOE)),
-            Map.entry("delvealloyhelm.png", kobolditeArmorSprite(ArmorShape.HELMET)),
-            Map.entry("delvealloychestplate.png", kobolditeArmorSprite(ArmorShape.CHESTPLATE)),
-            Map.entry("delvealloyleggings.png", kobolditeArmorSprite(ArmorShape.LEGGINGS)),
-            Map.entry("delvealloyboots.png", kobolditeArmorSprite(ArmorShape.BOOTS)),
-            Map.entry("ingredient_delvealloyingot.png", kobolditeIngotSprite(false)),
-            Map.entry("ingredient_delvealloynugget.png", kobolditeIngotSprite(true))
+            Map.entry("delvealloysword.png", gobliniteToolSprite(ToolShape.SWORD)),
+            Map.entry("delvealloyaxe.png", gobliniteToolSprite(ToolShape.AXE)),
+            Map.entry("delvealloypickaxe.png", gobliniteToolSprite(ToolShape.PICKAXE)),
+            Map.entry("delvealloyshovel.png", gobliniteToolSprite(ToolShape.SHOVEL)),
+            Map.entry("delvealloyhoe.png", gobliniteToolSprite(ToolShape.HOE)),
+            Map.entry("delvealloyhelm.png", gobliniteArmorSprite(ArmorShape.HELMET)),
+            Map.entry("delvealloychestplate.png", gobliniteArmorSprite(ArmorShape.CHESTPLATE)),
+            Map.entry("delvealloyleggings.png", gobliniteArmorSprite(ArmorShape.LEGGINGS)),
+            Map.entry("delvealloyboots.png", gobliniteArmorSprite(ArmorShape.BOOTS)),
+            Map.entry("ingredient_delvealloyingot.png", gobliniteIngotSprite(false)),
+            Map.entry("ingredient_delvealloynugget.png", gobliniteIngotSprite(true))
         );
         for (final Map.Entry<String, BufferedImage> sprite : sprites.entrySet()) {
             ImageIO.write(sprite.getValue(), "png", itemRoot.resolve(sprite.getKey()).toFile());
@@ -559,7 +580,7 @@ public final class GenerateOriginalAssets {
         return graphics;
     }
 
-    private static BufferedImage kobolditeToolSprite(final ToolShape shape) {
+    private static BufferedImage gobliniteToolSprite(final ToolShape shape) {
         final BufferedImage image = image(16, 16);
         final Graphics2D graphics = pixelGraphics(image);
         graphics.setColor(new Color(0x251A14));
@@ -570,7 +591,7 @@ public final class GenerateOriginalAssets {
         for (int step = 0; step < 7; step++) {
             graphics.fillRect(3 + step, 13 - step, 1, 1);
         }
-        graphics.setColor(KOBOLDITE.outline());
+        graphics.setColor(GOBLINITE.outline());
         switch (shape) {
             case SWORD -> graphics.fillPolygon(new Polygon(
                 new int[]{8, 12, 15, 15, 12, 7},
@@ -598,7 +619,7 @@ public final class GenerateOriginalAssets {
                 6
             ));
         }
-        graphics.setColor(KOBOLDITE.mid());
+        graphics.setColor(GOBLINITE.mid());
         switch (shape) {
             case SWORD -> graphics.fillPolygon(new Polygon(new int[]{9, 12, 14, 13, 8}, new int[]{8, 3, 2, 5, 10}, 5));
             case PICKAXE -> {
@@ -609,7 +630,7 @@ public final class GenerateOriginalAssets {
             case SHOVEL -> graphics.fillPolygon(new Polygon(new int[]{10, 13, 14, 13, 11, 9}, new int[]{2, 2, 4, 7, 8, 6}, 6));
             case HOE -> graphics.fillRect(9, 2, 5, 2);
         }
-        graphics.setColor(KOBOLDITE.highlight());
+        graphics.setColor(GOBLINITE.highlight());
         switch (shape) {
             case SWORD -> graphics.drawLine(11, 6, 14, 2);
             case PICKAXE -> graphics.drawLine(6, 2, 13, 3);
@@ -617,16 +638,16 @@ public final class GenerateOriginalAssets {
             case SHOVEL -> graphics.fillRect(11, 3, 2, 2);
             case HOE -> graphics.fillRect(10, 2, 3, 1);
         }
-        graphics.setColor(KOBOLDITE.light());
+        graphics.setColor(GOBLINITE.light());
         graphics.fillRect(8, 7, 1, 1);
         graphics.dispose();
         return image;
     }
 
-    private static BufferedImage kobolditeArmorSprite(final ArmorShape shape) {
+    private static BufferedImage gobliniteArmorSprite(final ArmorShape shape) {
         final BufferedImage image = image(16, 16);
         final Graphics2D graphics = pixelGraphics(image);
-        graphics.setColor(KOBOLDITE.outline());
+        graphics.setColor(GOBLINITE.outline());
         switch (shape) {
             case HELMET -> {
                 graphics.fillRect(3, 3, 10, 9);
@@ -649,7 +670,7 @@ public final class GenerateOriginalAssets {
                 graphics.fillRect(8, 10, 7, 4);
             }
         }
-        graphics.setColor(KOBOLDITE.mid());
+        graphics.setColor(GOBLINITE.mid());
         switch (shape) {
             case HELMET -> {
                 graphics.fillRect(4, 4, 8, 5);
@@ -673,7 +694,7 @@ public final class GenerateOriginalAssets {
                 graphics.fillRect(9, 11, 5, 2);
             }
         }
-        graphics.setColor(KOBOLDITE.bright());
+        graphics.setColor(GOBLINITE.bright());
         switch (shape) {
             case HELMET -> graphics.fillRect(5, 4, 6, 2);
             case CHESTPLATE -> {
@@ -686,37 +707,37 @@ public final class GenerateOriginalAssets {
                 graphics.fillRect(11, 5, 1, 5);
             }
         }
-        graphics.setColor(KOBOLDITE.highlight());
+        graphics.setColor(GOBLINITE.highlight());
         graphics.fillRect(shape == ArmorShape.BOOTS ? 3 : 6, shape == ArmorShape.LEGGINGS ? 4 : 5, 2, 1);
         graphics.dispose();
         return image;
     }
 
-    private static BufferedImage kobolditeIngotSprite(final boolean nugget) {
+    private static BufferedImage gobliniteIngotSprite(final boolean nugget) {
         final BufferedImage image = image(16, 16);
         final Graphics2D graphics = pixelGraphics(image);
         if (nugget) {
-            graphics.setColor(KOBOLDITE.outline());
+            graphics.setColor(GOBLINITE.outline());
             graphics.fillPolygon(new Polygon(new int[]{4, 7, 12, 13, 10, 5, 3}, new int[]{7, 4, 5, 9, 12, 12, 9}, 7));
-            graphics.setColor(KOBOLDITE.mid());
+            graphics.setColor(GOBLINITE.mid());
             graphics.fillPolygon(new Polygon(new int[]{5, 8, 11, 11, 9, 5, 4}, new int[]{7, 5, 6, 9, 11, 11, 9}, 7));
-            graphics.setColor(KOBOLDITE.highlight());
+            graphics.setColor(GOBLINITE.highlight());
             graphics.fillRect(7, 6, 4, 2);
         } else {
-            graphics.setColor(KOBOLDITE.outline());
+            graphics.setColor(GOBLINITE.outline());
             graphics.fillPolygon(new Polygon(new int[]{3, 6, 13, 15, 12, 4, 1}, new int[]{5, 3, 4, 9, 12, 12, 9}, 7));
-            graphics.setColor(KOBOLDITE.mid());
+            graphics.setColor(GOBLINITE.mid());
             graphics.fillPolygon(new Polygon(new int[]{4, 7, 12, 13, 11, 4, 3}, new int[]{6, 4, 5, 9, 11, 11, 9}, 7));
-            graphics.setColor(KOBOLDITE.highlight());
+            graphics.setColor(GOBLINITE.highlight());
             graphics.fillRect(6, 5, 6, 2);
-            graphics.setColor(KOBOLDITE.light());
+            graphics.setColor(GOBLINITE.light());
             graphics.fillRect(7, 5, 3, 1);
         }
         graphics.dispose();
         return image;
     }
 
-    private static BufferedImage kobolditeMineralBlockSprite(final boolean raw) {
+    private static BufferedImage gobliniteMineralBlockSprite(final boolean raw) {
         final BufferedImage image = image(16, 16);
         final Graphics2D graphics = pixelGraphics(image);
         final Polygon outline = new Polygon(
@@ -724,25 +745,25 @@ public final class GenerateOriginalAssets {
             new int[]{4, 1, 4, 12, 15, 12},
             6
         );
-        graphics.setColor(raw ? KOBOLDITE.outline() : new Color(0x171A20));
+        graphics.setColor(raw ? GOBLINITE.outline() : new Color(0x171A20));
         graphics.fillPolygon(outline);
-        graphics.setColor(raw ? KOBOLDITE.bright() : new Color(0x424955));
+        graphics.setColor(raw ? GOBLINITE.bright() : new Color(0x424955));
         graphics.fillPolygon(new Polygon(new int[]{3, 8, 13, 8}, new int[]{4, 2, 4, 7}, 4));
-        graphics.setColor(raw ? KOBOLDITE.mid() : new Color(0x303640));
+        graphics.setColor(raw ? GOBLINITE.mid() : new Color(0x303640));
         graphics.fillPolygon(new Polygon(new int[]{3, 8, 8, 3}, new int[]{5, 8, 14, 11}, 4));
-        graphics.setColor(raw ? KOBOLDITE.shadow() : new Color(0x252A32));
+        graphics.setColor(raw ? GOBLINITE.shadow() : new Color(0x252A32));
         graphics.fillPolygon(new Polygon(new int[]{9, 13, 13, 9}, new int[]{8, 5, 11, 14}, 4));
         if (raw) {
-            graphics.setColor(KOBOLDITE.highlight());
+            graphics.setColor(GOBLINITE.highlight());
             graphics.fillRect(5, 4, 3, 2);
             graphics.fillRect(4, 8, 3, 2);
             graphics.fillRect(9, 9, 3, 2);
         } else {
-            graphics.setColor(KOBOLDITE.highlight());
+            graphics.setColor(GOBLINITE.highlight());
             graphics.fillRect(7, 3, 2, 2);
             graphics.fillRect(4, 7, 2, 2);
             graphics.fillRect(10, 8, 2, 2);
-            graphics.setColor(KOBOLDITE.light());
+            graphics.setColor(GOBLINITE.light());
             graphics.fillRect(8, 4, 1, 1);
             graphics.fillRect(5, 7, 1, 1);
         }
@@ -1606,7 +1627,7 @@ public final class GenerateOriginalAssets {
             case "hornofthehunt" -> drawHornOfTheHunt(graphics, scale);
             case "mooncharm" -> drawMoonCharm(graphics, scale);
             case "mysticbranch" -> drawMysticBranch(graphics, scale);
-            case "raw_delvealloy" -> drawMetalChunk(graphics, scale, KOBOLDITE.colors());
+            case "raw_delvealloy" -> drawMetalChunk(graphics, scale, GOBLINITE.colors());
             case "raw_silver" -> drawMetalChunk(graphics, scale, colors("151A20", "394550", "637482", "9AABB7", "D9E5E9", "F7FCFC"));
             case "silver_ingot" -> drawMetalIngot(graphics, scale, colors("171C22", "495865", "7D8F9C", "B8C8D1", "E8F1F2"));
             case "canesword" -> drawCaneSword(graphics, scale);
@@ -3065,15 +3086,29 @@ public final class GenerateOriginalAssets {
 
     private static void drawArcaneFocus(final Graphics2D graphics, final int scale) {
         graphics.setColor(new Color(0x171523));
-        graphics.fillPolygon(new Polygon(new int[]{8, 12, 11, 8, 5, 4}, new int[]{1, 5, 11, 15, 11, 5}, 6));
-        graphics.setColor(new Color(0x7547B2));
-        graphics.fillPolygon(new Polygon(new int[]{8, 11, 10, 8, 6, 5}, new int[]{2, 5, 10, 13, 10, 5}, 6));
-        graphics.setColor(new Color(0x6BD8CB));
-        graphics.fillRect(7 * scale, 4 * scale, 2 * scale, 7 * scale);
-        graphics.setColor(new Color(0xE7D6A4));
-        graphics.fillRect(7 * scale, 2 * scale, 2 * scale, 2 * scale);
-        graphics.setColor(new Color(0x2A201D));
-        graphics.fillRect(4 * scale, 13 * scale, 8 * scale, 2 * scale);
+        graphics.fillPolygon(new Polygon(
+            new int[]{8, 11, 13, 14, 13, 10, 8, 6, 3, 2, 3, 5},
+            new int[]{1, 2, 4, 8, 12, 14, 15, 14, 12, 8, 4, 2},
+            12
+        ));
+        graphics.setColor(new Color(0x7D4BB3));
+        graphics.fillPolygon(new Polygon(
+            new int[]{8, 11, 12, 13, 12, 10, 8, 6, 4, 3, 4, 5},
+            new int[]{2, 3, 5, 8, 11, 13, 14, 13, 11, 8, 5, 3},
+            12
+        ));
+        graphics.setColor(new Color(0x244D55));
+        graphics.fillPolygon(new Polygon(
+            new int[]{8, 11, 12, 11, 8, 5, 4, 5},
+            new int[]{4, 5, 8, 11, 12, 11, 8, 5},
+            8
+        ));
+        graphics.setColor(new Color(0x15212A));
+        graphics.fillPolygon(new Polygon(new int[]{4, 8, 12, 8}, new int[]{8, 5, 8, 11}, 4));
+        graphics.setColor(new Color(0x68DCD2));
+        graphics.fillPolygon(new Polygon(new int[]{5, 8, 11, 8}, new int[]{8, 6, 8, 10}, 4));
+        graphics.setColor(new Color(0xEAF7D4));
+        graphics.fillRect(7 * scale, 7 * scale, 2 * scale, 2 * scale);
     }
 
     private static void drawDiviner(final Graphics2D graphics, final int scale, final Color magic) {
@@ -3459,6 +3494,18 @@ public final class GenerateOriginalAssets {
     }
 
     private static BufferedImage entityTexture(final String name, final int size) {
+        if ("nami".equals(name) && size == 64) {
+            return namiSkin();
+        }
+        if ("naamah".equals(name) && size == 64) {
+            return naamahSkin();
+        }
+        if ("goblin".equals(name) && size == 64) {
+            return penguinGoblinTexture(false);
+        }
+        if ("hobgoblin".equals(name) && size == 64) {
+            return penguinGoblinTexture(true);
+        }
         final BufferedImage image = image(size, size);
         final Color[] palette = entityPalette(name);
         final RandomGenerator random = random(name);
@@ -3483,6 +3530,229 @@ public final class GenerateOriginalAssets {
         drawCreatureMotif(graphics, lower, unit, palette);
         graphics.dispose();
         return image;
+    }
+
+    private static BufferedImage penguinGoblinTexture(final boolean hobgoblin) {
+        final BufferedImage image = image(64, 64);
+        final Graphics2D graphics = image.createGraphics();
+        final Color shadow = new Color(hobgoblin ? 0x352115 : 0x16341D);
+        final Color skin = new Color(hobgoblin ? 0x704729 : 0x3F7B38);
+        final Color light = new Color(hobgoblin ? 0xA16C3E : 0x70A84F);
+        final Color belly = new Color(hobgoblin ? 0xC9A06B : 0xB5BD70);
+        final Color charcoal = new Color(0x242A2D);
+        final Color slate = new Color(0x46525A);
+        final Color leather = new Color(0x684426);
+        final Color leatherLight = new Color(0x987044);
+        final Color lamp = new Color(0xF4B942);
+        final Color eye = new Color(0x101315);
+        final Color eyeLight = new Color(0xF3EEDB);
+
+        graphics.setColor(shadow);
+        graphics.fillRect(0, 0, 64, 64);
+        paint(graphics, skin, 0, 0, 30, 14, 0, 16, 32, 20, 32, 12, 30, 18);
+        paint(graphics, light, 7, 7, 8, 6, 22, 7, 8, 6, 6, 22, 10, 10, 22, 22, 10, 10);
+        paint(graphics, belly, 8, 23, 6, 9, 24, 23, 6, 9);
+        paint(graphics, eye, 9, 9, 2, 2, 13, 9, 2, 2);
+        paint(graphics, eyeLight, 9, 9, 1, 1, 13, 9, 1, 1);
+        paint(graphics, lamp, 30, 0, 12, 8, 44, 12, 18, 10);
+        paint(graphics, charcoal, 32, 32, 32, 10);
+        paint(graphics, slate, 32, 42, 32, 12);
+        paint(graphics, leather, 32, 54, 32, 10);
+        paint(graphics, leatherLight, 36, 56, 6, 6, 50, 56, 6, 6);
+        paint(graphics, lamp, 34, 34, 4, 4);
+        graphics.dispose();
+        return image;
+    }
+
+    private static BufferedImage namiSkin() {
+        final BufferedImage image = image(64, 64);
+        final Graphics2D graphics = image.createGraphics();
+        final Color skin = new Color(0xE7B58D);
+        final Color skinLight = new Color(0xF4CBA7);
+        final Color skinShadow = new Color(0xC9856F);
+        final Color hair = new Color(0x29170F);
+        final Color hairMid = new Color(0x4B2B1B);
+        final Color hairLight = new Color(0x75462A);
+        final Color ivory = new Color(0xEADDB9);
+        final Color ivoryLight = new Color(0xF7EDCF);
+        final Color ivoryShadow = new Color(0xC8B68F);
+        final Color burgundy = new Color(0x742A38);
+        final Color burgundyLight = new Color(0x9D4050);
+        final Color burgundyDark = new Color(0x42171F);
+        final Color leather = new Color(0x3A251A);
+        final Color leatherLight = new Color(0x745033);
+        final Color leaf = new Color(0x66774A);
+        final Color eye = new Color(0x251610);
+        final Color iris = new Color(0x7A5032);
+        final Color eyeWhite = new Color(0xF8EEE0);
+        final Color rose = new Color(0xA95259);
+
+        paint(graphics, hair,
+            8, 0, 8, 8, 16, 0, 8, 8, 0, 8, 8, 8, 16, 8, 8, 8, 24, 8, 8, 8);
+        paint(graphics, hairMid, 10, 1, 4, 6, 18, 1, 4, 6, 1, 10, 6, 5, 18, 9, 4, 6, 25, 9, 6, 6);
+        paint(graphics, hairLight, 11, 1, 2, 5, 19, 2, 2, 4, 2, 10, 2, 4, 19, 10, 2, 4, 27, 10, 2, 4);
+        paint(graphics, skin, 8, 8, 8, 8);
+        paint(graphics, skinLight, 10, 10, 4, 4);
+        paint(graphics, skinShadow, 8, 13, 1, 3, 15, 13, 1, 3, 10, 15, 4, 1);
+        paint(graphics, hair, 8, 8, 8, 2, 8, 10, 1, 6, 15, 10, 1, 6, 9, 10, 2, 1, 14, 10, 1, 2);
+        paint(graphics, eye, 9, 11, 2, 1, 13, 11, 2, 1);
+        paint(graphics, eyeWhite, 9, 12, 1, 1, 14, 12, 1, 1);
+        paint(graphics, iris, 10, 12, 1, 1, 13, 12, 1, 1);
+        paint(graphics, skinShadow, 11, 13, 1, 1);
+        paint(graphics, rose, 11, 14, 2, 1);
+
+        paint(graphics, hairMid,
+            41, 0, 6, 2, 40, 2, 2, 5, 46, 2, 2, 5,
+            32, 9, 2, 6, 38, 10, 2, 5, 40, 8, 8, 1, 40, 9, 2, 6, 46, 9, 2, 6,
+            48, 9, 2, 6, 54, 10, 2, 5, 56, 8, 8, 2, 56, 10, 2, 6, 62, 10, 2, 6);
+        paint(graphics, hairLight, 42, 1, 2, 4, 33, 10, 1, 4, 41, 10, 1, 4, 46, 11, 1, 3, 49, 10, 1, 4, 58, 10, 1, 5);
+        paint(graphics, burgundy, 59, 10, 2, 5, 57, 11, 2, 3, 61, 11, 2, 3);
+        paint(graphics, burgundyLight, 59, 11, 1, 2);
+
+        paint(graphics, ivoryLight, 20, 16, 8, 4);
+        paint(graphics, ivoryShadow, 28, 16, 8, 4, 16, 20, 4, 12, 28, 20, 4, 12, 32, 20, 8, 12);
+        paint(graphics, ivory, 20, 20, 8, 12);
+        paint(graphics, skin, 22, 20, 4, 2);
+        paint(graphics, skinShadow, 22, 21, 1, 1, 25, 21, 1, 1);
+        paint(graphics, burgundy, 23, 22, 2, 4, 21, 30, 6, 2, 17, 30, 3, 2, 28, 30, 4, 2, 33, 30, 6, 2);
+        paint(graphics, burgundyLight, 23, 22, 1, 2);
+        paint(graphics, leather, 20, 26, 8, 4, 16, 27, 4, 3, 28, 27, 4, 3, 32, 26, 8, 4);
+        paint(graphics, leatherLight, 22, 26, 1, 4, 25, 26, 1, 4, 35, 26, 1, 4);
+        paint(graphics, ivoryLight, 21, 36, 6, 10);
+        paint(graphics, burgundy, 20, 32, 8, 4, 20, 36, 1, 12, 27, 36, 1, 12, 32, 36, 8, 12);
+        paint(graphics, burgundyDark, 28, 32, 8, 4, 16, 36, 4, 12, 28, 36, 4, 12);
+        paint(graphics, leaf, 22, 42, 1, 3, 25, 42, 1, 3, 23, 44, 2, 1, 34, 43, 1, 3, 37, 42, 1, 3, 35, 45, 2, 1);
+        paint(graphics, burgundyLight, 22, 45, 1, 1, 25, 44, 1, 1, 36, 43, 1, 1);
+
+        paint(graphics, ivoryLight, 44, 16, 3, 4, 36, 48, 3, 4);
+        paint(graphics, ivoryShadow, 47, 16, 3, 4, 39, 48, 3, 4);
+        paint(graphics, ivoryShadow, 40, 20, 4, 12, 47, 20, 4, 12, 32, 52, 4, 12, 39, 52, 4, 12);
+        paint(graphics, ivory, 44, 20, 3, 12, 51, 20, 3, 12, 36, 52, 3, 12, 43, 52, 3, 12);
+        paint(graphics, skin, 40, 29, 14, 3, 32, 61, 14, 3);
+        paint(graphics, skinLight, 44, 29, 2, 3, 36, 61, 2, 3);
+        paint(graphics, ivoryLight,
+            44, 32, 3, 4, 40, 36, 4, 8, 44, 36, 3, 9, 47, 36, 4, 8, 51, 36, 3, 9,
+            52, 48, 3, 4, 48, 52, 4, 8, 52, 52, 3, 9, 55, 52, 4, 8, 59, 52, 3, 9);
+        paint(graphics, ivoryShadow, 47, 32, 3, 4, 55, 48, 3, 4, 40, 43, 14, 2, 48, 59, 14, 2);
+
+        paint(graphics, burgundy, 4, 16, 4, 4, 20, 48, 4, 4, 4, 20, 4, 12, 20, 52, 4, 12);
+        paint(graphics, burgundyDark,
+            8, 16, 4, 4, 0, 20, 4, 12, 8, 20, 4, 12, 12, 20, 4, 12,
+            24, 48, 4, 4, 16, 52, 4, 12, 24, 52, 4, 12, 28, 52, 4, 12);
+        paint(graphics, burgundyLight, 5, 21, 1, 8, 21, 53, 1, 8, 13, 22, 1, 7, 29, 54, 1, 7);
+        paint(graphics, leather, 0, 29, 16, 3, 16, 61, 16, 3);
+        paint(graphics, leatherLight, 4, 29, 2, 1, 20, 61, 2, 1);
+        paint(graphics, burgundy,
+            4, 32, 4, 4, 4, 36, 1, 9, 7, 36, 1, 9, 12, 36, 4, 9,
+            4, 48, 4, 4, 4, 52, 1, 9, 7, 52, 1, 9, 12, 52, 4, 9);
+        paint(graphics, ivoryLight, 5, 36, 2, 9, 5, 52, 2, 9);
+        paint(graphics, leaf, 5, 41, 1, 3, 6, 42, 1, 1, 5, 57, 1, 3, 6, 58, 1, 1);
+        paint(graphics, burgundyLight, 5, 44, 1, 1, 5, 60, 1, 1);
+        graphics.dispose();
+        return image;
+    }
+
+    private static BufferedImage naamahSkin() {
+        final BufferedImage image = image(64, 64);
+        final Graphics2D graphics = image.createGraphics();
+        final Color skin = new Color(0xE2B0A2);
+        final Color skinLight = new Color(0xF3C8B8);
+        final Color skinShadow = new Color(0xB86F70);
+        final Color hair = new Color(0x100A12);
+        final Color hairMid = new Color(0x2A1223);
+        final Color hairCrimson = new Color(0x681527);
+        final Color hairEmber = new Color(0xD23A27);
+        final Color black = new Color(0x17131B);
+        final Color charcoal = new Color(0x2B222C);
+        final Color crimson = new Color(0x741629);
+        final Color red = new Color(0xAA2A3C);
+        final Color gold = new Color(0xC88B3A);
+        final Color goldLight = new Color(0xF1C05B);
+        final Color ember = new Color(0xF06427);
+        final Color flame = new Color(0xFFB23A);
+        final Color eye = new Color(0x26070C);
+        final Color iris = new Color(0xDD382F);
+        final Color eyeGlow = new Color(0xFFD071);
+        final Color lip = new Color(0x84213E);
+
+        paint(graphics, hair,
+            8, 0, 8, 8, 16, 0, 8, 8, 0, 8, 8, 8, 16, 8, 8, 8, 24, 8, 8, 8);
+        paint(graphics, hairMid, 10, 1, 5, 6, 18, 1, 4, 6, 1, 10, 6, 5, 18, 9, 4, 6, 25, 9, 6, 6);
+        paint(graphics, hairCrimson, 12, 5, 2, 2, 20, 4, 2, 3, 3, 12, 2, 3, 19, 12, 2, 3, 27, 11, 2, 4);
+        paint(graphics, skin, 8, 8, 8, 8);
+        paint(graphics, skinLight, 10, 10, 4, 4);
+        paint(graphics, skinShadow, 8, 13, 1, 3, 15, 13, 1, 3, 10, 15, 4, 1);
+        paint(graphics, hair, 8, 8, 8, 2, 8, 10, 1, 6, 15, 10, 1, 6, 9, 10, 2, 1, 14, 10, 1, 2);
+        paint(graphics, eye, 9, 11, 2, 1, 13, 11, 2, 1);
+        paint(graphics, iris, 9, 12, 2, 1, 13, 12, 2, 1);
+        paint(graphics, eyeGlow, 10, 12, 1, 1, 13, 12, 1, 1);
+        paint(graphics, skinShadow, 11, 13, 1, 1);
+        paint(graphics, lip, 11, 14, 2, 1);
+
+        paint(graphics, hairMid,
+            41, 0, 6, 2, 40, 2, 2, 5, 46, 2, 2, 5,
+            32, 9, 2, 6, 38, 10, 2, 5, 40, 8, 8, 1, 40, 9, 2, 6, 46, 9, 2, 6,
+            48, 9, 2, 6, 54, 10, 2, 5, 56, 8, 8, 2, 56, 10, 2, 6, 62, 10, 2, 6);
+        paint(graphics, hairCrimson, 42, 2, 2, 4, 33, 11, 1, 4, 41, 11, 1, 4, 46, 10, 1, 5, 49, 11, 1, 4, 58, 10, 2, 6, 61, 12, 1, 4);
+        paint(graphics, hairEmber, 43, 5, 1, 2, 41, 14, 1, 2, 46, 14, 1, 2, 59, 14, 1, 2, 62, 14, 1, 2);
+
+        paint(graphics, black, 20, 16, 8, 4, 28, 16, 8, 4, 16, 20, 4, 12, 28, 20, 4, 12, 32, 20, 8, 12);
+        paint(graphics, charcoal, 20, 20, 8, 12);
+        paint(graphics, skin, 22, 20, 4, 3, 22, 26, 4, 3);
+        paint(graphics, skinLight, 23, 20, 2, 2, 23, 26, 2, 2);
+        paint(graphics, crimson, 20, 23, 3, 4, 25, 23, 3, 4, 32, 22, 8, 8);
+        paint(graphics, red, 21, 23, 1, 3, 26, 23, 1, 3, 35, 23, 1, 6);
+        paint(graphics, gold, 22, 23, 1, 4, 25, 23, 1, 4, 21, 29, 6, 1, 32, 29, 8, 1);
+        paint(graphics, goldLight, 23, 23, 1, 1, 24, 29, 1, 1);
+        paint(graphics, black, 20, 29, 8, 3, 16, 29, 4, 3, 28, 29, 4, 3, 32, 30, 8, 2);
+        paint(graphics, crimson, 20, 32, 8, 4, 20, 36, 2, 12, 26, 36, 2, 12, 32, 36, 8, 12);
+        paint(graphics, black, 28, 32, 8, 4, 16, 36, 4, 12, 28, 36, 4, 12, 22, 36, 4, 12);
+        paint(graphics, gold, 21, 36, 1, 10, 26, 36, 1, 10, 33, 37, 1, 9, 38, 37, 1, 9);
+        paint(graphics, red, 23, 40, 2, 3, 35, 39, 2, 4);
+        paint(graphics, ember, 23, 41, 2, 1, 35, 42, 2, 1);
+
+        paint(graphics, black,
+            44, 16, 3, 4, 47, 16, 3, 4, 40, 20, 4, 12, 44, 20, 3, 12, 47, 20, 4, 12, 51, 20, 3, 12,
+            36, 48, 3, 4, 39, 48, 3, 4, 32, 52, 4, 12, 36, 52, 3, 12, 39, 52, 4, 12, 43, 52, 3, 12);
+        paint(graphics, charcoal, 44, 20, 1, 8, 51, 20, 1, 8, 36, 52, 1, 8, 43, 52, 1, 8);
+        paint(graphics, crimson, 40, 25, 14, 5, 32, 57, 14, 5);
+        paint(graphics, red, 44, 26, 3, 3, 36, 58, 3, 3);
+        paint(graphics, ember, 40, 29, 14, 2, 32, 61, 14, 2);
+        paint(graphics, flame, 44, 30, 3, 1, 36, 62, 3, 1);
+        paint(graphics, skin, 40, 31, 14, 1, 32, 63, 14, 1);
+        paint(graphics, skinLight, 44, 31, 2, 1, 36, 63, 2, 1);
+        paint(graphics, black,
+            44, 32, 3, 4, 47, 32, 3, 4, 40, 36, 4, 8, 44, 36, 3, 9, 47, 36, 4, 8, 51, 36, 3, 9,
+            52, 48, 3, 4, 55, 48, 3, 4, 48, 52, 4, 8, 52, 52, 3, 9, 55, 52, 4, 8, 59, 52, 3, 9);
+        paint(graphics, crimson, 40, 42, 14, 2, 48, 58, 14, 2);
+        paint(graphics, ember, 40, 44, 3, 1, 45, 44, 2, 1, 51, 44, 3, 1, 48, 60, 3, 1, 53, 60, 2, 1, 59, 60, 3, 1);
+        paint(graphics, flame, 41, 45, 2, 1, 45, 45, 1, 1, 52, 45, 1, 1, 49, 61, 2, 1, 53, 61, 1, 1, 60, 61, 1, 1);
+        paint(graphics, gold, 40, 36, 4, 1, 47, 36, 4, 1, 48, 52, 4, 1, 55, 52, 4, 1);
+
+        paint(graphics, black,
+            4, 16, 4, 4, 8, 16, 4, 4, 0, 20, 4, 12, 4, 20, 4, 12, 8, 20, 4, 12, 12, 20, 4, 12,
+            20, 48, 4, 4, 24, 48, 4, 4, 16, 52, 4, 12, 20, 52, 4, 12, 24, 52, 4, 12, 28, 52, 4, 12);
+        paint(graphics, charcoal, 5, 20, 1, 9, 21, 52, 1, 9, 13, 20, 1, 9, 29, 52, 1, 9);
+        paint(graphics, crimson, 8, 20, 4, 9, 16, 52, 4, 9, 24, 52, 4, 9);
+        paint(graphics, red, 9, 21, 1, 7, 17, 53, 1, 7, 25, 53, 1, 7);
+        paint(graphics, gold, 0, 29, 16, 1, 16, 61, 16, 1);
+        paint(graphics, charcoal, 0, 30, 16, 2, 16, 62, 16, 2);
+        paint(graphics, crimson,
+            4, 32, 4, 4, 4, 36, 2, 9, 6, 36, 2, 9, 12, 36, 4, 9,
+            4, 48, 4, 4, 4, 52, 2, 9, 6, 52, 2, 9, 12, 52, 4, 9);
+        paint(graphics, black, 0, 36, 4, 9, 8, 36, 4, 9, 0, 52, 4, 9, 8, 52, 4, 9);
+        paint(graphics, gold, 5, 36, 1, 8, 5, 52, 1, 8);
+        paint(graphics, ember, 4, 44, 4, 1, 4, 60, 4, 1);
+        paint(graphics, flame, 5, 45, 2, 1, 5, 61, 2, 1);
+        graphics.dispose();
+        return image;
+    }
+
+    private static void paint(final Graphics2D graphics, final Color color, final int... rectangles) {
+        graphics.setColor(color);
+        for (int index = 0; index < rectangles.length; index += 4) {
+            graphics.fillRect(rectangles[index], rectangles[index + 1], rectangles[index + 2], rectangles[index + 3]);
+        }
     }
 
     private static BufferedImage doorTexture(
@@ -4688,7 +4958,7 @@ public final class GenerateOriginalAssets {
                 drawArmorSeams(graphics, unit);
                 drawFlame(graphics, unit, 42, 40);
             }
-            case "crimson_matriarch" -> {
+            case "naamah" -> {
                 drawArmorSeams(graphics, unit);
                 drawEyes(graphics, unit, 36, 36, 3, 2);
             }
@@ -4983,7 +5253,7 @@ public final class GenerateOriginalAssets {
             case "parasytic_louse" -> colors("171311", "312723", "57423a", "80665c", "d7c5b6", "9e8a7b", "a7423b");
             case "demon" -> colors("0d0d0d", "181718", "2b292b", "444047", "211e20", "171517", "c88b32");
             case "emberhorn_archfiend" -> colors("110a08", "26100d", "491913", "71251a", "241b18", "17110f", "ff5e22");
-            case "crimson_matriarch" -> colors("16080d", "35101b", "631629", "8d203c", "511523", "2b0e16", "e64865");
+            case "naamah" -> colors("16080d", "35101b", "631629", "8d203c", "511523", "2b0e16", "e64865");
             case "abyssal_regent" -> colors("071518", "0e2b30", "15515a", "237883", "17464f", "0d3339", "5adbd1");
             case "death" -> colors("08090b", "121419", "23262c", "3a3e45", "d3cbbb", "181a1e", "a7d5d9");
             case "ironbound_sentinel" -> colors("0e1013", "22262b", "3e464d", "626e75", "343a40", "272c31", "9b58e3");
@@ -4992,8 +5262,8 @@ public final class GenerateOriginalAssets {
             case "dreamroot" -> colors("0d1020", "1d2140", "333b70", "575f9d", "3f3b72", "29284e", "d2cc69");
             case "bramble_colossus" -> colors("10120c", "252819", "3f4527", "606637", "51402d", "332a20", "83a844");
             case "thorned_pursuer" -> colors("0d120d", "1d2a1d", "334832", "4e6847", "3d352a", "29251f", "75a958");
-            case "hobgoblin" -> colors("17110d", "302015", "5a3820", "8a542c", "a35733", "654124", "f0c357");
-            case "goblin" -> colors("17140a", "312a11", "5c4e1e", "81702d", "9b7d2e", "554518", "e6aa37");
+            case "hobgoblin" -> colors("17110d", "302015", "5a3820", "8a542c", "a16c3e", "654124", "f4b942");
+            case "goblin" -> colors("0e1f12", "16341d", "28592d", "3f7b38", "70a84f", "304d2a", "f4b942");
             case "stonebroker" -> colors("101114", "24272c", "42474e", "666d73", "5e6060", "393b40", "a47bd8");
             case "forgewarden" -> colors("0d0e10", "1d2024", "34383e", "52585e", "272a2e", "1a1c1f", "f3a33d");
             case "illusion_creeper", "illusion_spider", "illusion_zombie" ->

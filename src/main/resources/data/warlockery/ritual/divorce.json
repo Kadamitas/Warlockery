@@ -1,0 +1,16 @@
+{
+  "title": "ritual.warlockery.divorce.title",
+  "description": "ritual.warlockery.divorce.description",
+  "action": "divorce",
+  "power": 1800,
+  "radius": 6,
+  "casting_time": 100,
+  "glyphs": {"circleglyphgolden": 12, "circleglyphinfernal": 8},
+  "requirements": {
+    "ingredients": [
+      {"ingredient": "warlockery:wedding_ring", "count": 1, "consume": false},
+      {"ingredient": "minecraft:shears", "count": 1, "consume": false},
+      {"ingredient": "warlockery:ingredient_foul_fume", "count": 1, "consume": true}
+    ]
+  }
+}

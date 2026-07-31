@@ -33,42 +33,45 @@ final class CreatureBehaviorParityTest {
     private static final List<MobCase> CASES = List.of(
         mob("baba_yaga", CreatureKind.HEDGE_CRONE, Feature.POTION_VOLLEY),
         mob("banshee", CreatureKind.BANSHEE, Feature.DUST_EMPOWERMENT),
-        mob("binky", CreatureKind.PALE_STEED, Feature.RIDEABLE_BOND),
-        mob("coven_witch", CreatureKind.CIRCLE_MAGE, Feature.COVEN_RECRUITMENT),
+        mob("pale_steed", CreatureKind.PALE_STEED, Feature.RIDEABLE_BOND),
+        mob("circle_mage", CreatureKind.CIRCLE_MAGE, Feature.COVEN_RECRUITMENT),
         mob("death", CreatureKind.DEATH, Feature.DEATH_DISGUISE),
         mob("demon", CreatureKind.DEMON, Feature.INFERNAL_BARTER),
         mob("ent", CreatureKind.ENT, Feature.PROXIMITY_AGGRESSION),
-        mob("familiar", CreatureKind.CAT, Feature.FAMILIAR_BOND),
-        mob("flame_imp", CreatureKind.IMP, Feature.FIRE_MELEE),
-        mob("flying_monkey", CreatureKind.STORM_SIMIAN, Feature.WAYSTONE_TRAVEL),
-        mob("gulg", CreatureKind.FORGEWARDEN, Feature.FORGE_AURA),
+        mob("familiar_cat", CreatureKind.CAT, Feature.FAMILIAR_BOND),
+        mob("imp", CreatureKind.IMP, Feature.FIRE_MELEE),
+        mob("storm_simian", CreatureKind.STORM_SIMIAN, Feature.WAYSTONE_TRAVEL),
+        mob("forgewarden", CreatureKind.FORGEWARDEN, Feature.FORGE_AURA),
+        mob("hellhound", CreatureKind.HELLHOUND, Feature.INFERNAL_CURE),
+        mob("goblin", CreatureKind.GOBLIN, Feature.ORE_MINING),
         mob("hobgoblin", CreatureKind.HOBGOBLIN, Feature.ORE_MINING),
-        mob("horned_huntsman", CreatureKind.THORNED_PURSUER, Feature.WOLF_SUMMONING),
-        mob("lilith", CreatureKind.CRIMSON_MATRIARCH, Feature.VAMPIRE_INITIATION),
-        mob("lord_of_torment", CreatureKind.ABYSSAL_REGENT, Feature.TORMENT_BANISHMENT),
+        mob("thorned_pursuer", CreatureKind.THORNED_PURSUER, Feature.WOLF_SUMMONING),
+        mob("naamah", CreatureKind.NAAMAH, Feature.VAMPIRE_INITIATION),
+        mob("abyssal_regent", CreatureKind.ABYSSAL_REGENT, Feature.TORMENT_BANISHMENT),
         mob("lost_soul", CreatureKind.LOST_SOUL, Feature.SPIRIT_BINDING),
         mob("mandrake", CreatureKind.MANDRAKE, Feature.SCREECH),
-        mob("minedrake", CreatureKind.DREAMROOT, Feature.ROOTED_DRAIN),
-        mob("mog", CreatureKind.STONEBROKER, Feature.PATRON_OFFERING),
+        mob("dreamroot", CreatureKind.DREAMROOT, Feature.ROOTED_DRAIN),
+        mob("reflection", CreatureKind.GLASS_DOPPELGANGER, Feature.MIRROR_COPY),
+        mob("stonebroker", CreatureKind.STONEBROKER, Feature.PATRON_OFFERING),
         mob("nightmare", CreatureKind.NIGHTMARE, Feature.RIDEABLE_BOND),
         mob("owl", CreatureKind.OWL, Feature.BROOM_AURA),
         mob("parasytic_louse", CreatureKind.LOUSE, Feature.EFFECT_REDIRECTION),
         mob("poltergeist", CreatureKind.POLTERGEIST, Feature.TELEKINESIS),
-        mob("shade_of_leonard", CreatureKind.EMBERHORN_ARCHFIEND, Feature.CAULDRON_AURA),
+        mob("emberhorn_archfiend", CreatureKind.EMBERHORN_ARCHFIEND, Feature.CAULDRON_AURA),
         mob("spectral_familiar", CreatureKind.FAMILIAR, Feature.ORE_GUIDANCE),
         mob("spectre", CreatureKind.SPECTRE, Feature.FEAR_AURA),
         mob("spirit", CreatureKind.SPIRIT, Feature.SPIRIT_BINDING),
         mob("toad", CreatureKind.TOAD, Feature.AMPHIBIOUS_AURA),
-        mob("treefyd", CreatureKind.BRAMBLE_COLOSSUS, Feature.HEART_EMPOWERMENT),
+        mob("bramble_colossus", CreatureKind.BRAMBLE_COLOSSUS, Feature.HEART_EMPOWERMENT),
         mob("vampire", CreatureKind.VAMPIRE, Feature.BLOOD_DRAIN),
-        mob("witch_hunter", CreatureKind.WEREWOLF_HUNTER, Feature.SILVER_HUNTING),
-        mob("wolfman", CreatureKind.WEREWOLF, Feature.WEREWOLF_INTEGRATION)
+        mob("werewolf_hunter", CreatureKind.WEREWOLF_HUNTER, Feature.SILVER_HUNTING),
+        mob("werewolf", CreatureKind.WEREWOLF, Feature.WEREWOLF_INTEGRATION)
     );
 
     @Test
-    void allThirtyTwoMobRowsHaveProfiles() {
-        assertEquals(32, CASES.size());
-        assertEquals(32, CreatureBehaviorProfile.audited().size());
+    void everyAuditedMobHasAProfile() {
+        assertEquals(35, CASES.size());
+        assertEquals(35, CreatureBehaviorProfile.audited().size());
         assertEquals(
             CASES.stream().map(MobCase::kind).collect(java.util.stream.Collectors.toUnmodifiableSet()),
             CreatureBehaviorProfile.audited().stream()
@@ -157,8 +160,8 @@ final class CreatureBehaviorParityTest {
         if (profile.has(Feature.FAMILIAR_BOND) || profile.has(Feature.COVEN_RECRUITMENT)) {
             assertTag("entity_type", "creature_families/familiars");
         }
-        if (profile.has(Feature.KOBOLD_AURA) || profile.has(Feature.FORGE_AURA)) {
-            assertTag("entity_type", "creature_families/kobolds");
+        if (profile.has(Feature.GOBLIN_AURA) || profile.has(Feature.FORGE_AURA)) {
+            assertTag("entity_type", "creature_families/goblins");
         }
         if (profile.has(Feature.ROOTED_DRAIN)) {
             assertTag("block", "creature_habitats/living_ground");

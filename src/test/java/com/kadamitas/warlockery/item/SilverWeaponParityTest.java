@@ -15,11 +15,11 @@ final class SilverWeaponParityTest {
     private static final Path DATA = Path.of("src/main/resources/data");
 
     @Test
-    void silverSwordKeepsTheOldFragileGoldProfileAndRepairsFromCommonSilver() {
+    void silverEquipmentHasPracticalDurabilityAndRepairsFromCommonSilver() {
         assertEquals(ToolMaterial.GOLD.incorrectBlocksForDrops(), SilverMaterials.TOOL.incorrectBlocksForDrops());
-        assertEquals(32, SilverMaterials.TOOL.durability());
-        assertEquals(ToolMaterial.GOLD.speed(), SilverMaterials.TOOL.speed());
-        assertEquals(ToolMaterial.GOLD.attackDamageBonus(), SilverMaterials.TOOL.attackDamageBonus());
+        assertEquals(384, SilverMaterials.TOOL.durability());
+        assertEquals(7.0F, SilverMaterials.TOOL.speed());
+        assertEquals(2.0F, SilverMaterials.TOOL.attackDamageBonus());
         assertTrue(SilverMaterials.TOOL.enchantmentValue() < ToolMaterial.GOLD.enchantmentValue());
         assertEquals("c:ingots/silver", SilverMaterials.TOOL.repairItems().location().toString());
     }

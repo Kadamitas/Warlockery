@@ -25,6 +25,25 @@ function Write-GeneratedItem {
     })
 }
 
+function Write-BlockItem {
+    param([string] $Id, [string] $Model = "warlockery:block/$Id")
+    Write-Json (Join-Path $itemModelRoot "$Id.json") ([ordered]@{
+        parent = $Model
+    })
+    Write-Json (Join-Path $itemDefinitionRoot "$Id.json") ([ordered]@{
+        model = [ordered]@{ type = 'minecraft:model'; model = "warlockery:item/$Id" }
+    })
+}
+
+function Test-SculptedModel {
+    param([string] $Id)
+    $path = Join-Path $blockModelRoot "$Id.json"
+    if (!(Test-Path -LiteralPath $path)) {
+        return $false
+    }
+    return (Get-Content -Raw -LiteralPath $path).Contains('"elements"')
+}
+
 function Cube-Element {
     param([double[]] $From, [double[]] $To, [string] $Texture)
     $faces = [ordered]@{}
@@ -693,7 +712,14 @@ Write-Json (Join-Path $blockModelRoot 'hex_sapling.json') ([ordered]@{
     textures = [ordered]@{ cross = 'warlockery:block/hex_sapling' }
 })
 
-Write-GeneratedItem 'ingredient_brew_hitchcock'
+Write-GeneratedItem 'ingredient_brew_hitchcock' 'warlockery:item/brew_splash_bottle'
+Write-Json (Join-Path $itemDefinitionRoot 'ingredient_brew_hitchcock.json') ([ordered]@{
+    model = [ordered]@{
+        type = 'minecraft:model'
+        model = 'warlockery:item/ingredient_brew_hitchcock'
+        tints = @([ordered]@{ type = 'minecraft:constant'; value = 2433326 })
+    }
+})
 Write-GeneratedItem 'brew_murderous_flock' 'warlockery:item/brew_splash_bottle'
 Write-Json (Join-Path $itemDefinitionRoot 'brew_murderous_flock.json') ([ordered]@{
     model = [ordered]@{
@@ -705,7 +731,13 @@ Write-Json (Join-Path $itemDefinitionRoot 'brew_murderous_flock.json') ([ordered
 
 Get-ChildItem -LiteralPath $itemDefinitionRoot -File -Filter '*.json' | ForEach-Object {
     if (Test-Path (Join-Path $blockStateRoot $_.Name)) {
-        Write-GeneratedItem $_.BaseName
+        if ($_.BaseName -eq 'demonheart') {
+            Write-GeneratedItem $_.BaseName
+        } elseif (Test-SculptedModel $_.BaseName) {
+            Write-BlockItem $_.BaseName
+        } else {
+            Write-GeneratedItem $_.BaseName
+        }
     }
 }
 
@@ -713,4 +745,4 @@ Get-ChildItem -LiteralPath $itemModelRoot -File -Filter '*_spawn_egg.json' | For
     Write-GeneratedItem $_.BaseName
 }
 
-Write-Host 'Generated sculpted block forms, separate block inventory icons, and palette-ready spawn egg models.'
+Write-Host 'Generated sculpted block forms, held block models, and palette-ready spawn egg models.'

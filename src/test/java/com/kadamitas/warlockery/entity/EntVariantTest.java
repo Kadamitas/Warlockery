@@ -52,7 +52,7 @@ final class EntVariantTest {
             .collect(Collectors.toUnmodifiableSet());
         assertEquals(EntVariant.values().length, traits.size());
         traits.forEach(values -> {
-            assertTrue(values.maxHealth() >= 80.0 && values.maxHealth() <= 125.0);
+            assertEquals(EntRules.MAX_HEALTH, values.maxHealth());
             assertTrue(values.attackDamage() >= 12.0 && values.attackDamage() <= 20.0);
             assertTrue(values.movementSpeed() >= 0.2 && values.movementSpeed() <= 0.31);
             assertTrue(values.armor() >= 0.0 && values.armor() <= 8.0);

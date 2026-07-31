@@ -1,6 +1,6 @@
-﻿{
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/beartrap"
-              }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/beartrap"
+  }
 }

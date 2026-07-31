@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_infection"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_infection",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 9213727
+      }
+    ]
+  }
 }

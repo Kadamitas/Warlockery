@@ -1,10 +1,10 @@
 package com.kadamitas.warlockery.brew.custom;
 
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import java.util.Arrays;
 
-public enum CustomBrewFailure {
+public enum CustomBrewFailure implements StringIdentified {
     NONE("none"),
     INVALID_INPUT("invalid_input"),
     WRONG_ORDER("wrong_order"),
@@ -23,14 +23,8 @@ public enum CustomBrewFailure {
     MISSING_HEAT("missing_heat"),
     OUTPUT_BLOCKED("output_blocked");
 
-    public static final Codec<CustomBrewFailure> CODEC = Codec.STRING.comapFlatMap(
-        id -> Arrays.stream(values())
-            .filter(value -> value.id.equals(id))
-            .findFirst()
-            .map(DataResult::success)
-            .orElseGet(() -> DataResult.error(() -> "Unknown custom brew failure: " + id)),
-        CustomBrewFailure::id
-    );
+    private static final EnumLookup<CustomBrewFailure> LOOKUP = EnumLookup.create("custom brew failure", values());
+    public static final Codec<CustomBrewFailure> CODEC = LOOKUP.codec();
 
     private final String id;
 

@@ -15,6 +15,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -97,9 +98,22 @@ public final class StatueBlock extends Block {
         final Player player,
         final BlockHitResult hit
     ) {
+        if ("broken_hexes_statue".equals(profile.id())) {
+            if (!level.isClientSide()) {
+                player.sendOverlayMessage(Component.translatable("message.warlockery.statue.hex_ward_active")
+                    .withStyle(ChatFormatting.GREEN));
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (profile.effect() == StatueProfile.Effect.OCCLUDE_RITUALS) {
             if (!level.isClientSide()) {
                 final boolean active = !state.getValue(ACTIVE);
+                if (!(player instanceof ServerPlayer serverPlayer)
+                    || !StatueWardData.get((ServerLevel) level).setActive(pos, serverPlayer, active)) {
+                    player.sendOverlayMessage(Component.translatable("message.warlockery.statue.owner_required")
+                        .withStyle(ChatFormatting.RED));
+                    return InteractionResult.FAIL;
+                }
                 level.setBlockAndUpdate(pos, state.setValue(ACTIVE, active));
                 show(player, StatueRules.diagnose(profile.effect(), false, false, active));
             }
@@ -145,7 +159,24 @@ public final class StatueBlock extends Block {
         final LivingEntity placer,
         final ItemStack stack
     ) {
-        if (profile.effect() != StatueProfile.Effect.PATRON_BLESSING || !(level instanceof ServerLevel serverLevel)) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        final var wardKind = StatueWardData.WardKind.forProfile(profile);
+        if (wardKind.isPresent()) {
+            final boolean active = wardKind.orElseThrow() == StatueWardData.WardKind.HEXES;
+            StatueWardData.get(serverLevel).register(
+                pos,
+                wardKind.orElseThrow(),
+                placer instanceof Player player ? java.util.Optional.of(player.getUUID()) : java.util.Optional.empty(),
+                active
+            );
+            if (state.getValue(ACTIVE) != active) {
+                level.setBlockAndUpdate(pos, state.setValue(ACTIVE, active));
+            }
+            return;
+        }
+        if (profile.effect() != StatueProfile.Effect.PATRON_BLESSING) {
             return;
         }
         final BoundStatueData data = BoundStatueData.get(serverLevel);
@@ -164,7 +195,16 @@ public final class StatueBlock extends Block {
         final net.minecraft.world.level.block.entity.BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
-        if (profile.effect() != StatueProfile.Effect.PATRON_BLESSING || !(level instanceof ServerLevel serverLevel)) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
+            return;
+        }
+        if (StatueWardData.WardKind.forProfile(profile).isPresent()) {
+            StatueWardData.get(serverLevel).remove(pos);
+            super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
+            return;
+        }
+        if (profile.effect() != StatueProfile.Effect.PATRON_BLESSING) {
             super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
             return;
         }
@@ -177,6 +217,22 @@ public final class StatueBlock extends Block {
             popResource(level, pos, dropped);
         }
         BoundStatueData.get(serverLevel).remove(pos);
+    }
+
+    @Override
+    protected float getDestroyProgress(
+        final BlockState state,
+        final Player player,
+        final net.minecraft.world.level.BlockGetter level,
+        final BlockPos pos
+    ) {
+        if (StatueWardData.WardKind.forProfile(profile).isPresent()
+            && level instanceof ServerLevel serverLevel
+            && player instanceof ServerPlayer serverPlayer
+            && !StatueWardData.get(serverLevel).permits(pos, serverPlayer)) {
+            return 0.0F;
+        }
+        return super.getDestroyProgress(state, player, level, pos);
     }
 
     private static void show(final Player player, final UtilityDecision decision) {

@@ -1,6 +1,6 @@
 {
-    "parent":  "minecraft:item/generated",
-    "textures":  {
-                     "layer0":  "warlockery:item/ingredient_brew_web"
-                 }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "warlockery:item/brew_splash_bottle"
+  }
 }

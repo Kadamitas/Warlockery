@@ -44,6 +44,10 @@ public final class FetishRules {
         return enabled && alive && !immune;
     }
 
+    public static boolean isPlayerThreat(final boolean armed, final boolean armored) {
+        return armed || armored;
+    }
+
     public enum Diagnostic {
         UNBOUND,
         DISABLED,

@@ -37,6 +37,8 @@ final class HunterArmorRulesTest {
     void completeBaseSetBlocksRemoteHexes() {
         assertTrue(HunterArmorRules.blocksHex(true));
         assertFalse(HunterArmorRules.blocksHex(false));
+        assertTrue(HunterArmorRules.suppressesProtectionDolls(true));
+        assertFalse(HunterArmorRules.suppressesProtectionDolls(false));
     }
 
     @Test

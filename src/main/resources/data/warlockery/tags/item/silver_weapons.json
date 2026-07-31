@@ -2,6 +2,10 @@
   "replace": false,
   "values": [
     "warlockery:silversword",
+    "warlockery:silveraxe",
+    "warlockery:silverpickaxe",
+    "warlockery:silvershovel",
+    "warlockery:silverhoe",
     "warlockery:thorn_spear"
   ]
 }

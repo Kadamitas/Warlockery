@@ -46,6 +46,11 @@ public final class CreatureBehaviorFactory {
         }
 
         @Override
+        public float attackDamageBonus(final Mob creature, final ServerLevel level) {
+            return CreatureBehaviorRuntime.attackDamageBonus(creature, level, profile);
+        }
+
+        @Override
         public void afterAttack(final Mob creature, final ServerLevel level, final Entity target) {
             CreatureBehaviorRuntime.afterAttack(creature, level, target, profile);
         }

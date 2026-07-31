@@ -71,11 +71,13 @@ final class CreatureSilhouetteParityTest {
     }
 
     @Test
-    void huntersKoboldsAndDeathHaveReadableEquipmentSilhouettes() {
+    void huntersGoblinsAndDeathHaveReadableEquipmentSilhouettes() {
         assertSolid(modelFor("thorned_pursuer"), "right_pursuer_antler_branch", "pursuer_branch_frame",
             "left_pursuer_leaf_mantle", "right_vine_whip");
-        assertSolid(modelFor("hobgoblin"), "prospector_pack", "right_hobgoblin_glove", "prospector_pick");
-        assertSolid(modelFor("goblin"), "right_goblin_ear", "ore_basket", "left_goblin_boot");
+        assertSolid(modelFor("hobgoblin"), "miner_cap", "work_vest", "prospector_satchel", "tail");
+        assertSolid(modelFor("goblin"), "miner_cap", "work_vest", "ore_satchel", "tail");
+        assertTrue(solidPartCount(modelFor("goblin")) <= 14);
+        assertTrue(solidPartCount(modelFor("hobgoblin")) <= 14);
         assertSolid(modelFor("death"), "death_mantle", "right_death_robe_panel", "death_robe_hem",
             "scythe_staff", "scythe_hook");
     }
@@ -85,7 +87,7 @@ final class CreatureSilhouetteParityTest {
         assertSolid(modelFor("demon"), "right_demon_pauldrons", "left_demon_bracer", "demon_warhammer");
         assertSolid(modelFor("emberhorn_archfiend"), "archfiend_chestplate", "right_archfiend_gauntlet",
             "archfiend_maul");
-        assertSolid(modelFor("crimson_matriarch"), "right_front_leg", "left_middle_hind_leg",
+        assertSolid(modelFor("naamah"), "right_front_leg", "left_middle_hind_leg",
             "right_matriarch_crown_tine", "left_upper_blade");
         assertSolid(modelFor("abyssal_regent"), "right_wing", "left_outer_abyssal_tentacle", "tidal_staff");
         assertSolid(modelFor("ironbound_sentinel"), "sentinel_chassis", "right_sentinel_shield",

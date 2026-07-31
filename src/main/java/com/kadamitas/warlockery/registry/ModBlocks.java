@@ -5,11 +5,14 @@ import com.kadamitas.warlockery.block.AltarBlock;
 import com.kadamitas.warlockery.block.ConnectedGlyphBlock;
 import com.kadamitas.warlockery.block.DisturbedCottonBlock;
 import com.kadamitas.warlockery.block.ErosionBrewLiquidBlock;
+import com.kadamitas.warlockery.block.FumeFunnelBlock;
 import com.kadamitas.warlockery.block.MagicMachineBlock;
 import com.kadamitas.warlockery.block.MagicalPlantBlockFactory;
 import com.kadamitas.warlockery.block.MagicalWoodBlockFactory;
 import com.kadamitas.warlockery.block.ModernBlockFactory;
+import com.kadamitas.warlockery.block.PerpetualIceBlock;
 import com.kadamitas.warlockery.block.PlantMineBlock;
+import com.kadamitas.warlockery.block.ShadedGlassBlock;
 import com.kadamitas.warlockery.block.SpiritLiquidBlock;
 import com.kadamitas.warlockery.block.HollowTearsLiquidBlock;
 import com.kadamitas.warlockery.block.UtilityDeviceBlockFactory;
@@ -18,8 +21,12 @@ import com.kadamitas.warlockery.block.WarlockeryCropBlock;
 import com.kadamitas.warlockery.crafting.MachineProfiles;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DragonEggBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -31,6 +38,55 @@ import net.minecraftforge.registries.RegistryObject;
 public final class ModBlocks {
     public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, Warlockery.MOD_ID);
     private static final Map<String, RegistryObject<Block>> MUTABLE_BLOCKS = new LinkedHashMap<>();
+    private static final FactoryCatalog<BlockBehaviour.Properties, Block> FIXED_FACTORIES = new FactoryCatalog<>(
+        "block",
+        Map.ofEntries(
+            FactoryCatalog.entry("altar", AltarBlock::new),
+            FactoryCatalog.entry("fumefunnel", properties -> new FumeFunnelBlock(properties.noOcclusion())),
+            FactoryCatalog.entry("filteredfumefunnel", properties -> new FumeFunnelBlock(properties.noOcclusion())),
+            FactoryCatalog.entry("wolftrap", properties -> new WolfTrapBlock(properties.noOcclusion())),
+            FactoryCatalog.entry("spiritflowing", properties -> new SpiritLiquidBlock(
+                ModFluids.SPIRIT_SOURCE,
+                liquidProperties(properties)
+            )),
+            FactoryCatalog.entry("hollowtears", properties -> new HollowTearsLiquidBlock(
+                ModFluids.HOLLOW_TEARS_SOURCE,
+                liquidProperties(properties)
+            )),
+            FactoryCatalog.entry("brewliquid", properties -> new LiquidBlock(
+                ModFluids.COLORED_BREW_WATER_SOURCE,
+                liquidProperties(properties)
+            )),
+            FactoryCatalog.entry("erosionbrew", properties -> new ErosionBrewLiquidBlock(
+                ModFluids.EROSION_SOURCE,
+                liquidProperties(properties)
+            )),
+            FactoryCatalog.entry("somniancotton", properties ->
+                new DisturbedCottonBlock(properties.noCollision().noOcclusion())),
+            FactoryCatalog.entry("plantmine", properties -> new PlantMineBlock(
+                properties.noCollision().noOcclusion().instabreak().sound(SoundType.GRASS)
+            )),
+            FactoryCatalog.entry("perpetualice", PerpetualIceBlock::new),
+            FactoryCatalog.entry("paradox_egg", properties -> new DragonEggBlock(properties.noOcclusion()))
+        )
+    );
+    private static final List<BlockFactoryRule> FACTORY_RULES = List.of(
+        new BlockFactoryRule(ConnectedGlyphBlock::supports, (_, properties) -> new ConnectedGlyphBlock(
+            properties.noCollision().noOcclusion().instabreak().noLootTable().sound(SoundType.STONE)
+        )),
+        new BlockFactoryRule(MachineProfiles::isMachineBlock, (_, properties) -> new MagicMachineBlock(
+            properties.lightLevel(state -> state.getValue(MagicMachineBlock.LIT) ? 10 : 0)
+        )),
+        new BlockFactoryRule(id -> id.contains("shadedglass"), (id, properties) ->
+            new ShadedGlassBlock(properties.noOcclusion(), id.endsWith("_active"))),
+        new BlockFactoryRule(UtilityDeviceBlockFactory::supports, UtilityDeviceBlockFactory::create),
+        new BlockFactoryRule(MagicalPlantBlockFactory::supports, MagicalPlantBlockFactory::create),
+        new BlockFactoryRule(ContentCatalog.CROPS::contains, (_, properties) -> new WarlockeryCropBlock(
+            properties.noCollision().randomTicks().instabreak().sound(SoundType.CROP)
+        )),
+        new BlockFactoryRule(MagicalWoodBlockFactory::supports, MagicalWoodBlockFactory::create),
+        new BlockFactoryRule(ModernBlockFactory::supports, ModernBlockFactory::create)
+    );
 
     public static final RegistryObject<Block> ALTAR;
     public static final Map<String, RegistryObject<Block>> ALL;
@@ -41,7 +97,7 @@ public final class ModBlocks {
             MUTABLE_BLOCKS.put(id, REGISTRY.register(id, () -> create(id)));
         });
         ALTAR = MUTABLE_BLOCKS.get("altar");
-        ALL = Collections.unmodifiableMap(MUTABLE_BLOCKS);
+        ALL = Collections.unmodifiableMap(new LinkedHashMap<>(MUTABLE_BLOCKS));
     }
 
     private ModBlocks() {
@@ -49,72 +105,17 @@ public final class ModBlocks {
 
     private static Block create(final String id) {
         final BlockBehaviour.Properties properties = properties(id);
-        if ("altar".equals(id)) {
-            return new AltarBlock(properties);
-        }
-        if (ConnectedGlyphBlock.supports(id)) {
-            return new ConnectedGlyphBlock(properties.noCollision().noOcclusion().instabreak().sound(SoundType.STONE));
-        }
-        if (MachineProfiles.isMachineBlock(id)) {
-            return new MagicMachineBlock(properties);
-        }
-        if ("wolftrap".equals(id)) {
-            return new WolfTrapBlock(properties.noOcclusion());
-        }
-        if ("spiritflowing".equals(id)) {
-            return new SpiritLiquidBlock(ModFluids.SPIRIT_SOURCE, properties
-                .noCollision()
-                .noOcclusion()
-                .replaceable()
-                .liquid()
-                .noLootTable());
-        }
-        if ("hollowtears".equals(id)) {
-            return new HollowTearsLiquidBlock(ModFluids.HOLLOW_TEARS_SOURCE, properties
-                .noCollision()
-                .noOcclusion()
-                .replaceable()
-                .liquid()
-                .noLootTable());
-        }
-        if ("brewliquid".equals(id)) {
-            return new LiquidBlock(ModFluids.COLORED_BREW_WATER_SOURCE, properties
-                .noCollision()
-                .noOcclusion()
-                .replaceable()
-                .liquid()
-                .noLootTable());
-        }
-        if ("erosionbrew".equals(id)) {
-            return new ErosionBrewLiquidBlock(ModFluids.EROSION_SOURCE, properties
-                .noCollision()
-                .noOcclusion()
-                .replaceable()
-                .liquid()
-                .noLootTable());
-        }
-        if ("somniancotton".equals(id)) {
-            return new DisturbedCottonBlock(properties.noCollision().noOcclusion());
-        }
-        if ("plantmine".equals(id)) {
-            return new PlantMineBlock(properties.noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
-        }
-        if (UtilityDeviceBlockFactory.supports(id)) {
-            return UtilityDeviceBlockFactory.create(id, properties);
-        }
-        if (MagicalPlantBlockFactory.supports(id)) {
-            return MagicalPlantBlockFactory.create(id, properties);
-        }
-        if (ContentCatalog.CROPS.contains(id)) {
-            return new WarlockeryCropBlock(properties.noCollision().randomTicks().instabreak().sound(SoundType.CROP));
-        }
-        if (MagicalWoodBlockFactory.supports(id)) {
-            return MagicalWoodBlockFactory.create(id, properties);
-        }
-        if (ModernBlockFactory.supports(id)) {
-            return ModernBlockFactory.create(id, properties);
-        }
-        return new Block(properties);
+        return FIXED_FACTORIES.factoryFor(id)
+            .map(factory -> factory.create(properties))
+            .orElseGet(() -> FACTORY_RULES.stream()
+                .filter(rule -> rule.supports(id))
+                .findFirst()
+                .map(rule -> rule.create(id, properties))
+                .orElseGet(() -> new Block(properties)));
+    }
+
+    private static BlockBehaviour.Properties liquidProperties(final BlockBehaviour.Properties properties) {
+        return properties.noCollision().noOcclusion().replaceable().liquid().noLootTable();
     }
 
     private static BlockBehaviour.Properties properties(final String id) {
@@ -163,5 +164,18 @@ public final class ModBlocks {
             return SoundType.WOOD;
         }
         return SoundType.STONE;
+    }
+
+    private record BlockFactoryRule(
+        Predicate<String> selector,
+        BiFunction<String, BlockBehaviour.Properties, Block> factory
+    ) {
+        private boolean supports(final String id) {
+            return selector.test(id);
+        }
+
+        private Block create(final String id, final BlockBehaviour.Properties properties) {
+            return factory.apply(id, properties);
+        }
     }
 }

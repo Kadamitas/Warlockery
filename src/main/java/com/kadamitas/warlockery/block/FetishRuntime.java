@@ -1,5 +1,7 @@
 package com.kadamitas.warlockery.block;
 
+import com.kadamitas.warlockery.ritual.ManifestationRuntime;
+import com.kadamitas.warlockery.world.LegacyStructureRules;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -11,13 +13,16 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public final class FetishRuntime {
     private static final String SENTINEL = "WarlockeryFetishSentinel";
@@ -27,18 +32,27 @@ public final class FetishRuntime {
     }
 
     public static boolean tick(final ServerLevel level, final BlockPos center, final FetishMode mode) {
+        return tick(level, center, mode, false);
+    }
+
+    public static boolean tick(
+        final ServerLevel level,
+        final BlockPos center,
+        final FetishMode mode,
+        final boolean silentAlarm
+    ) {
         final AABB area = new AABB(center).inflate(FetishRules.RADIUS);
-        final List<Mob> threats = level.getEntitiesOfClass(Mob.class, area, mob -> FetishRules.shouldAffect(
-            true,
-            mob.isAlive() && mob.getType().getCategory() == MobCategory.MONSTER,
-            mob.typeHolder().is(WitchcraftCompatibilityTags.FETISH_IMMUNE)
-        ));
+        final List<LivingEntity> threats = level.getEntitiesOfClass(
+            LivingEntity.class,
+            area,
+            FetishRuntime::isThreat
+        );
         expireSentinels(level, area);
         switch (mode) {
             case DISORIENTATION -> disorient(threats);
             case GHOST_WALKING -> ghostWalk(level, area);
             case SENTINEL -> summonSentinel(level, center, area, threats);
-            case SHRIEKING -> shriek(level, center, !threats.isEmpty());
+            case SHRIEKING -> shriek(level, center, !threats.isEmpty() && !silentAlarm);
             case VOODOO_PROTECTION -> level.sendParticles(
                 ParticleTypes.ENCHANT,
                 center.getX() + 0.5,
@@ -59,7 +73,7 @@ public final class FetishRuntime {
             return false;
         }
         final BlockPos center = target.blockPosition();
-        return BlockPos.betweenClosedStream(
+        return StatueWardData.get(level).protectsHex(center) || BlockPos.betweenClosedStream(
                 center.offset(-FetishRules.RADIUS, -FetishRules.RADIUS, -FetishRules.RADIUS),
                 center.offset(FetishRules.RADIUS, FetishRules.RADIUS, FetishRules.RADIUS)
             )
@@ -69,31 +83,70 @@ public final class FetishRuntime {
             .anyMatch(state -> state.getBlock() instanceof FetishBlock
                 && state.getValue(FetishBlock.BOUND)
                 && state.getValue(FetishBlock.ENABLED)
-                && state.getValue(FetishBlock.MODE) == FetishMode.VOODOO_PROTECTION);
+                && state.getValue(FetishBlock.MODE) == FetishMode.VOODOO_PROTECTION
+                || WitchLadderBlock.isActiveProtection(state));
     }
 
-    private static void disorient(final List<Mob> threats) {
-        threats.forEach(mob -> {
-            mob.getNavigation().stop();
-            mob.setTarget(null);
-            mob.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 60, 0, true, true));
-            mob.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 2, true, true));
+    public static int attractZombies(final ServerLevel level, final BlockPos center) {
+        final List<Zombie> attracted = level.getEntitiesOfClass(
+            Zombie.class,
+            new AABB(center).inflate(24.0),
+            zombie -> LegacyStructureRules.attractsZombie(
+                false,
+                zombie.isAlive(),
+                zombie.distanceToSqr(Vec3.atCenterOf(center))
+            )
+        );
+        attracted.forEach(zombie -> {
+            if (zombie.getTarget() == null) {
+                zombie.getNavigation().moveTo(
+                    center.getX() + 0.5,
+                    center.getY(),
+                    center.getZ() + 0.5,
+                    1.0
+                );
+            }
+        });
+        return attracted.size();
+    }
+
+    private static boolean isThreat(final LivingEntity entity) {
+        final boolean threateningMob = entity instanceof Mob mob
+            && mob.getType().getCategory() == MobCategory.MONSTER;
+        final boolean threateningPlayer = entity instanceof Player player && FetishRules.isPlayerThreat(
+            !player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty(),
+            List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET)
+                .stream()
+                .map(player::getItemBySlot)
+                .anyMatch(stack -> !stack.isEmpty())
+        );
+        return FetishRules.shouldAffect(
+            true,
+            entity.isAlive() && (threateningMob || threateningPlayer),
+            entity.typeHolder().is(WitchcraftCompatibilityTags.FETISH_IMMUNE)
+        );
+    }
+
+    private static void disorient(final List<LivingEntity> threats) {
+        threats.forEach(entity -> {
+            if (entity instanceof Mob mob) {
+                mob.getNavigation().stop();
+                mob.setTarget(null);
+            }
+            entity.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 60, 0, true, true));
+            entity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 2, true, true));
         });
     }
 
     private static void ghostWalk(final ServerLevel level, final AABB area) {
-        level.getEntitiesOfClass(Player.class, area, player -> player.isAlive() && !player.isSpectator())
-            .forEach(player -> {
-                player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 60, 0, true, false));
-                player.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 60, 0, true, false));
-            });
+        ManifestationRuntime.sustain(level, area, 80);
     }
 
     private static void summonSentinel(
         final ServerLevel level,
         final BlockPos center,
         final AABB area,
-        final List<Mob> threats
+        final List<LivingEntity> threats
     ) {
         if (threats.isEmpty() || hasSentinel(level, area)) {
             return;

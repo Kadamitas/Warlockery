@@ -23,6 +23,10 @@ public interface CreatureBehavior {
         return true;
     }
 
+    default float attackDamageBonus(final Mob creature, final ServerLevel level) {
+        return 0.0F;
+    }
+
     default void afterAttack(final Mob creature, final ServerLevel level, final Entity target) {
     }
 

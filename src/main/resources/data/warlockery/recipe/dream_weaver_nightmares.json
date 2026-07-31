@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": ["warlockery:dreamcatcher", "minecraft:fermented_spider_eye"],
+  "result": { "id": "warlockery:dream_weaver_nightmares" }
+}

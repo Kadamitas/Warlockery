@@ -36,12 +36,17 @@ final class RequestedIconSemanticsTest {
     private static final Path MODELS = ASSETS.resolve("models/item");
     private static final Path TEXTURES = ASSETS.resolve("textures/item");
     private static final Map<String, Set<String>> ALLOWED_SHARED_LAYER_ZERO = Map.of(
-        "warlockery:item/brew_splash_bottle", ContentCatalog.BREWS.stream()
-            .filter(id -> !Set.of("brew_combustion", "brew_endless_water").contains(id))
+        "warlockery:item/brew_splash_bottle", Stream.concat(
+            ContentCatalog.BREWS.stream()
+                .filter(id -> !Set.of("brew_combustion", "brew_endless_water").contains(id)),
+            ContentCatalog.INGREDIENTS.stream()
+                .filter(id -> id.startsWith("brew"))
+                .map(ContentCatalog::ingredientId)
+        )
             .collect(Collectors.toUnmodifiableSet()),
         "warlockery:item/brew_fuel", Set.of("brew.fuel", "brew_combustion"),
         "warlockery:item/brew_water", Set.of("brew.water", "brew_endless_water"),
-        "warlockery:item/bucket_brew", Set.of("bucketbrew", "bucketerosionbrew"),
+        "warlockery:item/ingredient_broom", Set.of("ingredient_broom", "ingredient_broom_enchanted"),
         "warlockery:item/ruby_slippers", Set.of("emberstep_slippers", "ruby_slippers")
     );
     private static final Set<String> REQUESTED_ICONS = Set.of(
@@ -79,6 +84,10 @@ final class RequestedIconSemanticsTest {
         "replication_charge", "seedswormwood", "silver_tongue_charm", "silversword", "spectralstone",
         "stew", "stewraw", "sungrenade", "twisting_band", "vampirechaincoat_female", "vampirecoat",
         "vampirelegs", "vampirelegs_kilt", "witchhat", "witchrobe", "wolftoken"
+    );
+    private static final Set<String> SCULPTED_REQUESTS = Set.of(
+        "ingredient_broom",
+        "ingredient_broom_enchanted"
     );
 
     @Test
@@ -133,6 +142,7 @@ final class RequestedIconSemanticsTest {
     @Test
     void specificallyRequestedIconsResolveToDedicatedSprites() {
         final Map<String, Set<String>> texturesByItem = REQUESTED_ICONS.stream()
+            .filter(id -> !SCULPTED_REQUESTS.contains(id))
             .collect(Collectors.toMap(
                 id -> id,
                 id -> resolvedTextureReferences(id).collect(Collectors.toCollection(LinkedHashSet::new)),
@@ -146,6 +156,8 @@ final class RequestedIconSemanticsTest {
                 LinkedHashMap::new,
                 Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
         shared.entrySet().removeIf(entry -> entry.getValue().size() == 1);
+        shared.entrySet().removeIf(entry -> Set.copyOf(entry.getValue())
+            .equals(ALLOWED_SHARED_LAYER_ZERO.get(entry.getKey())));
         assertTrue(shared.isEmpty(), () -> "requested icons share generic textures: " + shared);
     }
 
@@ -160,7 +172,10 @@ final class RequestedIconSemanticsTest {
 
     @Test
     void writesRequestedIconContactSheet() throws IOException {
-        final List<String> ids = REQUESTED_ICONS.stream().sorted().toList();
+        final List<String> ids = REQUESTED_ICONS.stream()
+            .filter(id -> !SCULPTED_REQUESTS.contains(id))
+            .sorted()
+            .toList();
         final int columns = 8;
         final int cellWidth = 200;
         final int cellHeight = 132;

@@ -79,7 +79,15 @@ public final class CustomBrewRuntime {
     }
 
     public static Optional<CustomBrewFormula> read(final ItemStack stack) {
-        final CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        return read(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY));
+    }
+
+    public static Optional<CustomBrewFormula> read(final Entity entity) {
+        return read(Optional.ofNullable(entity.get(DataComponents.CUSTOM_DATA)).orElse(CustomData.EMPTY));
+    }
+
+    private static Optional<CustomBrewFormula> read(final CustomData data) {
+        final CompoundTag tag = data.copyTag();
         return tag.read(FORMULA_KEY, CustomBrewFormula.CODEC);
     }
 
@@ -93,6 +101,38 @@ public final class CustomBrewRuntime {
         return formula.behaviors().isEmpty()
             ? BrewRuntime.ImpactResult.ZERO
             : BrewRuntime.handleImpact(level, formula.behaviorKind(), center, directSource, owner);
+    }
+
+    public static BrewRuntime.ImpactResult handleImpactTo(
+        final ServerLevel level,
+        final CustomBrewFormula formula,
+        final LivingEntity target,
+        final @Nullable Entity directSource,
+        final @Nullable Entity owner
+    ) {
+        return formula.behaviors().isEmpty()
+            ? BrewRuntime.ImpactResult.ZERO
+            : BrewRuntime.handleImpactTo(
+                level,
+                formula.behaviorKind(),
+                target.position(),
+                directSource,
+                owner,
+                target
+            );
+    }
+
+    public static BrewRuntime.ImpactResult handleCloudImpactTo(
+        final ServerLevel level,
+        final CustomBrewFormula formula,
+        final LivingEntity target,
+        final Entity directSource,
+        final @Nullable Entity owner
+    ) {
+        final var kind = formula.entityBehaviorKind();
+        return kind.behaviors().isEmpty()
+            ? BrewRuntime.ImpactResult.ZERO
+            : BrewRuntime.handleImpactTo(level, kind, target.position(), directSource, owner, target);
     }
 
     public static int applyEffects(
@@ -132,6 +172,21 @@ public final class CustomBrewRuntime {
         }
         return (int) formula.potionContents().customEffects().stream()
             .filter(effect -> applyEffect(level, formula, effect, drinker, drinker, drinker, 1.0))
+            .count();
+    }
+
+    public static int applyEffectsTo(
+        final ServerLevel level,
+        final CustomBrewFormula formula,
+        final LivingEntity target,
+        final @Nullable Entity directSource,
+        final @Nullable Entity owner
+    ) {
+        if (formula.effects().isEmpty() || formula.skipEntities() || !target.isAffectedByPotions()) {
+            return 0;
+        }
+        return (int) formula.potionContents().customEffects().stream()
+            .filter(effect -> applyEffect(level, formula, effect, target, directSource, owner, 1.0))
             .count();
     }
 

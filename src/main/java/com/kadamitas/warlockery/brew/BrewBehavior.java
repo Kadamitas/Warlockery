@@ -1,13 +1,10 @@
 package com.kadamitas.warlockery.brew;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 
-public enum BrewBehavior {
+public enum BrewBehavior implements StringIdentified {
     GROW("grow"),
     EXTINGUISH("extinguish"),
     FREEZE("freeze"),
@@ -21,6 +18,7 @@ public enum BrewBehavior {
     REPEL_ANIMALS("repel_animals"),
     FELL_LOGS("fell_logs"),
     PRUNE_LEAVES("prune_leaves"),
+    WASTE("waste"),
     HARVEST_CROPS("harvest_crops"),
     TILL_SOIL("till_soil"),
     REVEAL("reveal"),
@@ -59,6 +57,7 @@ public enum BrewBehavior {
     PLACE_WATER("place_water"),
     DARKNESS_PREY("darkness_prey"),
     MOONLIGHT("moonlight"),
+    APPLY_MOONSHINE("apply_moonshine"),
     PART_WATER("part_water"),
     PART_LAVA("part_lava"),
     PLANT_DROPS("plant_drops"),
@@ -104,13 +103,8 @@ public enum BrewBehavior {
     SOLIDIFY_SANDSTONE("solidify_sandstone"),
     SOLIDIFY_EROSION("solidify_erosion");
 
-    private static final Map<String, BrewBehavior> BY_ID = Arrays.stream(values())
-        .collect(Collectors.toUnmodifiableMap(BrewBehavior::id, Function.identity()));
-
-    public static final Codec<BrewBehavior> CODEC = Codec.STRING.comapFlatMap(
-        id -> find(id).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown brew behavior: " + id)),
-        BrewBehavior::id
-    );
+    private static final EnumLookup<BrewBehavior> LOOKUP = EnumLookup.create("brew behavior", values());
+    public static final Codec<BrewBehavior> CODEC = LOOKUP.codec();
 
     private final String id;
 
@@ -123,6 +117,6 @@ public enum BrewBehavior {
     }
 
     public static java.util.Optional<BrewBehavior> find(final String id) {
-        return java.util.Optional.ofNullable(BY_ID.get(id));
+        return LOOKUP.find(id);
     }
 }

@@ -17,7 +17,7 @@ features={java_version="[25,)"}
 
 description='''A standalone ritual-magic mod for Forge 65 and Minecraft 26.2.
 Warlockery includes data-driven circles and machines, magical plants, sympathetic magic,
-dolls, supernatural forms, creatures and bosses, kobold village enclaves,
+dolls, supernatural forms, creatures and bosses, goblin village enclaves,
 silver-equipped Werewolf Hunters, and modern ore progression.'''
 
 [[dependencies.warlockery]]
