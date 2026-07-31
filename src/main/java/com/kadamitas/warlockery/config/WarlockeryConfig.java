@@ -24,7 +24,7 @@ public final class WarlockeryConfig {
             .comment("Ticks between checks for pillagers and werewolves near a player.")
             .defineInRange("pillagerScanIntervalTicks", 200, 20, Integer.MAX_VALUE);
         HOBGOBLIN_ENCLAVES = builder
-            .comment("Allows hobgoblin enclaves to settle around occupied village bells.")
+            .comment("Allows travelling hobgoblins to establish small wilderness huts.")
             .define("enableHobgoblinEnclaves", true);
         HOBGOBLIN_ENCLAVE_INTERVAL = builder
             .comment("Ticks between attempts to found a hobgoblin enclave.")

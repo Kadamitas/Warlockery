@@ -4,6 +4,7 @@ import com.kadamitas.warlockery.crafting.MachineRecipeDefinition;
 import com.kadamitas.warlockery.crafting.AltarPowerNetwork;
 import com.kadamitas.warlockery.crafting.BrazierEffectRuntime;
 import com.kadamitas.warlockery.crafting.MachineRecipeManager;
+import com.kadamitas.warlockery.crafting.SpiritWorldMachineRules;
 import com.kadamitas.warlockery.crafting.MachineDisplay;
 import com.kadamitas.warlockery.crafting.MachineInsertionRules;
 import com.kadamitas.warlockery.crafting.MachineProfile;
@@ -11,18 +12,25 @@ import com.kadamitas.warlockery.crafting.MachineProfiles;
 import com.kadamitas.warlockery.crafting.MachineSlotLayout;
 import com.kadamitas.warlockery.crafting.MachineStatus;
 import com.kadamitas.warlockery.crafting.MachineUpgradeRules;
-import com.kadamitas.warlockery.crafting.LeonardBrewingRisk;
+import com.kadamitas.warlockery.crafting.ArchfiendBrewingRisk;
+import com.kadamitas.warlockery.crafting.SilverVatFurnaceObserver;
 import com.kadamitas.warlockery.block.MagicMachineBlock;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
+import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.registry.ModSounds;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.item.EquipmentSetEffects;
+import com.kadamitas.warlockery.menu.MachineMenu;
 import com.kadamitas.warlockery.brew.custom.CustomBrewCauldronState;
 import com.kadamitas.warlockery.brew.custom.CustomBrewComposer;
 import com.kadamitas.warlockery.brew.custom.CustomBrewDefinitionManager;
 import com.kadamitas.warlockery.brew.custom.CustomBrewRuntime;
 import com.kadamitas.warlockery.brew.BodegaBrewingRules;
+import com.kadamitas.warlockery.brew.CauldronChalkCircles;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -33,18 +41,20 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.BlastFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -52,6 +62,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
@@ -76,8 +87,11 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     private Optional<MachineRecipeManager.Match> cachedRecipe = Optional.empty();
     private MachineDisplay machineDisplay = MachineDisplay.EMPTY;
     private CustomBrewCauldronState customBrewState = CustomBrewCauldronState.EMPTY;
+    private CauldronChalkCircles.State cauldronChalkCircles = CauldronChalkCircles.State.EMPTY;
     private int customBrewProgress;
     private boolean brazierIgnited;
+    private final SilverVatFurnaceObserver silverVatFurnaceObserver = new SilverVatFurnaceObserver();
+    private int pendingSilverDeposits;
     private MachineSlotLayout slotLayout;
     private final FluidStacksResourceHandler fluidTank = new FluidStacksResourceHandler(1, FLUID_CAPACITY) {
         @Override
@@ -102,6 +116,12 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         }
 
         final MachineProfile profile = machine.machineProfile();
+        if ("silvervat".equals(profile.recipeType()) && level instanceof ServerLevel serverLevel) {
+            machine.tickSilverVatFurnaces(serverLevel, pos, profile);
+        }
+        if ("cauldron".equals(profile.recipeType())) {
+            machine.updateCauldronChalkCircles(level, pos, state);
+        }
         if ("brazier".equals(profile.recipeType())) {
             machine.brazierIgnited |= level.hasNeighborSignal(pos);
             if (!machine.brazierIgnited) {
@@ -137,6 +157,12 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             machine.updateMachineDisplay(level, pos, state);
             return;
         }
+        if (!SpiritWorldMachineRules.allows(match.get().id(), level.dimension().identifier())) {
+            machine.resetProgress();
+            setLit(level, pos, state, false);
+            machine.updateMachineDisplay(level, pos, state);
+            return;
+        }
         final MachineUpgradeRules.Upgrade upgrade = MachineUpgradeRules.around(level, pos, profile);
         final List<ItemStack> upgradedOutputs = MachineUpgradeRules.enhanceOutputs(
             MachineRecipeManager.INSTANCE.createOutputs(recipe), upgrade
@@ -163,6 +189,9 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             machine.progress = 0;
             machine.activeRecipe = recipeId;
         }
+        if (machine.progress == 0) {
+            level.playSound(null, pos, ModSounds.MACHINE_START.get(), SoundSource.BLOCKS, 0.55F, 1.0F);
+        }
         machine.progress += upgrade.progressPerTick();
         setLit(level, pos, state, true);
 
@@ -178,7 +207,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             MachineRecipeManager.INSTANCE.consumeFluid(recipe, machine.fluidTank);
             machine.insertOutputs(outputs, profile);
             if (level instanceof ServerLevel serverLevel && "cauldron".equals(profile.recipeType())) {
-                LeonardBrewingRisk.apply(serverLevel, pos);
+                ArchfiendBrewingRisk.apply(serverLevel, pos, machine.cauldronChalkCircles);
             }
             if (level instanceof ServerLevel serverLevel && "brazier".equals(profile.recipeType())) {
                 BrazierEffectRuntime.apply(serverLevel, pos, match.get().id());
@@ -187,7 +216,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             machine.progress = 0;
             machine.activeRecipe = "";
             machine.recipeDirty = true;
-            level.playSound(null, pos, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 0.8F, 0.9F);
+            level.playSound(null, pos, ModSounds.MACHINE_COMPLETE.get(), SoundSource.BLOCKS, 0.75F, 1.0F);
         }
         machine.setChanged();
         machine.updateMachineDisplay(level, pos, state);
@@ -244,7 +273,10 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
                 updateCustomBrewState(level, pos, state, next);
                 return true;
             }
-            final ItemStack baseOutput = next.formula().map(CustomBrewRuntime::createOutput).orElse(ItemStack.EMPTY);
+            final ItemStack baseOutput = next.formula()
+                .map(formula -> CauldronChalkCircles.influence(formula, cauldronChalkCircles))
+                .map(CustomBrewRuntime::createOutput)
+                .orElse(ItemStack.EMPTY);
             final ItemStack output = EquipmentSetEffects.enhanceMachineOutputs(
                 serverLevel, pos, profile.recipeType(), List.of(baseOutput)
             ).stream().findFirst().orElse(ItemStack.EMPTY);
@@ -256,11 +288,11 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             items.stream().limit(profile.inputSlots()).filter(stack -> !stack.isEmpty()).forEach(stack -> stack.shrink(1));
             extractFluid(CustomBrewComposer.WATER_REQUIRED);
             items.set(profile.outputStart(), output);
-            LeonardBrewingRisk.apply(serverLevel, pos);
+            ArchfiendBrewingRisk.apply(serverLevel, pos, cauldronChalkCircles);
             customBrewProgress = 0;
             next = CustomBrewCauldronState.EMPTY;
             recipeDirty = true;
-            level.playSound(null, pos, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 0.9F, 1.1F);
+            level.playSound(null, pos, ModSounds.MACHINE_COMPLETE.get(), SoundSource.BLOCKS, 0.8F, 1.1F);
         }
         setChanged();
         updateCustomBrewState(level, pos, state, next);
@@ -309,6 +341,95 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         final BlockState heat = level.getBlockState(pos.below());
         return heat.is(WarlockeryTags.Blocks.MACHINE_HEAT_SOURCES)
             && (!heat.hasProperty(BlockStateProperties.LIT) || heat.getValue(BlockStateProperties.LIT));
+    }
+
+    private void tickSilverVatFurnaces(
+        final ServerLevel level,
+        final BlockPos vatPos,
+        final MachineProfile profile
+    ) {
+        final List<SilverVatFurnaceObserver.FurnaceCycle> furnaces = Stream.of(Direction.values())
+            .map(vatPos::relative)
+            .map(pos -> furnaceCycle(level, pos))
+            .flatMap(Optional::stream)
+            .toList();
+        final Map<Long, Integer> previousProgress = silverVatFurnaceObserver.snapshot();
+        final int generated = silverVatFurnaceObserver.observe(furnaces);
+        pendingSilverDeposits = (int) Math.min(Integer.MAX_VALUE, (long) pendingSilverDeposits + generated);
+        final int inserted = insertSilverDeposits(pendingSilverDeposits, profile);
+        if (inserted > 0) {
+            pendingSilverDeposits -= inserted;
+            invalidateRecipeCache();
+        }
+        if (generated > 0 || inserted > 0 || !previousProgress.equals(silverVatFurnaceObserver.snapshot())) {
+            setChanged();
+        }
+    }
+
+    private static Optional<SilverVatFurnaceObserver.FurnaceCycle> furnaceCycle(
+        final ServerLevel level,
+        final BlockPos furnacePos
+    ) {
+        if (!(level.getBlockEntity(furnacePos) instanceof AbstractFurnaceBlockEntity furnace)) {
+            return Optional.empty();
+        }
+        final ItemStack input = furnace.getItem(0);
+        final SingleRecipeInput recipeInput = new SingleRecipeInput(input);
+        final Optional<? extends AbstractCookingRecipe> recipe = furnace instanceof BlastFurnaceBlockEntity
+            ? level.recipeAccess().getRecipeFor(RecipeType.BLASTING, recipeInput, level).map(holder -> holder.value())
+            : level.recipeAccess().getRecipeFor(RecipeType.SMELTING, recipeInput, level).map(holder -> holder.value());
+        final FurnaceProcess fallback = new FurnaceProcess(
+            ItemStack.EMPTY,
+            furnace instanceof BlastFurnaceBlockEntity ? 100 : 200
+        );
+        final FurnaceProcess process = recipe.map(value -> new FurnaceProcess(
+            value.assemble(recipeInput),
+            value.cookingTime()
+        )).orElse(fallback);
+        final boolean goldOre = input.is(Tags.Items.ORES_GOLD);
+        final boolean goldResult = process.result().is(Tags.Items.INGOTS_GOLD) || process.result().is(Items.GOLD_INGOT);
+        final ItemStack output = furnace.getItem(2);
+        final boolean outputAvailable = output.isEmpty()
+            || ItemStack.isSameItemSameComponents(output, process.result())
+                && output.getCount() + process.result().getCount() <= output.getMaxStackSize();
+        final BlockState furnaceState = level.getBlockState(furnacePos);
+        final boolean lit = furnaceState.hasProperty(BlockStateProperties.LIT)
+            && furnaceState.getValue(BlockStateProperties.LIT);
+        return Optional.of(new SilverVatFurnaceObserver.FurnaceCycle(
+            furnacePos.asLong(),
+            lit && goldOre && goldResult && outputAvailable,
+            input.isEmpty(),
+            process.cookingTime()
+        ));
+    }
+
+    private int insertSilverDeposits(final int deposits, final MachineProfile profile) {
+        if (deposits <= 0) {
+            return 0;
+        }
+        final var silverDeposit = ModItems.ALL.get("ingredient_silverdust").get();
+        int remaining = deposits;
+        for (int slot = profile.outputStart(); slot < INVENTORY_SIZE && remaining > 0; slot++) {
+            final ItemStack existing = items.get(slot);
+            if (!existing.isEmpty() && !existing.is(silverDeposit)) {
+                continue;
+            }
+            final int capacity = existing.isEmpty() ? silverDeposit.getDefaultMaxStackSize() : existing.getMaxStackSize();
+            final int accepted = Math.min(remaining, capacity - existing.getCount());
+            if (accepted <= 0) {
+                continue;
+            }
+            if (existing.isEmpty()) {
+                items.set(slot, new ItemStack(silverDeposit, accepted));
+            } else {
+                existing.grow(accepted);
+            }
+            remaining -= accepted;
+        }
+        return deposits - remaining;
+    }
+
+    private record FurnaceProcess(ItemStack result, int cookingTime) {
     }
 
     private boolean canAccept(final List<ItemStack> outputs, final MachineProfile profile) {
@@ -423,6 +544,23 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
 
     public CustomBrewCauldronState getCustomBrewState() {
         return customBrewState;
+    }
+
+    public CauldronChalkCircles.State getCauldronChalkCircles() {
+        return cauldronChalkCircles;
+    }
+
+    private void updateCauldronChalkCircles(
+        final Level level,
+        final BlockPos pos,
+        final BlockState state
+    ) {
+        final CauldronChalkCircles.State next = CauldronChalkCircles.inspect(level, pos);
+        if (!next.equals(cauldronChalkCircles)) {
+            cauldronChalkCircles = next;
+            setChanged();
+            level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
+        }
     }
 
     private void updateMachineDisplay(final Level level, final BlockPos pos, final BlockState state) {
@@ -614,7 +752,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
 
     @Override
     protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
-        return new ChestMenu(MenuType.GENERIC_9x1, containerId, inventory, this, 1);
+        return new MachineMenu(containerId, inventory, this, machineKind());
     }
 
     @Override
@@ -629,6 +767,8 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             .orElseGet(() -> readLegacyMachineDisplay(input));
         customBrewState = input.read("CustomBrewState", CustomBrewCauldronState.CODEC)
             .orElse(CustomBrewCauldronState.EMPTY);
+        cauldronChalkCircles = input.read("CauldronChalkCircles", CauldronChalkCircles.State.CODEC)
+            .orElse(CauldronChalkCircles.State.EMPTY);
         customBrewProgress = input.getIntOr("CustomBrewProgress", 0);
         brazierIgnited = input.getBooleanOr("BrazierIgnited", false);
         fluidTank.deserialize(input.childOrEmpty("FluidTank"));
@@ -637,6 +777,14 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
                 fluidTank.set(0, FluidResource.of(stack), Math.min(stack.getAmount(), FLUID_CAPACITY))
             );
         }
+        pendingSilverDeposits = input.getIntOr("PendingSilverDeposits", 0);
+        silverVatFurnaceObserver.restore(input.childrenListOrEmpty("SilverVatFurnaces").stream().collect(
+            java.util.stream.Collectors.toMap(
+                entry -> entry.getLongOr("Position", 0L),
+                entry -> entry.getIntOr("Progress", 0),
+                Math::max
+            )
+        ));
         invalidateRecipeCache();
     }
 
@@ -649,8 +797,16 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         output.putString("ActiveRecipe", activeRecipe);
         output.store("MachineDisplay", MachineDisplay.CODEC, machineDisplay);
         output.store("CustomBrewState", CustomBrewCauldronState.CODEC, customBrewState);
+        output.store("CauldronChalkCircles", CauldronChalkCircles.State.CODEC, cauldronChalkCircles);
         output.putInt("CustomBrewProgress", customBrewProgress);
         output.putBoolean("BrazierIgnited", brazierIgnited);
+        output.putInt("PendingSilverDeposits", pendingSilverDeposits);
+        final ValueOutput.ValueOutputList observedFurnaces = output.childrenList("SilverVatFurnaces");
+        silverVatFurnaceObserver.snapshot().forEach((position, observedProgress) -> {
+            final ValueOutput observed = observedFurnaces.addChild();
+            observed.putLong("Position", position);
+            observed.putInt("Progress", observedProgress);
+        });
         if (!ResourceHandlerUtil.isEmpty(fluidTank)) {
             fluidTank.serialize(output.child("FluidTank"));
         }
@@ -666,6 +822,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         final CompoundTag tag = new CompoundTag();
         tag.store("MachineDisplay", MachineDisplay.CODEC, machineDisplay);
         tag.store("CustomBrewState", CustomBrewCauldronState.CODEC, customBrewState);
+        tag.store("CauldronChalkCircles", CauldronChalkCircles.State.CODEC, cauldronChalkCircles);
         return tag;
     }
 

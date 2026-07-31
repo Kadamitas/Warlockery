@@ -49,12 +49,12 @@ final class DecorativeShapedRecipeCodecTest {
         ),
         "ingredient_pentacle", new RecipeExpectation(
             List.of("NNN", "NIN", "NNN"),
-            Map.of("N", "#c:nuggets/koboldite", "I", "#c:ingots/koboldite"),
+            Map.of("N", "#c:nuggets/goblinite", "I", "#c:ingots/goblinite"),
             "warlockery:ingredient_pentacle"
         ),
         "statue_of_hobgoblin_patron", new RecipeExpectation(
             List.of(" S ", "SKS", "SSS"),
-            Map.of("S", "#c:stones", "K", "#c:ingots/koboldite"),
+            Map.of("S", "#c:stones", "K", "#c:ingots/goblinite"),
             "warlockery:statueofworship"
         )
     );

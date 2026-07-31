@@ -1,24 +1,21 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.Warlockery;
-import java.util.Arrays;
-import java.util.Map;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
-public enum MagicalTreeFamily {
+public enum MagicalTreeFamily implements StringIdentified {
     ALDER("alder"),
     HAWTHORN("hawthorn"),
     ROWAN("rowan");
 
-    private static final Map<String, MagicalTreeFamily> BY_ID = Arrays.stream(values())
-        .collect(Collectors.toUnmodifiableMap(MagicalTreeFamily::id, Function.identity()));
+    private static final EnumLookup<MagicalTreeFamily> LOOKUP = EnumLookup.create("magical tree family", values());
 
     private final String id;
     private final ResourceKey<ConfiguredFeature<?, ?>> configuredFeature;
@@ -55,6 +52,6 @@ public enum MagicalTreeFamily {
     }
 
     public static Optional<MagicalTreeFamily> find(final String id) {
-        return Optional.ofNullable(BY_ID.get(id));
+        return LOOKUP.find(id);
     }
 }

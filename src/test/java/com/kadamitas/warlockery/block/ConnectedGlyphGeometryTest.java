@@ -11,7 +11,9 @@ import org.junit.jupiter.api.Test;
 final class ConnectedGlyphGeometryTest {
     @Test
     void everyChalkGlyphIdUsesTheConnectedImplementation() {
-        assertEquals(Set.of("circle", "circleglyphritual", "circleglyphinfernal", "circleglyph_veil"),
+        assertEquals(Set.of(
+                "circle", "circleglyphgolden", "circleglyphritual", "circleglyphinfernal", "circleglyph_veil"
+            ),
             ConnectedGlyphGeometry.IDS);
         assertFalse(ConnectedGlyphGeometry.IDS.contains("pentacle"));
     }

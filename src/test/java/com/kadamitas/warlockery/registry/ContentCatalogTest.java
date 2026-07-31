@@ -31,6 +31,7 @@ final class ContentCatalogTest {
         assertFalse(items.contains("arthana"));
         assertFalse(items.contains("handbow"));
         assertFalse(items.contains("taglockkit"));
+        assertFalse(items.contains("voodoo_protection_doll"));
         assertFalse(blocks.contains("clever"));
         assertFalse(blocks.contains("slurp"));
     }

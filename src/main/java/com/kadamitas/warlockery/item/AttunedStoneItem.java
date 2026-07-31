@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.context.UseOnContext;
@@ -53,6 +54,12 @@ public final class AttunedStoneItem extends Item {
             }
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public boolean onEntityItemUpdate(final ItemStack stack, final ItemEntity entity) {
+        SpiritLocatorRuntime.tick(entity);
+        return false;
     }
 
     public static int storedPower(final ItemStack stack) {

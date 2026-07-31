@@ -1,6 +1,9 @@
 package com.kadamitas.warlockery.ritual;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.crafting.AltarPowerNetwork;
+import com.kadamitas.warlockery.magic.MagicPathRuntime;
+import com.kadamitas.warlockery.magic.MagicPathState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
@@ -14,6 +17,7 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -55,8 +59,19 @@ public final class RitualWardData extends SavedData {
         final int radius,
         final long expiration
     ) {
+        place(level, type, center, radius, expiration, false);
+    }
+
+    public void place(
+        final ServerLevel level,
+        final RitualWardType type,
+        final BlockPos center,
+        final int radius,
+        final long expiration,
+        final boolean powered
+    ) {
         wards.removeIf(ward -> ward.center() == center.asLong() && ward.type() == type);
-        final Ward ward = new Ward(type, center.asLong(), Math.clamp(radius, 1, 32), expiration);
+        final Ward ward = new Ward(type, center.asLong(), Math.clamp(radius, 1, 32), expiration, powered);
         wards.add(ward);
         setDirty();
         tickWard(level, ward);
@@ -68,7 +83,14 @@ public final class RitualWardData extends SavedData {
     }
 
     public void tick(final ServerLevel level) {
-        final boolean removed = wards.removeIf(ward -> ward.expiration() <= level.getGameTime());
+        boolean removed = wards.removeIf(ward -> ward.expiration() <= level.getGameTime());
+        if (level.getGameTime() % 20 == 0) {
+            removed |= wards.removeIf(ward -> ward.powered() && !AltarPowerNetwork.consume(
+                level,
+                BlockPos.of(ward.center()),
+                RitualWardRules.powerPerSecond(ward.type(), ward.radius())
+            ));
+        }
         if (removed) {
             setDirty();
         }
@@ -87,9 +109,44 @@ public final class RitualWardData extends SavedData {
         switch (ward.type()) {
             case IMPRISONMENT -> tickImprisonment(level, ward);
             case SANCTITY -> tickSanctity(level, ward);
-            case PROTECTION -> {
-            }
+            case PROTECTION -> tickProtection(level, ward);
+            case RECHARGE -> tickRecharge(level, ward);
         }
+    }
+
+    private static void tickRecharge(final ServerLevel level, final Ward ward) {
+        if (level.getGameTime() % 20 != 0) {
+            return;
+        }
+        final List<net.minecraft.world.entity.player.Player> infused = level.getEntitiesOfClass(
+            net.minecraft.world.entity.player.Player.class,
+            new AABB(BlockPos.of(ward.center())).inflate(ward.radius()),
+            player -> !MagicPathState.active(player).isEmpty()
+        );
+        MagicPathRuntime.recharge(infused, 40);
+        infused.forEach(player -> player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 0)));
+    }
+
+    private static void tickProtection(final ServerLevel level, final Ward ward) {
+        final Vec3 center = Vec3.atCenterOf(BlockPos.of(ward.center()));
+        final AABB area = AABB.ofSize(
+            center,
+            ward.radius() * 2.0 + 4.0,
+            ward.radius() * 2.0 + 4.0,
+            ward.radius() * 2.0 + 4.0
+        );
+        level.getEntities((Entity) null, area, Entity::isAlive).forEach(entity -> {
+            final Vec3 corrected = RitualWardRules.boundaryVelocity(
+                center,
+                ward.radius(),
+                entity.position(),
+                entity.getDeltaMovement()
+            );
+            if (!corrected.equals(entity.getDeltaMovement())) {
+                entity.setDeltaMovement(corrected);
+                entity.hurtMarked = true;
+            }
+        });
     }
 
     public static void handleDamage(final LivingDamageEvent.Pre event) {
@@ -169,12 +226,17 @@ public final class RitualWardData extends SavedData {
         }
     }
 
-    public record Ward(RitualWardType type, long center, int radius, long expiration) {
+    public record Ward(RitualWardType type, long center, int radius, long expiration, boolean powered) {
         private static final Codec<Ward> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             RitualWardType.CODEC.fieldOf("type").forGetter(Ward::type),
             Codec.LONG.fieldOf("center").forGetter(Ward::center),
             Codec.intRange(1, 32).fieldOf("radius").forGetter(Ward::radius),
-            Codec.LONG.fieldOf("expiration").forGetter(Ward::expiration)
+            Codec.LONG.fieldOf("expiration").forGetter(Ward::expiration),
+            Codec.BOOL.optionalFieldOf("powered", false).forGetter(Ward::powered)
         ).apply(instance, Ward::new));
+
+        public Ward(final RitualWardType type, final long center, final int radius, final long expiration) {
+            this(type, center, radius, expiration, false);
+        }
     }
 }

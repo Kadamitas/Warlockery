@@ -12,7 +12,7 @@ public final class ContentCatalog {
     public static final List<String> BLOCKS = words("""
         alderwooddoor alluringskull altar artichoke barrier beartrap belladonna bloodcrucible bloodedwool bloodrose
         bramble brazier brew brewgas brewliquid erosionbrew candelabra cauldron chalice circle
-        circleglyphinfernal circleglyph_veil circleglyphritual coffinblock crittersnare crystalball
+        circleglyphgolden circleglyphinfernal circleglyph_veil circleglyphritual coffinblock crittersnare crystalball
         daylightcollector broken_hexes_statue
         occluded_summons_statue demonheart disease distilleryburning distilleryidle dreamcatcher embermoss filteredfumefunnel
         force fumefunnel garlicgarland garlicplant glintweed glowglobe grassper hollowtears icedoor icedoubleslab
@@ -42,10 +42,12 @@ public final class ContentCatalog {
         hunger_guard_doll fire_guard_doll tool_mending_doll death_guard_doll hex_guard_doll hexing_doll
         blood_link_doll doll_guard armor_mending_doll stonebrokers_quiver emberstep_slippers
         seedsartichoke seedsbelladonna seedsmandrake seedsdreamroot seedssnowbell seedswolfsbane seedswormwood
-        seepingshoes shelfcompass silversword snowdoubleslab snowslab spectralstone stew stewraw sungrenade sympathetic_vial
+        seepingshoes shelfcompass silversword silveraxe silverpickaxe silvershovel silverhoe silverhelm silverchestplate
+        silverleggings silverboots wedding_ring snowdoubleslab snowslab spectralstone stew stewraw sungrenade sympathetic_vial
         vampirebook vampireboots vampirechaincoat vampirechaincoat_female vampirecoat vampirecoat_female vampirehat
         vampirehelmet vampirelegs vampirelegs_kilt arcane_focus witchhat witchrobe hexwooddoubleslab hexwoodslab wolftoken
-        rawSilver silverIngot rawDelvealloy ruby_slippers hellhound_head twisting_band
+        rawSilver silverIngot silverNugget rawDelvealloy ruby_slippers hellhound_head twisting_band universal_antidote
+        dream_weaver_fasting dream_weaver_fleet_foot dream_weaver_intensity dream_weaver_iron_arm dream_weaver_nightmares
         """);
 
     public static final List<String> BREWS = BrewFactory.ids();
@@ -77,7 +79,7 @@ public final class ContentCatalog {
     );
 
     public static final Set<String> NON_SOLID = Set.of(
-        "barrier", "bloodrose", "bramble", "brewgas", "brewliquid", "erosionbrew", "circle", "circleglyphinfernal",
+        "barrier", "bloodrose", "bramble", "brewgas", "brewliquid", "erosionbrew", "circle", "circleglyphgolden", "circleglyphinfernal",
         "circleglyph_veil", "circleglyphritual", "crittersnare", "disease", "embermoss", "force",
         "glintweed", "grassper", "leapinglily", "light", "placeditem", "plantmine", "somniancotton",
         "spanishmoss", "spiritflowing", "spiritportal", "abyssal_portal", "vine", "wallgen"

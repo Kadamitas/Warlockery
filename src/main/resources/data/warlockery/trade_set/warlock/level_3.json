@@ -1,0 +1,8 @@
+{
+  "amount": 2,
+  "random_sequence": "warlockery:trade_set/warlock/level_3",
+  "trades": [
+    "warlockery:warlock/3/wormwood_seeds_for_emerald",
+    "warlockery:warlock/3/emeralds_for_night_brew"
+  ]
+}

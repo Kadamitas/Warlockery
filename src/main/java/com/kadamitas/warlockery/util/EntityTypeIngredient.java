@@ -8,14 +8,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
-public record EntityTypeIngredient(String value, Identifier id, boolean tag) {
+public record EntityTypeIngredient(String value, Identifier id, boolean tag) implements RegistryIngredient {
     public static Optional<EntityTypeIngredient> parse(final String value) {
-        if (value == null || value.isBlank()) {
-            return Optional.empty();
-        }
-        final boolean tag = value.startsWith("#");
-        final Identifier id = Identifier.tryParse(tag ? value.substring(1) : value);
-        return id == null ? Optional.empty() : Optional.of(new EntityTypeIngredient(value, id, tag));
+        return RegistryIngredient.parse(value, EntityTypeIngredient::new);
     }
 
     public boolean matches(final Entity entity) {
@@ -27,6 +22,6 @@ public record EntityTypeIngredient(String value, Identifier id, boolean tag) {
     }
 
     public boolean isResolvable() {
-        return tag || BuiltInRegistries.ENTITY_TYPE.containsKey(id);
+        return isResolvableIn(BuiltInRegistries.ENTITY_TYPE);
     }
 }

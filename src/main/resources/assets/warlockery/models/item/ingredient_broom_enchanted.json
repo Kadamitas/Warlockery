@@ -1,6 +1,128 @@
 {
-    "parent":  "minecraft:item/generated",
-    "textures":  {
-                     "layer0":  "warlockery:item/ingredient_broom_enchanted"
-                 }
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "gui_light": "front",
+  "textures": {
+    "particle": "minecraft:block/hay_block_side",
+    "handle": "minecraft:block/stripped_spruce_log",
+    "binding": "minecraft:block/copper_block",
+    "bristles": "minecraft:block/hay_block_side"
+  },
+  "display": {
+    "gui": {
+      "rotation": [24, 138, 72],
+      "translation": [0, -1, 0],
+      "scale": [0.52, 0.52, 0.52]
+    },
+    "ground": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.75, 0.75, 0.75]
+    },
+    "fixed": {
+      "rotation": [0, 90, -30],
+      "translation": [0, 0, 0],
+      "scale": [0.55, 0.55, 0.55]
+    },
+    "thirdperson_righthand": {
+      "rotation": [0, 90, 55],
+      "translation": [0, 2, 1],
+      "scale": [0.52, 0.52, 0.52]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [0, -90, -55],
+      "translation": [0, 2, 1],
+      "scale": [0.52, 0.52, 0.52]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, 90, 62],
+      "translation": [1, 2, 0],
+      "scale": [0.62, 0.62, 0.62]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, -90, -62],
+      "translation": [1, 2, 0],
+      "scale": [0.62, 0.62, 0.62]
+    }
+  },
+  "elements": [
+    {
+      "name": "handle",
+      "from": [7.25, 7.25, -6],
+      "to": [8.75, 8.75, 14],
+      "faces": {
+        "down": { "texture": "#handle" },
+        "up": { "texture": "#handle" },
+        "north": { "texture": "#handle" },
+        "south": { "texture": "#handle" },
+        "west": { "texture": "#handle" },
+        "east": { "texture": "#handle" }
+      }
+    },
+    {
+      "name": "collar",
+      "from": [6.5, 6.5, 13],
+      "to": [9.5, 9.5, 16],
+      "faces": {
+        "down": { "texture": "#binding" },
+        "up": { "texture": "#binding" },
+        "north": { "texture": "#binding" },
+        "south": { "texture": "#binding" },
+        "west": { "texture": "#binding" },
+        "east": { "texture": "#binding" }
+      }
+    },
+    {
+      "name": "bristle_core",
+      "from": [4, 5.75, 16],
+      "to": [12, 10.25, 25],
+      "faces": {
+        "down": { "texture": "#bristles" },
+        "up": { "texture": "#bristles" },
+        "north": { "texture": "#bristles" },
+        "south": { "texture": "#bristles" },
+        "west": { "texture": "#bristles" },
+        "east": { "texture": "#bristles" }
+      }
+    },
+    {
+      "name": "bristle_left",
+      "from": [2.5, 6.25, 17],
+      "to": [5, 9.75, 24],
+      "faces": {
+        "down": { "texture": "#bristles" },
+        "up": { "texture": "#bristles" },
+        "north": { "texture": "#bristles" },
+        "south": { "texture": "#bristles" },
+        "west": { "texture": "#bristles" },
+        "east": { "texture": "#bristles" }
+      }
+    },
+    {
+      "name": "bristle_right",
+      "from": [11, 6.25, 17],
+      "to": [13.5, 9.75, 24],
+      "faces": {
+        "down": { "texture": "#bristles" },
+        "up": { "texture": "#bristles" },
+        "north": { "texture": "#bristles" },
+        "south": { "texture": "#bristles" },
+        "west": { "texture": "#bristles" },
+        "east": { "texture": "#bristles" }
+      }
+    },
+    {
+      "name": "bristle_tip",
+      "from": [4.75, 6.25, 25],
+      "to": [11.25, 9.75, 29],
+      "faces": {
+        "down": { "texture": "#bristles" },
+        "up": { "texture": "#bristles" },
+        "north": { "texture": "#bristles" },
+        "south": { "texture": "#bristles" },
+        "west": { "texture": "#bristles" },
+        "east": { "texture": "#bristles" }
+      }
+    }
+  ]
 }

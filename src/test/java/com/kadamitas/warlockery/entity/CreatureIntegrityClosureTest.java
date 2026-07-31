@@ -171,7 +171,7 @@ final class CreatureIntegrityClosureTest {
     }
 
     private static void forgewardenFailure() {
-        assertFalse(KoboldBossRules.isBoss(CreatureKind.HOBGOBLIN));
+        assertFalse(GoblinBossRules.isBoss(CreatureKind.HOBGOBLIN));
     }
 
     private static void forgewardenState() {
@@ -179,21 +179,21 @@ final class CreatureIntegrityClosureTest {
     }
 
     private static void forgewardenSuccess() {
-        final KoboldBossRules.CombatProfile combat = KoboldBossRules.combatProfile(CreatureKind.FORGEWARDEN).orElseThrow();
+        final GoblinBossRules.CombatProfile combat = GoblinBossRules.combatProfile(CreatureKind.FORGEWARDEN).orElseThrow();
         assertTrue(combat.health() >= 100.0);
         assertTrue(combat.attack() >= 11.0);
     }
 
     private static void stonebrokerFailure() {
-        assertTrue(KoboldBossRules.combatProfile(CreatureKind.CAT).isEmpty());
+        assertTrue(GoblinBossRules.combatProfile(CreatureKind.CAT).isEmpty());
     }
 
     private static void stonebrokerState() {
-        assertTrue(profile(CreatureKind.STONEBROKER).has(Feature.KOBOLD_AURA));
+        assertTrue(profile(CreatureKind.STONEBROKER).has(Feature.GOBLIN_AURA));
     }
 
     private static void stonebrokerSuccess() {
-        final KoboldBossRules.CombatProfile combat = KoboldBossRules.combatProfile(CreatureKind.STONEBROKER).orElseThrow();
+        final GoblinBossRules.CombatProfile combat = GoblinBossRules.combatProfile(CreatureKind.STONEBROKER).orElseThrow();
         assertTrue(combat.health() >= 80.0);
         assertTrue(combat.attack() >= 9.0);
     }

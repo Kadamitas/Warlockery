@@ -4,7 +4,7 @@
 
 Warlockery is a standalone ritual magic mod by Kadamitas for Minecraft 26.2 and NeoForge 26.2.0.37-beta or newer.
 
-It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, kobold village enclaves, silver hunting equipment, and Netherite-tier Koboldite gear.
+It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, goblin village enclaves, silver hunting equipment, and Netherite-tier Goblinite gear.
 
 ## Installation
 

@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": ["warlockery:dreamcatcher", "minecraft:glowstone_dust"],
+  "result": { "id": "warlockery:dream_weaver_intensity" }
+}

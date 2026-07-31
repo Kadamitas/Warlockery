@@ -54,7 +54,7 @@ public final class CreatureBehaviorTags {
 
     public static final class EntityTypes {
         public static final TagKey<EntityType<?>> FAMILIARS = create("creature_families/familiars");
-        public static final TagKey<EntityType<?>> KOBOLDS = create("creature_families/kobolds");
+        public static final TagKey<EntityType<?>> GOBLINS = create("creature_families/goblins");
         public static final TagKey<EntityType<?>> CAULDRON_RANGE_EXTENDERS = create("creature_families/cauldron_range_extenders");
 
         private EntityTypes() {

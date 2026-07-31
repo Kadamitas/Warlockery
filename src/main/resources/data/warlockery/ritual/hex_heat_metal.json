@@ -1,0 +1,21 @@
+{
+  "title": "ritual.warlockery.hex_heat_metal.title",
+  "description": "ritual.warlockery.hex_heat_metal.description",
+  "action": "hex",
+  "power": 2800,
+  "radius": 6,
+  "duration": 2147483647,
+  "casting_time": 120,
+  "glyphs": {
+    "circleglyphritual": 16,
+    "circleglyphinfernal": 20
+  },
+  "requirements": {
+    "ingredients": [
+      {"ingredient": "warlockery:sympathetic_vial", "count": 1, "consume": false},
+      {"ingredient": "warlockery:ingredient_silverdust", "count": 1, "consume": true},
+      {"ingredient": "minecraft:blaze_powder", "count": 3, "consume": true}
+    ]
+  },
+  "target": "heat_metal"
+}

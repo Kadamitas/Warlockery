@@ -9,12 +9,18 @@ public final class AdvancedMutationLayout {
     public static final int MIN_DISTANCE = 1;
     public static final int MAX_DISTANCE = 3;
     public static final int ENTITY_RADIUS = 4;
+    private static final List<Direction> CARDINAL_DIRECTIONS = List.of(
+        Direction.NORTH,
+        Direction.EAST,
+        Direction.SOUTH,
+        Direction.WEST
+    );
 
     private AdvancedMutationLayout() {
     }
 
     public static List<List<BlockPos>> cardinalRays(final BlockPos center) {
-        return Direction.Plane.HORIZONTAL.stream()
+        return CARDINAL_DIRECTIONS.stream()
             .map(direction -> IntStream.rangeClosed(MIN_DISTANCE, MAX_DISTANCE)
                 .mapToObj(distance -> center.relative(direction, distance))
                 .toList())

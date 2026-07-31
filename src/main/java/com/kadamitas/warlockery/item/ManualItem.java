@@ -29,7 +29,7 @@ public final class ManualItem extends Item {
     public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
         final ItemStack heldStack = player.getItemInHand(hand);
         if (ManualProgress.isTornPage(profile)) {
-            return useImmortalPage(level, player, heldStack);
+            return useImmortalPage(level, player, heldStack, profile);
         }
         final boolean createsBiomeNote = "bookbiomes2".equals(profile.id()) && player.isShiftKeyDown();
         if (!createsBiomeNote) {
@@ -75,7 +75,8 @@ public final class ManualItem extends Item {
     private static InteractionResult useImmortalPage(
         final Level level,
         final Player player,
-        final ItemStack page
+        final ItemStack page,
+        final ManualProfile pageProfile
     ) {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
@@ -88,7 +89,13 @@ public final class ManualItem extends Item {
         }
         final ItemStack book = observations.orElseThrow();
         final ManualProfile bookProfile = ((ManualItem) book.getItem()).profile();
-        final ManualProgress.RevealResult result = ManualProgress.revealNext(bookProfile, book);
+        final ManualProgress.RevealResult result = ManualProgress.insertTornPage(
+            bookProfile,
+            book,
+            pageProfile,
+            page,
+            player.hasInfiniteMaterials()
+        );
         if (result.status() == ManualProgress.RevealStatus.COMPLETE) {
             player.sendOverlayMessage(Component.translatable("message.warlockery.immortal_page.complete")
                 .withStyle(ChatFormatting.YELLOW));
@@ -96,9 +103,6 @@ public final class ManualItem extends Item {
         }
         if (result.status() != ManualProgress.RevealStatus.REVEALED) {
             return InteractionResult.FAIL;
-        }
-        if (!player.hasInfiniteMaterials()) {
-            page.shrink(1);
         }
         final String revealedSection = result.section().orElseThrow();
         player.sendOverlayMessage(Component.translatable(

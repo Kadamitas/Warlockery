@@ -6,6 +6,10 @@ Warlockery combines data-driven circle rites, ritual machines, custom brewing, s
 
 Draw the required chalk circles, provide a powered altar, and place the ingredients near the center. Use the center to open the ritual browser. Select a ritual to see each required glyph, ingredient, nearby entity sacrifice, structure part, and environmental condition. Activation is available when every line is complete and the green check is visible.
 
+Golden Chalk normally places the single heart that opens a ritual. Crouch while placing it to draw golden ring marks for rites such as handfasting without creating extra ritual centers.
+
+A hollow 3 by 3 ring of eight Ritual Chalk marks acts as a Listening Ring. Leave an Attuned Stone or Subdued Spirit in its empty center for three seconds to reveal the direction and distance to the nearest village in the Overworld or Nether fortress in the Nether.
+
 ## Ritual catalog
 
 - **Anguish of the Dead**: Scours nearby undead with magic and leaves them weak and slow.
@@ -49,6 +53,7 @@ Draw the required chalk circles, provide a powered altar, and place the ingredie
 - **Hex of Misfortune**: Hexes the imprint-bound being with persistent bad luck.
 - **Hex of Waking Nightmare**: Haunts the imprint-bound being with darkness and hunger.
 - **Hex of Overheating**: Causes the imprint-bound being to burn with infernal fever.
+- **Heat Metal Hex**: Makes carried iron, gold, chain, and silver burn the imprint-bound victim until death or a bound Hex Guard Doll spends durability to break it.
 - **Hex of Sinking**: Burdens the imprint-bound being with crushing supernatural weight.
 - **Hex of the Wolf**: Bestows lycanthropy on the imprint-bound mortal under a full moon with a full coven.
 - **Portable Rite of Total Eclipse**: Holds the server clock at night for a bounded duration from a circle talisman.
@@ -77,6 +82,8 @@ Draw the required chalk circles, provide a powered altar, and place the ingredie
 - **Rite of Infusion: Light**: Infuses those in the circle with radiant sight.
 - **Rite of Infusion: Sky**: Infuses those in the circle with the grace of flight.
 - **Rite of Manifestation**: Temporarily manifests spirit walkers as visible, mobile ghosts.
+- **Rite of Handfasting**: Binds two players or a player and Naamah with golden chalk, two rings, and offerings that grant shared proximity benefits.
+- **Rite of Severance**: Ends the caster's current marriage and releases a demon spouse from her vow.
 - **Rite of Nature's Power**: Restores life and strength across a barren area.
 - **Rite of Necromancy: Necromantic Stone**: Creates a Necromantic Stone under the night sky.
 - **Rite of Broken Earth**: Tears open the earth around the ritual focus.
@@ -90,7 +97,7 @@ Draw the required chalk circles, provide a powered altar, and place the ingredie
 - **Greater Rite of Sky's Wrath**: Calls an extended thunderstorm over the world.
 - **Portable Rite of Sky's Wrath**: Calls a focused thunderstorm from a circle talisman.
 - **Rite of Sky's Wrath**: Calls a violent thunderstorm over the area.
-- **Audience of the Crimson Matriarch**: Summons the Crimson Matriarch, whose dropped blood must be offered to a Matriarch for vampire initiation.
+- **Audience of Naamah**: Summons Naamah, whose dropped blood must be offered to her for vampire initiation.
 - **Rite of Summoning: Demon**: Calls a Warlockery demon from the infernal realm.
 - **Rite of Summoning: Familiar**: Summons a cat familiar to aid the warlock.
 - **Rite of Summoning: Imp**: Calls a flame imp that can be bound through infernal contracts.
@@ -102,8 +109,8 @@ Draw the required chalk circles, provide a powered altar, and place the ingredie
 - **Rite of Summoning: Wither**: Calls forth a Wither and requires a clear inner circle.
 - **Rite of Calling: Lost Soul**: Calls a Lost Soul that can be bound with a tagged spirit vessel.
 - **Rite of Infestation: Parasytic Louse**: Calls a louse that can store and redirect potion effects.
-- **Rite of Challenge: Forgewarden**: Calls a combat-ready kobold patron that strengthens nearby kobolds.
-- **Rite of Challenge: Stonebroker**: Calls an armored kobold patron for combat, worship, and blessings.
+- **Rite of Challenge: Forgewarden**: Calls a combat-ready goblin patron that strengthens nearby goblins.
+- **Rite of Challenge: Stonebroker**: Calls an armored goblin patron for combat, worship, and blessings.
 - **Rite of the Bloodied Effigy**: Consumes four bloodied wicker bundles at the cardinal points to summon the Thorned Pursuer.
 - **Rite of Transposition: Creature**: Summons the creature or player identified by a bound sympathetic imprint.
 - **Rite of Transposition: Waystone**: Teleports the caster to a bound waystone in the same dimension.
@@ -119,7 +126,7 @@ Draw the required chalk circles, provide a powered altar, and place the ingredie
 - **Fire Guard Doll**: Spends durability to prevent lethal fire or lava damage, clears fire, grants Fire Resistance, and searches for safe footing after a lava activation.
 - **Tool Mending Doll**: Spends one point of its durability to repair two durability on a damaged held tool.
 - **Death Guard Doll**: Spends durability to prevent an otherwise lethal hit and applies the vanilla Totem recovery effects without the Totem screen animation.
-- **Hex Guard Doll**: Spends durability to block hostile circle hexes aimed at its bound target.
+- **Hex Guard Doll**: Spends durability to block hostile circle hexes, including Heat Metal, aimed at its bound target.
 - **Hexing Doll**: Cycles through prick, shove, ignite, and drown actions against an available bound target.
 - **Blood Link Doll**: Spends durability to transfer half of the holder's incoming damage to an available bound target.
 - **Doll Guard**: Spends durability to block attempts to corrupt the bound target's protective dolls.
@@ -154,15 +161,15 @@ Right-clicking air binds an eligible protection, mending, or guard doll to the u
 - **Distillery**: Refines tagged ingredients and fluids into advanced magical reagents.
 - **Spinning Wheel**: Converts fibers and magical materials into thread, cloth, and woven components.
 - **Brazier**: Burns configured reagents to produce bounded magical effects.
-- **Silver Vat**: Processes compatible fluids and silver materials while exposing NeoForge item and fluid automation.
+- **Silver Vat**: Collects Silver Deposits whenever an adjacent furnace smelts a common-tagged gold ore, supports several vats and furnaces at once, and exposes its inventory and fluid tank through NeoForge automation.
 
 ### Travel, divination, and summoning
 
 - **Broom**: Clears tagged chalk glyphs and serves as the base for enchanted flight.
-- **Enchanted Broom**: Provides controlled flight and supports glyph-based travel behavior.
+- **Enchanted Broom**: Uses forward thrust with aim-based steering and offers a graceful glide control for descending safely.
 - **Flying Ointment**: Supplies the ritual component needed to create and enhance enchanted brooms.
 - **Crystal Ball**: Reports weather, moon, progression, and bound-waystone information.
-- **Seer Stone**: Provides portable supernatural and progression diagnostics.
+- **Seer Stone**: Provides portable supernatural and progression diagnostics, and calls the owner's loaded recruited Circle Mages when used on a golden circle center.
 - **Spectral Stone**: Stores captured spectral creatures for binding and necromancy rites.
 - **Necromantic Stone**: Commands tagged undead and supports advanced necromantic interactions.
 - **Infernal Mirror**: Holds an Echo Shade and releases it through its summoning rite.
@@ -177,7 +184,8 @@ Right-clicking air binds an eligible protection, mending, or guard doll to the u
 - **Anti-Magic Bolts**: Disrupt magical protections on struck targets.
 - **Holy Bolts**: Deal increased damage to tagged demons and undead creatures.
 - **Stake Bolts**: Exploit vampire and wooden-weapon vulnerabilities.
-- **Koboldite Equipment**: Provides a complete Netherite-tier tool and armor family with fire resistance and common-tag repair materials.
+- **Goblinite Equipment**: Provides a complete Netherite-tier tool and armor family with fire resistance and common-tag repair materials.
+- **Silver Equipment**: Provides a complete repairable tool and armor family whose armor retaliates against attacking werewolves.
 - **Werewolf Hunter Equipment**: Protects hunters from supernatural targets and supports silver ranged combat.
 - **Ice Slippers**: Use modern Frost Walker behavior to create temporary ice while travelling over water.
 - **Sun Grenade**: Releases stored sunlight against vampires and other tagged sunlight-vulnerable creatures.
@@ -194,17 +202,26 @@ Right-clicking air binds an eligible protection, mending, or guard doll to the u
 - **Player Compass**: Tracks the player recorded by its sympathetic binding, including across dimensions.
 - **Shelf Compass**: Locates the nearest compatible doll shelf.
 - **Warlockery Manuals**: Open a searchable manual library with clickable book and chapter navigation.
+- **Wedding Rings**: Are offered as a pair during handfasting and receive the names of the newly bound spouses.
 
 ## Other ritual-like interactions
 
-- **Vampire initiation**: Complete Audience of the Crimson Matriarch during a full moon, defeat the Matriarch, then offer the dropped Matriarch's Blood to a Crimson Matriarch.
+- **Vampire initiation**: Bring an unmarried Nami into the Blood Audience during a full moon, witness her become Naamah, defeat Naamah, then offer the dropped Matriarch's Blood to her.
 - **Vampire cure**: Bind a sympathetic imprint to the vampire and complete Rite of Hexbreaking: Vampirism.
 - **Werewolf capture**: Arm a Silver Werewolf Trap beside a Wolf Altar, keep an adult sheep within eight blocks, and wait for a full-moon night until the trap display shows a green check.
 - **Werewolf initiation**: Complete Hex of the Wolf on a bound mortal during its listed moon and coven conditions.
 - **Wolf Altar progression**: Complete full-moon Wolf Altar trials with the required head and offering; reaching level ten awards the Horn of the Hunt.
 - **Werewolf cure**: Bind a sympathetic imprint to the werewolf and complete Rite of Hexbreaking: Lycanthropy.
+- **Marriage**: Stand with another unmarried player or Naamah inside the prepared golden circle and complete the Rite of Handfasting.
+- **Naamah marriage**: A married Naamah claims one of fifteen world-unique demon names, follows her spouse, casts harmless-to-terrain combat magic, and returns to the spouse's bed at one health when defeated.
+- **Divorce**: Offer a wedding ring, shears, and Foul Fume to the Rite of Severance to clear the only active marriage bond.
 - **Hexing link**: Bind a Hexing Doll to a target, sneak-use it to select an action, then use it to apply that action while the target is available.
 - **Sympathetic targeting**: Use a Sympathetic Vial on a creature, then place the bound vial where a ritual asks for an imprint.
 - **Machine processing**: Insert ingredients into a cauldron or ritual machine and read its floating display for missing inputs, wrong items, heat, fuel, output capacity, and progress.
 - **Soul of Torment**: Use the Abyssal Regent's soul on a non-player target to banish it into the generated Abyss dimension.
 - **Infernal Animus**: Use the crafted animus on a tagged demon to bind it to the player's combat commands.
+
+## Goblins and hobgoblins
+
+- **Goblins**: Spawn rarely in wooded biomes, hunt ordinary villagers, and leave friendly hobgoblins and their travelling trade role alone.
+- **Hobgoblins**: Travel peacefully, receive a miner, smith, shaman, or prospector profession when they appear, and trade or work for players without attacking villagers.

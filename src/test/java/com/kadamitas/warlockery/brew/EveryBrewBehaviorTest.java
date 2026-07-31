@@ -34,6 +34,9 @@ final class EveryBrewBehaviorTest {
     }
 
     private static void builtInCoverage(final BrewBehavior behavior) {
-        assertTrue(BrewKind.builtIns().stream().anyMatch(kind -> kind.behaviors().contains(behavior)));
+        assertTrue(
+            BrewKind.builtIns().stream().anyMatch(kind -> kind.behaviors().contains(behavior)),
+            () -> "No built-in brew exercises " + behavior.id()
+        );
     }
 }

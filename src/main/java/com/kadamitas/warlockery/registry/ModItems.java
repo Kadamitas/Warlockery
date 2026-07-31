@@ -2,25 +2,35 @@ package com.kadamitas.warlockery.registry;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.brew.BrewFactory;
+import com.kadamitas.warlockery.block.ConnectedGlyphBlock;
+import com.kadamitas.warlockery.block.DreamWeaverBlock;
+import com.kadamitas.warlockery.block.DreamWeaverMode;
 import com.kadamitas.warlockery.item.VerdantCatalystItem;
+import com.kadamitas.warlockery.item.CaneSwordItem;
 import com.kadamitas.warlockery.item.ChalkItem;
 import com.kadamitas.warlockery.item.DollFactory;
 import com.kadamitas.warlockery.item.DollKind;
-import com.kadamitas.warlockery.item.KobolditeEquipmentFactory;
+import com.kadamitas.warlockery.item.GobliniteEquipmentFactory;
+import com.kadamitas.warlockery.item.SilverEquipmentFactory;
+import com.kadamitas.warlockery.item.WeddingRingItem;
 import com.kadamitas.warlockery.item.UtilityItemFactory;
 import com.kadamitas.warlockery.item.SympatheticVialItem;
-import com.kadamitas.warlockery.item.TransformationItem;
 import com.kadamitas.warlockery.item.ArcaneFocusItem;
 import com.kadamitas.warlockery.item.ResourceUtilityItemFactory;
 import com.kadamitas.warlockery.item.UtilityDeviceItemFactory;
 import com.kadamitas.warlockery.item.InfusedBrewItem;
+import com.kadamitas.warlockery.item.MoonCharmItem;
+import com.kadamitas.warlockery.item.ParasyticLouseItem;
+import com.kadamitas.warlockery.item.SplittingBoltItem;
 import com.kadamitas.warlockery.magic.MagicPath;
-import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -37,6 +47,7 @@ import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -58,7 +69,8 @@ public final class ModItems {
     private static final Set<String> SINGLE_STACK_ITEMS = Set.of(
         "ritual_knife", "boline", "canesword", "coffin", "deathscowl", "deathshand", "divinerlava", "divinerwater",
         "replication_staff", "hornofthehunt", "thorn_spear", "delvealloypickaxe", "mirror", "mysticbranch",
-        "playercompass", "stonebrokers_quiver", "shelfcompass", "silversword", "sympathetic_vial", "arcane_focus"
+        "playercompass", "stonebrokers_quiver", "shelfcompass", "silversword", "sympathetic_vial", "arcane_focus",
+        "louse"
     );
     private static final Map<String, String> SEED_TO_CROP = Map.of(
         "garlic", "garlicplant",
@@ -70,12 +82,70 @@ public final class ModItems {
         "seedswolfsbane", "wolfsbane",
         "seedswormwood", "wormwood"
     );
+    private static final Map<String, DreamWeaverMode> DREAM_WEAVER_MODES = DreamWeaverMode.VALUES.stream()
+        .collect(java.util.stream.Collectors.toUnmodifiableMap(DreamWeaverMode::itemId, mode -> mode));
+    private static final Map<String, String> CHALK_GLYPHS = Map.of(
+        "chalkinfernal", "circleglyphinfernal",
+        "chalk_veil", "circleglyph_veil",
+        "chalkritual", "circleglyphritual"
+    );
+    private static final Set<String> ARROW_IDS = Set.of(
+        "ingredient_bolt_anti_magic",
+        "ingredient_bolt_holy",
+        "ingredient_bolt_silver",
+        "ingredient_bolt_stake"
+    );
+    private static final List<ItemFactoryRule> CATALOG_FACTORY_RULES = List.of(
+        ItemFactoryRule.exact("seedsdreamroot", (id, properties) ->
+            ResourceUtilityItemFactory.create(properties, id)),
+        new ItemFactoryRule(SEED_TO_CROP::containsKey, (id, properties) ->
+            new BlockItem(ModBlocks.ALL.get(SEED_TO_CROP.get(id)).get(), properties)),
+        ItemFactoryRule.exact("sympathetic_vial", (_, properties) -> new SympatheticVialItem(properties)),
+        ItemFactoryRule.exact("arcane_focus", (_, properties) -> new ArcaneFocusItem(properties)),
+        new ItemFactoryRule(DREAM_WEAVER_MODES::containsKey, ModItems::createDreamWeaver),
+        ItemFactoryRule.exact("louse", (_, properties) -> new ParasyticLouseItem(properties)),
+        new ItemFactoryRule(DollFactory::supports, (id, properties) -> DollFactory.create(properties, id)),
+        new ItemFactoryRule(GobliniteEquipmentFactory::supports, (id, properties) ->
+            GobliniteEquipmentFactory.create(properties, id)),
+        new ItemFactoryRule(SilverEquipmentFactory::supports, (id, properties) ->
+            SilverEquipmentFactory.create(properties, id)),
+        ItemFactoryRule.exact("wedding_ring", (_, properties) -> new WeddingRingItem(properties)),
+        new ItemFactoryRule(ResourceUtilityItemFactory::supports, (id, properties) ->
+            ResourceUtilityItemFactory.create(properties, id)),
+        new ItemFactoryRule(UtilityItemFactory::supports, (id, properties) ->
+            UtilityItemFactory.create(properties, id)),
+        new ItemFactoryRule(id -> id.startsWith("chalk"), ModItems::createChalk),
+        ItemFactoryRule.exact("mooncharm", (_, properties) -> new MoonCharmItem(properties))
+    );
+    private static final List<ItemFactoryRule> INGREDIENT_FACTORY_RULES = List.of(
+        ItemFactoryRule.exact("ingredient_brew_soaring", (_, properties) -> new Item(properties)),
+        new ItemFactoryRule(BrewFactory::supportsLegacy, (id, properties) -> BrewFactory.createLegacy(properties, id)),
+        new ItemFactoryRule(UtilityDeviceItemFactory::supports, (id, properties) ->
+            UtilityDeviceItemFactory.create(properties, id)),
+        new ItemFactoryRule(ResourceUtilityItemFactory::supports, (id, properties) ->
+            ResourceUtilityItemFactory.create(properties, id)),
+        new ItemFactoryRule(UtilityItemFactory::supports, (id, properties) ->
+            UtilityItemFactory.create(properties, id)),
+        new ItemFactoryRule(
+            id -> Set.of("ingredient_verdant_catalyst", "ingredient_verdant_catalyst_prime").contains(id),
+            (id, properties) -> new VerdantCatalystItem(properties, id.endsWith("_prime"))
+        ),
+        ItemFactoryRule.exact("ingredient_matriarchs_blood", (_, properties) -> new Item(properties)),
+        ItemFactoryRule.exact("ingredient_brew_grave", (_, properties) -> new InfusedBrewItem(
+            properties,
+            MagicPath.GRAVE,
+            InfusedBrewItem.GRAVE_DURATION
+        )),
+        ItemFactoryRule.exact("ingredient_bolt_splitting", (_, properties) -> new SplittingBoltItem(properties))
+    );
 
     public static final Map<String, DeferredHolder<Item, ? extends Item>> ALL;
 
     static {
         ModBlocks.ALL.forEach((id, block) -> {
-            if (!ContentCatalog.CROPS.contains(id) && !UtilityDeviceItemFactory.isInternalBlock(id)) {
+            if (!ContentCatalog.CROPS.contains(id)
+                && !ConnectedGlyphBlock.supports(id)
+                && !UtilityDeviceItemFactory.isInternalBlock(id)) {
                 register(id, () -> new BlockItem(block.get(), properties(id)));
             }
         });
@@ -83,77 +153,64 @@ public final class ModItems {
         ContentCatalog.ITEMS.stream()
             .map(ContentCatalog::modernize)
             .filter(id -> !MUTABLE_ITEMS.containsKey(id))
-            .forEach(id -> {
-                final String cropId = SEED_TO_CROP.get(id);
-                if ("seedsdreamroot".equals(id)) {
-                    register(id, () -> ResourceUtilityItemFactory.create(properties(id), id));
-                } else if (cropId != null) {
-                    register(id, () -> new BlockItem(ModBlocks.ALL.get(cropId).get(), properties(id)));
-                } else if ("sympathetic_vial".equals(id)) {
-                    register(id, () -> new SympatheticVialItem(properties(id)));
-                } else if ("arcane_focus".equals(id)) {
-                    register(id, () -> new ArcaneFocusItem(properties(id)));
-                } else if (DollFactory.supports(id)) {
-                    register(id, () -> DollFactory.create(properties(id), id));
-                } else if (KobolditeEquipmentFactory.supports(id)) {
-                    register(id, () -> KobolditeEquipmentFactory.create(properties(id), id));
-                } else if (ResourceUtilityItemFactory.supports(id)) {
-                    register(id, () -> ResourceUtilityItemFactory.create(properties(id), id));
-                } else if (UtilityItemFactory.supports(id)) {
-                    register(id, () -> UtilityItemFactory.create(properties(id), id));
-                } else if (id.startsWith("chalk")) {
-                    final String glyphId = switch (id) {
-                        case "chalkinfernal" -> "circleglyphinfernal";
-                        case "chalk_veil" -> "circleglyph_veil";
-                        case "chalkritual" -> "circleglyphritual";
-                        default -> "circle";
-                    };
-                    register(id, () -> new ChalkItem(properties(id).durability(64), ModBlocks.ALL.get(glyphId)));
-                } else if ("mooncharm".equals(id) || "wolftoken".equals(id)) {
-                    register(id, () -> new TransformationItem(properties(id), SupernaturalForm.WEREWOLF, true, false));
-                } else {
-                    register(id, () -> new Item(properties(id)));
-                }
-            });
+            .forEach(id -> register(id, () -> createCatalogItem(id)));
 
         ContentCatalog.INGREDIENTS.forEach(catalogName -> {
             final String id = ContentCatalog.ingredientId(catalogName);
-            if ("ingredient_brew_soaring".equals(id)) {
-                register(id, () -> new Item(properties(id)));
-            } else if (BrewFactory.supportsLegacy(id)) {
-                register(id, () -> BrewFactory.createLegacy(properties(id), id));
-            } else if (UtilityDeviceItemFactory.supports(id)) {
-                register(id, () -> UtilityDeviceItemFactory.create(properties(id), id));
-            } else if (ResourceUtilityItemFactory.supports(id)) {
-                register(id, () -> ResourceUtilityItemFactory.create(properties(id), id));
-            } else if (UtilityItemFactory.supports(id)) {
-                register(id, () -> UtilityItemFactory.create(properties(id), id));
-            } else if ("ingredient_verdant_catalyst".equals(id) || "ingredient_verdant_catalyst_prime".equals(id)) {
-                register(id, () -> new VerdantCatalystItem(properties(id)));
-            } else if ("ingredient_matriarchs_blood".equals(id)) {
-                register(id, () -> new Item(properties(id)));
-            } else if ("ingredient_purified_milk".equals(id)) {
-                register(id, () -> new TransformationItem(properties(id), SupernaturalForm.NONE, false, true));
-            } else if ("ingredient_brew_grave".equals(id)) {
-                register(id, () -> new InfusedBrewItem(
-                    properties(id),
-                    MagicPath.GRAVE,
-                    InfusedBrewItem.GRAVE_DURATION
-                ));
-            } else if (Set.of(
-                "ingredient_bolt_anti_magic", "ingredient_bolt_holy", "ingredient_bolt_silver",
-                "ingredient_bolt_splitting", "ingredient_bolt_stake"
-            ).contains(id)) {
-                register(id, () -> new ArrowItem(properties(id)));
-            } else {
-                register(id, () -> new Item(properties(id)));
-            }
+            register(id, () -> createIngredient(id));
         });
         ContentCatalog.BREWS.forEach(id -> register(id, () -> BrewFactory.create(properties(id), id)));
         ALL = Collections.unmodifiableMap(MUTABLE_ITEMS);
     }
 
     private ModItems() {
+    }
+
+    private static Item createCatalogItem(final String id) {
+        if ("canesword".equals(id)) {
+            return new CaneSwordItem(properties(id));
+        }
+        final Item.Properties properties = properties(id);
+        return resolve(CATALOG_FACTORY_RULES, id, properties).orElseGet(() -> new Item(properties));
+    }
+
+    private static Item createIngredient(final String id) {
+        if (ARROW_IDS.contains(id)) {
+            return new ArrowItem(properties(id));
+        }
+        final Item.Properties properties = properties(id);
+        return resolve(INGREDIENT_FACTORY_RULES, id, properties).orElseGet(() -> new Item(properties));
+    }
+
+    private static Item createDreamWeaver(final String id, final Item.Properties properties) {
+        return new BlockItem(
+            ModBlocks.ALL.get("dreamcatcher").get(),
+            properties.component(
+                DataComponents.BLOCK_STATE,
+                BlockItemStateProperties.EMPTY.with(DreamWeaverBlock.MODE, DREAM_WEAVER_MODES.get(id))
+            )
+        );
+    }
+
+    private static Item createChalk(final String id, final Item.Properties properties) {
+        if ("chalkheart".equals(id)) {
+            return new ChalkItem(properties.durability(64), context ->
+                ModBlocks.ALL.get(context.isSecondaryUseActive() ? "circleglyphgolden" : "circle").get());
+        }
+        final String glyphId = Optional.ofNullable(CHALK_GLYPHS.get(id))
+            .orElseThrow(() -> new IllegalArgumentException("Unknown chalk item: " + id));
+        return new ChalkItem(properties.durability(64), ModBlocks.ALL.get(glyphId));
+    }
+
+    private static Optional<Item> resolve(
+        final List<ItemFactoryRule> rules,
+        final String id,
+        final Item.Properties properties
+    ) {
+        return rules.stream()
+            .filter(rule -> rule.supports(id))
+            .findFirst()
+            .map(rule -> rule.create(id, properties));
     }
 
     private static void register(final String id, final java.util.function.Supplier<? extends Item> factory) {
@@ -187,12 +244,12 @@ public final class ModItems {
     }
 
     private static Item.Properties applyEquipmentProperties(final String id, final Item.Properties properties) {
-        if (KobolditeEquipmentFactory.supports(id)) {
+        if (GobliniteEquipmentFactory.supports(id) || SilverEquipmentFactory.supports(id)) {
             return properties;
         }
         final Item.Properties toolProperties = switch (id) {
-            case "ritual_knife", "boline", "canesword" -> properties.sword(ToolMaterial.IRON, 3.0F, -2.4F);
-            case "silversword" -> properties.sword(SilverMaterials.TOOL, 3.0F, -2.4F);
+            case "ritual_knife", "boline" -> properties.sword(ToolMaterial.IRON, 3.0F, -2.4F);
+            case "canesword" -> CaneSwordItem.applyProperties(properties);
             case "deathshand" -> properties.sword(ToolMaterial.DIAMOND, 4.0F, -2.2F);
             case "thorn_spear" -> properties.spear(
                 ToolMaterial.IRON, 0.95F, 0.95F, 0.6F, 2.5F, 11.0F, 6.75F, 5.1F, 11.25F, 4.6F
@@ -207,6 +264,10 @@ public final class ModItems {
             case "iceslippers" -> enchanted(equipmentProperties, Enchantments.FROST_WALKER, 2);
             case "emberstep_slippers" -> enchanted(equipmentProperties, Enchantments.FIRE_PROTECTION, 4);
             case "seepingshoes" -> enchanted(equipmentProperties, Enchantments.DEPTH_STRIDER, 3);
+            case "deathsfeet" -> enchanted(equipmentProperties, Map.of(
+                Enchantments.FROST_WALKER, 2,
+                Enchantments.FIRE_PROTECTION, 4
+            ));
             default -> equipmentProperties;
         };
     }
@@ -220,9 +281,19 @@ public final class ModItems {
         final ResourceKey<Enchantment> enchantment,
         final int level
     ) {
+        return enchanted(properties, Map.of(enchantment, level));
+    }
+
+    private static Item.Properties enchanted(
+        final Item.Properties properties,
+        final Map<ResourceKey<Enchantment>, Integer> enchantmentsToApply
+    ) {
         return properties.delayedComponent(DataComponents.ENCHANTMENTS, registries -> {
             final ItemEnchantments.Mutable enchantments = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-            enchantments.set(registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(enchantment), level);
+            enchantmentsToApply.forEach((enchantment, level) -> enchantments.set(
+                registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(enchantment),
+                level
+            ));
             return enchantments.toImmutable();
         });
     }
@@ -232,11 +303,11 @@ public final class ModItems {
             || Set.of("deathscowl", "earmuffs", "hellhound_head", "twisting_band", "wolfhead").contains(id)) {
             return Optional.of(ArmorType.HELMET);
         }
-        if (id.contains("coat") || id.endsWith("robe")) {
+        if (id.contains("coat") || id.endsWith("robe") || id.equals("stonebrokers_quiver")) {
             return Optional.of(ArmorType.CHESTPLATE);
         }
         if (id.contains("legs") || Set.of(
-            "barkbelt", "bitingbelt", "forgewardens_girdle", "stonebrokers_quiver"
+            "barkbelt", "bitingbelt", "forgewardens_girdle"
         ).contains(id)) {
             return Optional.of(ArmorType.LEGGINGS);
         }
@@ -333,5 +404,25 @@ public final class ModItems {
             .filter(entry -> ModBlocks.ALL.get(entry.getValue()).get() == crop)
             .map(entry -> (ItemLike) MUTABLE_ITEMS.get(entry.getKey()).get())
             .findFirst();
+    }
+
+    private record ItemFactoryRule(
+        Predicate<String> selector,
+        BiFunction<String, Item.Properties, Item> factory
+    ) {
+        private static ItemFactoryRule exact(
+            final String id,
+            final BiFunction<String, Item.Properties, Item> factory
+        ) {
+            return new ItemFactoryRule(id::equals, factory);
+        }
+
+        private boolean supports(final String id) {
+            return selector.test(id);
+        }
+
+        private Item create(final String id, final Item.Properties properties) {
+            return factory.apply(id, properties);
+        }
     }
 }

@@ -69,11 +69,21 @@ public record CustomBrewFormula(
     }
 
     public BrewKind behaviorKind() {
+        return behaviorKind(behaviors);
+    }
+
+    public BrewKind entityBehaviorKind() {
+        return behaviorKind(behaviors.stream()
+            .filter(CustomBrewBehaviorTargets::affectsEntities)
+            .toList());
+    }
+
+    private BrewKind behaviorKind(final List<BrewBehavior> selectedBehaviors) {
         return new BrewKind(
             "custom/composed",
             color,
             List.of(),
-            behaviors.stream()
+            selectedBehaviors.stream()
                 .filter(behavior -> behavior != BrewBehavior.BOTTLE_YIELD)
                 .filter(behavior -> CustomBrewBehaviorTargets.allows(behavior, skipBlocks, skipEntities))
                 .toList(),

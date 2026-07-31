@@ -1,7 +1,8 @@
 {
   "replace": false,
   "values": [
+    "#c:nuggets/silver",
     "#c:nuggets/delvealloy",
-    "#c:nuggets/koboldite"
+    "#c:nuggets/goblinite"
   ]
 }

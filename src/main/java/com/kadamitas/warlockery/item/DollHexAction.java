@@ -1,12 +1,13 @@
 package com.kadamitas.warlockery.item;
 
-import java.util.Arrays;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.function.BiConsumer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
-public enum DollHexAction {
+public enum DollHexAction implements StringIdentified {
     PRICK("prick", (_, target) ->
         target.hurtServer((ServerLevel) target.level(), target.damageSources().magic(), 4.0F)),
     SHOVE("shove", (source, target) -> target.knockback(
@@ -20,6 +21,7 @@ public enum DollHexAction {
     DROWN("drown", (_, target) -> target.setAirSupply(-20));
 
     private static final DollHexAction[] VALUES = values();
+    private static final EnumLookup<DollHexAction> LOOKUP = EnumLookup.create("doll hex action", VALUES);
     private final String id;
     private final BiConsumer<ServerPlayer, LivingEntity> effect;
 
@@ -41,6 +43,6 @@ public enum DollHexAction {
     }
 
     public static DollHexAction fromId(final String id) {
-        return Arrays.stream(VALUES).filter(action -> action.id.equals(id)).findFirst().orElse(PRICK);
+        return LOOKUP.findOrElse(id, PRICK);
     }
 }

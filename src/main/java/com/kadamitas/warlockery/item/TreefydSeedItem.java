@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
@@ -29,6 +30,9 @@ public final class TreefydSeedItem extends Item {
             return InteractionResult.FAIL;
         }
         treefyd.snapTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
+        if (context.getPlayer() != null) {
+            CreatureBehaviorState.bind(treefyd, context.getPlayer().getUUID());
+        }
         level.addFreshEntity(treefyd);
         context.getItemInHand().consume(1, context.getPlayer());
         context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.awakened"));

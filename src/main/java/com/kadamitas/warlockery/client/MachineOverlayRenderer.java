@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.client;
 
 import com.kadamitas.warlockery.block.entity.MagicMachineBlockEntity;
+import com.kadamitas.warlockery.brew.CauldronChalkCircles;
 import com.kadamitas.warlockery.crafting.MachineDisplay;
 import com.kadamitas.warlockery.crafting.MachineProfile;
 import com.kadamitas.warlockery.crafting.MachineRecipeManager;
@@ -41,7 +42,12 @@ public final class MachineOverlayRenderer
         final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress
     ) {
         BlockEntityRenderer.super.extractRenderState(machine, state, partialTicks, cameraPosition, breakProgress);
-        state.lines = createLines(machine.machineProfile(), machine.getMachineDisplay(), machine.getCustomBrewState());
+        state.lines = createLines(
+            machine.machineProfile(),
+            machine.getMachineDisplay(),
+            machine.getCustomBrewState(),
+            machine.getCauldronChalkCircles()
+        );
     }
 
     @Override
@@ -77,14 +83,19 @@ public final class MachineOverlayRenderer
     private static List<Component> createLines(
         final MachineProfile profile,
         final MachineDisplay display,
-        final CustomBrewCauldronState customBrew
+        final CustomBrewCauldronState customBrew,
+        final CauldronChalkCircles.State chalkCircles
     ) {
         if ("cauldron".equals(profile.recipeType()) && customBrew.engaged()) {
-            return createCustomBrewLines(customBrew);
+            return createCustomBrewLines(customBrew, chalkCircles);
         }
         final MachineRecipeManager.Diagnostic diagnostic = display.diagnostic();
         if (display.status() == MachineStatus.EMPTY) {
-            return List.of();
+            final ArrayList<Component> lines = new ArrayList<>();
+            if ("cauldron".equals(profile.recipeType())) {
+                appendChalkCircleLines(lines, chalkCircles);
+            }
+            return List.copyOf(lines);
         }
         final ArrayList<Component> lines = new ArrayList<>();
         if (!"cauldron".equals(profile.recipeType())) {
@@ -123,7 +134,7 @@ public final class MachineOverlayRenderer
             ).withColor(0x55FFFF);
             case NO_HEAT -> Component.translatable("overlay.warlockery.cauldron.no_heat").withColor(0xFFAA00);
             case NO_FUEL -> Component.translatable("overlay.warlockery.cauldron.no_fuel").withColor(0xFFAA00);
-            case NO_FAMILIAR -> Component.translatable("overlay.warlockery.machine.no_owl_familiar").withColor(0xFFAA00);
+            case NO_FAMILIAR -> Component.translatable("overlay.warlockery.machine.no_familiar").withColor(0xFFAA00);
             case NO_IGNITION -> Component.translatable("overlay.warlockery.machine.no_ignition").withColor(0xFFAA00);
             case OUTPUT_BLOCKED -> Component.translatable("overlay.warlockery.cauldron.output_blocked").withColor(0xFF5555);
             default -> null;
@@ -131,10 +142,16 @@ public final class MachineOverlayRenderer
         if (status != null) {
             lines.add(status);
         }
+        if ("cauldron".equals(profile.recipeType())) {
+            appendChalkCircleLines(lines, chalkCircles);
+        }
         return List.copyOf(lines);
     }
 
-    private static List<Component> createCustomBrewLines(final CustomBrewCauldronState state) {
+    private static List<Component> createCustomBrewLines(
+        final CustomBrewCauldronState state,
+        final CauldronChalkCircles.State chalkCircles
+    ) {
         final ArrayList<Component> lines = new ArrayList<>();
         lines.add(Component.translatable("overlay.warlockery.custom_brew.title").withColor(0xDDAAFF));
         if (!state.selectedEffects().isEmpty()) {
@@ -176,7 +193,56 @@ public final class MachineOverlayRenderer
                 state.progressPercent()
             ).withColor(0x55FFFF));
         }
+        appendChalkCircleLines(lines, chalkCircles);
         return List.copyOf(lines);
+    }
+
+    private static void appendChalkCircleLines(
+        final List<Component> lines,
+        final CauldronChalkCircles.State circles
+    ) {
+        if (!circles.hasMarks()) {
+            return;
+        }
+        final boolean malformed = java.util.stream.Stream.of(circles.small(), circles.medium())
+            .map(CauldronChalkCircles.Ring::kind)
+            .anyMatch(kind -> kind == CauldronChalkCircles.RingKind.INCOMPLETE
+                || kind == CauldronChalkCircles.RingKind.MIXED);
+        lines.add(Component.translatable(
+            "overlay.warlockery.cauldron.chalk.rings",
+            ringState(circles.small()),
+            ringState(circles.medium())
+        ).withColor(malformed ? 0xFFAA00 : 0xCC88FF));
+        if (circles.ritualWeight() > 0 || circles.infernalWeight() > 0) {
+            lines.add(Component.translatable(
+                "overlay.warlockery.cauldron.chalk.influence",
+                formatMultiplier(circles.potencyMultiplier()),
+                Math.round(circles.stability() * 100.0F),
+                Math.round(circles.mishapRisk() * 100.0F)
+            ).withColor(circles.riskDelta() > 0.0F ? 0xFF8855 : 0x55FFAA));
+        }
+    }
+
+    private static Component ringState(final CauldronChalkCircles.Ring ring) {
+        return switch (ring.kind()) {
+            case EMPTY -> Component.translatable("overlay.warlockery.cauldron.chalk.empty");
+            case RITUAL -> Component.translatable(
+                "overlay.warlockery.cauldron.chalk.ritual", ring.required()
+            );
+            case INFERNAL -> Component.translatable(
+                "overlay.warlockery.cauldron.chalk.infernal", ring.required()
+            );
+            case INCOMPLETE -> Component.translatable(
+                "overlay.warlockery.cauldron.chalk.incomplete", ring.present(), ring.required()
+            );
+            case MIXED -> Component.translatable(
+                "overlay.warlockery.cauldron.chalk.mixed", ring.present(), ring.required()
+            );
+        };
+    }
+
+    private static String formatMultiplier(final float value) {
+        return String.format(java.util.Locale.ROOT, "%.2f", value);
     }
 
     private static String joinMissing(final List<MachineRecipeManager.MissingInput> entries) {

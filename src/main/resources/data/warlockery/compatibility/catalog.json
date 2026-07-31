@@ -67,11 +67,11 @@
       "registry": "block",
       "tags": [
         "c:ores/silver",
-        "c:ores/koboldite",
+        "c:ores/goblinite",
         "c:storage_blocks/silver",
         "c:storage_blocks/raw_silver",
-        "c:storage_blocks/koboldite",
-        "c:storage_blocks/raw_koboldite"
+        "c:storage_blocks/goblinite",
+        "c:storage_blocks/raw_goblinite"
       ]
     },
     {
@@ -79,18 +79,18 @@
       "registry": "item",
       "tags": [
         "c:ores/silver",
-        "c:ores/koboldite",
+        "c:ores/goblinite",
         "c:raw_materials/silver",
-        "c:raw_materials/koboldite",
+        "c:raw_materials/goblinite",
         "c:ingots/silver",
-        "c:ingots/koboldite",
-        "c:nuggets/koboldite",
+        "c:ingots/goblinite",
+        "c:nuggets/goblinite",
         "c:dusts/silver",
-        "c:dusts/koboldite",
+        "c:dusts/goblinite",
         "c:storage_blocks/silver",
         "c:storage_blocks/raw_silver",
-        "c:storage_blocks/koboldite",
-        "c:storage_blocks/raw_koboldite"
+        "c:storage_blocks/goblinite",
+        "c:storage_blocks/raw_goblinite"
       ]
     },
     {
@@ -111,6 +111,14 @@
         "warlockery:veil_spirits",
         "warlockery:flying_ointments",
         "warlockery:congealed_spirits"
+      ]
+    },
+    {
+      "role": "spirit_world_transfer",
+      "registry": "item",
+      "tags": [
+        "warlockery:spirit_world_carry_in",
+        "warlockery:spirit_world_exports"
       ]
     },
     {
@@ -715,20 +723,6 @@
       "tag": "minecraft:metal_nuggets",
       "contains": [
         "warlockery:ingredient_delvealloynugget"
-      ]
-    },
-    {
-      "registry": "item",
-      "tag": "minecraft:villager_plantable_seeds",
-      "contains": [
-        "warlockery:garlic",
-        "warlockery:seedsartichoke",
-        "warlockery:seedsbelladonna",
-        "warlockery:seedsmandrake",
-        "warlockery:seedsdreamroot",
-        "warlockery:seedssnowbell",
-        "warlockery:seedswolfsbane",
-        "warlockery:seedswormwood"
       ]
     },
     {

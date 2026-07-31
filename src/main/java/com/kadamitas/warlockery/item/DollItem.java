@@ -135,7 +135,8 @@ public final class DollItem extends Item {
     ) {
         if (!(doll.getItem() instanceof DollItem item)
             || !(item.kind.definition().ability() instanceof DollAbility.Mending mending)
-            || !isBoundTo(doll, player)) {
+            || !isBoundTo(doll, player)
+            || EquipmentSetEffects.suppressesProtectionDolls(player)) {
             return false;
         }
         final Optional<ItemStack> target = repairTarget(player, mending.target());
@@ -154,6 +155,12 @@ public final class DollItem extends Item {
         if (!(event.getEntity() instanceof ServerPlayer player) || event.getNewDamage() <= 0.0F) {
             return;
         }
+        if (com.kadamitas.warlockery.entity.CreatureCombat.isNullifyingHunterShot(event)) {
+            return;
+        }
+        if (EquipmentSetEffects.suppressesProtectionDolls(player)) {
+            return;
+        }
         if (!TRANSFERRING_DAMAGE.get()) {
             transferLinkedDamage(player, event);
         }
@@ -164,7 +171,7 @@ public final class DollItem extends Item {
         findLethalGuard(player, event.getSource()).ifPresent(stack -> {
             final DollKind kind = ((DollItem) stack.getItem()).kind;
             event.setNewDamage(0.0F);
-            player.setHealth(1.0F);
+            player.setHealth(DollRules.restoredHealth(player.getMaxHealth()));
             DeathProtection.TOTEM_OF_UNDYING.applyEffects(stack.copy(), player);
             lethalBehavior(kind).recover(player, event.getSource());
             activate(player, stack, kind);
@@ -179,26 +186,43 @@ public final class DollItem extends Item {
         final LivingEntity target,
         final @Nullable LivingEntity attacker
     ) {
+        return tryBlockHex(target, attacker, 1);
+    }
+
+    public static boolean tryBlockHex(
+        final LivingEntity target,
+        final @Nullable LivingEntity attacker,
+        final int requiredGuards
+    ) {
         if (!(target instanceof ServerPlayer player)) {
             return false;
         }
-        final Optional<ItemStack> guard = findBoundDoll(
-            player,
-            item -> item.kind.definition().ability() instanceof DollAbility.HexGuard
+        if (EquipmentSetEffects.suppressesProtectionDolls(player)) {
+            return false;
+        }
+        final List<ItemStack> guards = boundDolls(player)
+            .filter(stack -> stack.getItem() instanceof DollItem item
+                && item.kind.definition().ability() instanceof DollAbility.HexGuard)
+            .limit(requiredGuards)
+            .toList();
+        if (!HexGuardRules.hasRequiredGuards(guards.size(), requiredGuards)) {
+            return false;
+        }
+        guards.forEach(stack -> wear(stack, (ServerLevel) player.level(), player, 1));
+        signalActivation(player, DollKind.HEX_GUARD);
+        final HexGuardRules.Resolution resolution = HexGuardRules.resolve(
+            true,
+            attacker != null,
+            attacker == target
         );
-        guard.ifPresent(stack -> {
-            wear(stack, (ServerLevel) player.level(), player, 1);
-            signalActivation(player, DollKind.HEX_GUARD);
-            final HexGuardRules.Resolution resolution = HexGuardRules.resolve(
-                true,
-                attacker != null,
-                attacker == target
-            );
-            if (resolution.retaliates()) {
-                retaliate(player, attacker);
-            }
-        });
-        return guard.isPresent();
+        if (resolution.retaliates()) {
+            retaliate(player, attacker);
+        }
+        return true;
+    }
+
+    public static CorruptionResult corruptProtectiveDolls(final ServerPlayer player) {
+        return corruptProtectiveDolls(player, DollCorruptionRules.LEGACY_MAX_TARGETS);
     }
 
     public static CorruptionResult corruptProtectiveDolls(
@@ -208,10 +232,12 @@ public final class DollItem extends Item {
         if (maximumTargets < 0) {
             throw new IllegalArgumentException("Maximum corruption targets must be nonnegative");
         }
-        final Optional<ItemStack> dollGuard = findBoundDoll(
-            player,
-            item -> item.kind.definition().ability() instanceof DollAbility.DollGuard
-        );
+        final Optional<ItemStack> dollGuard = EquipmentSetEffects.suppressesProtectionDolls(player)
+            ? Optional.empty()
+            : findBoundDoll(
+                player,
+                item -> item.kind.definition().ability() instanceof DollAbility.DollGuard
+            );
         final List<ItemStack> protectionDolls = boundDolls(player)
             .filter(stack -> stack.getItem() instanceof DollItem item && item.isCorruptibleProtection())
             .limit(maximumTargets)

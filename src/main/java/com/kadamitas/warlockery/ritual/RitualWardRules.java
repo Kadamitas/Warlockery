@@ -28,6 +28,27 @@ public final class RitualWardRules {
         return velocity.scale(0.2).add(correction.x, Math.max(correction.y, -0.15), correction.z);
     }
 
+    public static Vec3 boundaryVelocity(
+        final Vec3 center,
+        final int radius,
+        final Vec3 position,
+        final Vec3 velocity
+    ) {
+        final Vec3 radial = position.subtract(center);
+        final double distance = radial.length();
+        if (radius <= 0 || distance < 0.0001 || Math.abs(distance - radius) > 1.25) {
+            return velocity;
+        }
+        final double outwardMotion = velocity.dot(radial.scale(1.0 / distance));
+        if (distance <= radius && outwardMotion > 0.0) {
+            return inwardVelocity(center, position, velocity);
+        }
+        if (distance > radius && outwardMotion < 0.0) {
+            return outwardVelocity(center, position, velocity);
+        }
+        return velocity;
+    }
+
     public static boolean shouldRepel(
         final boolean wardActive,
         final boolean living,
@@ -35,5 +56,13 @@ public final class RitualWardRules {
         final boolean immune
     ) {
         return wardActive && living && hostileOrTagged && !immune;
+    }
+
+    public static int powerPerSecond(final RitualWardType type, final int radius) {
+        return switch (type) {
+            case PROTECTION -> radius > 6 ? 28 : 24;
+            case RECHARGE -> 40;
+            case IMPRISONMENT, SANCTITY -> 16;
+        };
     }
 }

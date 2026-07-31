@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_sleep"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_sleep",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 8484815
+      }
+    ]
+  }
 }

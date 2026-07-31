@@ -1,9 +1,10 @@
 package com.kadamitas.warlockery.crafting;
 
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import com.mojang.serialization.Codec;
-import java.util.Arrays;
 
-public enum MachineStatus {
+public enum MachineStatus implements StringIdentified {
     EMPTY("empty", false, false),
     INVALID("invalid", false, false),
     INCOMPLETE("incomplete", false, false),
@@ -15,7 +16,8 @@ public enum MachineStatus {
     READY("ready", true, false),
     PROCESSING("processing", true, true);
 
-    public static final Codec<MachineStatus> CODEC = Codec.STRING.xmap(MachineStatus::fromId, MachineStatus::id);
+    private static final EnumLookup<MachineStatus> LOOKUP = EnumLookup.create("machine status", values());
+    public static final Codec<MachineStatus> CODEC = LOOKUP.fallbackCodec(EMPTY);
 
     private final String id;
     private final boolean canRun;
@@ -40,6 +42,6 @@ public enum MachineStatus {
     }
 
     public static MachineStatus fromId(final String id) {
-        return Arrays.stream(values()).filter(status -> status.id.equals(id)).findFirst().orElse(EMPTY);
+        return LOOKUP.findOrElse(id, EMPTY);
     }
 }

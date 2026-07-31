@@ -2,6 +2,8 @@ package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
+import com.kadamitas.warlockery.transformation.SupernaturalProgression;
+import com.kadamitas.warlockery.transformation.SupernaturalPower;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -40,15 +42,19 @@ public final class BloodGobletItem extends Item {
             show(player, UtilityDecision.failure("vampire_required"));
             return InteractionResult.FAIL;
         }
-        if (!player.level().isClientSide()) {
-            if (target instanceof Player targetPlayer) {
-                SupernaturalState.setForm(targetPlayer, SupernaturalForm.VAMPIRE);
-            } else {
-                target.getPersistentData().putBoolean("WarlockeryVampireConverted", true);
-                target.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 6_000, 0));
-                target.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 600, 0));
+        if (!player.level().isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            final int level = SupernaturalProgression.level(player, SupernaturalProgression.Path.VAMPIRE);
+            if (level < 9) {
+                show(player, UtilityDecision.failure("creation_locked"));
+                return InteractionResult.FAIL;
             }
-            BloodGobletState.setFull(stack, false);
+            if (SupernaturalProgression.resource(player, SupernaturalProgression.Path.VAMPIRE) < 125
+                || !com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime
+                    .tryCreateVampire(serverPlayer, target, stack)) {
+                show(player, UtilityDecision.failure("creation_conditions"));
+                return InteractionResult.FAIL;
+            }
+            SupernaturalProgression.spend(player, SupernaturalProgression.Path.VAMPIRE, 125);
             show(player, UtilityDecision.success("converted"));
         }
         return InteractionResult.SUCCESS;
@@ -57,6 +63,17 @@ public final class BloodGobletItem extends Item {
     @Override
     public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
         final ItemStack stack = player.getItemInHand(hand);
+        if (!BloodGobletState.isFull(stack)
+            && player.isShiftKeyDown()
+            && SupernaturalState.getForm(player) == SupernaturalForm.VAMPIRE) {
+            if (!level.isClientSide()) {
+                player.setHealth(Math.max(1.0F, player.getHealth() - 2.0F));
+                SympatheticBinding.from(player).write(stack);
+                BloodGobletState.setFull(stack, true);
+                show(player, UtilityDecision.success("filled"));
+            }
+            return InteractionResult.SUCCESS;
+        }
         final UtilityDecision decision = BloodGobletRules.drink(
             BloodGobletState.isFull(stack),
             SupernaturalState.getForm(player)

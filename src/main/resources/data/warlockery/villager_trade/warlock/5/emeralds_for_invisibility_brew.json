@@ -1,0 +1,7 @@
+{
+  "wants": {"id": "minecraft:emerald", "count": 14},
+  "gives": {"id": "warlockery:brew_invisible"},
+  "max_uses": 8,
+  "xp": 20,
+  "reputation_discount": 0.05
+}

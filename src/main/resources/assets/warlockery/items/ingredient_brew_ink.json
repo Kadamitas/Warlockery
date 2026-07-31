@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_ink"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_ink",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 3034487
+      }
+    ]
+  }
 }

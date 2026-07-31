@@ -22,13 +22,13 @@ class ModernBlockFactoryTest {
         Map.entry("icedoor", DoorBlock.class),
         Map.entry("icepressureplate", PressurePlateBlock.class),
         Map.entry("icefence", FenceBlock.class),
-        Map.entry("stockade", FenceBlock.class),
+        Map.entry("stockade", StockadeBlock.class),
         Map.entry("icefencegate", FenceGateBlock.class),
         Map.entry("iceslab", SlabBlock.class),
         Map.entry("hexwooddoubleslab", SlabBlock.class),
         Map.entry("icestairs", StairBlock.class),
         Map.entry("stairswoodrowan", StairBlock.class),
-        Map.entry("hex_ladder", LadderBlock.class)
+        Map.entry("hex_ladder", WitchLadderBlock.class)
     );
 
     @Test

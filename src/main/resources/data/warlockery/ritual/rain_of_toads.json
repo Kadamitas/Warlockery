@@ -2,7 +2,7 @@
   "title": "ritual.warlockery.rain_of_toads.title",
   "description": "ritual.warlockery.rain_of_toads.description",
   "action": "toad_rain",
-  "power": 1400,
+  "power": 8000,
   "radius": 7,
   "duration": 1200,
   "amplifier": 0,
@@ -22,14 +22,19 @@
         "ingredient": "#c:slime_balls",
         "count": 2,
         "consume": true
+      },
+      {
+        "ingredient": "warlockery:ingredient_seer_stone",
+        "count": 1,
+        "consume": false
       }
     ],
     "day_only": false,
     "full_moon": false,
-    "raining": true,
+    "raining": false,
     "thundering": false,
     "dimension": "",
-    "minimum_players": 1
+    "minimum_players": 2
   },
   "target": "minecraft:frog",
   "count": 8

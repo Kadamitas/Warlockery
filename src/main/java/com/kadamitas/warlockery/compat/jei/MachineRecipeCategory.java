@@ -5,6 +5,7 @@ import com.kadamitas.warlockery.crafting.MachineProfiles;
 import com.kadamitas.warlockery.crafting.MachineRecipeDefinition;
 import com.kadamitas.warlockery.crafting.MachineRecipeManager;
 import com.kadamitas.warlockery.registry.ModBlocks;
+import com.kadamitas.warlockery.menu.MachineUiLayout;
 import java.util.Objects;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -46,10 +47,12 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
         final IFocusGroup focuses
     ) {
         final MachineRecipeDefinition recipe = match.recipe();
+        final MachineUiLayout layout = MachineUiLayout.forKind(profile.recipeType());
         for (int index = 0; index < recipe.inputs().size(); index++) {
             final MachineRecipeDefinition.Input input = recipe.inputs().get(index);
+            final MachineUiLayout.SlotPosition position = layout.slots().get(index);
             JeiIngredients.addItem(
-                builder.addInputSlot(4 + index % 3 * 20, 6 + index / 3 * 20).setStandardSlotBackground(),
+                builder.addInputSlot(position.x(), position.y()).setStandardSlotBackground(),
                 input.ingredient(),
                 input.count()
             );
@@ -62,10 +65,9 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
         });
         for (int index = 0; index < recipe.outputs().size(); index++) {
             final MachineRecipeDefinition.Output output = recipe.outputs().get(index);
-            final int slotX = 136 + index % 2 * 20;
-            final int slotY = 6 + index / 2 * 20;
+            final MachineUiLayout.SlotPosition position = layout.slots().get(profile.outputStart() + index);
             JeiIngredients.directItem(output.item(), output.count()).ifPresent(stack -> builder
-                .addOutputSlot(slotX, slotY)
+                .addOutputSlot(position.x(), position.y())
                 .setOutputSlotBackground()
                 .add(stack));
         }

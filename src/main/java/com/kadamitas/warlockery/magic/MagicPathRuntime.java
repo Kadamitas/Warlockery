@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.magic;
 
+import com.kadamitas.warlockery.util.DataParsing;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import com.kadamitas.warlockery.item.InfernalPactEffects;
@@ -8,7 +9,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,12 +30,21 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
+import net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.Relative;
 import net.neoforged.neoforge.common.NeoForge;
@@ -142,7 +151,7 @@ public final class MagicPathRuntime {
             case GRAVE -> commandOwned(player, position, GRAVE_OWNER, path);
             case LIGHT -> lightWall(player, position.relative(face), face);
             case OTHERWHERE -> secondary ? storeRecall(player) : teleportToBlock(player, position.relative(face));
-            case OVERWORLD -> secondary ? pullMetal(player) : raiseEarth(player, position);
+            case OVERWORLD -> useOverworldBlock(player, position, secondary);
             case SKY -> updraft(player, position);
         };
     }
@@ -167,6 +176,7 @@ public final class MagicPathRuntime {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
+        applyInfernalMotionPassive(serverPlayer);
         if (serverPlayer.tickCount % 20 == 0) {
             refreshImpPact(serverPlayer);
             applyPassives(serverPlayer);
@@ -178,6 +188,18 @@ public final class MagicPathRuntime {
     }
 
     public static void handleDamage(final LivingDamageEvent.Pre event) {
+        if (event.getEntity() instanceof ServerPlayer player
+            && MagicPathState.has(player, MagicPath.INFERNAL)) {
+            final InfernalPower power = MagicPathState.lastPower(player);
+            if (event.getSource().is(DamageTypeTags.IS_FALL)
+                && (power == InfernalPower.LEAPING || power == InfernalPower.FLIGHT)) {
+                event.setNewDamage(0.0F);
+                player.resetFallDistance();
+            }
+            if (event.getSource().is(DamageTypes.LIGHTNING_BOLT) && power == InfernalPower.EXPLOSION) {
+                MagicPathState.recharge(player, MagicPath.INFERNAL, MagicPath.INFERNAL.maximumReserve());
+            }
+        }
         if (event.getEntity() instanceof ServerPlayer player
             && event.getSource().is(DamageTypeTags.IS_FALL)
             && MagicPathState.has(player, MagicPath.OVERWORLD)) {
@@ -220,12 +242,8 @@ public final class MagicPathRuntime {
         if (!(source instanceof Mob mob) || !(mob.level() instanceof ServerLevel level)) {
             return Optional.empty();
         }
-        final String owner = mob.getPersistentData().getStringOr(GRAVE_OWNER, "");
-        try {
-            return Optional.ofNullable(level.getServer().getPlayerList().getPlayer(UUID.fromString(owner)));
-        } catch (IllegalArgumentException ignored) {
-            return Optional.empty();
-        }
+        return DataParsing.uuid(mob.getPersistentData().getStringOr(GRAVE_OWNER, ""))
+            .map(level.getServer().getPlayerList()::getPlayer);
     }
 
     private static boolean isNourishing(final LivingEntity victim) {
@@ -252,8 +270,7 @@ public final class MagicPathRuntime {
         MagicPathState.active(player).forEach(path -> {
             switch (path) {
                 case IMP -> effect(player, MobEffects.FIRE_RESISTANCE, 60, 0);
-                case INFERNAL -> {
-                }
+                case INFERNAL -> applyInfernalPassive(player);
                 case GRAVE -> effect(player, MobEffects.NIGHT_VISION, 240, 0);
                 case LIGHT -> effect(player, MobEffects.NIGHT_VISION, 240, 0);
                 case OTHERWHERE -> effect(player, MobEffects.SPEED, 60, 0);
@@ -368,14 +385,26 @@ public final class MagicPathRuntime {
     }
 
     private static InfernalPower classifySacrifice(final LivingEntity target) {
+        if (target.typeHolder().is(MagicCompatibilityTags.INFERNAL_EXPLOSION_POWER)) {
+            return InfernalPower.EXPLOSION;
+        }
+        if (target.typeHolder().is(MagicCompatibilityTags.INFERNAL_PROJECTILE_POWER)) {
+            return InfernalPower.PROJECTILE;
+        }
+        if (target.typeHolder().is(MagicCompatibilityTags.INFERNAL_WEB_POWER)) {
+            return InfernalPower.WEB;
+        }
+        if (target.typeHolder().is(MagicCompatibilityTags.INFERNAL_LEAPING_POWER)) {
+            return InfernalPower.LEAPING;
+        }
+        if (target.typeHolder().is(MagicCompatibilityTags.INFERNAL_FLIGHT_POWER)) {
+            return InfernalPower.FLIGHT;
+        }
         if (target.typeHolder().is(MagicCompatibilityTags.INFERNAL_FIRE_POWER)) {
             return InfernalPower.FIRE;
         }
         if (target.typeHolder().is(MagicCompatibilityTags.INFERNAL_TELEPORT_POWER)) {
             return InfernalPower.TELEPORT;
-        }
-        if (target.typeHolder().is(MagicCompatibilityTags.INFERNAL_LEAPING_POWER)) {
-            return InfernalPower.LEAPING;
         }
         if (target.typeHolder().is(MagicCompatibilityTags.INFERNAL_AQUATIC_POWER)) {
             return InfernalPower.AQUATIC;
@@ -396,8 +425,11 @@ public final class MagicPathRuntime {
             return fail(player, path, decision);
         }
         switch (MagicPathState.lastPower(player)) {
-            case FIRE -> effect(player, MobEffects.FIRE_RESISTANCE, 1_200, 0);
-            case SPEED -> effect(player, MobEffects.SPEED, 600, 1);
+            case EXPLOSION -> infernalExplosion(player);
+            case PROJECTILE -> infernalArrow(player);
+            case WEB -> infernalWeb(player);
+            case FIRE -> infernalFireball(player);
+            case SPEED -> effect(player, MobEffects.SPEED, 400, 3);
             case HEALING -> {
                 player.heal(8.0F);
                 player.getFoodData().eat(6, 0.8F);
@@ -409,13 +441,97 @@ public final class MagicPathRuntime {
                 true
             );
             case LEAPING -> effect(player, MobEffects.JUMP_BOOST, 600, 2);
-            case AQUATIC -> effect(player, MobEffects.WATER_BREATHING, 1_200, 0);
+            case FLIGHT -> effect(player, MobEffects.NIGHT_VISION, 400, 0);
+            case AQUATIC -> infernalBlind(player);
             case UNDEAD -> {
                 effect(player, MobEffects.RESISTANCE, 600, 1);
                 effect(player, MobEffects.STRENGTH, 600, 1);
             }
         }
         return succeed(player, path, decision);
+    }
+
+    private static void applyInfernalMotionPassive(final ServerPlayer player) {
+        if (!MagicPathState.has(player, MagicPath.INFERNAL)
+            || MagicPathState.lastPower(player) != InfernalPower.WEB
+            || !player.horizontalCollision) {
+            return;
+        }
+        final Vec3 movement = player.getDeltaMovement();
+        player.setDeltaMovement(movement.x, Math.max(0.2, movement.y), movement.z);
+        player.resetFallDistance();
+        player.hurtMarked = true;
+    }
+
+    private static void applyInfernalPassive(final ServerPlayer player) {
+        switch (MagicPathState.lastPower(player)) {
+            case PROJECTILE -> effect(player, MobEffects.WATER_BREATHING, 60, 0);
+            case FIRE -> effect(player, MobEffects.FIRE_RESISTANCE, 60, 0);
+            case SPEED -> effect(player, MobEffects.SPEED, 60, 1);
+            case LEAPING -> effect(player, MobEffects.JUMP_BOOST, 60, 0);
+            case FLIGHT -> effect(player, MobEffects.SLOW_FALLING, 60, 0);
+            case AQUATIC -> {
+                effect(player, MobEffects.WATER_BREATHING, 60, 0);
+                effect(player, MobEffects.DOLPHINS_GRACE, 60, 0);
+            }
+            case EXPLOSION, WEB, HEALING, TELEPORT, UNDEAD -> {
+            }
+        }
+    }
+
+    private static void infernalExplosion(final ServerPlayer player) {
+        final Vec3 center = player.getEyePosition().add(player.getLookAngle().scale(2.5));
+        player.level().explode(
+            player,
+            center.x,
+            center.y,
+            center.z,
+            3.0F,
+            Level.ExplosionInteraction.NONE
+        );
+    }
+
+    private static void infernalArrow(final ServerPlayer player) {
+        final ServerLevel level = (ServerLevel) player.level();
+        final Arrow arrow = new Arrow(level, player, Items.ARROW.getDefaultInstance(), player.getMainHandItem());
+        arrow.pickup = AbstractArrow.Pickup.DISALLOWED;
+        arrow.setBaseDamage(4.0);
+        arrow.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 2.4F, 0.4F);
+        level.addFreshEntity(arrow);
+    }
+
+    private static void infernalWeb(final ServerPlayer player) {
+        final Vec3 start = player.getEyePosition();
+        final BlockHitResult hit = player.level().clip(new ClipContext(
+            start,
+            start.add(player.getLookAngle().scale(16.0)),
+            ClipContext.Block.COLLIDER,
+            ClipContext.Fluid.NONE,
+            player
+        ));
+        final BlockPos position = hit.getBlockPos().relative(hit.getDirection());
+        if (player.level().getBlockState(position).canBeReplaced()) {
+            player.level().setBlockAndUpdate(position, Blocks.COBWEB.defaultBlockState());
+        }
+    }
+
+    private static void infernalFireball(final ServerPlayer player) {
+        final Vec3 direction = player.getLookAngle();
+        final SmallFireball fireball = new SmallFireball(player.level(), player, direction);
+        fireball.setPos(player.getX(), player.getEyeY() - 0.15, player.getZ());
+        player.level().addFreshEntity(fireball);
+    }
+
+    private static void infernalBlind(final ServerPlayer player) {
+        final Vec3 look = player.getLookAngle();
+        ((ServerLevel) player.level()).getEntitiesOfClass(
+            LivingEntity.class,
+            player.getBoundingBox().inflate(12.0),
+            target -> target != player && target.isAlive()
+                && target.position().subtract(player.position()).normalize().dot(look) > 0.65
+        ).stream().min(Comparator.comparingDouble(player::distanceToSqr)).ifPresent(target ->
+            target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 200, 0))
+        );
     }
 
     private static InteractionResult bindUndead(final ServerPlayer player, final LivingEntity target) {
@@ -715,6 +831,71 @@ public final class MagicPathRuntime {
         return succeed(player, MagicPath.OVERWORLD, decision);
     }
 
+    private static InteractionResult useOverworldBlock(
+        final ServerPlayer player,
+        final BlockPos position,
+        final boolean secondary
+    ) {
+        final ServerLevel level = (ServerLevel) player.level();
+        final BlockState state = level.getBlockState(position);
+        if (secondary) {
+            return state.is(MagicCompatibilityTags.EARTH_CONTROLLED_BLOCKS)
+                ? launchEarthBlock(player, position)
+                : pullMetal(player);
+        }
+        return state.is(MagicCompatibilityTags.OVERWORLD_TRANSMUTABLE_ORES)
+            ? transmuteOre(player, position)
+            : raiseEarth(player, position);
+    }
+
+    private static InteractionResult transmuteOre(final ServerPlayer player, final BlockPos position) {
+        final ServerLevel level = (ServerLevel) player.level();
+        final BlockState state = level.getBlockState(position);
+        final List<ItemStack> drops = state.is(MagicCompatibilityTags.OVERWORLD_TRANSMUTABLE_ORES)
+            ? Block.getDrops(state, level, position, level.getBlockEntity(position), player, new ItemStack(Items.NETHERITE_PICKAXE))
+            : List.of();
+        final boolean valid = !drops.isEmpty()
+            && level.getBlockEntity(position) == null
+            && level.mayInteract(player, position);
+        final MagicPathRules.Decision decision = decision(
+            player,
+            MagicPath.OVERWORLD,
+            MagicPathRules.ActionKind.WORLD,
+            valid
+        );
+        if (!decision.success()) {
+            return fail(player, MagicPath.OVERWORLD, decision);
+        }
+        if (!level.setBlockAndUpdate(position, Blocks.STONE.defaultBlockState())) {
+            return failAfterSpend(player, MagicPath.OVERWORLD);
+        }
+        drops.forEach(drop -> java.util.stream.IntStream.range(0, OverworldInfusionRules.transmutationDropCopies())
+            .forEach(copy -> Block.popResource(level, position, drop.copyWithCount(1))));
+        return succeed(player, MagicPath.OVERWORLD, decision);
+    }
+
+    private static InteractionResult launchEarthBlock(final ServerPlayer player, final BlockPos position) {
+        final ServerLevel level = (ServerLevel) player.level();
+        final BlockState state = level.getBlockState(position);
+        final boolean valid = state.is(MagicCompatibilityTags.EARTH_CONTROLLED_BLOCKS)
+            && !state.isAir()
+            && level.getBlockEntity(position) == null
+            && level.mayInteract(player, position);
+        final MagicPathRules.Decision decision = decision(
+            player,
+            MagicPath.OVERWORLD,
+            MagicPathRules.ActionKind.WORLD,
+            valid
+        );
+        if (!decision.success()) {
+            return fail(player, MagicPath.OVERWORLD, decision);
+        }
+        final FallingBlockEntity projectile = FallingBlockEntity.fall(level, position, state);
+        projectile.setDeltaMovement(OverworldInfusionRules.launchedBlockVelocity(player.getLookAngle()));
+        projectile.setHurtsEntities(6.0F, 20);
+        return succeed(player, MagicPath.OVERWORLD, decision);
+    }
+
     private static InteractionResult pullMetal(final ServerPlayer player) {
         final ServerLevel level = (ServerLevel) player.level();
         final List<ItemEntity> items = level.getEntitiesOfClass(
@@ -863,16 +1044,23 @@ public final class MagicPathRuntime {
         final MagicPath path,
         final MagicPathRules.Diagnostic diagnostic
     ) {
-        final String pathId = path == null ? "none" : path.id();
-        final String key = "message.warlockery.magic." + pathId + "." + diagnostic.id();
         final ChatFormatting color = diagnostic == MagicPathRules.Diagnostic.READY
             ? ChatFormatting.GREEN
             : ChatFormatting.RED;
-        player.sendOverlayMessage(Component.translatable(
-            key,
-            path == null ? 0 : MagicPathState.reserve(player, path),
-            path == null ? 0 : path.maximumReserve()
-        ).withStyle(color));
+        final Component pathName = path == null
+            ? Component.translatable("item.warlockery.arcane_focus")
+            : Component.translatable("magic_path.warlockery." + path.id());
+        final Component message = switch (diagnostic) {
+            case NOT_ATTUNED -> Component.translatable(diagnostic.messageKey());
+            case INVALID_TARGET -> Component.translatable(diagnostic.messageKey(), pathName);
+            case INSUFFICIENT_RESERVE, READY -> Component.translatable(
+                diagnostic.messageKey(),
+                pathName,
+                path == null ? 0 : MagicPathState.reserve(player, path),
+                path == null ? 0 : path.maximumReserve()
+            );
+        };
+        player.sendOverlayMessage(message.copy().withStyle(color));
     }
 
     private static void effect(

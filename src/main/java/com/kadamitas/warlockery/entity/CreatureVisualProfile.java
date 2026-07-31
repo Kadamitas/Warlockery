@@ -46,9 +46,10 @@ public record CreatureVisualProfile(
             case FORGEWARDEN, STONEBROKER -> profile(0.8F, 2.1F, Archetype.BOSS);
             case THORNED_PURSUER -> profile(0.9F, 2.4F, Archetype.BOSS);
             case EMBERHORN_ARCHFIEND, ABYSSAL_REGENT -> profile(0.9F, 2.4F, Archetype.BOSS);
-            case CRIMSON_MATRIARCH -> profile(0.7F, 2.1F, Archetype.BOSS);
+            case NAAMAH -> profile(0.7F, 2.1F, Archetype.BOSS);
             case IRONBOUND_SENTINEL -> profile(1.0F, 2.5F, Archetype.BOSS);
-            case HOBGOBLIN -> profile(0.55F, 1.55F, Archetype.HUMANOID);
+            case GOBLIN -> profile(0.45F, 1.05F, Archetype.HUMANOID);
+            case HOBGOBLIN -> profile(0.5F, 1.15F, Archetype.HUMANOID);
             case WEREWOLF_HUNTER -> profile(0.6F, 1.95F, Archetype.HUMANOID);
             case CORPSE, CIRCLE_MAGE, BLOOD_THRALL, ILLUSION_ZOMBIE, GLASS_DOPPELGANGER,
                  ECHO_SHADE, VAMPIRE -> profile(0.6F, 1.95F, Archetype.HUMANOID);

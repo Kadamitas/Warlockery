@@ -1,0 +1,8 @@
+{
+  "amount": 2,
+  "random_sequence": "warlockery:trade_set/warlock/level_5",
+  "trades": [
+    "warlockery:warlock/5/emeralds_for_invisibility_brew",
+    "warlockery:warlock/5/emeralds_for_soaring_brew"
+  ]
+}

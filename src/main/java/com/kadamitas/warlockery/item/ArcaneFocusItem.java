@@ -2,6 +2,8 @@ package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.magic.MagicPathRuntime;
+import com.kadamitas.warlockery.magic.SymbolMagicRuntime;
+import net.minecraft.core.registries.BuiltInRegistries;
 import com.kadamitas.warlockery.ritual.RitualManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,6 +33,11 @@ public final class ArcaneFocusItem extends Item {
             ModNetwork.openRitualScreen(player, context.getClickedPos());
             return InteractionResult.SUCCESS;
         }
+        if (isMysticBranch(context.getItemInHand())) {
+            return context.getPlayer().isSecondaryUseActive()
+                ? SymbolMagicRuntime.cycle(player, context.getItemInHand())
+                : SymbolMagicRuntime.castBlock(player, context.getItemInHand(), context.getClickedPos(), context.getClickedFace());
+        }
         return MagicPathRuntime.useBlock(
             player,
             context.getClickedPos(),
@@ -43,6 +50,12 @@ public final class ArcaneFocusItem extends Item {
     public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.SUCCESS;
+        }
+        final ItemStack stack = player.getItemInHand(hand);
+        if (isMysticBranch(stack)) {
+            return player.isSecondaryUseActive()
+                ? SymbolMagicRuntime.cycle(serverPlayer, stack)
+                : SymbolMagicRuntime.castSelf(serverPlayer, stack);
         }
         return MagicPathRuntime.useSelf(serverPlayer, player.isSecondaryUseActive());
     }
@@ -57,6 +70,15 @@ public final class ArcaneFocusItem extends Item {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.SUCCESS;
         }
+        if (isMysticBranch(stack)) {
+            return player.isSecondaryUseActive()
+                ? SymbolMagicRuntime.cycle(serverPlayer, stack)
+                : SymbolMagicRuntime.castEntity(serverPlayer, stack, target);
+        }
         return MagicPathRuntime.useTarget(serverPlayer, target, player.isSecondaryUseActive());
+    }
+
+    static boolean isMysticBranch(final ItemStack stack) {
+        return !stack.isEmpty() && BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().equals("mysticbranch");
     }
 }

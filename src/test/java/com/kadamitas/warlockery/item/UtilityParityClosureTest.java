@@ -176,7 +176,7 @@ final class UtilityParityClosureTest {
         assertTrue(StatueRules.diagnose(
             StatueProfile.Effect.PATRON_BLESSING, false, true, false
         ).success());
-        assertTrue(read(DATA.resolve("tags/item/patron_offerings.json")).contains("#c:ingots/koboldite"));
+        assertTrue(read(DATA.resolve("tags/item/patron_offerings.json")).contains("#c:ingots/goblinite"));
     }
 
     private void ritualInhibitorFailure() {
@@ -256,9 +256,14 @@ final class UtilityParityClosureTest {
 
     private void spectralStoneSuccess() {
         final Identifier spectre = Identifier.parse("warlockery:spectre");
+        final Identifier banshee = Identifier.parse("warlockery:banshee");
         final CompoundTag data = new CompoundTag();
-        new SpectralStoneState(List.of(spectre)).write(data);
-        assertEquals(List.of(spectre), SpectralStoneState.read(data).captured());
+        final SpectralStoneState state = new SpectralStoneState(List.of(spectre));
+        assertTrue(state.canCapture(spectre));
+        assertFalse(state.canCapture(banshee));
+        state.with(spectre).with(spectre).write(data);
+        assertEquals(List.of(spectre, spectre, spectre), SpectralStoneState.read(data).captured());
+        assertFalse(SpectralStoneState.read(data).canCapture(spectre));
         assertTrue(UtilityItemFactory.supports("spectralstone"));
     }
 
@@ -272,8 +277,8 @@ final class UtilityParityClosureTest {
     }
 
     private void boneBoltSuccess() {
-        assertEquals(20.0F, CreatureCombat.adjustedDamage(CreatureKind.DEMON, 10, false, false, true, false));
-        assertEquals(20.0F, CreatureCombat.adjustedDamage(CreatureKind.CORPSE, 10, false, false, true, false));
+        assertEquals(15.0F, CreatureCombat.adjustedDamage(CreatureKind.DEMON, 10, false, false, true, false));
+        assertEquals(15.0F, CreatureCombat.adjustedDamage(CreatureKind.CORPSE, 10, false, false, true, false));
     }
 
     private void woodenBoltFailure() {
@@ -290,7 +295,7 @@ final class UtilityParityClosureTest {
     }
 
     private void armorExtensionDiagnostic() {
-        assertTrue(read(Path.of("src", "main", "resources", "data", "minecraft", "tags", "item", "leg_armor.json"))
+        assertTrue(read(Path.of("src", "main", "resources", "data", "minecraft", "tags", "item", "chest_armor.json"))
             .contains("warlockery:stonebrokers_quiver"));
     }
 

@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.crafting;
 
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
@@ -25,12 +26,21 @@ public final class AltarUpgradeResolver {
     }
 
     public static Modifiers resolve(final Stream<UpgradeClass> upgrades) {
-        final EnumSet<UpgradeClass> active = upgrades.collect(
+        final EnumSet<UpgradeClass> discovered = upgrades.collect(
             () -> EnumSet.noneOf(UpgradeClass.class),
             EnumSet::add,
             EnumSet::addAll
         );
-        final int capacityMultiplier = 1 + active.stream().mapToInt(UpgradeClass::capacityBonus).sum();
+        final EnumMap<UpgradeFamily, UpgradeClass> strongest = new EnumMap<>(UpgradeFamily.class);
+        discovered.forEach(upgrade -> strongest.merge(
+            upgrade.family(),
+            upgrade,
+            (first, second) -> first.strength() >= second.strength() ? first : second
+        ));
+        final EnumSet<UpgradeClass> active = strongest.values().isEmpty()
+            ? EnumSet.noneOf(UpgradeClass.class)
+            : EnumSet.copyOf(strongest.values());
+        final double capacityMultiplier = 1.0 + active.stream().mapToDouble(UpgradeClass::capacityBonus).sum();
         final int rechargeMultiplier = active.stream().mapToInt(UpgradeClass::rechargeMultiplier).reduce(1, (a, b) -> a * b);
         return new Modifiers(capacityMultiplier, rechargeMultiplier, active);
     }
@@ -50,19 +60,42 @@ public final class AltarUpgradeResolver {
     }
 
     public enum UpgradeClass {
-        CANDELABRA(0, 2),
-        CHALICE(1, 1),
-        PENTACLE(0, 2);
+        TORCH(UpgradeFamily.LIGHT, 1, 0, 2),
+        CANDELABRA(UpgradeFamily.LIGHT, 2, 0, 3),
+        SKULL(UpgradeFamily.SKULL, 1, 1, 2),
+        WITHER_SKULL(UpgradeFamily.SKULL, 2, 2, 3),
+        PLAYER_HEAD(UpgradeFamily.SKULL, 3, 1.5, 4),
+        CHALICE(UpgradeFamily.CHALICE, 1, 1, 1),
+        FILLED_CHALICE(UpgradeFamily.CHALICE, 2, 2, 1),
+        PENTACLE(UpgradeFamily.PENTACLE, 1, 0, 2),
+        PARADOX_EGG(UpgradeFamily.PARADOX_EGG, 1, 9, 10);
 
-        private final int capacityBonus;
+        private final UpgradeFamily family;
+        private final int strength;
+        private final double capacityBonus;
         private final int rechargeMultiplier;
 
-        UpgradeClass(final int capacityBonus, final int rechargeMultiplier) {
+        UpgradeClass(
+            final UpgradeFamily family,
+            final int strength,
+            final double capacityBonus,
+            final int rechargeMultiplier
+        ) {
+            this.family = family;
+            this.strength = strength;
             this.capacityBonus = capacityBonus;
             this.rechargeMultiplier = rechargeMultiplier;
         }
 
-        public int capacityBonus() {
+        public UpgradeFamily family() {
+            return family;
+        }
+
+        public int strength() {
+            return strength;
+        }
+
+        public double capacityBonus() {
             return capacityBonus;
         }
 
@@ -72,23 +105,43 @@ public final class AltarUpgradeResolver {
 
         private boolean matches(final BlockState state) {
             return switch (this) {
+                case TORCH -> state.is(WarlockeryTags.Blocks.ALTAR_TORCH_UPGRADES);
                 case CANDELABRA -> state.is(WarlockeryTags.Blocks.ALTAR_CANDELABRA_UPGRADES);
+                case SKULL -> state.is(WarlockeryTags.Blocks.ALTAR_SKULL_UPGRADES);
+                case WITHER_SKULL -> state.is(WarlockeryTags.Blocks.ALTAR_WITHER_SKULL_UPGRADES);
+                case PLAYER_HEAD -> state.is(WarlockeryTags.Blocks.ALTAR_PLAYER_HEAD_UPGRADES);
                 case CHALICE -> state.is(WarlockeryTags.Blocks.ALTAR_CHALICE_UPGRADES);
+                case FILLED_CHALICE -> state.is(WarlockeryTags.Blocks.ALTAR_FILLED_CHALICE_UPGRADES);
                 case PENTACLE -> state.is(WarlockeryTags.Blocks.ALTAR_PENTACLE_UPGRADES);
+                case PARADOX_EGG -> state.is(WarlockeryTags.Blocks.ALTAR_PARADOX_EGG_UPGRADES);
             };
         }
 
         private boolean matches(final ItemStack stack) {
             return switch (this) {
+                case TORCH -> stack.is(WarlockeryTags.Items.ALTAR_TORCH_UPGRADES);
                 case CANDELABRA -> stack.is(WarlockeryTags.Items.ALTAR_CANDELABRA_UPGRADES);
+                case SKULL -> stack.is(WarlockeryTags.Items.ALTAR_SKULL_UPGRADES);
+                case WITHER_SKULL -> stack.is(WarlockeryTags.Items.ALTAR_WITHER_SKULL_UPGRADES);
+                case PLAYER_HEAD -> stack.is(WarlockeryTags.Items.ALTAR_PLAYER_HEAD_UPGRADES);
                 case CHALICE -> stack.is(WarlockeryTags.Items.ALTAR_CHALICE_UPGRADES);
+                case FILLED_CHALICE -> stack.is(WarlockeryTags.Items.ALTAR_FILLED_CHALICE_UPGRADES);
                 case PENTACLE -> stack.is(WarlockeryTags.Items.ALTAR_PENTACLE_UPGRADES);
+                case PARADOX_EGG -> stack.is(WarlockeryTags.Items.ALTAR_PARADOX_EGG_UPGRADES);
             };
         }
     }
 
+    public enum UpgradeFamily {
+        LIGHT,
+        SKULL,
+        CHALICE,
+        PENTACLE,
+        PARADOX_EGG
+    }
+
     public record Modifiers(
-        int capacityMultiplier,
+        double capacityMultiplier,
         int rechargeMultiplier,
         Set<UpgradeClass> activeClasses
     ) {
@@ -97,7 +150,7 @@ public final class AltarUpgradeResolver {
         }
 
         public int applyCapacity(final int baseCapacity) {
-            return baseCapacity * capacityMultiplier;
+            return (int) Math.floor(baseCapacity * capacityMultiplier);
         }
 
         public int applyRecharge(final int baseRecharge) {

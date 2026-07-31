@@ -6,8 +6,58 @@
                       "bonus_rolls":  0,
                       "entries":  [
                                       {
-                                          "type":  "minecraft:item",
-                                          "name":  "warlockery:dreamcatcher"
+                                          "type": "minecraft:alternatives",
+                                          "children": [
+                                              {
+                                                  "type": "minecraft:item",
+                                                  "name": "warlockery:dream_weaver_fasting",
+                                                  "conditions": [{
+                                                      "condition": "minecraft:block_state_property",
+                                                      "block": "warlockery:dreamcatcher",
+                                                      "properties": {"mode": "fasting"}
+                                                  }]
+                                              },
+                                              {
+                                                  "type": "minecraft:item",
+                                                  "name": "warlockery:dream_weaver_fleet_foot",
+                                                  "conditions": [{
+                                                      "condition": "minecraft:block_state_property",
+                                                      "block": "warlockery:dreamcatcher",
+                                                      "properties": {"mode": "fleet_foot"}
+                                                  }]
+                                              },
+                                              {
+                                                  "type": "minecraft:item",
+                                                  "name": "warlockery:dream_weaver_intensity",
+                                                  "conditions": [{
+                                                      "condition": "minecraft:block_state_property",
+                                                      "block": "warlockery:dreamcatcher",
+                                                      "properties": {"mode": "intensity"}
+                                                  }]
+                                              },
+                                              {
+                                                  "type": "minecraft:item",
+                                                  "name": "warlockery:dream_weaver_iron_arm",
+                                                  "conditions": [{
+                                                      "condition": "minecraft:block_state_property",
+                                                      "block": "warlockery:dreamcatcher",
+                                                      "properties": {"mode": "iron_arm"}
+                                                  }]
+                                              },
+                                              {
+                                                  "type": "minecraft:item",
+                                                  "name": "warlockery:dream_weaver_nightmares",
+                                                  "conditions": [{
+                                                      "condition": "minecraft:block_state_property",
+                                                      "block": "warlockery:dreamcatcher",
+                                                      "properties": {"mode": "nightmares"}
+                                                  }]
+                                              },
+                                              {
+                                                  "type": "minecraft:item",
+                                                  "name": "warlockery:dreamcatcher"
+                                              }
+                                          ]
                                       }
                                   ],
                       "conditions":  [

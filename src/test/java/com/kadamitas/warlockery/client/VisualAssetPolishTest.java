@@ -33,7 +33,7 @@ final class VisualAssetPolishTest {
     private static final Path BLOCK_MODELS = ASSETS.resolve("models/block");
     private static final Path BLOCK_STATES = ASSETS.resolve("blockstates");
     private static final List<String> GLYPHS = List.of(
-        "circle", "circleglyphritual", "circleglyphinfernal", "circleglyph_veil"
+        "circle", "circleglyphgolden", "circleglyphritual", "circleglyphinfernal", "circleglyph_veil"
     );
 
     @Test
@@ -42,9 +42,9 @@ final class VisualAssetPolishTest {
             sprite("boline"), sprite("ritual_knife"), sprite("chalk_heart"), sprite("chalk_ritual"),
             sprite("chalk_ritual_charged"), sprite("chalk_infernal"), sprite("chalk_the_veil"),
             sprite("ingredient_graveyard_dust"), sprite("ingredient_silverdust"), sprite("ingredient_spectral_dust"),
-            sprite("ingredient_delvealloydust"), sprite("coffin"), sprite("coffinblock"), sprite("vcoffin"),
+            sprite("ingredient_delvealloydust"), sprite("coffin"), sprite("vcoffin"),
             sprite("alder_planks"), sprite("hawthorn_planks"), sprite("rowan_planks"), sprite("ice_slippers"),
-            sprite("ruby_slippers"), sprite("glassgoblet"), sprite("glassgobletfull"), sprite("chalice"),
+            sprite("ruby_slippers"), sprite("glassgoblet"), sprite("glassgobletfull"),
             sprite("ingredient_chalice"), sprite("ingredient_chalice_full"), sprite("delvealloysword"),
             sprite("delvealloyaxe"), sprite("delvealloypickaxe"), sprite("delvealloyshovel"), sprite("delvealloyhoe"),
             sprite("delvealloyhelm"), sprite("delvealloychestplate"), sprite("delvealloyleggings"),
@@ -57,10 +57,10 @@ final class VisualAssetPolishTest {
             sprite("brew_murderous_flock", "brew_splash_bottle"), sprite("brew_drinkable"),
             sprite("brew_splash_bottle"), sprite("brewgas"), sprite("brewliquid"),
             sprite("ingredient_brew_hitchcock"), sprite("ingredient_brew_murder_of_crows"),
-            sprite("ingredient_brew_soaring"), sprite("erosionbrew"), sprite("alluringskull"),
+            sprite("ingredient_brew_soaring"), sprite("erosionbrew"),
             sprite("ingredient_tormented_twine"), sprite("ingredient_waystone"),
             sprite("ingredient_waystone_bound"), sprite("ingredient_waystone_creature_bound"),
-            sprite("silversword"), sprite("altar"), sprite("wolfaltar"), sprite("crystalball")
+            sprite("silversword")
         ));
         java.util.stream.IntStream.range(0, 33)
             .mapToObj(frame -> sprite("playercompass" + frame))

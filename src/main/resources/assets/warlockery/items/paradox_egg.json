@@ -1,6 +1,6 @@
-﻿{
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/paradox_egg"
-              }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/paradox_egg"
+  }
 }

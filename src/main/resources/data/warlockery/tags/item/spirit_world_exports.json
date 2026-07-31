@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "warlockery:ingredient_icy_needle",
+    "warlockery:ingredient_verdant_catalyst",
+    "warlockery:ingredient_verdant_catalyst_prime",
+    "warlockery:somniancotton",
+    "warlockery:ingredient_disturbed_cotton",
+    "warlockery:ingredient_mellifluous_hunger",
+    "warlockery:ingredient_brew_congealed_spirit",
+    "warlockery:bucketspirit",
+    "warlockery:spiritflowing"
+  ]
+}

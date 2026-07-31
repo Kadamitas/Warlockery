@@ -4,7 +4,7 @@
   "action": "hex",
   "power": 1900,
   "radius": 6,
-  "duration": 12000,
+  "duration": 2147483647,
   "amplifier": 0,
   "casting_time": 100,
   "glyphs": {

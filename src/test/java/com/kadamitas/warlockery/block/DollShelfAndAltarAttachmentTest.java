@@ -55,5 +55,10 @@ final class DollShelfAndAltarAttachmentTest {
         assertTrue(tag.contains("#warlockery:altar_upgrades/candelabra"));
         assertTrue(tag.contains("#warlockery:altar_upgrades/chalice"));
         assertTrue(tag.contains("#warlockery:altar_upgrades/pentacle"));
+        assertTrue(tag.contains("#warlockery:altar_upgrades/skull"));
+        assertTrue(tag.contains("#warlockery:altar_upgrades/wither_skull"));
+        assertTrue(tag.contains("#warlockery:altar_upgrades/torch"));
+        assertTrue(tag.contains("#warlockery:altar_upgrades/player_head"));
+        assertTrue(tag.contains("#warlockery:altar_upgrades/paradox_egg"));
     }
 }

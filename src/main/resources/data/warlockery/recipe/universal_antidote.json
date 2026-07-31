@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#warlockery:utility_reagents/null_catalysts",
+    "warlockery:ingredient_brew_infection",
+    "warlockery:ingredient_brew_wasting"
+  ],
+  "result": {
+    "id": "warlockery:universal_antidote",
+    "count": 2
+  }
+}

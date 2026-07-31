@@ -2,7 +2,7 @@
   "title": "ritual.warlockery.storm_portable.title",
   "description": "ritual.warlockery.storm_portable.description",
   "action": "storm",
-  "power": 1800,
+  "power": 0,
   "radius": 6,
   "duration": 6000,
   "amplifier": 0,

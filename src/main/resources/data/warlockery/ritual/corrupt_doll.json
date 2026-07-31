@@ -2,7 +2,7 @@
   "title": "ritual.warlockery.corrupt_doll.title",
   "description": "ritual.warlockery.corrupt_doll.description",
   "action": "hex",
-  "power": 2200,
+  "power": 7000,
   "radius": 6,
   "duration": 6000,
   "amplifier": 0,

@@ -94,12 +94,12 @@ final class UtilityDeviceParityTest {
             UpgradeClass.CANDELABRA
         ));
         assertEquals(1, modifiers.activeClasses().size());
-        assertEquals(2, modifiers.rechargeMultiplier());
+        assertEquals(3, modifiers.rechargeMultiplier());
     }
 
     private void candelabraSuccess() {
         final var modifiers = AltarUpgradeResolver.resolve(Stream.of(UpgradeClass.CANDELABRA));
-        assertEquals(2, modifiers.applyRecharge(10) / 10);
+        assertEquals(3, modifiers.applyRecharge(10) / 10);
         assertTagContains("block/altar_upgrades/candelabra", "warlockery:candelabra");
         assertTagContains("item/altar_upgrades/candelabra", "warlockery:ingredient_candelabra");
         assertTrue(read(DATA.resolve("recipe/candelabra.json")).contains("#c:ingots/gold"));
@@ -157,11 +157,11 @@ final class UtilityDeviceParityTest {
             UpgradeClass.CANDELABRA,
             UpgradeClass.PENTACLE
         ));
-        assertEquals(4, stacked.rechargeMultiplier());
-        assertEquals(40, stacked.applyRecharge(10));
+        assertEquals(6, stacked.rechargeMultiplier());
+        assertEquals(60, stacked.applyRecharge(10));
         assertTagContains("block/altar_upgrades/pentacle", "warlockery:pentacle");
         assertTagContains("item/altar_upgrades/pentacle", "warlockery:ingredient_pentacle");
-        assertTrue(read(DATA.resolve("recipe/ingredient_pentacle.json")).contains("#c:ingots/koboldite"));
+        assertTrue(read(DATA.resolve("recipe/ingredient_pentacle.json")).contains("#c:ingots/goblinite"));
         assertTrue(read(DATA.resolve("loot_table/blocks/pentacle.json"))
             .contains("warlockery:ingredient_pentacle"));
     }

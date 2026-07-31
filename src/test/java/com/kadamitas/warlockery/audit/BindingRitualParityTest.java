@@ -28,7 +28,7 @@ final class BindingRitualParityTest {
         assertEquals("warlockery:statueofworship", ritual.get("target").getAsString());
         final String recipe = read(DATA.resolve(Path.of("recipe", "statue_of_hobgoblin_patron.json")));
         assertTrue(recipe.contains("#c:stones"));
-        assertTrue(recipe.contains("#c:ingots/koboldite"));
+        assertTrue(recipe.contains("#c:ingots/goblinite"));
     }
 
     private static JsonObject json(final Path path) {

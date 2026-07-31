@@ -1,6 +1,6 @@
-﻿{
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/alchemical_oven_lit"
-              }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/alchemical_oven_lit"
+  }
 }

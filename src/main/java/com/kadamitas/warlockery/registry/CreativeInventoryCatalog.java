@@ -16,6 +16,10 @@ public final class CreativeInventoryCatalog {
         "brewgas",
         "brewliquid",
         "biomenote",
+        "circle",
+        "circleglyph_veil",
+        "circleglyphinfernal",
+        "circleglyphritual",
         "disease",
         "distilleryburning",
         "erosionbrew",
@@ -46,8 +50,7 @@ public final class CreativeInventoryCatalog {
     private static final Set<String> STARTER_TOOLS = Set.of("arcane_focus", "ritual_knife", "boline");
     private static final Set<String> BREW_CONTAINERS = Set.of("brewbag", "bucketbrew");
     private static final Set<String> RITUAL_OBJECTS = Set.of(
-        "alluringskull", "broken_hexes_statue", "candelabra", "chalice", "circle", "circleglyph_veil",
-        "circleglyphinfernal", "circleglyphritual", "crystalball", "demonheart", "dreamcatcher",
+        "alluringskull", "broken_hexes_statue", "candelabra", "chalice", "crystalball", "demonheart", "dreamcatcher",
         "occluded_summons_statue", "pentacle", "scarecrow", "statuegoddess", "statueofworship",
         "trent", "wickerbundle", "wolfhead", "wolftrap"
     );
@@ -67,12 +70,12 @@ public final class CreativeInventoryCatalog {
     private static final List<SectionRule> RULES = List.of(
         rule(Section.GETTING_STARTED, MANUALS::contains),
         rule(Section.GETTING_STARTED, STARTER_TOOLS::contains),
-        rule(Section.RITUALS, RITUAL_OBJECTS::contains),
+        rule(Section.RITUALS, id -> RITUAL_OBJECTS.contains(id) || id.startsWith("dream_weaver_")),
         rule(Section.RITUALS, id -> id.startsWith("chalk") || id.contains("talisman")),
         rule(Section.MACHINES, MACHINES::contains),
         rule(Section.DOLLS, id -> id.contains("doll")),
         rule(Section.BREWS, id -> id.startsWith("brew_") || id.startsWith("ingredient_brew_")
-            || BREW_CONTAINERS.contains(id)),
+            || id.endsWith("antidote") || BREW_CONTAINERS.contains(id)),
         rule(Section.EQUIPMENT, CreativeInventoryCatalog::isEquipment),
         rule(Section.NATURE, CreativeInventoryCatalog::isNatural),
         rule(Section.BUILDING, BLOCK_IDS::contains),

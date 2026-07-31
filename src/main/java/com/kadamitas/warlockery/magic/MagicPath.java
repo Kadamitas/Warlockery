@@ -1,12 +1,10 @@
 package com.kadamitas.warlockery.magic;
 
-import java.util.Arrays;
-import java.util.Map;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-public enum MagicPath {
+public enum MagicPath implements StringIdentified {
     IMP("imp", 80),
     INFERNAL("infernal", 160),
     GRAVE("grave", 120),
@@ -15,8 +13,7 @@ public enum MagicPath {
     OVERWORLD("overworld", 140),
     SKY("sky", 120);
 
-    private static final Map<String, MagicPath> BY_ID = Arrays.stream(values())
-        .collect(Collectors.toUnmodifiableMap(MagicPath::id, Function.identity()));
+    private static final EnumLookup<MagicPath> LOOKUP = EnumLookup.create("magic path", values());
 
     private final String id;
     private final int maximumReserve;
@@ -35,7 +32,7 @@ public enum MagicPath {
     }
 
     public static Optional<MagicPath> find(final String id) {
-        return Optional.ofNullable(BY_ID.get(id));
+        return LOOKUP.find(id);
     }
 
     public static MagicPath require(final String id) {

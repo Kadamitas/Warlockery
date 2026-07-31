@@ -2,6 +2,13 @@ package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.CreatureBehaviorProfile.Feature;
+import com.kadamitas.warlockery.item.BeastSpeechCharmItem;
+import com.kadamitas.warlockery.item.SympatheticBinding;
+import com.kadamitas.warlockery.item.WaystoneState;
+import com.kadamitas.warlockery.item.ResourceCompatibilityTags;
+import com.kadamitas.warlockery.item.ParasyticLouseItem;
+import com.kadamitas.warlockery.item.SeerCovenRuntime;
+import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import com.kadamitas.warlockery.magic.ImpContractRuntime;
@@ -13,8 +20,10 @@ import java.util.stream.StreamSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -40,10 +49,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
 public final class CreatureBehaviorRuntime {
     private static final ThreadLocal<Boolean> APPLYING_THORNS = ThreadLocal.withInitial(() -> false);
+    private static final String ABYSSAL_TORMENT_PHASE = "WarlockeryAbyssalTormentPhase";
+    private static final String HELLHOUND_CURE = "WarlockeryHellhoundCure";
     private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(
         EquipmentSlot.HEAD,
         EquipmentSlot.CHEST,
@@ -76,17 +88,20 @@ public final class CreatureBehaviorRuntime {
         switch (profile.kind()) {
             case HEDGE_CRONE -> tickHedgeCrone(creature);
             case BANSHEE -> pulseEffects(creature, 10.0, MobEffects.WEAKNESS, MobEffects.MINING_FATIGUE);
-            case FORGEWARDEN -> tickKoboldAura(creature, level, true);
+            case DEATH -> creature.heal(1.0F);
+            case FORGEWARDEN -> tickGoblinAura(creature, level, true);
             case THORNED_PURSUER -> tickThornedPursuer(creature, level);
-            case ABYSSAL_REGENT, SPECTRE -> pulseFear(creature);
+            case ABYSSAL_REGENT -> tickAbyssalRegent(creature, level);
+            case SPECTRE -> pulseFear(creature);
             case MANDRAKE -> pulseScreech(creature);
             case DREAMROOT, BRAMBLE_COLOSSUS -> tickRootedDrain(creature, level);
-            case STONEBROKER -> tickKoboldAura(creature, level, false);
+            case GLASS_DOPPELGANGER -> tickReflection(creature, level);
+            case STONEBROKER -> tickStonebroker(creature, level);
             case LOUSE -> tickLouse(creature, level);
             case POLTERGEIST -> tickPoltergeist(creature, level);
             case EMBERHORN_ARCHFIEND -> tickCauldronAura(creature, level);
             case FAMILIAR -> tickOreGuidance(creature, level);
-            case VAMPIRE, CRIMSON_MATRIARCH -> tickSunlightWeakness(creature, level);
+            case VAMPIRE, NAAMAH -> tickSunlightWeakness(creature, level);
             default -> {
             }
         }
@@ -107,13 +122,16 @@ public final class CreatureBehaviorRuntime {
             case PALE_STEED, NIGHTMARE -> interactMount(creature, player, held, profile);
             case CIRCLE_MAGE -> recruitCircleMage(creature, level, player, held, profile);
             case DEMON -> barterWithDemon(creature, player, held, profile);
-            case CAT, LOST_SOUL, OWL, SPIRIT, TOAD -> bindCompanion(creature, player, held, profile);
-            case HOBGOBLIN -> bindCompanion(creature, player, held, profile);
+            case HELLHOUND -> cureHellhound(creature, level, player, held);
+            case CAT, LOST_SOUL, SPIRIT, TOAD -> bindCompanion(creature, player, held, profile);
+            case OWL -> interactOwl(creature, level, player, hand, held, profile);
+            case GOBLIN, HOBGOBLIN -> bindCompanion(creature, player, held, profile);
             case IMP -> ImpContractRuntime.interact(creature, player, held, profile);
             case STORM_SIMIAN -> interactStormSimian(creature, level, player, held, profile);
-            case FORGEWARDEN, DREAMROOT, STONEBROKER, BRAMBLE_COLOSSUS ->
+            case BRAMBLE_COLOSSUS -> interactTreefyd(creature, player, held, profile);
+            case FORGEWARDEN, DREAMROOT, STONEBROKER ->
                 empowerWithHeart(creature, player, held, profile);
-            case CRIMSON_MATRIARCH -> initiateVampire(player, held, profile);
+            case NAAMAH -> interactNaamah(creature, player, hand, profile);
             case LOUSE -> captureEffect(creature, player, held);
             case FAMILIAR -> interactSpectralFamiliar(creature, player, held, profile);
             default -> InteractionResult.PASS;
@@ -139,6 +157,18 @@ public final class CreatureBehaviorRuntime {
             && DeathImpersonationRules.isComplete(player)) {
             return false;
         }
+        if (profile.kind() == CreatureKind.DEMON
+            && target instanceof Player player
+            && BeastSpeechCharmItem.pacifiesDemon(player, creature)) {
+            return false;
+        }
+        if (profile.kind() == CreatureKind.BRAMBLE_COLOSSUS && !TreefydRules.canAttack(
+            CreatureBehaviorState.isOwnedBy(creature, target.getUUID()),
+            TreefydState.isAllowed(creature, target.getUUID()),
+            target instanceof ArcaneCreature arcane && arcane.creatureKind() == CreatureKind.BRAMBLE_COLOSSUS
+        )) {
+            return false;
+        }
         return !profile.has(Feature.PASSIVE_UNTIL_HURT) || creature.getLastHurtByMob() == target;
     }
 
@@ -153,6 +183,12 @@ public final class CreatureBehaviorRuntime {
         }
         if (profile.has(Feature.FIRE_MELEE)) {
             living.igniteForSeconds(4.0F);
+        }
+        if (profile.kind() == CreatureKind.FORGEWARDEN) {
+            final float bonus = GoblinBossRules.pairedAttackBonus(nearestPatronDistanceSquared(creature, level));
+            if (bonus > 0.0F) {
+                living.push(0.0, 0.45, 0.0);
+            }
         }
         if (profile.has(Feature.BLOOD_DRAIN)) {
             creature.heal(3.0F + CreatureBehaviorState.empowerment(creature));
@@ -171,9 +207,22 @@ public final class CreatureBehaviorRuntime {
             living.addEffect(new MobEffectInstance(MobEffects.POISON, 100, 0));
             creature.heal(2.0F);
         }
+        if (profile.kind() == CreatureKind.LOUSE) {
+            injectStoredEffect(creature, living);
+        }
         if (profile.has(Feature.SAFE_BLAST)) {
             MinedrakeCombat.detonate(creature, level);
         }
+    }
+
+    public static float attackDamageBonus(
+        final Mob creature,
+        final ServerLevel level,
+        final CreatureBehaviorProfile profile
+    ) {
+        return profile.kind() == CreatureKind.FORGEWARDEN
+            ? GoblinBossRules.pairedAttackBonus(nearestPatronDistanceSquared(creature, level))
+            : 0.0F;
     }
 
     public static void afterHurt(
@@ -260,6 +309,11 @@ public final class CreatureBehaviorRuntime {
         if (profile.offering().stream().noneMatch(held::is)) {
             return InteractionResult.PASS;
         }
+        if (!CreatureBehaviorState.isOwnedBy(creature, player.getUUID())
+            && !FamiliarBondRules.canRecruitCovenMage(SeerCovenRuntime.countOwnedMages(level, player))) {
+            send(player, "message.warlockery.creature.coven_full");
+            return InteractionResult.FAIL;
+        }
         final boolean familiarPresent = level.getEntitiesOfClass(
             Mob.class,
             player.getBoundingBox().inflate(12.0),
@@ -275,7 +329,11 @@ public final class CreatureBehaviorRuntime {
             send(player, "message.warlockery.creature.familiar_required", creature.getDisplayName());
             return InteractionResult.FAIL;
         }
-        return finishBinding(creature, player, held);
+        final InteractionResult result = finishBinding(creature, player, held);
+        if (CreatureBehaviorState.isOwnedBy(creature, player.getUUID())) {
+            SeerCovenRuntime.register(level, player, creature);
+        }
+        return result;
     }
 
     private static InteractionResult barterWithDemon(
@@ -361,6 +419,123 @@ public final class CreatureBehaviorRuntime {
         return InteractionResult.SUCCESS;
     }
 
+    private static InteractionResult interactOwl(
+        final Mob creature,
+        final ServerLevel level,
+        final Player player,
+        final InteractionHand hand,
+        final ItemStack held,
+        final CreatureBehaviorProfile profile
+    ) {
+        if (!held.is(CreatureBehaviorTags.Items.BOUND_WAYSTONES)) {
+            return bindCompanion(creature, player, held, profile);
+        }
+        final InteractionHand cargoHand = hand == InteractionHand.MAIN_HAND
+            ? InteractionHand.OFF_HAND
+            : InteractionHand.MAIN_HAND;
+        final ItemStack cargo = player.getItemInHand(cargoHand);
+        final Optional<DeliveryTarget> target = deliveryTarget(level, held);
+        final FamiliarDeliveryRules.Diagnostic diagnostic = FamiliarDeliveryRules.diagnose(
+            CreatureBehaviorState.isOwnedBy(creature, player.getUUID()),
+            WaystoneState.read(held).isPresent() || SympatheticBinding.read(held).isPresent(),
+            !cargo.isEmpty(),
+            target.isPresent()
+        );
+        if (diagnostic != FamiliarDeliveryRules.Diagnostic.READY) {
+            send(player, "message.warlockery.creature.owl_delivery." + diagnostic.name().toLowerCase(java.util.Locale.ROOT));
+            return InteractionResult.FAIL;
+        }
+        final DeliveryTarget destination = target.orElseThrow();
+        final ItemStack parcel = cargo.copyWithCount(1);
+        if (!player.hasInfiniteMaterials()) {
+            cargo.shrink(1);
+        }
+        final ItemEntity delivered = new ItemEntity(
+            destination.level(),
+            destination.position().x,
+            destination.position().y + 0.5,
+            destination.position().z,
+            parcel
+        );
+        delivered.setDefaultPickUpDelay();
+        destination.level().addFreshEntity(delivered);
+        creature.teleport(new TeleportTransition(
+            destination.level(),
+            destination.position().add(0.0, 0.5, 0.0),
+            Vec3.ZERO,
+            creature.getYRot(),
+            creature.getXRot(),
+            TeleportTransition.DO_NOTHING
+        ));
+        send(player, "message.warlockery.creature.owl_delivery.ready", parcel.getHoverName());
+        return InteractionResult.SUCCESS;
+    }
+
+    private static InteractionResult cureHellhound(
+        final Mob creature,
+        final ServerLevel level,
+        final Player player,
+        final ItemStack held
+    ) {
+        final int walls = (int) java.util.Arrays.stream(new net.minecraft.core.Direction[]{
+            net.minecraft.core.Direction.NORTH,
+            net.minecraft.core.Direction.SOUTH,
+            net.minecraft.core.Direction.EAST,
+            net.minecraft.core.Direction.WEST
+        }).filter(direction -> {
+            final BlockPos wall = creature.blockPosition().relative(direction);
+            return level.getBlockState(wall).isFaceSturdy(level, wall, direction.getOpposite());
+        }).count();
+        final HellhoundCureRules.Result result = HellhoundCureRules.advance(
+            creature.getPersistentData().getIntOr(HELLHOUND_CURE, 0),
+            creature.hasEffect(MobEffects.WEAKNESS),
+            held.is(Items.GOLDEN_APPLE),
+            walls
+        );
+        send(player, "message.warlockery.creature.hellhound_cure."
+            + result.diagnostic().name().toLowerCase(java.util.Locale.ROOT));
+        if (result.diagnostic() == HellhoundCureRules.Diagnostic.NEEDS_WEAKNESS) {
+            return InteractionResult.PASS;
+        }
+        if (result.diagnostic() == HellhoundCureRules.Diagnostic.NEEDS_GOLDEN_APPLE) {
+            return InteractionResult.FAIL;
+        }
+        consumeOne(player, held);
+        creature.getPersistentData().putInt(HELLHOUND_CURE, result.progress());
+        if (!result.cured()) {
+            return InteractionResult.SUCCESS;
+        }
+        final Wolf wolf = EntityTypes.WOLF.create(level, EntitySpawnReason.CONVERSION);
+        if (wolf == null) {
+            return InteractionResult.FAIL;
+        }
+        wolf.snapTo(creature.getX(), creature.getY(), creature.getZ(), creature.getYRot(), creature.getXRot());
+        wolf.tame(player);
+        wolf.setPersistenceRequired();
+        level.addFreshEntity(wolf);
+        creature.discard();
+        return InteractionResult.SUCCESS;
+    }
+
+    private static Optional<DeliveryTarget> deliveryTarget(final ServerLevel current, final ItemStack waystone) {
+        final Optional<SympatheticBinding> binding = SympatheticBinding.read(waystone);
+        if (binding.isPresent()) {
+            return binding.orElseThrow().resolve(current.getServer())
+                .filter(entity -> entity.level() instanceof ServerLevel)
+                .map(entity -> new DeliveryTarget((ServerLevel) entity.level(), entity.position()));
+        }
+        return WaystoneState.read(waystone).flatMap(location -> {
+            final ServerLevel destination = current.getServer().getLevel(ResourceKey.create(
+                Registries.DIMENSION,
+                location.dimension()
+            ));
+            if (destination == null || !destination.isLoaded(location.position())) {
+                return Optional.empty();
+            }
+            return Optional.of(new DeliveryTarget(destination, Vec3.atCenterOf(location.position())));
+        });
+    }
+
     private static InteractionResult empowerWithHeart(
         final Mob creature,
         final Player player,
@@ -381,30 +556,104 @@ public final class CreatureBehaviorRuntime {
         return InteractionResult.SUCCESS;
     }
 
-    private static InteractionResult initiateVampire(
+    private static InteractionResult interactTreefyd(
+        final Mob creature,
         final Player player,
         final ItemStack held,
         final CreatureBehaviorProfile profile
     ) {
+        if (!CreatureBehaviorState.isOwnedBy(creature, player.getUUID())) {
+            send(player, "message.warlockery.creature.owner_required", creature.getDisplayName());
+            return InteractionResult.FAIL;
+        }
+        final Optional<SympatheticBinding> binding = SympatheticBinding.read(held);
+        if (binding.isPresent()) {
+            final boolean allowed = TreefydState.toggleAllowed(creature, binding.orElseThrow());
+            send(player, allowed
+                ? "message.warlockery.creature.treefyd.allowed"
+                : "message.warlockery.creature.treefyd.removed", binding.orElseThrow().targetName());
+            return InteractionResult.SUCCESS;
+        }
+        if (held.is(ResourceCompatibilityTags.Items.SAFE_MAGICAL_PLANT_TOOLS)) {
+            final boolean wandering = TreefydState.toggleWandering(creature);
+            creature.setNoAi(!wandering);
+            send(player, wandering
+                ? "message.warlockery.creature.treefyd.wandering"
+                : "message.warlockery.creature.treefyd.guardian");
+            return InteractionResult.SUCCESS;
+        }
+        return empowerWithHeart(creature, player, held, profile);
+    }
+
+    private static InteractionResult initiateVampire(
+        final Player player,
+        final InteractionHand hand,
+        final CreatureBehaviorProfile profile
+    ) {
+        final boolean mainHandOffering = profile.offering().stream().anyMatch(player.getMainHandItem()::is);
+        final boolean offHandOffering = profile.offering().stream().anyMatch(player.getOffhandItem()::is);
+        if (hand != VampireInitiationRules.preferredHand(mainHandOffering, offHandOffering)) {
+            return InteractionResult.PASS;
+        }
+        final ItemStack held = player.getItemInHand(hand);
         return switch (VampireInitiationRules.assess(
             profile.offering().stream().anyMatch(held::is),
             SupernaturalState.getForm(player)
         )) {
             case MISSING_MATRIARCH_BLOOD -> {
                 send(player, "message.warlockery.creature.vampire_missing_blood", player.getDisplayName());
-                yield InteractionResult.FAIL;
+                yield InteractionResult.CONSUME;
             }
             case TRANSFORMATION_BLOCKED -> {
                 send(player, "message.warlockery.creature.transformation_blocked", player.getDisplayName());
-                yield InteractionResult.FAIL;
+                yield InteractionResult.CONSUME;
             }
             case READY -> {
-                SupernaturalState.setForm(player, SupernaturalForm.VAMPIRE);
+                com.kadamitas.warlockery.transformation.SupernaturalAdvancement.beginVampire(player);
                 consumeOne(player, held);
                 send(player, "message.warlockery.creature.vampire_initiated", player.getDisplayName());
                 yield InteractionResult.SUCCESS;
             }
         };
+    }
+
+    private static InteractionResult interactNaamah(
+        final Mob creature,
+        final Player player,
+        final InteractionHand hand,
+        final CreatureBehaviorProfile profile
+    ) {
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+            && SupernaturalState.getForm(player) == SupernaturalForm.VAMPIRE
+            && com.kadamitas.warlockery.transformation.SupernaturalProgression.level(
+                player,
+                com.kadamitas.warlockery.transformation.SupernaturalProgression.Path.VAMPIRE
+            ) == 6) {
+            com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime
+                .recordNaamahAudience(serverPlayer);
+            creature.getPersistentData().putString(
+                com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime.NAAMAH_TRIAL_OWNER,
+                player.getStringUUID()
+            );
+            final ItemStack offering = player.getItemInHand(hand);
+            if (offering.is(Items.POPPY)) {
+                if (com.kadamitas.warlockery.transformation.SupernaturalProgression.counter(
+                    player,
+                    com.kadamitas.warlockery.transformation.SupernaturalProgression.Path.VAMPIRE,
+                    com.kadamitas.warlockery.transformation.VampireProgressionRules.Metric.NAAMAH_DEFEATED
+                ) == 0) {
+                    send(player, "message.warlockery.vampire_progression.naamah_must_be_defeated");
+                    return InteractionResult.CONSUME;
+                }
+                com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime
+                    .recordPoppyOffering(serverPlayer);
+                consumeOne(player, offering);
+                send(player, "message.warlockery.creature.naamah_poppy_accepted", player.getDisplayName());
+                return InteractionResult.SUCCESS;
+            }
+            return InteractionResult.CONSUME;
+        }
+        return initiateVampire(player, hand, profile);
     }
 
     private static InteractionResult captureEffect(
@@ -416,7 +665,17 @@ public final class CreatureBehaviorRuntime {
         final Optional<MobEffectInstance> effect = StreamSupport.stream(potion.getAllEffects().spliterator(), false)
             .findFirst();
         if (effect.isEmpty()) {
-            return InteractionResult.PASS;
+            if (!held.isEmpty()) {
+                return InteractionResult.PASS;
+            }
+            final ItemStack capturedLouse = new ItemStack(ModItems.ALL.get("louse").get());
+            ParasyticLouseItem.writeFromCreature(capturedLouse, creature);
+            if (!player.getInventory().add(capturedLouse)) {
+                player.drop(capturedLouse, false);
+            }
+            creature.discard();
+            send(player, "message.warlockery.louse.captured");
+            return InteractionResult.SUCCESS;
         }
         final MobEffectInstance captured = effect.orElseThrow();
         final Identifier effectId = BuiltInRegistries.MOB_EFFECT.getKey(captured.getEffect().value());
@@ -560,7 +819,7 @@ public final class CreatureBehaviorRuntime {
         pulseEffects(creature, 10.0, MobEffects.DARKNESS, MobEffects.WEAKNESS);
     }
 
-    private static void tickKoboldAura(
+    private static void tickGoblinAura(
         final Mob creature,
         final ServerLevel level,
         final boolean forgeAura
@@ -568,11 +827,50 @@ public final class CreatureBehaviorRuntime {
         level.getEntitiesOfClass(
             LivingEntity.class,
             creature.getBoundingBox().inflate(12.0),
-            entity -> entity.typeHolder().is(CreatureBehaviorTags.EntityTypes.KOBOLDS)
+            entity -> entity.typeHolder().is(CreatureBehaviorTags.EntityTypes.GOBLINS)
         ).forEach(entity -> {
             entity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 100, 0));
             entity.addEffect(new MobEffectInstance(forgeAura ? MobEffects.FIRE_RESISTANCE : MobEffects.HASTE, 100, 0));
         });
+    }
+
+    private static void tickStonebroker(final Mob creature, final ServerLevel level) {
+        tickGoblinAura(creature, level, false);
+        nearestPatron(creature, level, 32.0)
+            .filter(counterpart -> creature.distanceToSqr(counterpart) > 36.0)
+            .ifPresent(counterpart -> creature.getNavigation().moveTo(counterpart, 1.1));
+        final LivingEntity target = creature.getTarget();
+        if (target != null
+            && creature.distanceToSqr(target) <= 256.0
+            && creature.getSensing().hasLineOfSight(target)) {
+            fireArrow(creature, target, level, 6.0, 1.8F, 3.0F, 1.15F);
+        }
+    }
+
+    private static double nearestPatronDistanceSquared(final Mob creature, final ServerLevel level) {
+        return nearestPatron(creature, level, 16.0)
+            .map(creature::distanceToSqr)
+            .orElse(Double.POSITIVE_INFINITY);
+    }
+
+    private static java.util.Optional<LivingEntity> nearestPatron(
+        final Mob creature,
+        final ServerLevel level,
+        final double radius
+    ) {
+        final var counterpart = GoblinBossRules.counterpart(
+            creature instanceof ArcaneCreature arcane ? arcane.creatureKind() : null
+        );
+        if (counterpart.isEmpty()) {
+            return java.util.Optional.empty();
+        }
+        return level.getEntitiesOfClass(
+            LivingEntity.class,
+            creature.getBoundingBox().inflate(radius),
+            candidate -> candidate != creature
+                && candidate instanceof ArcaneCreature arcane
+                && arcane.creatureKind() == counterpart.orElseThrow()
+        ).stream().min(java.util.Comparator.comparingDouble(creature::distanceToSqr));
     }
 
     private static void tickThornedPursuer(final Mob creature, final ServerLevel level) {
@@ -582,7 +880,7 @@ public final class CreatureBehaviorRuntime {
             distanceSquared,
             creature.getSensing().hasLineOfSight(target)
         )) {
-            fireThorn(creature, target, level);
+            fireArrow(creature, target, level, 5.0, 1.6F, 5.0F, 0.8F);
         } else if (target != null && distanceSquared > 196.0) {
             final Vec3 direction = target.position().subtract(creature.position()).normalize().scale(-2.0);
             creature.randomTeleport(
@@ -612,10 +910,18 @@ public final class CreatureBehaviorRuntime {
         }
     }
 
-    private static void fireThorn(final Mob creature, final LivingEntity target, final ServerLevel level) {
+    private static void fireArrow(
+        final Mob creature,
+        final LivingEntity target,
+        final ServerLevel level,
+        final double damage,
+        final float velocity,
+        final float inaccuracy,
+        final float pitch
+    ) {
         final ItemStack projectileStack = new ItemStack(Items.ARROW);
         final Arrow thorn = new Arrow(level, creature, projectileStack, null);
-        thorn.setBaseDamage(5.0);
+        thorn.setBaseDamage(damage);
         final double x = target.getX() - creature.getX();
         final double z = target.getZ() - creature.getZ();
         final double arc = Math.sqrt(x * x + z * z) * 0.12;
@@ -623,10 +929,10 @@ public final class CreatureBehaviorRuntime {
             x,
             target.getEyeY() - projectile.getY() + arc,
             z,
-            1.6F,
-            5.0F
+            velocity,
+            inaccuracy
         ));
-        creature.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 0.8F);
+        creature.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, pitch);
     }
 
     private static void tickRootedDrain(final Mob creature, final ServerLevel level) {
@@ -663,6 +969,22 @@ public final class CreatureBehaviorRuntime {
         BuiltInRegistries.MOB_EFFECT.get(effect.effectId()).ifPresent(holder -> attacker.addEffect(
             new MobEffectInstance(holder, Math.min(600, effect.durationTicks()), effect.amplifier())
         ));
+        CreatureBehaviorState.clearStoredEffect(creature);
+    }
+
+    private static void injectStoredEffect(final Mob creature, final LivingEntity bitten) {
+        final Optional<CreatureBehaviorState.StoredEffect> stored = CreatureBehaviorState.storedEffect(creature);
+        if (stored.isEmpty()) {
+            return;
+        }
+        BuiltInRegistries.MOB_EFFECT.get(stored.orElseThrow().effectId()).ifPresent(effect -> bitten.addEffect(
+            new MobEffectInstance(
+                effect,
+                stored.orElseThrow().durationTicks(),
+                stored.orElseThrow().amplifier()
+            )
+        ));
+        CreatureBehaviorState.clearStoredEffect(creature);
     }
 
     private static void tickPoltergeist(final Mob creature, final ServerLevel level) {
@@ -718,6 +1040,40 @@ public final class CreatureBehaviorRuntime {
             }));
     }
 
+    private static void tickReflection(final Mob creature, final ServerLevel level) {
+        final String targetId = creature.getPersistentData().getStringOr("WarlockeryReflectedTarget", "");
+        if (targetId.isBlank()) {
+            return;
+        }
+        final LivingEntity target;
+        try {
+            target = level.getEntity(UUID.fromString(targetId)) instanceof LivingEntity living ? living : null;
+        } catch (IllegalArgumentException exception) {
+            return;
+        }
+        if (target == null || !target.isAlive()) {
+            return;
+        }
+        List.of(
+            EquipmentSlot.MAINHAND,
+            EquipmentSlot.OFFHAND,
+            EquipmentSlot.HEAD,
+            EquipmentSlot.CHEST,
+            EquipmentSlot.LEGS,
+            EquipmentSlot.FEET
+        ).forEach(slot -> {
+            creature.setItemSlot(slot, target.getItemBySlot(slot).copy());
+            creature.setDropChance(slot, 0.0F);
+        });
+        creature.setHealth(Math.min(creature.getMaxHealth(), target.getHealth()));
+        if (target.hasEffect(MobEffects.SPEED)) {
+            creature.addEffect(new MobEffectInstance(MobEffects.SPEED, 60, 1, true, false));
+        }
+        if (target.hasEffect(MobEffects.STRENGTH)) {
+            creature.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 60, 0, true, false));
+        }
+    }
+
     private static void tickSunlightWeakness(final Mob creature, final ServerLevel level) {
         final long dayTime = level.getOverworldClockTime() % 24_000L;
         final boolean daylight = dayTime < 13_000L || dayTime > 23_000L;
@@ -728,6 +1084,26 @@ public final class CreatureBehaviorRuntime {
         )) {
             creature.igniteForSeconds(3.0F);
         }
+    }
+
+    private static void tickAbyssalRegent(final Mob creature, final ServerLevel level) {
+        pulseFear(creature);
+        final boolean phaseTriggered = creature.getPersistentData().getBooleanOr(ABYSSAL_TORMENT_PHASE, false);
+        if (!AbyssalRegentRules.beginsTormentPhase(creature.getHealth(), phaseTriggered)) {
+            return;
+        }
+        creature.getPersistentData().putBoolean(ABYSSAL_TORMENT_PHASE, true);
+        creature.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 240, 1, true, true));
+        creature.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 240, 1, true, true));
+        level.getEntitiesOfClass(
+            Player.class,
+            creature.getBoundingBox().inflate(24.0D),
+            Player::isAlive
+        ).forEach(player -> {
+            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 240, 2));
+            player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 240, 0));
+            player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 240, 1));
+        });
     }
 
     private static void increaseAttributes(
@@ -781,5 +1157,8 @@ public final class CreatureBehaviorRuntime {
         int durationTicks,
         int amplifier
     ) {
+    }
+
+    private record DeliveryTarget(ServerLevel level, Vec3 position) {
     }
 }

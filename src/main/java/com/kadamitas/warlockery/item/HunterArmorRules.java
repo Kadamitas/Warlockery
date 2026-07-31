@@ -28,6 +28,10 @@ public final class HunterArmorRules {
         return completeHunterSet;
     }
 
+    public static boolean suppressesProtectionDolls(final boolean completeHunterSet) {
+        return completeHunterSet;
+    }
+
     public record Resolution(float damageMultiplier, boolean burnsAttacker) {
         public static final Resolution NONE = new Resolution(1.0F, false);
 

@@ -22,6 +22,11 @@ final class AdvancedMutationRulesTest {
                 DynamicTest.dynamicTest("diagnostic", this::toadListsEveryMissingCondition),
                 DynamicTest.dynamicTest("success", this::completeToadCreatesOnePerSnare)
             )),
+            DynamicContainer.dynamicContainer("owl", List.of(
+                DynamicTest.dynamicTest("failure", this::incompleteOwlFails),
+                DynamicTest.dynamicTest("diagnostic", this::owlListsEveryMissingCondition),
+                DynamicTest.dynamicTest("success", this::completeOwlCreatesOnePerSnare)
+            )),
             DynamicContainer.dynamicContainer("minedrake", List.of(
                 DynamicTest.dynamicTest("failure", this::incompleteMinedrakeFails),
                 DynamicTest.dynamicTest("diagnostic", this::minedrakeListsEveryMissingCondition),
@@ -79,7 +84,7 @@ final class AdvancedMutationRulesTest {
             AdvancedMutationKind.TOAD,
             toadSnapshot(1, 2, 0, 0)
         );
-        assertTrue(assessment.diagnostic().contains("slime-filled Critter Snares (1/2)"));
+        assertTrue(assessment.diagnostic().contains("slime-filled Critter Snares (1/4)"));
         assertTrue(assessment.diagnostic().contains("diagonal Grasspers (2/4)"));
         assertTrue(assessment.diagnostic().contains("charged Attuned Stone"));
         assertTrue(assessment.diagnostic().contains("cat or ocelot host"));
@@ -92,6 +97,30 @@ final class AdvancedMutationRulesTest {
         assertTrue(assessment.complete());
         assertEquals("\u2713 Toad mutation is ready", assessment.diagnostic());
         assertEquals(5, snapshot.slimeSnares());
+    }
+
+    private void incompleteOwlFails() {
+        assertFalse(AdvancedMutationRules.assess(AdvancedMutationKind.OWL, owlSnapshot(2, 3, 0, 0)).complete());
+    }
+
+    private void owlListsEveryMissingCondition() {
+        final AdvancedMutationAssessment assessment = AdvancedMutationRules.assess(
+            AdvancedMutationKind.OWL,
+            owlSnapshot(2, 3, 0, 0)
+        );
+        assertTrue(assessment.diagnostic().contains("bat-filled Critter Snares (2/4)"));
+        assertTrue(assessment.diagnostic().contains("diagonal Grasspers (3/4)"));
+        assertTrue(assessment.diagnostic().contains("charged Attuned Stone"));
+        assertTrue(assessment.diagnostic().contains("wolf host"));
+        assertEquals(AdvancedMutationKind.OWL, AdvancedMutationRules.select(owlSnapshot(4, 4, 1, 1)).kind());
+    }
+
+    private void completeOwlCreatesOnePerSnare() {
+        final AdvancedMutationSnapshot snapshot = owlSnapshot(4, 4, 1, 1);
+        final AdvancedMutationAssessment assessment = AdvancedMutationRules.assess(AdvancedMutationKind.OWL, snapshot);
+        assertTrue(assessment.complete());
+        assertEquals("\u2713 Owl mutation is ready", assessment.diagnostic());
+        assertEquals(AdvancedMutationRules.REQUIRED_BAT_SNARES, snapshot.batSnares());
     }
 
     private void incompleteMinedrakeFails() {
@@ -167,6 +196,29 @@ final class AdvancedMutationRulesTest {
             0,
             creepers,
             livingMandrakes
+        );
+    }
+
+    private static AdvancedMutationSnapshot owlSnapshot(
+        final int snares,
+        final int grasspers,
+        final int chargedStones,
+        final int hosts
+    ) {
+        return new AdvancedMutationSnapshot(
+            true,
+            true,
+            0,
+            grasspers,
+            3,
+            chargedStones,
+            0,
+            0,
+            0,
+            0,
+            0,
+            snares,
+            hosts
         );
     }
 }

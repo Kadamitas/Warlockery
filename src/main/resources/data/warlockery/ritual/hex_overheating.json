@@ -4,7 +4,7 @@
   "action": "hex",
   "power": 2200,
   "radius": 6,
-  "duration": 12000,
+  "duration": 2147483647,
   "amplifier": 0,
   "casting_time": 100,
   "glyphs": {
@@ -32,7 +32,7 @@
     "day_only": false,
     "full_moon": false,
     "raining": false,
-    "thundering": false,
+    "thundering": true,
     "dimension": "",
     "minimum_players": 1
   },

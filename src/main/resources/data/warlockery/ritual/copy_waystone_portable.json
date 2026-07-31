@@ -2,7 +2,7 @@
   "title": "ritual.warlockery.copy_waystone_portable.title",
   "description": "ritual.warlockery.copy_waystone_portable.description",
   "action": "copy_waystone",
-  "power": 1000,
+  "power": 0,
   "radius": 6,
   "duration": 1200,
   "amplifier": 0,

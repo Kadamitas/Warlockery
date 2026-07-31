@@ -4,7 +4,7 @@
   "action": "manifest",
   "power": 2400,
   "radius": 6,
-  "duration": 2400,
+  "duration": 3000,
   "amplifier": 0,
   "casting_time": 100,
   "glyphs": {

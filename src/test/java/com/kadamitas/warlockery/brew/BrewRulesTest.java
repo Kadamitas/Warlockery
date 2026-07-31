@@ -92,4 +92,19 @@ final class BrewRulesTest {
         assertFalse(BrewRules.canPartFluid(true, false, true));
         assertFalse(BrewRules.canPartFluid(true, true, false));
     }
+
+    @Test
+    void solidifyingAcceptsEveryHollowTearsFluidState() {
+        assertTrue(BrewRules.shouldSolidify(true));
+        assertFalse(BrewRules.shouldSolidify(false));
+    }
+
+    @Test
+    void erosionOnlyRemovesSafeTerrainBelowHollowTears() {
+        assertTrue(BrewRules.canErodeBelowHollowTears(false, false, false, 1.0F));
+        assertFalse(BrewRules.canErodeBelowHollowTears(true, false, false, 1.0F));
+        assertFalse(BrewRules.canErodeBelowHollowTears(false, true, false, 1.0F));
+        assertFalse(BrewRules.canErodeBelowHollowTears(false, false, true, 1.0F));
+        assertFalse(BrewRules.canErodeBelowHollowTears(false, false, false, -1.0F));
+    }
 }

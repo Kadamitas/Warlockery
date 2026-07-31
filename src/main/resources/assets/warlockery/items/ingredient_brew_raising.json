@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_raising"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_raising",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 11818918
+      }
+    ]
+  }
 }

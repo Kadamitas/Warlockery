@@ -3,8 +3,7 @@
     "ambientocclusion":  false,
     "textures":  {
                      "particle":  "warlockery:block/fumefunnel",
-                     "metal":  "warlockery:block/fumefunnel",
-                     "filter":  "warlockery:block/fumefunnel_filter"
+                     "metal":  "warlockery:block/fumefunnel"
                  },
     "elements":  [
                      {

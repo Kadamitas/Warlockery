@@ -19,11 +19,11 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
 
-public final class MagicalPlantBlock extends BushBlock {
-    private static final int TELEPORT_ATTEMPTS = 16;
-    private static final int TELEPORT_RADIUS = 8;
-    private static final int TELEPORT_VERTICAL_RANGE = 3;
+public class MagicalPlantBlock extends BushBlock {
+    static final int TELEPORT_ATTEMPTS = 32;
+    static final int TELEPORT_RADIUS = 500;
     private final Behavior behavior;
 
     MagicalPlantBlock(final Behavior behavior, final BlockBehaviour.Properties properties) {
@@ -201,11 +201,14 @@ public final class MagicalPlantBlock extends BushBlock {
         }
         final RandomSource random = level.getRandom();
         for (int attempt = 0; attempt < TELEPORT_ATTEMPTS; attempt++) {
-            final BlockPos target = source.offset(
-                random.nextInt(TELEPORT_RADIUS * 2 + 1) - TELEPORT_RADIUS,
-                random.nextInt(TELEPORT_VERTICAL_RANGE * 2 + 1) - TELEPORT_VERTICAL_RANGE,
-                random.nextInt(TELEPORT_RADIUS * 2 + 1) - TELEPORT_RADIUS
-            );
+            final int x = source.getX() + random.nextInt(TELEPORT_RADIUS * 2 + 1) - TELEPORT_RADIUS;
+            final int z = source.getZ() + random.nextInt(TELEPORT_RADIUS * 2 + 1) - TELEPORT_RADIUS;
+            final BlockPos column = new BlockPos(x, source.getY(), z);
+            if (!level.isLoaded(column)) {
+                continue;
+            }
+            final int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            final BlockPos target = new BlockPos(x, y, z);
             if (tryTeleport(level, source, target, entity, random)) {
                 return;
             }

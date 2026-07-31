@@ -36,12 +36,19 @@ final class UtilityItemFactoryTest {
             "ingredient_seer_stone",
             "bitingbelt",
             "glassgoblet",
+            "beast_speech_charm",
+            "silver_tongue_charm",
             "ingredient_door_key",
             "ingredient_door_keyring",
             "mirror",
             "replication_staff",
             "replication_charge",
-            "wolftoken"
+            "wolftoken",
+            "hedge_crones_hat",
+            "ingredient_warm_blood",
+            "universal_antidote",
+            "boline",
+            "deathshand"
         );
         final Set<String> expected = java.util.stream.Stream.concat(base.stream(), ManualProfile.ids().stream())
             .collect(java.util.stream.Collectors.toUnmodifiableSet());

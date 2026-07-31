@@ -9,14 +9,9 @@ import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
-public record FluidIngredient(String value, Identifier id, boolean tag) {
+public record FluidIngredient(String value, Identifier id, boolean tag) implements RegistryIngredient {
     public static Optional<FluidIngredient> parse(final String value) {
-        if (value == null || value.isBlank()) {
-            return Optional.empty();
-        }
-        final boolean tag = value.startsWith("#");
-        final Identifier id = Identifier.tryParse(tag ? value.substring(1) : value);
-        return id == null ? Optional.empty() : Optional.of(new FluidIngredient(value, id, tag));
+        return RegistryIngredient.parse(value, FluidIngredient::new);
     }
 
     public boolean matches(final FluidStack stack) {
@@ -36,6 +31,6 @@ public record FluidIngredient(String value, Identifier id, boolean tag) {
     }
 
     public boolean isResolvable() {
-        return tag || BuiltInRegistries.FLUID.containsKey(id);
+        return isResolvableIn(BuiltInRegistries.FLUID);
     }
 }

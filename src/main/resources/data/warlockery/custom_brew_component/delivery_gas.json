@@ -1,0 +1,6 @@
+{
+  "ingredient": "#warlockery:custom_brew/delivery/gas",
+  "role": "delivery",
+  "delivery": "gas",
+  "priority": 2
+}

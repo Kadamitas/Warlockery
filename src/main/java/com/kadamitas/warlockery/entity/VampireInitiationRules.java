@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
+import net.minecraft.world.InteractionHand;
 
 public final class VampireInitiationRules {
     private VampireInitiationRules() {
@@ -14,6 +15,10 @@ public final class VampireInitiationRules {
             return Status.TRANSFORMATION_BLOCKED;
         }
         return Status.READY;
+    }
+
+    public static InteractionHand preferredHand(final boolean mainHandOffering, final boolean offHandOffering) {
+        return mainHandOffering || !offHandOffering ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
     }
 
     public enum Status {

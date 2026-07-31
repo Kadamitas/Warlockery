@@ -3,20 +3,17 @@ package com.kadamitas.warlockery.crafting;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.brew.custom.CustomBrewDefinitionManager;
 import com.kadamitas.warlockery.compat.jei.JeiRecipeRefreshSignal;
-import com.kadamitas.warlockery.util.IngredientAllocator;
 import com.kadamitas.warlockery.util.FluidIngredient;
 import com.kadamitas.warlockery.util.ItemIngredient;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Comparator;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.IntStream;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
@@ -33,8 +30,11 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public final class MachineRecipeManager extends SimpleJsonResourceReloadListener<MachineRecipeDefinition> {
     public static final MachineRecipeManager INSTANCE = new MachineRecipeManager();
-    private volatile Map<Identifier, MachineRecipeDefinition> recipes = Map.of();
-    private volatile Map<String, List<ItemIngredient>> inputsByMachine = Map.of();
+    private static final Comparator<Candidate> DIAGNOSTIC_ORDER = Comparator
+        .comparingInt(Candidate::score)
+        .reversed()
+        .thenComparing(Candidate::id);
+    private volatile MachineRecipeCatalog catalog = MachineRecipeCatalog.EMPTY;
     private volatile long revision;
 
     private MachineRecipeManager() {
@@ -47,29 +47,16 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         final ResourceManager resourceManager,
         final ProfilerFiller profiler
     ) {
-        final Map<Identifier, MachineRecipeDefinition> validRecipes = Collections.unmodifiableMap(definitions.entrySet().stream()
+        final Map<Identifier, MachineRecipeDefinition> validRecipes = definitions.entrySet().stream()
             .filter(entry -> validate(entry.getKey(), entry.getValue()))
-            .sorted(Map.Entry.comparingByKey())
-            .collect(Collectors.toMap(
+            .collect(Collectors.toUnmodifiableMap(
                 Map.Entry::getKey,
-                Map.Entry::getValue,
-                (_, replacement) -> replacement,
-                LinkedHashMap::new
-            )));
-        recipes = validRecipes;
-        inputsByMachine = Collections.unmodifiableMap(validRecipes.values().stream().collect(Collectors.groupingBy(
-            MachineRecipeDefinition::machine,
-            LinkedHashMap::new,
-            Collectors.flatMapping(
-                recipe -> recipe.inputs().stream()
-                    .map(MachineRecipeDefinition.Input::ingredient)
-                    .map(ItemIngredient::parse)
-                    .flatMap(Optional::stream),
-                Collectors.collectingAndThen(Collectors.toCollection(LinkedHashSet::new), List::copyOf)
-            )
-        )));
+                Map.Entry::getValue
+            ));
+        final MachineRecipeCatalog loaded = MachineRecipeCatalog.create(validRecipes);
+        catalog = loaded;
         revision++;
-        Warlockery.LOGGER.info("Loaded {} Warlockery machine recipes", recipes.size());
+        Warlockery.LOGGER.info("Loaded {} Warlockery machine recipes", loaded.definitions().size());
         JeiRecipeRefreshSignal.publish();
     }
 
@@ -91,18 +78,9 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         final FluidStack fluid,
         final int altarPower
     ) {
-        final String machine = profile.recipeType();
         final int inputSlots = profile.inputSlots();
-        return recipes.entrySet().stream()
-            .filter(entry -> entry.getValue().machine().equals(machine))
-            .sorted(Comparator.comparingInt((Map.Entry<Identifier, MachineRecipeDefinition> entry) ->
-                entry.getValue().inputs().stream().mapToInt(MachineRecipeDefinition.Input::count).sum()
-            ).reversed().thenComparing(
-                Comparator.comparingInt((Map.Entry<Identifier, MachineRecipeDefinition> entry) ->
-                    specificity(entry.getValue())
-                ).reversed()
-            ).thenComparing(Map.Entry::getKey))
-            .map(entry -> inspect(entry, inventory, inputSlots, fluid, altarPower))
+        return catalog.forMachine(profile.recipeType()).stream()
+            .map(recipe -> inspect(recipe, inventory, inputSlots, fluid, altarPower))
             .filter(candidate -> candidate.inputsReady(profile))
             .findFirst()
             .map(candidate -> new Match(candidate.id(), candidate.recipe()));
@@ -121,7 +99,7 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         if (stack.isEmpty()) {
             return false;
         }
-        final boolean recipeIngredient = inputsByMachine.getOrDefault(profile.recipeType(), List.of()).stream()
+        final boolean recipeIngredient = catalog.inputsFor(profile.recipeType()).stream()
             .anyMatch(ingredient -> ingredient.matches(stack));
         return recipeIngredient || "cauldron".equals(profile.recipeType())
             && CustomBrewDefinitionManager.INSTANCE.acceptsInput(stack);
@@ -145,7 +123,6 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         final FluidStack fluid,
         final int altarPower
     ) {
-        final String machine = profile.recipeType();
         final int inputSlots = profile.inputSlots();
         final List<WrongInput> allInputs = IntStream.range(0, inputSlots)
             .mapToObj(inventory::get)
@@ -156,14 +133,10 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
             return Diagnostic.EMPTY;
         }
 
-        return recipes.entrySet().stream()
-            .filter(entry -> entry.getValue().machine().equals(machine))
-            .map(entry -> inspect(entry, inventory, inputSlots, fluid, altarPower))
+        return catalog.forMachine(profile.recipeType()).stream()
+            .map(recipe -> inspect(recipe, inventory, inputSlots, fluid, altarPower))
             .filter(candidate -> candidate.matched() > 0)
-            .sorted(Comparator
-                .comparingInt(Candidate::score).reversed()
-                .thenComparing(candidate -> candidate.id().toString()))
-            .findFirst()
+            .min(DIAGNOSTIC_ORDER)
             .map(candidate -> new Diagnostic(
                 candidate.id().toString(),
                 candidate.output(),
@@ -180,7 +153,9 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         final int inputSlots
     ) {
         final List<ItemStack> inputs = inventory.stream().limit(inputSlots).toList();
-        IngredientAllocator.allocate(recipe.inputs(), inputs).consumeFrom(inputs);
+        catalog.allocationPlan(recipe)
+            .allocate(inputs, ItemStack::getCount)
+            .consumeFrom(inputs);
     }
 
     public void consumeFluid(
@@ -212,14 +187,14 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
     }
 
     private static Candidate inspect(
-        final Map.Entry<Identifier, MachineRecipeDefinition> entry,
+        final MachineRecipeCatalog.PreparedRecipe prepared,
         final NonNullList<ItemStack> inventory,
         final int inputSlots,
         final FluidStack fluid,
         final int altarPower
     ) {
         final List<ItemStack> inputs = inventory.stream().limit(inputSlots).toList();
-        final IngredientAllocator.Allocation allocation = IngredientAllocator.allocate(entry.getValue().inputs(), inputs);
+        final var allocation = prepared.allocationPlan().allocate(inputs, ItemStack::getCount);
         final List<MissingInput> missingItems = allocation.requirements().stream()
             .filter(requirement -> !requirement.complete())
             .map(requirement -> new MissingInput(
@@ -231,38 +206,34 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
             .filter(slot -> allocation.unreservedBySlot().get(slot) > 0 && !inputs.get(slot).isEmpty())
             .mapToObj(slot -> new WrongInput(itemId(inputs.get(slot)), allocation.unreservedBySlot().get(slot)))
             .toList();
-        final Optional<MachineRecipeDefinition.FluidInput> fluidInput = entry.getValue().fluid();
-        final Optional<FluidIngredient> expectedFluid = fluidInput
-            .map(MachineRecipeDefinition.FluidInput::ingredient)
-            .flatMap(FluidIngredient::parse);
-        final int availableFluid = expectedFluid.filter(ingredient -> ingredient.matches(fluid))
-            .map(_ -> fluid.getAmount())
-            .orElse(0);
-        final List<MissingInput> missing = java.util.stream.Stream.concat(
-            java.util.stream.Stream.concat(
+        final Optional<MachineRecipeDefinition.FluidInput> fluidInput = prepared.definition().fluid();
+        final var expectedFluid = prepared.fluid();
+        final boolean fluidMatches = expectedFluid.filter(ingredient -> ingredient.matches(fluid)).isPresent();
+        final int availableFluid = fluidMatches ? fluid.getAmount() : 0;
+        final List<MissingInput> missing = Stream.concat(
+            Stream.concat(
                 missingItems.stream(),
                 fluidInput.stream()
                     .filter(input -> availableFluid < input.amount())
                     .map(input -> new MissingInput(input.ingredient(), input.amount() - availableFluid))
             ),
-            entry.getValue().altarPower() > altarPower
-                ? java.util.stream.Stream.of(new MissingInput("warlockery:altar_power", entry.getValue().altarPower() - Math.max(0, altarPower)))
-                : java.util.stream.Stream.empty()
+            prepared.definition().altarPower() > altarPower
+                ? Stream.of(new MissingInput("warlockery:altar_power", prepared.definition().altarPower() - Math.max(0, altarPower)))
+                : Stream.empty()
         ).toList();
-        final List<WrongInput> wrong = java.util.stream.Stream.concat(
+        final List<WrongInput> wrong = Stream.concat(
             wrongItems.stream(),
-            java.util.stream.Stream.ofNullable(
-                fluid.isEmpty() || expectedFluid.filter(ingredient -> ingredient.matches(fluid)).isPresent()
+            Stream.ofNullable(
+                fluid.isEmpty() || fluidMatches
                     ? null
                     : new WrongInput(fluidId(fluid), fluid.getAmount())
             )
         ).toList();
-        final String output = entry.getValue().outputs().isEmpty() ? "" : entry.getValue().outputs().getFirst().item();
         return new Candidate(
-            entry.getKey(), entry.getValue(), output,
+            prepared.id(), prepared.definition(), prepared.primaryOutput(),
             allocation.matchedCount()
                 + (fluidInput.isPresent() && availableFluid >= fluidInput.orElseThrow().amount() ? 1 : 0)
-                + (entry.getValue().altarPower() > 0 && altarPower >= entry.getValue().altarPower() ? 1 : 0),
+                + (prepared.definition().altarPower() > 0 && altarPower >= prepared.definition().altarPower() ? 1 : 0),
             missing,
             wrong
         );
@@ -316,15 +287,15 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
     }
 
     public List<Identifier> ids() {
-        return List.copyOf(recipes.keySet());
+        return List.copyOf(catalog.definitions().keySet());
     }
 
     public Optional<Match> byId(final Identifier id) {
-        return Optional.ofNullable(recipes.get(id)).map(recipe -> new Match(id, recipe));
+        return catalog.definition(id).map(recipe -> new Match(id, recipe));
     }
 
     public List<Match> all() {
-        return recipes.entrySet().stream()
+        return catalog.definitions().entrySet().stream()
             .map(entry -> new Match(entry.getKey(), entry.getValue()))
             .toList();
     }

@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/universal_antidote",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 6737076
+      }
+    ]
+  }
+}

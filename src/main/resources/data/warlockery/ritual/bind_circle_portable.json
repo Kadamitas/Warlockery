@@ -2,7 +2,7 @@
   "title": "ritual.warlockery.bind_circle_portable.title",
   "description": "ritual.warlockery.bind_circle_portable.description",
   "action": "bind_circle",
-  "power": 1200,
+  "power": 0,
   "radius": 6,
   "duration": 1200,
   "amplifier": 0,
@@ -18,7 +18,12 @@
         "consume": false
       },
       {
-        "ingredient": "warlockery:ingredient_focused_will",
+        "ingredient": "warlockery:ingredient_attuned_stone_charged",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "#c:dusts/glowstone",
         "count": 1,
         "consume": true
       }

@@ -25,6 +25,14 @@ public final class BrewMarkerRules {
         return Math.max(0.0F, incomingDamage) * 0.75F;
     }
 
+    public static float moonshineDamage(final float incomingDamage) {
+        return Math.max(0.0F, incomingDamage) * 0.5F;
+    }
+
+    public static float moonshineExhaustion() {
+        return 0.25F;
+    }
+
     public static int contagionLimit(final BrewMarkerKind kind) {
         return kind == BrewMarkerKind.DISEASE ? 8 : 4;
     }

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " ST",
+    "SGS",
+    "TS "
+  ],
+  "key": {
+    "G": "minecraft:gold_nugget",
+    "S": "minecraft:string",
+    "T": "warlockery:ingredient_dog_tongue"
+  },
+  "result": {
+    "id": "warlockery:beast_speech_charm"
+  }
+}

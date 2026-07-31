@@ -118,16 +118,60 @@ final class ArcaneCreatureModel extends EntityModel<LivingEntityRenderState> {
                 buildPoltergeist(root);
                 yield true;
             }
-            case CRIMSON_MATRIARCH -> {
-                buildCrimsonMatriarch(root);
+            case NAAMAH -> {
+                buildNaamah(root);
                 yield true;
             }
             case ABYSSAL_REGENT -> {
                 buildAbyssalRegent(root);
                 yield true;
             }
+            case GOBLIN, HOBGOBLIN -> {
+                buildPenguinGoblin(root);
+                yield true;
+            }
             default -> false;
         };
+    }
+
+    private static void buildPenguinGoblin(final PartDefinition root) {
+        root.addOrReplaceChild(
+            "head",
+            CubeListBuilder.create()
+                .texOffs(0, 0).addBox(-4.0F, -6.0F, -3.5F, 8.0F, 6.0F, 7.0F)
+                .texOffs(30, 0).addBox(-2.0F, -2.75F, -5.5F, 4.0F, 2.0F, 2.0F),
+            PartPose.offset(0.0F, 10.0F, 0.0F)
+        );
+        root.addOrReplaceChild(
+            "body",
+            CubeListBuilder.create().texOffs(0, 16).addBox(-5.0F, 0.0F, -3.0F, 10.0F, 10.0F, 6.0F),
+            PartPose.offset(0.0F, 10.0F, 0.0F)
+        );
+        root.addOrReplaceChild(
+            "right_arm",
+            CubeListBuilder.create().texOffs(32, 12).addBox(-3.0F, 0.0F, -1.0F, 3.0F, 8.0F, 2.0F),
+            PartPose.offsetAndRotation(-5.0F, 11.0F, 0.0F, 0.0F, 0.0F, 0.18F)
+        );
+        root.addOrReplaceChild(
+            "left_arm",
+            CubeListBuilder.create().texOffs(32, 12).mirror().addBox(0.0F, 0.0F, -1.0F, 3.0F, 8.0F, 2.0F),
+            PartPose.offsetAndRotation(5.0F, 11.0F, 0.0F, 0.0F, 0.0F, -0.18F)
+        );
+        root.addOrReplaceChild(
+            "right_hind_leg",
+            CubeListBuilder.create().texOffs(44, 12).addBox(-2.0F, 0.0F, -3.0F, 4.0F, 3.0F, 5.0F),
+            PartPose.offset(-2.25F, 20.0F, -0.5F)
+        );
+        root.addOrReplaceChild(
+            "left_hind_leg",
+            CubeListBuilder.create().texOffs(44, 12).mirror().addBox(-2.0F, 0.0F, -3.0F, 4.0F, 3.0F, 5.0F),
+            PartPose.offset(2.25F, 20.0F, -0.5F)
+        );
+        root.addOrReplaceChild(
+            "tail",
+            CubeListBuilder.create().texOffs(44, 22).addBox(-2.0F, 0.0F, -1.0F, 4.0F, 4.0F, 2.0F),
+            PartPose.offsetAndRotation(0.0F, 17.0F, 3.0F, 0.45F, 0.0F, 0.0F)
+        );
     }
 
     @Override
@@ -674,7 +718,7 @@ final class ArcaneCreatureModel extends EntityModel<LivingEntityRenderState> {
         addPart(root, "crown", 4.0F, 4.0F, 4.0F, -2.0F, -1.0F, 1.0F, -0.2F, 0.2F, -0.35F);
     }
 
-    private static void buildCrimsonMatriarch(final PartDefinition root) {
+    private static void buildNaamah(final PartDefinition root) {
         addPart(root, "head", 7.0F, 6.0F, 6.0F, 0.0F, 1.0F, -1.0F);
         addPart(root, "body", 10.0F, 14.0F, 8.0F, 0.0F, 10.0F, 0.0F);
         addPart(root, "right_front_leg", 2.0F, 13.0F, 2.0F, -7.0F, 4.0F, -2.0F, 0.0F, 0.2F, 0.75F);
@@ -869,7 +913,7 @@ final class ArcaneCreatureModel extends EntityModel<LivingEntityRenderState> {
                 addPart(root, "lava_core", 6.0F, 7.0F, 1.0F, 0.0F, 5.0F, -4.0F);
                 addPart(root, "archfiend_maul", 5.0F, 17.0F, 5.0F, -10.0F, 9.0F, -1.0F, 0.0F, 0.0F, -0.3F);
             }
-            case CRIMSON_MATRIARCH -> {
+            case NAAMAH -> {
                 addPair(root, "matriarch_crown_tine", 2.0F, 9.0F, 2.0F, 4.0F, -8.0F, 0.0F, 0.0F, 0.0F, 0.35F);
                 addPart(root, "matriarch_faceplate", 7.0F, 6.0F, 2.0F, 0.0F, 1.0F, -4.0F);
                 addPair(root, "upper_blade", 2.0F, 3.0F, 13.0F, 10.0F, 6.0F, -4.0F, 0.0F, 0.4F, 0.65F);
@@ -945,18 +989,10 @@ final class ArcaneCreatureModel extends EntityModel<LivingEntityRenderState> {
                 addPair(root, "pursuer_root_foot", 5.0F, 4.0F, 9.0F, 3.0F, 24.0F, -2.0F);
             }
             case HOBGOBLIN -> {
-                addMinerClothes(root, 1.0F, true, false);
-                addPart(root, "prospector_pack", 10.0F, 11.0F, 6.0F, 0.0F, 7.0F, 4.0F);
-                addPair(root, "hobgoblin_glove", 5.0F, 5.0F, 5.0F, 6.0F, 12.0F, 0.0F);
-                addPair(root, "hobgoblin_boot", 5.0F, 6.0F, 6.0F, 2.5F, 21.0F, 0.0F);
-                addPart(root, "prospector_pick", 3.0F, 18.0F, 3.0F, -8.0F, 8.0F, 1.0F, 0.0F, 0.0F, -0.45F);
+                addGoblinClothes(root, true);
             }
             case GOBLIN -> {
-                addMinerClothes(root, 0.0F, false, true);
-                addPair(root, "goblin_ear", 6.0F, 2.0F, 3.0F, 6.0F, -3.0F, 0.0F, 0.0F, 0.0F, 0.35F);
-                addPart(root, "ore_basket", 10.0F, 9.0F, 6.0F, 0.0F, 8.0F, 4.0F);
-                addPair(root, "goblin_glove", 5.0F, 5.0F, 5.0F, 6.0F, 12.0F, 0.0F);
-                addPair(root, "goblin_boot", 5.0F, 6.0F, 6.0F, 2.5F, 21.0F, 0.0F);
+                addGoblinClothes(root, false);
             }
             case STONEBROKER -> {
                 addMinerClothes(root, 1.0F, false, false);
@@ -1072,6 +1108,14 @@ final class ArcaneCreatureModel extends EntityModel<LivingEntityRenderState> {
         if (satchel) {
             addPart(root, "ore_satchel", 6.0F, 7.0F, 4.0F, 4.5F, 8.0F, 2.5F);
         }
+    }
+
+    private static void addGoblinClothes(final PartDefinition root, final boolean hobgoblin) {
+        addPart(root, "miner_cap", 9.0F, 2.0F, 8.0F, 0.0F, 4.5F, 0.0F);
+        addPart(root, "cap_lamp", 2.0F, 2.0F, 2.0F, 0.0F, 5.0F, -4.25F);
+        addPart(root, "work_vest", 9.0F, 7.0F, 1.0F, 0.0F, 14.0F, -3.25F);
+        addPart(root, "tool_belt", 10.0F, 2.0F, 6.5F, 0.0F, 18.5F, 0.0F);
+        addPart(root, hobgoblin ? "prospector_satchel" : "ore_satchel", 4.0F, 5.0F, 3.0F, 4.5F, 16.5F, 2.5F);
     }
 
     private static void addFloatingPlates(final PartDefinition root, final float x, final float y) {

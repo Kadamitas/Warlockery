@@ -1,7 +1,7 @@
 {
   "title": "ritual.warlockery.blindness.title",
   "description": "ritual.warlockery.blindness.description",
-  "action": "effect",
+  "action": "hex",
   "power": 1000,
   "radius": 6,
   "duration": 1200,
@@ -31,5 +31,5 @@
     "dimension": "",
     "minimum_players": 1
   },
-  "effect": "minecraft:blindness"
+  "target": "blindness"
 }

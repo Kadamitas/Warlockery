@@ -3,7 +3,7 @@
   "category": "equipment",
   "pattern": ["I I", "III", "III"],
   "key": {
-    "I": "#c:ingots/koboldite"
+    "I": "#c:ingots/goblinite"
   },
   "result": {
     "id": "warlockery:delvealloychestplate"

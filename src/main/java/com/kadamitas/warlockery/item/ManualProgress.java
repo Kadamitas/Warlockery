@@ -10,7 +10,7 @@ public final class ManualProgress {
     private static final String OBSERVATIONS_ID = "vampirebook";
     private static final String TORN_PAGE_ID = "ingredient_vbook_page";
     private static final String UNLOCKED_SECTIONS = "WarlockeryUnlockedImmortalSections";
-    private static final int INITIAL_SECTIONS = 1;
+    private static final int INITIAL_SECTIONS = 3;
 
     private ManualProgress() {
     }
@@ -29,17 +29,30 @@ public final class ManualProgress {
         return Math.clamp(stored, INITIAL_SECTIONS, profile.sections().size());
     }
 
-    static RevealResult revealNext(final ManualProfile profile, final ItemStack stack) {
-        if (!isObservations(profile)) {
+    public static int requiredTornPages(final ManualProfile profile, final ItemStack stack) {
+        return isObservations(profile) ? profile.sections().size() - unlockedSectionCount(profile, stack) : 0;
+    }
+
+    static RevealResult insertTornPage(
+        final ManualProfile bookProfile,
+        final ItemStack book,
+        final ManualProfile pageProfile,
+        final ItemStack page,
+        final boolean infiniteMaterials
+    ) {
+        if (!isObservations(bookProfile) || !isTornPage(pageProfile) || page.isEmpty()) {
             return RevealResult.unsupported();
         }
-        final int unlocked = unlockedSectionCount(profile, stack);
-        if (unlocked >= profile.sections().size()) {
+        final int unlocked = unlockedSectionCount(bookProfile, book);
+        if (unlocked >= bookProfile.sections().size()) {
             return RevealResult.complete();
         }
-        final String revealedSection = profile.sections().get(unlocked);
-        CustomData.update(DataComponents.CUSTOM_DATA, stack,
+        final String revealedSection = bookProfile.sections().get(unlocked);
+        CustomData.update(DataComponents.CUSTOM_DATA, book,
             data -> data.putInt(UNLOCKED_SECTIONS, unlocked + 1));
+        if (!infiniteMaterials) {
+            page.shrink(1);
+        }
         return RevealResult.revealed(revealedSection);
     }
 

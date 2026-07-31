@@ -1,6 +1,12 @@
 {
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/ingredient_brew_ice"
-              }
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/ingredient_brew_ice",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 7388392
+      }
+    ]
+  }
 }

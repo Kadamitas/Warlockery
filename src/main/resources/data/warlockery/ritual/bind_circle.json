@@ -18,7 +18,7 @@
         "consume": false
       },
       {
-        "ingredient": "minecraft:paper",
+        "ingredient": "#c:dusts/redstone",
         "count": 1,
         "consume": true
       }

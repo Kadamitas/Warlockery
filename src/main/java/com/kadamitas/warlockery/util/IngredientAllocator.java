@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import net.minecraft.world.item.ItemStack;
 
@@ -17,14 +18,7 @@ public final class IngredientAllocator {
         final List<? extends CountedIngredient> requirements,
         final List<ItemStack> stacks
     ) {
-        return allocate(
-            requirements,
-            stacks,
-            ItemStack::getCount,
-            (stack, ingredient) -> ItemIngredient.parse(ingredient)
-                .filter(parsed -> parsed.matches(stack))
-                .isPresent()
-        );
+        return IngredientAllocationPlan.forItems(requirements).allocate(stacks, ItemStack::getCount);
     }
 
     public static <T> Allocation allocate(
@@ -33,6 +27,22 @@ public final class IngredientAllocator {
         final ToIntFunction<T> count,
         final BiPredicate<T, String> matcher
     ) {
+        final List<Predicate<T>> matchers = requirements.stream()
+            .map(CountedIngredient::ingredient)
+            .<Predicate<T>>map(ingredient -> stack -> matcher.test(stack, ingredient))
+            .toList();
+        return allocate(requirements, stacks, count, matchers);
+    }
+
+    static <T> Allocation allocate(
+        final List<? extends CountedIngredient> requirements,
+        final List<T> stacks,
+        final ToIntFunction<T> count,
+        final List<? extends Predicate<T>> matchers
+    ) {
+        if (requirements.size() != matchers.size()) {
+            throw new IllegalArgumentException("Every ingredient requirement needs one matcher");
+        }
         final int[] available = stacks.stream().mapToInt(stack -> Math.max(0, count.applyAsInt(stack))).toArray();
         final FlowLayout layout = new FlowLayout(requirements.size(), stacks.size());
         final int[][] capacity = new int[layout.nodeCount()][layout.nodeCount()];
@@ -42,7 +52,7 @@ public final class IngredientAllocator {
             final int requirementNode = layout.requirementNode(requirementIndex);
             capacity[layout.source()][requirementNode] = Math.max(0, requirement.count());
             for (int slot = 0; slot < stacks.size(); slot++) {
-                if (available[slot] > 0 && matcher.test(stacks.get(slot), requirement.ingredient())) {
+                if (available[slot] > 0 && matchers.get(requirementIndex).test(stacks.get(slot))) {
                     capacity[requirementNode][layout.stackNode(slot)] = Math.min(requirement.count(), available[slot]);
                 }
             }

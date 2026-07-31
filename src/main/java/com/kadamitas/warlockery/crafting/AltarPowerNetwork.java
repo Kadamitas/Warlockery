@@ -13,7 +13,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
 
 public final class AltarPowerNetwork {
-    private static final int HORIZONTAL_RANGE = 12;
+    public static final int BASE_HORIZONTAL_RANGE = 16;
     private static final int DOWN_RANGE = 4;
     private static final int UP_RANGE = 6;
 
@@ -30,7 +30,7 @@ public final class AltarPowerNetwork {
 
     private static Optional<AltarBlockEntity> best(final ServerLevel level, final BlockPos center) {
         final int range = CreatureBehaviorRules.altarSearchRange(
-            HORIZONTAL_RANGE,
+            BASE_HORIZONTAL_RANGE,
             (int) level.getEntitiesOfClass(
                 Mob.class,
                 new AABB(center).inflate(32.0),

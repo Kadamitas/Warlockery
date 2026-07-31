@@ -27,6 +27,7 @@ public final class HexBehaviors {
         "sinking", () -> new PersistentHex(HexKind.SINKING),
         "overheating", () -> new PersistentHex(HexKind.OVERHEATING),
         "nightmare", () -> new PersistentHex(HexKind.WAKING_NIGHTMARE),
+        "blindness", () -> status(effect(MobEffects.BLINDNESS, 0)),
         "corrupt_doll", CorruptDollHex::new,
         "wolf", () -> new TransformationHex(SupernaturalForm.WEREWOLF)
     );
@@ -116,7 +117,7 @@ public final class HexBehaviors {
         @Override
         public void apply(final LivingEntity target, final int duration) {
             if (target instanceof ServerPlayer player) {
-                DollItem.corruptProtectiveDolls(player, 3);
+                DollItem.corruptProtectiveDolls(player);
             }
         }
 

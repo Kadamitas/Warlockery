@@ -42,6 +42,9 @@ public final class MagicalPlantBlockFactory {
         final Behavior behavior = behaviorOf(id)
             .orElseThrow(() -> new IllegalArgumentException("Unsupported magical plant: " + id));
         properties.noCollision().noOcclusion().instabreak().sound(SoundType.GRASS);
+        if (behavior == Behavior.ENDER_BRAMBLE) {
+            properties.strength(4.0F, 6.0F).requiresCorrectToolForDrops();
+        }
         if (behavior.randomlyTicks()) {
             properties.randomTicks();
         }
@@ -49,6 +52,7 @@ public final class MagicalPlantBlockFactory {
             properties.lightLevel(_ -> behavior.lightLevel());
         }
         return switch (behavior) {
+            case GLINT_WEED -> new GlintWeedBlock(properties);
             case BLOOD_POPPY -> new BloodPoppyBlock(properties);
             case CRITTER_SNARE -> new CritterSnareBlock(properties);
             case GRASSPER -> new GrassperBlock(properties);

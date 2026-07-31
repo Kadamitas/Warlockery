@@ -24,7 +24,13 @@ public final class ResourceInteractionEvents {
         }
         if (event.getEntity().typeHolder().is(WarlockeryTags.EntityTypes.WOLF_FORM_LAMB_SOURCES)
             && event.getSource().getEntity() instanceof Player player
-            && isWolfFormLamb(true, SupernaturalState.getForm(player))) {
+            && isWolfFormLamb(true, SupernaturalState.getForm(player))
+            && com.kadamitas.warlockery.transformation.SupernaturalProgression.level(
+                player,
+                com.kadamitas.warlockery.transformation.SupernaturalProgression.Path.WEREWOLF
+            ) >= 2
+            && com.kadamitas.warlockery.transformation.SupernaturalProgression.werewolfShape(player)
+                != com.kadamitas.warlockery.transformation.WerewolfShape.HUMAN) {
             event.getDrops().add(new ItemEntity(
                 level,
                 event.getEntity().getX(),

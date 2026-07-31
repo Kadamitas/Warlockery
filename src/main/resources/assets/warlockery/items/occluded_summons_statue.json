@@ -1,6 +1,6 @@
-﻿{
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/occluded_summons_statue"
-              }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/occluded_summons_statue"
+  }
 }

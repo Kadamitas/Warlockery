@@ -5,7 +5,7 @@
     "#c:storage_blocks/raw_silver",
     "#c:storage_blocks/delvealloy",
     "#c:storage_blocks/raw_delvealloy",
-    "#c:storage_blocks/koboldite",
-    "#c:storage_blocks/raw_koboldite"
+    "#c:storage_blocks/goblinite",
+    "#c:storage_blocks/raw_goblinite"
   ]
 }

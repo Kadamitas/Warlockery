@@ -10,11 +10,28 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 public final class SeerStoneItem extends Item {
     public SeerStoneItem(final Properties properties) {
         super(properties.stacksTo(1));
+    }
+
+    @Override
+    public InteractionResult useOn(final UseOnContext context) {
+        if (!SeerCovenRuntime.isGoldenCircleCenter(context.getLevel(), context.getClickedPos())) {
+            return InteractionResult.PASS;
+        }
+        if (context.getLevel().isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!(context.getLevel() instanceof ServerLevel level) || context.getPlayer() == null) {
+            return InteractionResult.FAIL;
+        }
+        SeerCovenRuntime.call(level, context.getClickedPos(), context.getPlayer());
+        return InteractionResult.SUCCESS;
     }
 
     @Override

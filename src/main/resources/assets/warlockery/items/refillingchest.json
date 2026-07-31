@@ -1,6 +1,6 @@
-﻿{
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/refillingchest"
-              }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/refillingchest"
+  }
 }

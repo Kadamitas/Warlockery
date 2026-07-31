@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.mutation;
 
 public enum AdvancedMutationKind {
     TOAD("Toad"),
+    OWL("Owl"),
     MINEDRAKE("Dreamroot");
 
     private final String displayName;

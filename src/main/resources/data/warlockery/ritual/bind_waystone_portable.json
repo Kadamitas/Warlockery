@@ -2,7 +2,7 @@
   "title": "ritual.warlockery.bind_waystone_portable.title",
   "description": "ritual.warlockery.bind_waystone_portable.description",
   "action": "bind_waystone",
-  "power": 750,
+  "power": 0,
   "radius": 6,
   "duration": 1200,
   "amplifier": 0,

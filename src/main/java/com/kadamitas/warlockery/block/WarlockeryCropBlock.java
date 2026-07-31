@@ -39,6 +39,10 @@ public final class WarlockeryCropBlock extends CropBlock {
             super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
             return;
         }
+        if (!MandrakeHarvestRules.awakens(serverLevel.isDarkOutside(), serverLevel.getRandom().nextFloat())) {
+            super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
+            return;
+        }
         player.causeFoodExhaustion(0.005F);
         final var mandrake = ModEntities.ALL.get("mandrake").get().create(serverLevel, EntitySpawnReason.EVENT);
         if (mandrake != null) {

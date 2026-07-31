@@ -51,10 +51,21 @@ public final class WarlockeryTags {
         public static final TagKey<Block> ANOINTABLE_CAULDRONS = create("anointable_cauldrons");
         public static final TagKey<Block> ALTAR_CANDELABRA_UPGRADES = create("altar_upgrades/candelabra");
         public static final TagKey<Block> ALTAR_CHALICE_UPGRADES = create("altar_upgrades/chalice");
+        public static final TagKey<Block> ALTAR_FILLED_CHALICE_UPGRADES = create("altar_upgrades/filled_chalice");
         public static final TagKey<Block> ALTAR_PENTACLE_UPGRADES = create("altar_upgrades/pentacle");
+        public static final TagKey<Block> ALTAR_SKULL_UPGRADES = create("altar_upgrades/skull");
+        public static final TagKey<Block> ALTAR_WITHER_SKULL_UPGRADES = create("altar_upgrades/wither_skull");
+        public static final TagKey<Block> ALTAR_PLAYER_HEAD_UPGRADES = create("altar_upgrades/player_head");
+        public static final TagKey<Block> ALTAR_TORCH_UPGRADES = create("altar_upgrades/torch");
+        public static final TagKey<Block> ALTAR_PARADOX_EGG_UPGRADES = create("altar_upgrades/paradox_egg");
+        public static final TagKey<Block> ALTAR_NATURAL_POWER = create("altar_natural_power");
+        public static final TagKey<Block> ALTAR_NATURAL_GROUND = create("altar_natural_ground");
+        public static final TagKey<Block> ALTAR_NATURAL_WATER = create("altar_natural_water");
+        public static final TagKey<Block> SYMBOL_LIGHT_SOURCES = create("symbol_light_sources");
         public static final TagKey<Block> FUME_FUNNELS = create("machine_upgrades/fume_funnels");
         public static final TagKey<Block> FILTERED_FUME_FUNNELS = create("machine_upgrades/filtered_fume_funnels");
         public static final TagKey<Block> RITUAL_INHIBITORS = create("ritual_inhibitors");
+        public static final TagKey<Block> ENT_SPAWNING_LOGS = create("ent_spawning_logs");
 
         private Blocks() {
         }
@@ -128,6 +139,9 @@ public final class WarlockeryTags {
 
     public static final class Items {
         public static final TagKey<Item> SILVER_WEAPONS = create("silver_weapons");
+        public static final TagKey<Item> SILVER_ARMOR = create("silver_armor");
+        public static final TagKey<Item> HEAT_METAL_EQUIPMENT = create("magic/metal_equipment");
+        public static final TagKey<Item> HEAT_METAL_EXEMPT = create("magic/heat_metal_exempt");
         public static final TagKey<Item> SILVER_PROJECTILES = create("silver_projectiles");
         public static final TagKey<Item> SUPERNATURAL_WEAKNESSES = create("supernatural_weaknesses");
         public static final TagKey<Item> BREWS = create("brews");
@@ -136,6 +150,9 @@ public final class WarlockeryTags {
         public static final TagKey<Item> SILVERED_HUNTER_ARMOR = create("silvered_hunter_armor");
         public static final TagKey<Item> DAWN_HUNTER_ARMOR = create("dawn_hunter_armor");
         public static final TagKey<Item> DEATH_DISGUISE_ARMOR = create("death_disguise_armor");
+        public static final TagKey<Item> DEATH_HOODS = create("death_hoods");
+        public static final TagKey<Item> DEATH_ROBES = create("death_robes");
+        public static final TagKey<Item> DEATH_FOOTWEAR = create("death_footwear");
         public static final TagKey<Item> POISON_REDIRECTING_FOOTWEAR = create("poison_redirecting_footwear");
         public static final TagKey<Item> BARK_ARMOR = create("bark_armor");
         public static final TagKey<Item> BITING_ARMOR = create("biting_armor");
@@ -161,7 +178,13 @@ public final class WarlockeryTags {
         public static final TagKey<Item> CHALICE_FILLERS = create("chalice_fillers");
         public static final TagKey<Item> ALTAR_CANDELABRA_UPGRADES = create("altar_upgrades/candelabra");
         public static final TagKey<Item> ALTAR_CHALICE_UPGRADES = create("altar_upgrades/chalice");
+        public static final TagKey<Item> ALTAR_FILLED_CHALICE_UPGRADES = create("altar_upgrades/filled_chalice");
         public static final TagKey<Item> ALTAR_PENTACLE_UPGRADES = create("altar_upgrades/pentacle");
+        public static final TagKey<Item> ALTAR_SKULL_UPGRADES = create("altar_upgrades/skull");
+        public static final TagKey<Item> ALTAR_WITHER_SKULL_UPGRADES = create("altar_upgrades/wither_skull");
+        public static final TagKey<Item> ALTAR_PLAYER_HEAD_UPGRADES = create("altar_upgrades/player_head");
+        public static final TagKey<Item> ALTAR_TORCH_UPGRADES = create("altar_upgrades/torch");
+        public static final TagKey<Item> ALTAR_PARADOX_EGG_UPGRADES = create("altar_upgrades/paradox_egg");
         public static final TagKey<Item> ALCHEMICAL_FUMES = create("alchemical_fumes");
         public static final TagKey<Item> DIVINATION_CATALYSTS = create("divination_catalysts");
         public static final TagKey<Item> DIVINATION_TARGETS = create("divination_targets");
@@ -186,6 +209,9 @@ public final class WarlockeryTags {
         public static final TagKey<Item> ALTAR_RANGE_FOCI = create("altar_range_foci");
         public static final TagKey<Item> ALTAR_ATTACHMENTS = create("altar_attachments");
         public static final TagKey<Item> NIGHTMARE_GUARD_CHARMS = create("nightmare_guard_charms");
+        public static final TagKey<Item> SPIRIT_WORLD_EXPORTS = create("spirit_world_exports");
+        public static final TagKey<Item> SPIRIT_WORLD_CARRY_IN = create("spirit_world_carry_in");
+        public static final TagKey<Item> ICE_PRESSURE_PLATE_ACTIVATORS = create("ice_pressure_plate_activators");
 
         private Items() {
         }

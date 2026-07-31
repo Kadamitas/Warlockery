@@ -1,0 +1,30 @@
+{
+  "title": "ritual.warlockery.raise_earth_large.title",
+  "description": "ritual.warlockery.raise_earth_large.description",
+  "action": "raise_column",
+  "power": 2200,
+  "radius": 9,
+  "duration": 1200,
+  "amplifier": 0,
+  "casting_time": 160,
+  "glyphs": {
+    "circleglyphritual": 16
+  },
+  "requirements": {
+    "ingredients": [
+      {
+        "ingredient": "warlockery:ingredient_brew_sprouting",
+        "count": 1,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:cactus",
+        "count": 1,
+        "consume": true
+      }
+    ],
+    "minimum_players": 1
+  },
+  "target": "minecraft:stone",
+  "count": 12
+}

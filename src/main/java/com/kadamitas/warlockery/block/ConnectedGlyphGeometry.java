@@ -6,6 +6,7 @@ import java.util.Set;
 public final class ConnectedGlyphGeometry {
     public static final Set<String> IDS = Set.of(
         "circle",
+        "circleglyphgolden",
         "circleglyphritual",
         "circleglyphinfernal",
         "circleglyph_veil"

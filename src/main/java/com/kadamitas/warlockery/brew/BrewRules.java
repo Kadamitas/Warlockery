@@ -68,4 +68,17 @@ public final class BrewRules {
     public static boolean canPartFluid(final boolean matchingFluid, final boolean source, final boolean surface) {
         return matchingFluid && source && surface;
     }
+
+    public static boolean shouldSolidify(final boolean hollowTears) {
+        return hollowTears;
+    }
+
+    public static boolean canErodeBelowHollowTears(
+        final boolean hollowTears,
+        final boolean air,
+        final boolean blockEntity,
+        final float destroySpeed
+    ) {
+        return !hollowTears && !air && !blockEntity && destroySpeed >= 0.0F;
+    }
 }

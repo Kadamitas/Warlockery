@@ -18,6 +18,9 @@ record ManualLayout(
     private static final int MAX_BOOK_HEIGHT = 420;
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_GAP = 4;
+    private static final int CHAPTER_BUTTON_HEIGHT = 18;
+    private static final int SECTION_BUTTON_HEIGHT = 18;
+    private static final int SECTION_ROW_HEIGHT = 20;
 
     static ManualLayout calculate(final int screenWidth, final int screenHeight) {
         final int horizontalMargin = screenWidth < 400 ? 4 : 12;
@@ -34,7 +37,7 @@ record ManualLayout(
             : availableWidth / 2;
         final int contentWidth = Math.max(1, availableWidth - navigationWidth);
         final int controlRows = contentWidth < 270 ? 2 : 1;
-        final int sectionRows = Math.max(1, (bookHeight - 103) / 24);
+        final int sectionRows = Math.max(1, (bookHeight - 115) / SECTION_ROW_HEIGHT);
         return new ManualLayout(
             left,
             top,
@@ -90,11 +93,19 @@ record ManualLayout(
     }
 
     int bodyLineCapacity() {
-        return Math.max(1, (bodyTextBottom() - bodyTextTop()) / 12);
+        return Math.max(1, (bodyTextBottom() - bodyTextTop()) / ManualTypography.BODY_LINE_HEIGHT);
     }
 
     int sectionListTop() {
-        return top + 79;
+        return top + 99;
+    }
+
+    int sectionRowHeight() {
+        return SECTION_ROW_HEIGHT;
+    }
+
+    int sectionButtonHeight() {
+        return SECTION_BUTTON_HEIGHT;
     }
 
     int textInset() {
@@ -118,6 +129,21 @@ record ManualLayout(
             new Bounds(x, controlTop(), halfWidth, BUTTON_HEIGHT),
             new Bounds(x + halfWidth + BUTTON_GAP, controlTop(), halfWidth, BUTTON_HEIGHT),
             new Bounds(x, controlTop() + BUTTON_HEIGHT + BUTTON_GAP, available, BUTTON_HEIGHT)
+        );
+    }
+
+    List<Bounds> chapterControls() {
+        final int inset = textInset();
+        final int x = navigationLeft() + inset;
+        final int available = Math.max(3, navigationWidth - inset * 2);
+        final int arrowWidth = Math.min(18, Math.max(14, available / 5));
+        final int titleWidth = Math.max(1, available - arrowWidth * 2 - BUTTON_GAP * 2);
+        final int y = top + 77;
+        return List.of(
+            new Bounds(x, y, arrowWidth, CHAPTER_BUTTON_HEIGHT),
+            new Bounds(x + arrowWidth + BUTTON_GAP, y, titleWidth, CHAPTER_BUTTON_HEIGHT),
+            new Bounds(x + arrowWidth + BUTTON_GAP + titleWidth + BUTTON_GAP, y,
+                arrowWidth, CHAPTER_BUTTON_HEIGHT)
         );
     }
 

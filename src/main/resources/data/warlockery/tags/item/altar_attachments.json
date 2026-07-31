@@ -4,6 +4,12 @@
     "#warlockery:altar_range_foci",
     "#warlockery:altar_upgrades/candelabra",
     "#warlockery:altar_upgrades/chalice",
-    "#warlockery:altar_upgrades/pentacle"
+    "#warlockery:altar_upgrades/filled_chalice",
+    "#warlockery:altar_upgrades/pentacle",
+    "#warlockery:altar_upgrades/skull",
+    "#warlockery:altar_upgrades/wither_skull",
+    "#warlockery:altar_upgrades/player_head",
+    "#warlockery:altar_upgrades/torch",
+    "#warlockery:altar_upgrades/paradox_egg"
   ]
 }

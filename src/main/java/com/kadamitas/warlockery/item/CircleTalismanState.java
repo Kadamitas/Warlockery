@@ -1,6 +1,8 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.block.ConnectedGlyphBlock;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.ritual.ChalkCircleRules;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +19,6 @@ import net.minecraft.world.level.block.Block;
 
 public record CircleTalismanState(List<Glyph> glyphs) {
     private static final String GLYPHS = "WarlockeryCircleGlyphs";
-    private static final int CAPTURE_RADIUS = 6;
     private static final int MAX_GLYPHS = 192;
 
     public CircleTalismanState {
@@ -26,10 +27,11 @@ public record CircleTalismanState(List<Glyph> glyphs) {
 
     public static Optional<CircleTalismanState> capture(final ServerLevel level, final BlockPos center) {
         final List<Glyph> glyphs = BlockPos.betweenClosedStream(
-                center.offset(-CAPTURE_RADIUS, -1, -CAPTURE_RADIUS),
-                center.offset(CAPTURE_RADIUS, 1, CAPTURE_RADIUS)
+                center.offset(-ChalkCircleRules.LARGE_RADIUS, -1, -ChalkCircleRules.LARGE_RADIUS),
+                center.offset(ChalkCircleRules.LARGE_RADIUS, 1, ChalkCircleRules.LARGE_RADIUS)
             )
             .filter(pos -> level.getBlockState(pos).is(WarlockeryTags.Blocks.CHALK_GLYPHS))
+            .map(BlockPos::immutable)
             .sorted(Comparator.comparingLong(BlockPos::asLong))
             .limit(MAX_GLYPHS)
             .map(pos -> new Glyph(
@@ -83,12 +85,18 @@ public record CircleTalismanState(List<Glyph> glyphs) {
             .toList();
         final long blocked = placements.stream()
             .filter(placement -> !level.isInWorldBounds(placement.position())
-                || !level.getBlockState(placement.position()).canBeReplaced())
+                || !level.getBlockState(placement.position()).canBeReplaced()
+                || !placement.block().defaultBlockState().canSurvive(level, placement.position()))
             .count();
         if (placements.size() != glyphs.size() || blocked > 0) {
             return new RestoreResult(false, glyphs.size() - placements.size() + Math.toIntExact(blocked));
         }
-        placements.forEach(placement -> level.setBlockAndUpdate(placement.position(), placement.block().defaultBlockState()));
+        placements.forEach(placement -> level.setBlockAndUpdate(
+            placement.position(),
+            placement.block() instanceof ConnectedGlyphBlock connected
+                ? connected.connectedState(level, placement.position())
+                : placement.block().defaultBlockState()
+        ));
         return new RestoreResult(true, 0);
     }
 

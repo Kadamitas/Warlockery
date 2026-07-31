@@ -1,6 +1,3 @@
-﻿{
-    "parent":  "minecraft:item/generated",
-    "textures":  {
-                     "layer0":  "warlockery:item/voidbramble"
-                 }
+{
+  "parent": "warlockery:block/voidbramble"
 }

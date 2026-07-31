@@ -1,0 +1,4 @@
+{
+  "parent": "warlockery:block/dreamcatcher",
+  "textures": { "web": "minecraft:block/black_wool" }
+}

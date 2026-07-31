@@ -15,8 +15,13 @@ import com.kadamitas.warlockery.crafting.MachineProfiles;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.item.DollHexAction;
 import com.kadamitas.warlockery.magic.MagicPath;
+import com.kadamitas.warlockery.magic.SymbolSpell;
 import com.kadamitas.warlockery.registry.ContentCatalog;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
+import com.kadamitas.warlockery.transformation.SupernaturalPower;
+import com.kadamitas.warlockery.transformation.VampireProgressionRules;
+import com.kadamitas.warlockery.transformation.WerewolfProgressionRules;
+import com.kadamitas.warlockery.transformation.WerewolfShape;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -135,8 +140,45 @@ final class LocalizationIntegrityTest {
         Stream.of(SupernaturalForm.values())
             .map(value -> "supernatural_form.warlockery." + value.name().toLowerCase(java.util.Locale.ROOT))
             .forEach(LocalizationIntegrityTest::assertKey);
+        Stream.of(SupernaturalPower.values())
+            .map(SupernaturalPower::translationKey)
+            .forEach(LocalizationIntegrityTest::assertKey);
+        Stream.of(WerewolfShape.values())
+            .map(value -> "shape.warlockery." + value.name().toLowerCase(java.util.Locale.ROOT))
+            .forEach(LocalizationIntegrityTest::assertKey);
+        VampireProgressionRules.quests().stream()
+            .map(quest -> "quest.warlockery.vampire." + quest.id())
+            .forEach(LocalizationIntegrityTest::assertKey);
+        WerewolfProgressionRules.quests().stream()
+            .map(quest -> "quest.warlockery.werewolf." + quest.id())
+            .forEach(LocalizationIntegrityTest::assertKey);
+        Stream.of(VampireProgressionRules.Diagnostic.values())
+            .map(VampireProgressionRules.Diagnostic::messageKey)
+            .forEach(LocalizationIntegrityTest::assertKey);
+        Stream.of(WerewolfProgressionRules.Diagnostic.values())
+            .map(WerewolfProgressionRules.Diagnostic::messageKey)
+            .forEach(LocalizationIntegrityTest::assertKey);
+        Set.of(
+            "key.category.warlockery.supernatural",
+            "key.warlockery.cycle_power",
+            "key.warlockery.activate_power",
+            "overlay.warlockery.supernatural.level",
+            "overlay.warlockery.supernatural.passive",
+            "overlay.warlockery.supernatural.power",
+            "overlay.warlockery.supernatural.complete",
+            "path.warlockery.vampire",
+            "path.warlockery.werewolf",
+            "message.warlockery.moon_charm.locked",
+            "message.warlockery.moon_charm.wolfman_locked",
+            "message.warlockery.moon_charm.shifted",
+            "message.warlockery.progression.level_up",
+            "message.warlockery.progression.updated"
+        ).forEach(LocalizationIntegrityTest::assertKey);
         Stream.of(MagicPath.values())
             .map(value -> "magic_path.warlockery." + value.id())
+            .forEach(LocalizationIntegrityTest::assertKey);
+        SymbolSpell.VALUES.stream()
+            .map(SymbolSpell::translationKey)
             .forEach(LocalizationIntegrityTest::assertKey);
         Stream.of(CustomBrewDelivery.values())
             .map(value -> "custom_brew_delivery.warlockery." + value.id())
@@ -156,7 +198,7 @@ final class LocalizationIntegrityTest {
         Stream.of(EntEntity.EntVariant.values())
             .map(value -> "entity.warlockery.ent.variant." + value.serializedName())
             .forEach(LocalizationIntegrityTest::assertKey);
-        koboldProfessionIds().stream()
+        goblinProfessionIds().stream()
             .map(value -> "entity.warlockery.hobgoblin.profession." + value)
             .forEach(LocalizationIntegrityTest::assertKey);
         Stream.of(CustomBrewFailure.values())
@@ -217,13 +259,13 @@ final class LocalizationIntegrityTest {
         return pattern.matcher(source).results().map(result -> result.group(1)).collect(Collectors.toUnmodifiableSet());
     }
 
-    private static Set<String> koboldProfessionIds() {
+    private static Set<String> goblinProfessionIds() {
         final String source = read(JAVA.resolve("com/kadamitas/warlockery/entity/HobgoblinEntity.java"));
         final Pattern pattern = Pattern.compile("[A-Z_]+\\(\"([a-z_]+)\", Blocks\\.");
         final Set<String> ids = pattern.matcher(source).results()
             .map(result -> result.group(1))
             .collect(Collectors.toUnmodifiableSet());
-        assertFalse(ids.isEmpty(), "Kobold professions must remain discoverable by the localization audit");
+        assertFalse(ids.isEmpty(), "Goblin professions must remain discoverable by the localization audit");
         return ids;
     }
 

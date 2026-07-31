@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:malformed_chalk_ring_is_rejected_even_with_the_right_counts",
+  "environment": "minecraft:default",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 100,
+  "padding": 16
+}

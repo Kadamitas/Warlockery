@@ -2,7 +2,8 @@ package com.kadamitas.warlockery.block.entity;
 
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
-import com.kadamitas.warlockery.transformation.SupernaturalForm;
+import com.kadamitas.warlockery.transformation.SupernaturalAbilityRules;
+import com.kadamitas.warlockery.transformation.SupernaturalProgression;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import java.util.List;
 import java.util.Optional;
@@ -131,8 +132,11 @@ public final class WolfTrapBlockEntity extends BlockEntity {
         }
         final boolean lured = luredTarget != null && luredTarget.equals(entity.getUUID());
         final boolean transformedPlayer = entity instanceof Player player
-            && SupernaturalState.getForm(player) == SupernaturalForm.WEREWOLF
-            && isFullMoon(serverLevel, worldPosition);
+            && SupernaturalAbilityRules.wolfTrapParalyzes(
+                SupernaturalState.getForm(player),
+                SupernaturalProgression.werewolfShape(player),
+                isFullMoon(serverLevel, worldPosition)
+            );
         if (!lured && !transformedPlayer) {
             return;
         }

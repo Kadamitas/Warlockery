@@ -1,6 +1,6 @@
-﻿{
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/daylightcollector"
-              }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/daylightcollector"
+  }
 }

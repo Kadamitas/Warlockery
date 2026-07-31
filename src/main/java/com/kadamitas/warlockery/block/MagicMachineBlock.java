@@ -3,9 +3,13 @@ package com.kadamitas.warlockery.block;
 import com.kadamitas.warlockery.block.entity.MagicMachineBlockEntity;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.registry.ModSounds;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.RandomSource;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -137,9 +141,32 @@ public final class MagicMachineBlock extends BaseEntityBlock {
     ) {
         if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof MagicMachineBlockEntity machine) {
             player.openMenu(machine);
+            level.playSound(null, pos, ModSounds.MACHINE_OPEN.get(), SoundSource.BLOCKS, 0.45F, 1.0F);
             player.awardStat(Stats.INTERACT_WITH_FURNACE);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+        if (!state.getValue(LIT)) {
+            return;
+        }
+        final double x = pos.getX() + 0.5D;
+        final double y = pos.getY() + 0.85D;
+        final double z = pos.getZ() + 0.5D;
+        if (level.getBlockEntity(pos) instanceof MagicMachineBlockEntity machine
+            && "spinningwheel".equals(machine.machineKind())) {
+            for (int index = 0; index < 3; index++) {
+                final double angle = (level.getGameTime() + index * 7) * 0.25D;
+                level.addParticle(ParticleTypes.ENCHANT, x + Math.cos(angle) * 0.35D, y, z + Math.sin(angle) * 0.35D, 0, 0, 0);
+            }
+            return;
+        }
+        level.addParticle(ParticleTypes.SMOKE, x, y, z, 0, 0.025D, 0);
+        if (random.nextBoolean()) {
+            level.addParticle(ParticleTypes.FLAME, x, y - 0.1D, z, 0, 0.012D, 0);
+        }
     }
 
     @Override

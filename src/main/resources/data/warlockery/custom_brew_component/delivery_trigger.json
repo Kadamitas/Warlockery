@@ -1,0 +1,6 @@
+{
+  "ingredient": "#warlockery:custom_brew/delivery/trigger",
+  "role": "delivery",
+  "delivery": "trigger",
+  "priority": 2
+}

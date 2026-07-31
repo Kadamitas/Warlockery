@@ -12,6 +12,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.context.UseOnContext;
@@ -58,6 +59,14 @@ public final class VillageSpiritItem extends Item {
             context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.village_spirit.captured"));
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public boolean onEntityItemUpdate(final ItemStack stack, final ItemEntity entity) {
+        if (vessel) {
+            SpiritLocatorRuntime.tick(entity);
+        }
+        return false;
     }
 
     @Override

@@ -36,7 +36,7 @@ public final class ResourceFoodItem extends Item {
 
     public enum Profile {
         ROWAN_BERRIES(1, 0.1F),
-        WORMY_APPLE(2, 0.1F);
+        WORMY_APPLE(0, 0.0F);
 
         private final int nutrition;
         private final float saturation;

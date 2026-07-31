@@ -11,9 +11,9 @@ public final class HobgoblinMiningRules {
         return enhancedTool ? ENHANCED : STANDARD;
     }
 
-    public static boolean findsKoboldite(final MiningProfile profile, final float roll) {
+    public static boolean findsGoblinite(final MiningProfile profile, final float roll) {
         requireRoll(roll);
-        return roll < profile.kobolditeChance();
+        return roll < profile.gobliniteChance();
     }
 
     public static int autoSmeltMultiplier(
@@ -37,13 +37,13 @@ public final class HobgoblinMiningRules {
 
     public record MiningProfile(
         int cooldownTicks,
-        float kobolditeChance,
+        float gobliniteChance,
         float autoSmeltChance,
         int maximumSmeltMultiplier
     ) {
         public MiningProfile {
             if (cooldownTicks < 1
-                || kobolditeChance < 0.0F || kobolditeChance > 1.0F
+                || gobliniteChance < 0.0F || gobliniteChance > 1.0F
                 || autoSmeltChance < 0.0F || autoSmeltChance > 1.0F
                 || maximumSmeltMultiplier < 1) {
                 throw new IllegalArgumentException("Invalid Hobgoblin mining profile");

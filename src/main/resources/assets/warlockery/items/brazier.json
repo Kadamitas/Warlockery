@@ -1,6 +1,6 @@
-﻿{
-    "model":  {
-                  "type":  "minecraft:model",
-                  "model":  "warlockery:item/brazier"
-              }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "warlockery:item/brazier"
+  }
 }

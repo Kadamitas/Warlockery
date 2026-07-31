@@ -52,7 +52,7 @@ final class HighTierReagentParityTest {
         final String runtime = Files.readString(Path.of(
             "src/main/java/com/kadamitas/warlockery/brew/BrewRuntime.java"
         ));
-        assertTrue(runtime.contains("summonLeonardShade"));
+        assertTrue(runtime.contains("summonArchfiendShade"));
         assertTrue(runtime.contains("ModEntities.ALL.get(\"emberhorn_archfiend\")"));
     }
 

@@ -1,7 +1,9 @@
 package com.kadamitas.warlockery.network;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.item.FlyingBroomItem;
 import com.kadamitas.warlockery.ritual.RitualManager;
+import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -30,6 +32,8 @@ public final class ModNetwork {
     };
     private static Consumer<DollActivationPayload> clientDollHandler = payload -> {
     };
+    private static Consumer<SupernaturalSnapshotPayload> clientSupernaturalHandler = payload -> {
+    };
 
     private ModNetwork() {
     }
@@ -41,13 +45,25 @@ public final class ModNetwork {
     public static void registerClientPayloadHandlers(final RegisterClientPayloadHandlersEvent event) {
         event.register(OpenRitualScreenPayload.TYPE, ModNetwork::handleOpenScreen);
         event.register(DollActivationPayload.TYPE, ModNetwork::handleDollActivation);
+        event.register(SupernaturalSnapshotPayload.TYPE, ModNetwork::handleSupernaturalSnapshot);
     }
 
     private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
+        final PayloadRegistrar registrar = event.registrar("4");
         registrar.playToClient(OpenRitualScreenPayload.TYPE, OpenRitualScreenPayload.STREAM_CODEC);
         registrar.playToClient(DollActivationPayload.TYPE, DollActivationPayload.STREAM_CODEC);
+        registrar.playToClient(SupernaturalSnapshotPayload.TYPE, SupernaturalSnapshotPayload.STREAM_CODEC);
         registrar.playToServer(RitualActionPayload.TYPE, RitualActionPayload.STREAM_CODEC, ModNetwork::handleRitualAction);
+        registrar.playToServer(
+            SupernaturalActionPayload.TYPE,
+            SupernaturalActionPayload.STREAM_CODEC,
+            ModNetwork::handleSupernaturalAction
+        );
+        registrar.playToServer(
+            BroomControlPayload.TYPE,
+            BroomControlPayload.STREAM_CODEC,
+            ModNetwork::handleBroomControl
+        );
     }
 
     public static void openRitualScreen(final ServerPlayer player, final BlockPos center) {
@@ -62,6 +78,10 @@ public final class ModNetwork {
         clientDollHandler = handler;
     }
 
+    public static void setClientSupernaturalHandler(final Consumer<SupernaturalSnapshotPayload> handler) {
+        clientSupernaturalHandler = handler;
+    }
+
     public static void notifyDollActivation(
         final ServerPlayer player,
         final String dollKind,
@@ -73,6 +93,36 @@ public final class ModNetwork {
         PacketDistributor.sendToPlayer(
             player,
             new DollActivationPayload(dollKind, Math.clamp(displayTicks, 1, 20 * 10))
+        );
+    }
+
+    public static void sendSupernaturalSnapshot(
+        final ServerPlayer player,
+        final SupernaturalSnapshot snapshot
+    ) {
+        if (player.connection == null || !player.connection.hasChannel(SupernaturalSnapshotPayload.TYPE)) {
+            return;
+        }
+        PacketDistributor.sendToPlayer(player, new SupernaturalSnapshotPayload(snapshot));
+    }
+
+    public static void requestSupernaturalAction(final SupernaturalAction action) {
+        ClientPacketDistributor.sendToServer(new SupernaturalActionPayload(action));
+    }
+
+    public static void requestBroomControl(
+        final int strafe,
+        final int forward,
+        final boolean ascend,
+        final boolean gliding
+    ) {
+        ClientPacketDistributor.sendToServer(
+            new BroomControlPayload(
+                (byte) Math.clamp(strafe, -1, 1),
+                (byte) Math.clamp(forward, -1, 1),
+                ascend,
+                gliding
+            )
         );
     }
 
@@ -108,6 +158,43 @@ public final class ModNetwork {
         final IPayloadContext context
     ) {
         clientDollHandler.accept(payload);
+    }
+
+    private static void handleSupernaturalSnapshot(
+        final SupernaturalSnapshotPayload payload,
+        final IPayloadContext context
+    ) {
+        clientSupernaturalHandler.accept(payload);
+    }
+
+    private static void handleSupernaturalAction(
+        final SupernaturalActionPayload payload,
+        final IPayloadContext context
+    ) {
+        if (!(context.player() instanceof ServerPlayer player)) {
+            return;
+        }
+        switch (payload.action()) {
+            case CYCLE -> SupernaturalProgressionRuntime.cyclePower(player);
+            case ACTIVATE -> SupernaturalProgressionRuntime.activateSelectedPower(player);
+        }
+    }
+
+    private static void handleBroomControl(
+        final BroomControlPayload payload,
+        final IPayloadContext context
+    ) {
+        if (context.player() instanceof ServerPlayer player) {
+            FlyingBroomItem.setControls(
+                player,
+                new com.kadamitas.warlockery.item.FlyingBroomRules.ControlInput(
+                    Math.clamp(payload.strafe(), -1, 1),
+                    Math.clamp(payload.forward(), -1, 1),
+                    payload.ascend()
+                ),
+                payload.gliding()
+            );
+        }
     }
 
     private static void handleRitualAction(
@@ -214,6 +301,148 @@ public final class ModNetwork {
         }
     }
 
+    public enum SupernaturalAction {
+        CYCLE,
+        ACTIVATE
+    }
+
+    public record SupernaturalActionPayload(SupernaturalAction action) implements CustomPacketPayload {
+        public static final Type<SupernaturalActionPayload> TYPE = new Type<>(
+            Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "supernatural_action")
+        );
+        public static final StreamCodec<RegistryFriendlyByteBuf, SupernaturalActionPayload> STREAM_CODEC =
+            StreamCodec.of(
+                (output, value) -> output.writeByte(value.action().ordinal()),
+                input -> new SupernaturalActionPayload(actionAt(input.readUnsignedByte()))
+            );
+
+        private static SupernaturalAction actionAt(final int ordinal) {
+            return ordinal >= 0 && ordinal < SupernaturalAction.values().length
+                ? SupernaturalAction.values()[ordinal]
+                : SupernaturalAction.CYCLE;
+        }
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    public record BroomControlPayload(
+        byte strafe,
+        byte forward,
+        boolean ascend,
+        boolean gliding
+    ) implements CustomPacketPayload {
+        public static final Type<BroomControlPayload> TYPE = new Type<>(
+            Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "broom_control")
+        );
+        public static final StreamCodec<RegistryFriendlyByteBuf, BroomControlPayload> STREAM_CODEC =
+            StreamCodec.of(
+                (output, value) -> {
+                    output.writeByte(value.strafe());
+                    output.writeByte(value.forward());
+                    output.writeBoolean(value.ascend());
+                    output.writeBoolean(value.gliding());
+                },
+                input -> new BroomControlPayload(
+                    input.readByte(),
+                    input.readByte(),
+                    input.readBoolean(),
+                    input.readBoolean()
+                )
+            );
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    public record SupernaturalSnapshot(
+        String identity,
+        int level,
+        int resource,
+        int maxResource,
+        String selectedPower,
+        String shape,
+        String questTitle,
+        String questProgress,
+        int selectedPowerCharges,
+        int powerCooldownTicks,
+        String magicPath,
+        int magicResource,
+        int magicMaxResource
+    ) {
+        public SupernaturalSnapshot(
+            final String identity,
+            final int level,
+            final int resource,
+            final int maxResource,
+            final String selectedPower,
+            final String shape,
+            final String questTitle,
+            final String questProgress
+        ) {
+            this(identity, level, resource, maxResource, selectedPower, shape, questTitle, questProgress,
+                -1, 0, "", 0, 0);
+        }
+
+        public SupernaturalSnapshot {
+            identity = safe(identity);
+            level = Math.clamp(level, 0, 10);
+            maxResource = Math.max(0, maxResource);
+            resource = Math.clamp(resource, 0, maxResource);
+            selectedPower = safe(selectedPower);
+            shape = safe(shape);
+            questTitle = safe(questTitle);
+            questProgress = safe(questProgress);
+            selectedPowerCharges = Math.max(-1, selectedPowerCharges);
+            powerCooldownTicks = Math.max(0, powerCooldownTicks);
+            magicPath = safe(magicPath);
+            magicMaxResource = Math.max(0, magicMaxResource);
+            magicResource = Math.clamp(magicResource, 0, magicMaxResource);
+        }
+
+        public boolean active() {
+            return !identity.isBlank()
+                && !"none".equalsIgnoreCase(identity)
+                && !identity.endsWith(".none");
+        }
+
+        public float resourceFraction() {
+            return maxResource == 0 ? 0.0F : (float) resource / maxResource;
+        }
+
+        public boolean magicActive() {
+            return !magicPath.isBlank() && magicMaxResource > 0;
+        }
+
+        public float magicResourceFraction() {
+            return magicMaxResource == 0 ? 0.0F : (float) magicResource / magicMaxResource;
+        }
+
+        private static String safe(final String value) {
+            return value == null ? "" : value;
+        }
+    }
+
+    public record SupernaturalSnapshotPayload(SupernaturalSnapshot snapshot) implements CustomPacketPayload {
+        public static final Type<SupernaturalSnapshotPayload> TYPE = new Type<>(
+            Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "supernatural_snapshot")
+        );
+        public static final StreamCodec<RegistryFriendlyByteBuf, SupernaturalSnapshotPayload> STREAM_CODEC =
+            StreamCodec.of(
+                (output, value) -> writeSnapshot(output, value.snapshot()),
+                input -> new SupernaturalSnapshotPayload(readSnapshot(input))
+            );
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     private static RitualManager.RitualOption readOption(final RegistryFriendlyByteBuf input) {
         final String id = input.readUtf(MAX_STRING);
         final String title = input.readUtf(MAX_STRING);
@@ -267,5 +496,42 @@ public final class ModNetwork {
             throw new IllegalArgumentException("Invalid " + field + " count: " + size);
         }
         return size;
+    }
+
+    private static SupernaturalSnapshot readSnapshot(final RegistryFriendlyByteBuf input) {
+        return new SupernaturalSnapshot(
+            input.readUtf(MAX_STRING),
+            input.readVarInt(),
+            input.readVarInt(),
+            input.readVarInt(),
+            input.readUtf(MAX_STRING),
+            input.readUtf(MAX_STRING),
+            input.readUtf(MAX_STRING),
+            input.readUtf(MAX_STRING),
+            input.readVarInt(),
+            input.readVarInt(),
+            input.readUtf(MAX_STRING),
+            input.readVarInt(),
+            input.readVarInt()
+        );
+    }
+
+    private static void writeSnapshot(
+        final RegistryFriendlyByteBuf output,
+        final SupernaturalSnapshot snapshot
+    ) {
+        output.writeUtf(snapshot.identity(), MAX_STRING);
+        output.writeVarInt(snapshot.level());
+        output.writeVarInt(snapshot.resource());
+        output.writeVarInt(snapshot.maxResource());
+        output.writeUtf(snapshot.selectedPower(), MAX_STRING);
+        output.writeUtf(snapshot.shape(), MAX_STRING);
+        output.writeUtf(snapshot.questTitle(), MAX_STRING);
+        output.writeUtf(snapshot.questProgress(), MAX_STRING);
+        output.writeVarInt(snapshot.selectedPowerCharges());
+        output.writeVarInt(snapshot.powerCooldownTicks());
+        output.writeUtf(snapshot.magicPath(), MAX_STRING);
+        output.writeVarInt(snapshot.magicResource());
+        output.writeVarInt(snapshot.magicMaxResource());
     }
 }

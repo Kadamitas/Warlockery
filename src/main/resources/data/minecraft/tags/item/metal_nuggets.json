@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "warlockery:silver_nugget",
     "warlockery:ingredient_delvealloynugget"
   ]
 }

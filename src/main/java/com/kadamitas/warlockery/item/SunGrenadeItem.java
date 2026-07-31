@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.block.SunCollectorRules;
 import java.util.Optional;
 import net.minecraft.core.Position;
 import net.minecraft.core.component.DataComponents;
@@ -9,11 +10,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.AbstractThrownPotion;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SplashPotionItem;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -69,11 +72,23 @@ public final class SunGrenadeItem extends SplashPotionItem {
                     AABB.ofSize(center, 10.0, 6.0, 10.0),
                     Entity::isAlive
                 ).forEach(target -> {
-                    final boolean vulnerable = target.typeHolder().is(WarlockeryTags.EntityTypes.SUNLIGHT_VULNERABLE);
-                    final float damage = SunlightRules.grenadeDamage(vulnerable, 5.0F);
+                    final boolean vulnerable = target.typeHolder().is(WarlockeryTags.EntityTypes.SUNLIGHT_VULNERABLE)
+                        || target instanceof net.minecraft.world.entity.player.Player player
+                            && com.kadamitas.warlockery.transformation.SupernaturalState.getForm(player)
+                                == com.kadamitas.warlockery.transformation.SupernaturalForm.VAMPIRE;
+                    final int strength = getItem().getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                        .copyTag().getIntOr("WarlockerySunlightStrength", 3);
+                    final float damage = SunlightRules.grenadeDamage(
+                        vulnerable,
+                        SunCollectorRules.baseDamage(strength)
+                    );
                     target.hurtServer(serverLevel, target.damageSources().onFire(), damage);
                     if (vulnerable) {
                         target.igniteForSeconds(8.0F);
+                    }
+                    if (target == getOwner() && target instanceof ServerPlayer player) {
+                        com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime
+                            .recordSunGrenadeBurn(player);
                     }
                 });
             }

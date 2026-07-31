@@ -1,10 +1,10 @@
 {
   "title": "ritual.warlockery.barrier_large.title",
   "description": "ritual.warlockery.barrier_large.description",
-  "action": "effect",
+  "action": "protection_ward",
   "power": 2400,
   "radius": 12,
-  "duration": 1800,
+  "duration": 2147483647,
   "amplifier": 3,
   "casting_time": 100,
   "glyphs": {
@@ -30,6 +30,5 @@
     "thundering": false,
     "dimension": "",
     "minimum_players": 1
-  },
-  "effect": "minecraft:resistance"
+  }
 }

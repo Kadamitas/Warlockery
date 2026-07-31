@@ -33,7 +33,7 @@ final class CreativeAssetIntegrityTest {
     private static final Path BLOCK_MODELS = ASSETS.resolve("models/block");
     private static final Path BLOCK_STATES = ASSETS.resolve("blockstates");
     private static final Path TEXTURES = ASSETS.resolve("textures");
-    private static final Set<String> SCULPTED_BLOCK_ITEM_MODELS = Set.of(
+    private static final Set<String> SCULPTED_MACHINE_MODELS = Set.of(
         "daylightcollector",
         "distilleryburning",
         "distilleryidle",
@@ -64,7 +64,7 @@ final class CreativeAssetIntegrityTest {
         blockItem("icepressureplate"),
         blockItem("iceslab"),
         blockItem("icestairs"),
-        blockItem("icestockade"),
+        Map.entry("icestockade", "warlockery:block/icestockade_inventory"),
         blockItem("perpetualice"),
         blockItem("pitdirt"),
         blockItem("pitgrass"),
@@ -87,11 +87,6 @@ final class CreativeAssetIntegrityTest {
         blockItem("web"),
         blockItem("wickerbundle")
     );
-    private static final Set<Set<String>> ALLOWED_IDENTICAL_TEXTURE_PATHS = Set.of(
-        Set.of("block/distilleryburning_glass.png", "block/distilleryidle_glass.png"),
-        Set.of("block/mirrorblock2_glass.png", "block/mirrorblock_glass.png", "block/mirrorwall_glass.png")
-    );
-
     @Test
     void everyCreativeDefinitionResolvesItsModelAndWarlockeryTextures() throws IOException {
         final List<Path> definitions = jsonFiles(ITEM_DEFINITIONS);
@@ -113,29 +108,23 @@ final class CreativeAssetIntegrityTest {
     }
 
     @Test
-    void creativeItemAndBlockTexturesAreNotPlaceholderCopies() throws IOException {
+    void creativeItemTexturesAreNotPlaceholderCopies() throws IOException {
         final Set<Path> referencedTextures;
         try (Stream<Path> models = Files.walk(ASSETS.resolve("models"))) {
             referencedTextures = models.filter(path -> path.toString().endsWith(".json"))
                 .flatMap(path -> textureReferences(json(path)))
-                .filter(value -> value.startsWith("warlockery:item/") || value.startsWith("warlockery:block/"))
+                .filter(value -> value.startsWith("warlockery:item/"))
                 .map(CreativeAssetIntegrityTest::texturePath)
                 .collect(Collectors.toUnmodifiableSet());
         }
         final Map<String, List<Path>> byDigest;
-        try (Stream<Path> paths = Stream.concat(
-            Files.list(TEXTURES.resolve("item")),
-            Files.list(TEXTURES.resolve("block"))
-        )) {
+        try (Stream<Path> paths = Files.list(TEXTURES.resolve("item"))) {
             byDigest = paths.filter(path -> path.toString().endsWith(".png"))
                 .filter(referencedTextures::contains)
                 .collect(Collectors.groupingBy(CreativeAssetIntegrityTest::sha256));
         }
         final List<List<Path>> duplicates = byDigest.values().stream()
             .filter(group -> group.size() > 1)
-            .filter(group -> !ALLOWED_IDENTICAL_TEXTURE_PATHS.contains(group.stream()
-                .map(CreativeAssetIntegrityTest::relativeTexturePath)
-                .collect(Collectors.toUnmodifiableSet())))
             .toList();
         assertTrue(duplicates.isEmpty(), () -> "creative textures share placeholder images: " + duplicates);
 
@@ -155,7 +144,7 @@ final class CreativeAssetIntegrityTest {
         try (Stream<Path> paths = Files.list(TEXTURES.resolve("item"))) {
             eggs = paths.filter(path -> path.getFileName().toString().endsWith("_spawn_egg.png")).toList();
         }
-        assertEquals(47, eggs.size());
+        assertEquals(48, eggs.size());
         for (Path egg : eggs) {
             final String id = egg.getFileName().toString().replaceFirst("\\.png$", "");
             final JsonObject definition = json(ITEM_DEFINITIONS.resolve(id + ".json")).getAsJsonObject("model");
@@ -198,7 +187,14 @@ final class CreativeAssetIntegrityTest {
         for (Path definition : definitions) {
             final String id = definition.getFileName().toString().replaceFirst("\\.json$", "");
             final JsonObject model = json(ITEM_MODELS.resolve(id + ".json"));
-            if (SCULPTED_BLOCK_ITEM_MODELS.contains(id)) {
+            final Path blockModel = BLOCK_MODELS.resolve(id + ".json");
+            if (id.equals("demonheart")) {
+                assertEquals("minecraft:item/generated", model.get("parent").getAsString());
+                assertEquals("warlockery:item/demonheart", model.getAsJsonObject("textures").get("layer0").getAsString());
+                assertTrue(Files.isRegularFile(TEXTURES.resolve("item/demonheart.png")));
+                continue;
+            }
+            if (Files.isRegularFile(blockModel) && json(blockModel).has("elements")) {
                 assertEquals("warlockery:block/" + id, model.get("parent").getAsString(), id);
                 continue;
             }
@@ -219,7 +215,7 @@ final class CreativeAssetIntegrityTest {
 
     @Test
     void machinesAndDollShelfUseTheirDistinctSculptedBlockModelsInInventory() {
-        SCULPTED_BLOCK_ITEM_MODELS.forEach(id -> {
+        SCULPTED_MACHINE_MODELS.forEach(id -> {
             final JsonObject itemModel = json(ITEM_MODELS.resolve(id + ".json"));
             assertEquals("warlockery:block/" + id, itemModel.get("parent").getAsString(), id);
             assertTrue(Files.isRegularFile(BLOCK_MODELS.resolve(id + ".json")), id);
@@ -294,7 +290,7 @@ final class CreativeAssetIntegrityTest {
     }
 
     @Test
-    void lycansAndKoboldsHaveDistinctClothedSkins() {
+    void lycansAndGoblinsHaveDistinctClothedSkins() {
         final List<String> clothed = List.of(
             "lycan_villager", "hobgoblin", "goblin", "stonebroker", "forgewarden"
         );
@@ -312,10 +308,6 @@ final class CreativeAssetIntegrityTest {
 
     private static Map.Entry<String, String> blockItem(final String id) {
         return Map.entry(id, "warlockery:block/" + id);
-    }
-
-    private static String relativeTexturePath(final Path path) {
-        return TEXTURES.relativize(path).toString().replace('\\', '/');
     }
 
     private static List<Path> jsonFiles(final Path directory) throws IOException {

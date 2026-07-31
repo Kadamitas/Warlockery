@@ -30,20 +30,19 @@ final class ExpandedBrewParityTest {
         Map.entry("erosion", BrewBehavior.ERODE),
         Map.entry("fear", BrewBehavior.FEAR),
         Map.entry("frogs_tongue", BrewBehavior.PULL_TO_OWNER),
-        Map.entry("frost", BrewBehavior.FREEZE),
+        Map.entry("frost", BrewBehavior.ICE_SHELL),
         Map.entry("grow_lily", BrewBehavior.PLACE_LILIES),
         Map.entry("ice_shell", BrewBehavior.ICE_SHELL),
         Map.entry("ice_world", BrewBehavior.PLACE_SNOW),
-        Map.entry("infection", BrewBehavior.SPREAD_HARMFUL),
+        Map.entry("infection", BrewBehavior.APPLY_INFECTION),
         Map.entry("inferno", BrewBehavior.IGNITE),
-        Map.entry("ink", BrewBehavior.PLACE_WEB),
         Map.entry("insect_bane", BrewBehavior.HARM_INSECTS),
         Map.entry("level_land", BrewBehavior.LEVEL_LAND),
         Map.entry("love", BrewBehavior.BREED_ANIMALS),
         Map.entry("overheating", BrewBehavior.IGNITE),
         Map.entry("pulverize_rock", BrewBehavior.PULVERIZE_ROCK),
         Map.entry("raise_land", BrewBehavior.RAISE_LAND),
-        Map.entry("raising", BrewBehavior.BUFF_UNDEAD),
+        Map.entry("raising", BrewBehavior.RAISE_DEAD),
         Map.entry("snow_burst", BrewBehavior.PLACE_SNOW),
         Map.entry("spread_debuffs", BrewBehavior.SPREAD_HARMFUL),
         Map.entry("steal_buffs", BrewBehavior.STEAL_BENEFICIAL),
@@ -53,7 +52,7 @@ final class ExpandedBrewParityTest {
         Map.entry("undead_bane", BrewBehavior.HARM_UNDEAD),
         Map.entry("undeads_curse", BrewBehavior.CURSE_UNDEAD),
         Map.entry("vines", BrewBehavior.PLACE_VINES),
-        Map.entry("wasting", BrewBehavior.BLIGHT)
+        Map.entry("wasting", BrewBehavior.WASTE)
     );
 
     @Test
@@ -69,6 +68,22 @@ final class ExpandedBrewParityTest {
             assertTrue(BrewKind.require(id).behaviors().contains(behavior), id)
         );
         assertTrue(BrewKind.SINKING.hasPotionEffects());
+        assertTrue(BrewKind.INK.hasPotionEffects());
+        assertFalse(BrewKind.INK.behaviors().contains(BrewBehavior.PLACE_WEB));
+        assertTrue(BrewKind.FROST.behaviors().contains(BrewBehavior.FREEZE));
+        assertTrue(BrewKind.VINES.recoversOnMiss());
+        assertTrue(BrewKind.THORNS.recoversOnMiss());
+        assertTrue(BrewKind.BODEGA.recoversOnMiss());
+        assertFalse(BrewKind.BATS.recoversOnMiss());
+        assertTrue(BrewRuntime.infectionVariant(net.minecraft.world.level.block.Blocks.STONE.defaultBlockState())
+            .filter(state -> state.is(net.minecraft.world.level.block.Blocks.INFESTED_STONE))
+            .isPresent());
+        assertTrue(BrewRuntime.infectionVariant(net.minecraft.world.level.block.Blocks.COBBLESTONE.defaultBlockState())
+            .filter(state -> state.is(net.minecraft.world.level.block.Blocks.INFESTED_COBBLESTONE))
+            .isPresent());
+        assertTrue(BrewRuntime.infectionVariant(net.minecraft.world.level.block.Blocks.STONE_BRICKS.defaultBlockState())
+            .filter(state -> state.is(net.minecraft.world.level.block.Blocks.INFESTED_STONE_BRICKS))
+            .isPresent());
     }
 
     @Test

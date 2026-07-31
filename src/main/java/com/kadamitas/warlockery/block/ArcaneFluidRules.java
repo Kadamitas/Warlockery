@@ -18,6 +18,17 @@ public final class ArcaneFluidRules {
         return victim ? Outcome.HARM : Outcome.NONE;
     }
 
+    public static Outcome flowingSpiritOutcome(
+        final boolean living,
+        final boolean nightmare,
+        final boolean undeadOrDemonic
+    ) {
+        if (!living) {
+            return Outcome.NONE;
+        }
+        return nightmare || undeadOrDemonic ? Outcome.HARM : Outcome.BENEFIT;
+    }
+
     public enum Outcome {
         BENEFIT,
         HARM,

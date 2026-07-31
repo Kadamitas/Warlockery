@@ -31,7 +31,7 @@ final class BoundedBrewParityTest {
         Map.entry("duration_boost", BrewBehavior.EXTEND_EFFECTS),
         Map.entry("endless_water", BrewBehavior.PLACE_WATER),
         Map.entry("grues_prey", BrewBehavior.DARKNESS_PREY),
-        Map.entry("moonshine", BrewBehavior.MOONLIGHT),
+        Map.entry("moonshine", BrewBehavior.APPLY_MOONSHINE),
         Map.entry("part_lava", BrewBehavior.PART_LAVA),
         Map.entry("part_water", BrewBehavior.PART_WATER),
         Map.entry("planting", BrewBehavior.PLANT_DROPS),

@@ -30,6 +30,7 @@ public final class DollStatusOverlay {
     private static final int ROW_WIDTH = 144;
     private static final int ROW_HEIGHT = 23;
     private static final int MAX_ROWS = 8;
+    private static final int VANILLA_BOTTOM_RESERVE = 28;
     private static final Map<DollKind, Long> ACTIVATIONS = new LinkedHashMap<>();
 
     private DollStatusOverlay() {
@@ -51,9 +52,17 @@ public final class DollStatusOverlay {
         }
         final long tick = minecraft.player.tickCount;
         ACTIVATIONS.entrySet().removeIf(entry -> entry.getValue() < tick);
-        final List<Row> rows = rows(minecraft, tick).stream().limit(MAX_ROWS).toList();
+        final int startY = Math.max(24, SupernaturalStatusOverlay.resourceStackBottom(minecraft) + 4);
+        final int visibleRows = PlayerResourceHudLayout.visibleRowCount(
+            minecraft.getWindow().getGuiScaledHeight(),
+            startY,
+            ROW_HEIGHT,
+            MAX_ROWS,
+            VANILLA_BOTTOM_RESERVE
+        );
+        final List<Row> rows = rows(minecraft, tick).stream().limit(visibleRows).toList();
         for (int index = 0; index < rows.size(); index++) {
-            renderRow(graphics, minecraft, rows.get(index), 6, 24 + index * ROW_HEIGHT);
+            renderRow(graphics, minecraft, rows.get(index), 6, startY + index * ROW_HEIGHT);
         }
     }
 

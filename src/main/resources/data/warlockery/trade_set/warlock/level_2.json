@@ -1,0 +1,8 @@
+{
+  "amount": 2,
+  "random_sequence": "warlockery:trade_set/warlock/level_2",
+  "trades": [
+    "warlockery:warlock/2/mandrake_seeds_for_emerald",
+    "warlockery:warlock/2/emeralds_for_fire_brew"
+  ]
+}

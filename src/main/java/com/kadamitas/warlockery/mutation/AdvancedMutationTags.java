@@ -17,6 +17,7 @@ public final class AdvancedMutationTags {
         public static final TagKey<Block> COBWEBS = create("mutation/cobwebs");
         public static final TagKey<Block> GRASSPERS = create("mutation/grasspers");
         public static final TagKey<Block> SLIME_SNARES = create("mutation/toad/slime_snares");
+        public static final TagKey<Block> BAT_SNARES = create("mutation/owl/bat_snares");
         public static final TagKey<Block> MANDRAKE_CROPS = create("mutation/minedrake/mandrake_crops");
         public static final TagKey<Block> SPRIG_DIRT = create("mutation/sprig/dirt");
         public static final TagKey<Block> SPRIG_MYCELIUM = create("mutation/sprig/mycelium");
@@ -45,6 +46,7 @@ public final class AdvancedMutationTags {
 
     public static final class EntityTypes {
         public static final TagKey<EntityType<?>> TOAD_HOSTS = create("mutation/toad/hosts");
+        public static final TagKey<EntityType<?>> OWL_HOSTS = create("mutation/owl/hosts");
         public static final TagKey<EntityType<?>> CREEPER_HOSTS = create("mutation/minedrake/creeper_hosts");
         public static final TagKey<EntityType<?>> LIVING_MANDRAKES = create("mutation/minedrake/living_mandrakes");
 

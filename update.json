@@ -1,12 +1,13 @@
 {
   "homepage": "https://github.com/Kadamitas/Warlockery/releases",
   "promos": {
-    "26.2-latest": "1.1.0",
-    "26.2-recommended": "1.1.0"
+    "26.2-latest": "1.2.0",
+    "26.2-recommended": "1.2.0"
   },
   "26.2": {
     "1.0.0-alpha.1": "Initial public alpha.",
     "1.0.0": "First NeoForge release with rituals, brewing, supernatural progression, creatures, diagnostics, optional recipe-viewer integration, translations, and resource-pack overrides.",
-    "1.1.0": "Updated 3D models and textures, manuals, item presentation, brews, dolls, ritual feedback, creatures, and stability."
+    "1.1.0": "Updated 3D models and textures, manuals, item presentation, brews, dolls, ritual feedback, creatures, and stability.",
+    "1.2.0": "Adds goblin raids and improved goblin ecology, redesigned Nami and Naamah, responsive mounted broom flight, expanded supernatural manuals and progression, and broad ritual, machine, model, texture, and stability improvements."
   }
 }

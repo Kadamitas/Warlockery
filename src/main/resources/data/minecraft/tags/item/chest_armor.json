@@ -1,8 +1,10 @@
 {
   "replace": false,
   "values": [
+    "warlockery:silverchestplate",
     "warlockery:delvealloychestplate",
     "warlockery:deathsrobe",
+    "warlockery:stonebrokers_quiver",
     "warlockery:werewolf_hunter_coat",
     "warlockery:werewolf_hunter_coat_dawn",
     "warlockery:werewolf_hunter_coat_silvered",

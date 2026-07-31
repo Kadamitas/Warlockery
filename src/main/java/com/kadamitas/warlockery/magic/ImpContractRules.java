@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.magic;
 
-import java.util.Arrays;
+import com.kadamitas.warlockery.util.EnumLookup;
+import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.Optional;
 
 public final class ImpContractRules {
@@ -35,7 +36,7 @@ public final class ImpContractRules {
         return new Decision(true, Diagnostic.READY);
     }
 
-    public enum Spell {
+    public enum Spell implements StringIdentified {
         FIERY_TOUCH("ingredient_contract_fiery_touch", 1),
         EVAPORATION("ingredient_contract_evaporate", 2),
         FIRE_TOLERANCE("ingredient_contract_resist_fire", 2),
@@ -43,6 +44,7 @@ public final class ImpContractRules {
         LIVING_FLAME("ingredient_contract_blaze", 4),
         TORMENT("ingredient_contract_torment", 6);
 
+        private static final EnumLookup<Spell> LOOKUP = EnumLookup.create("imp contract spell", values());
         private final String itemId;
         private final int favor;
 
@@ -55,12 +57,16 @@ public final class ImpContractRules {
             return itemId;
         }
 
+        public String id() {
+            return itemId;
+        }
+
         public int favor() {
             return favor;
         }
 
         public static Optional<Spell> forItem(final String itemId) {
-            return Arrays.stream(values()).filter(spell -> spell.itemId.equals(itemId)).findFirst();
+            return LOOKUP.find(itemId);
         }
     }
 

@@ -29,10 +29,20 @@ public final class ProgressionTokenItem extends Item {
             return InteractionResult.FAIL;
         }
         if (!level.isClientSide()) {
-            SupernaturalProgression.setLevel(player, path, next);
-            SupernaturalState.setForm(player, next == 0
-                ? SupernaturalForm.NONE
-                : path.form());
+            if (next == 0) {
+                SupernaturalProgression.cure(player);
+            } else {
+                if (SupernaturalState.getForm(player) != path.form()) {
+                    SupernaturalProgression.cure(player);
+                    SupernaturalProgression.beginPath(player, path);
+                }
+                SupernaturalProgression.setLevel(player, path, next);
+                SupernaturalProgression.setResource(
+                    player,
+                    path,
+                    SupernaturalProgression.maximumResource(path, next)
+                );
+            }
             show(player, decision, next, vampire);
         }
         return InteractionResult.SUCCESS;

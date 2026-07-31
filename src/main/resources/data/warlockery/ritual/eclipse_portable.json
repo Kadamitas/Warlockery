@@ -2,7 +2,7 @@
   "title": "ritual.warlockery.eclipse_portable.title",
   "description": "ritual.warlockery.eclipse_portable.description",
   "action": "eclipse",
-  "power": 3800,
+  "power": 0,
   "radius": 6,
   "duration": 2400,
   "amplifier": 0,

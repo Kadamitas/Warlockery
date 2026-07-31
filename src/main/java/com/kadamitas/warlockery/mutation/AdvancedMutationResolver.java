@@ -54,6 +54,7 @@ public final class AdvancedMutationResolver {
         }
         final int affected = switch (assessment.kind()) {
             case TOAD -> createToads(level, context);
+            case OWL -> createOwls(level, context);
             case MINEDRAKE -> createMinedrakes(level, context);
         };
         final String diagnostic = "\u2713 " + assessment.kind().displayName() + " mutation created " + affected;
@@ -92,12 +93,18 @@ public final class AdvancedMutationResolver {
     }
 
     private static MutationContext scan(final ServerLevel level, final BlockPos center) {
-        final List<BlockPos> slimeSnares = BlockPos.betweenClosedStream(
+        final List<BlockPos> nearbySnarePositions = BlockPos.betweenClosedStream(
                 center.offset(-AdvancedMutationLayout.ENTITY_RADIUS, -1, -AdvancedMutationLayout.ENTITY_RADIUS),
                 center.offset(AdvancedMutationLayout.ENTITY_RADIUS, 1, AdvancedMutationLayout.ENTITY_RADIUS)
             )
-            .filter(position -> isSlimeSnare(level.getBlockState(position)))
+            .filter(position -> level.getBlockState(position).getBlock() instanceof CritterSnareBlock)
             .map(BlockPos::immutable)
+            .toList();
+        final List<BlockPos> slimeSnares = nearbySnarePositions.stream()
+            .filter(position -> isSnare(level.getBlockState(position), AdvancedMutationTags.Blocks.SLIME_SNARES, CritterSnarePayload.SLIME))
+            .toList();
+        final List<BlockPos> batSnares = nearbySnarePositions.stream()
+            .filter(position -> isSnare(level.getBlockState(position), AdvancedMutationTags.Blocks.BAT_SNARES, CritterSnarePayload.BAT))
             .toList();
         final List<BlockPos> mandrakeCrops = AdvancedMutationLayout.cardinalRays(center).stream()
             .map(ray -> ray.stream()
@@ -118,6 +125,7 @@ public final class AdvancedMutationResolver {
             AdvancedMutationLayout.ENTITY_RADIUS
         );
         final List<Mob> toadHosts = nearbyHosts(level, center, entityArea, AdvancedMutationTags.EntityTypes.TOAD_HOSTS);
+        final List<Mob> wolfHosts = nearbyHosts(level, center, entityArea, AdvancedMutationTags.EntityTypes.OWL_HOSTS);
         final List<Mob> creeperHosts = nearbyHosts(level, center, entityArea, AdvancedMutationTags.EntityTypes.CREEPER_HOSTS);
         final List<Mob> livingMandrakes = nearbyHosts(
             level,
@@ -137,14 +145,18 @@ public final class AdvancedMutationResolver {
             mandrakeCrops.size(),
             toadHosts.size(),
             creeperHosts.size(),
-            livingMandrakes.size()
+            livingMandrakes.size(),
+            batSnares.size(),
+            wolfHosts.size()
         );
         return new MutationContext(
             center,
             slimeSnares,
+            batSnares,
             mandrakeCrops,
             grasspers,
             toadHosts,
+            wolfHosts,
             creeperHosts,
             livingMandrakes,
             snapshot
@@ -168,12 +180,16 @@ public final class AdvancedMutationResolver {
         ))).toList();
     }
 
-    private static boolean isSlimeSnare(final BlockState state) {
-        if (!state.is(AdvancedMutationTags.Blocks.SLIME_SNARES)) {
+    private static boolean isSnare(
+        final BlockState state,
+        final net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block> tag,
+        final CritterSnarePayload payload
+    ) {
+        if (!state.is(tag)) {
             return false;
         }
         return !(state.getBlock() instanceof CritterSnareBlock)
-            || state.getValue(CritterSnareBlock.PAYLOAD) == CritterSnarePayload.SLIME;
+            || state.getValue(CritterSnareBlock.PAYLOAD) == payload;
     }
 
     private static boolean isMatureMandrake(final BlockState state) {
@@ -274,6 +290,25 @@ public final class AdvancedMutationResolver {
         return spawned;
     }
 
+    private static int createOwls(final ServerLevel level, final MutationContext context) {
+        consumeWeb(level, context.center());
+        context.grasspers().forEach(slot -> consumeIngredient(level, slot.position()));
+        context.wolfHosts().getFirst().discard();
+        int spawned = 0;
+        for (BlockPos snarePos : context.batSnares()) {
+            clearSnare(level, snarePos);
+            final Entity owl = ModEntities.ALL.get("owl").get().create(level, EntitySpawnReason.EVENT);
+            if (owl instanceof Mob mob) {
+                mob.snapTo(snarePos.getX() + 0.5, snarePos.getY() + 0.1, snarePos.getZ() + 0.5);
+                mob.setPersistenceRequired();
+                if (level.addFreshEntity(mob)) {
+                    spawned++;
+                }
+            }
+        }
+        return spawned;
+    }
+
     private static int createMinedrakes(final ServerLevel level, final MutationContext context) {
         consumeWeb(level, context.center());
         context.grasspers().forEach(slot -> consumeIngredient(level, slot.position()));
@@ -328,9 +363,11 @@ public final class AdvancedMutationResolver {
     private record MutationContext(
         BlockPos center,
         List<BlockPos> slimeSnares,
+        List<BlockPos> batSnares,
         List<BlockPos> mandrakeCrops,
         List<IngredientSlot> grasspers,
         List<Mob> toadHosts,
+        List<Mob> wolfHosts,
         List<Mob> creeperHosts,
         List<Mob> livingMandrakes,
         AdvancedMutationSnapshot snapshot

@@ -68,6 +68,12 @@ public final class ModernBlockFactory {
         if ("rowanwooddoor".equals(id)) {
             return RunedDoorBlock.class;
         }
+        if ("hex_ladder".equals(id)) {
+            return WitchLadderBlock.class;
+        }
+        if ("stockade".equals(id) || "icestockade".equals(id)) {
+            return StockadeBlock.class;
+        }
         return switch (specification.shape()) {
             case BUTTON -> ButtonBlock.class;
             case DOOR -> DoorBlock.class;
@@ -94,12 +100,16 @@ public final class ModernBlockFactory {
                 properties.noCollision().pushReaction(PushReaction.DESTROY));
             case DOOR -> new DoorBlock(specification.blockSetType(),
                 properties.noOcclusion().pushReaction(PushReaction.DESTROY));
-            case FENCE -> new FenceBlock(properties);
+            case FENCE -> "stockade".equals(id) || "icestockade".equals(id)
+                ? new StockadeBlock(properties)
+                : new FenceBlock(properties);
             case FENCE_GATE -> new FenceGateBlock(WoodType.OAK, properties);
-            case LADDER -> new LadderBlock(
+            case LADDER -> new WitchLadderBlock(
                 properties.noOcclusion().sound(SoundType.LADDER).pushReaction(PushReaction.DESTROY));
-            case PRESSURE_PLATE -> new PressurePlateBlock(specification.blockSetType(),
-                properties.noCollision().pushReaction(PushReaction.DESTROY));
+            case PRESSURE_PLATE -> "icepressureplate".equals(id)
+                ? new IcyPressurePlateBlock(properties.noCollision().pushReaction(PushReaction.DESTROY))
+                : new PressurePlateBlock(specification.blockSetType(),
+                    properties.noCollision().pushReaction(PushReaction.DESTROY));
             case SLAB -> new SlabBlock(properties);
             case STAIRS -> new StairBlock(specification.family().baseBlock().defaultBlockState(), properties);
         };

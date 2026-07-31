@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:seer_stone_calls_only_the_owners_recruited_circle_mages",
+  "environment": "minecraft:default",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 100
+}

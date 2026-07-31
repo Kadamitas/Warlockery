@@ -16,8 +16,16 @@ final class BodegaBrewingRulesTest {
     );
 
     @Test
-    void onlyBodegaRequiresTheOwlKnowledgeGate() {
+    void legacyFamiliarBrewsRequireTheirMatchingBoundCompanion() {
         assertTrue(BodegaBrewingRules.requiresFamiliar(Identifier.parse("warlockery:kettle_brew_bodega")));
+        assertTrue(BodegaBrewingRules.requiresFamiliar(Identifier.parse("warlockery:kettle_brew_cursed_leaping")));
+        assertTrue(BodegaBrewingRules.requiresFamiliar(Identifier.parse("warlockery:kettle_brew_frogs_tongue")));
+        assertTrue(BodegaBrewingRules.requiredFamiliar(Identifier.parse("warlockery:kettle_brew_bodega"))
+            .filter("owl"::equals).isPresent());
+        assertTrue(BodegaBrewingRules.requiredFamiliar(Identifier.parse("warlockery:kettle_brew_cursed_leaping"))
+            .filter("familiar_cat"::equals).isPresent());
+        assertTrue(BodegaBrewingRules.requiredFamiliar(Identifier.parse("warlockery:kettle_brew_frogs_tongue"))
+            .filter("toad"::equals).isPresent());
         assertFalse(BodegaBrewingRules.requiresFamiliar(Identifier.parse("warlockery:kettle_brew_thorns")));
         assertFalse(BodegaBrewingRules.ready(true, false));
         assertTrue(BodegaBrewingRules.ready(true, true));

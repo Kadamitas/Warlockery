@@ -61,6 +61,9 @@ public final class HexState {
 
     public static void copyAfterClone(final PlayerEvent.Clone event) {
         Arrays.stream(HexKind.values()).forEach(kind -> {
+            if (kind == HexKind.HEAT_METAL) {
+                return;
+            }
             final int remaining = remainingTicks(event.getOriginal(), kind);
             if (remaining > 0) {
                 apply(event.getEntity(), kind, remaining);

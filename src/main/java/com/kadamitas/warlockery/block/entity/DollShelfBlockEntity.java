@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.block.entity;
 
 import com.kadamitas.warlockery.block.DollShelfRules;
 import com.kadamitas.warlockery.item.DollItem;
+import com.kadamitas.warlockery.menu.DollShelfMenu;
 import com.kadamitas.warlockery.item.DollMendingSchedule;
 import com.kadamitas.warlockery.item.SympatheticBinding;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
@@ -20,8 +21,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
@@ -74,7 +73,7 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        LOADED.add(this);
+        registerLiveShelf();
         updateChunkTicket();
     }
 
@@ -139,6 +138,7 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
     @Override
     public void setChanged() {
         super.setChanged();
+        registerLiveShelf();
         updateChunkTicket();
     }
 
@@ -149,7 +149,7 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
 
     @Override
     protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
-        return new ChestMenu(MenuType.GENERIC_9x1, containerId, inventory, this, 1);
+        return new DollShelfMenu(containerId, inventory, this);
     }
 
     @Override
@@ -176,6 +176,12 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
     private void updateChunkTicket() {
         if (level instanceof ServerLevel serverLevel && LOADED.contains(this)) {
             updateChunkTicket(serverLevel, chunkX(), chunkZ());
+        }
+    }
+
+    private void registerLiveShelf() {
+        if (level instanceof ServerLevel && !isRemoved()) {
+            LOADED.add(this);
         }
     }
 

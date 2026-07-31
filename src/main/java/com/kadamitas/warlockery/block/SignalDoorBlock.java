@@ -5,13 +5,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
 public final class SignalDoorBlock extends DoorBlock {
     public static final MapCodec<SignalDoorBlock> CODEC = simpleCodec(SignalDoorBlock::new);
@@ -23,6 +27,12 @@ public final class SignalDoorBlock extends DoorBlock {
     @Override
     public MapCodec<? extends SignalDoorBlock> codec() {
         return CODEC;
+    }
+
+    @Override
+    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+        final BlockState placed = super.getStateForPlacement(context);
+        return placed == null ? null : placed.setValue(OPEN, false).setValue(POWERED, false);
     }
 
     @Override
@@ -60,5 +70,16 @@ public final class SignalDoorBlock extends DoorBlock {
 
     public static int emittedSignal(final boolean open) {
         return DoorSignalRules.signalForOpen(open);
+    }
+
+    @Override
+    protected void neighborChanged(
+        final BlockState state,
+        final Level level,
+        final BlockPos pos,
+        final Block block,
+        final @Nullable Orientation orientation,
+        final boolean movedByPiston
+    ) {
     }
 }

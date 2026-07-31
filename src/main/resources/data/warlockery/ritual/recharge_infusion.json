@@ -4,7 +4,7 @@
   "action": "recharge_path",
   "power": 4000,
   "radius": 6,
-  "duration": 1200,
+  "duration": 2147483647,
   "amplifier": 1,
   "casting_time": 100,
   "glyphs": {

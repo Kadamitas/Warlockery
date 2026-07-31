@@ -23,12 +23,23 @@ final class ManualTypographyTest {
     }
 
     @Test
+    void compactManualTypeFitsMoreTextWithoutShrinkingToIllegibility() {
+        assertTrue(ManualTypography.TITLE_SCALE < 1.0F);
+        assertTrue(ManualTypography.TITLE_SCALE >= 0.8F);
+        assertTrue(ManualTypography.BODY_SCALE < ManualTypography.TITLE_SCALE);
+        assertTrue(ManualTypography.BODY_SCALE >= 0.75F);
+        assertEquals(8, ManualTypography.BODY_LINE_HEIGHT);
+        assertTrue(ManualTypography.wrappingWidth(300, ManualTypography.BODY_SCALE) > 390);
+    }
+
+    @Test
     void manualRenderingDisablesDarkDropShadows() throws IOException {
         final String source = Files.readString(Path.of(
             "src/main/java/com/kadamitas/warlockery/client/ManualScreen.java"
         ));
 
         assertTrue(source.contains("graphics.text(font, text, x, y, -1, false)"));
+        assertTrue(source.contains("graphics.pose().scale(scale, scale)"));
         assertFalse(source.contains("graphics.textRenderer()"));
     }
 }
