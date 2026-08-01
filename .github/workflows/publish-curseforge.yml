@@ -147,7 +147,7 @@ jobs:
             if [[ "$loader" == "Fabric" ]]; then
               relations="$(jq --null-input --compact-output \
                 --arg slug "fabric-api" \
-                --arg projectID "306612" \
+                --argjson projectID 306612 \
                 '{projects: [{slug: $slug, projectID: $projectID, type: "requiredDependency"}]}')"
             fi
 
