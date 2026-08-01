@@ -2,7 +2,7 @@
   "type": "minecraft:function",
   "function": "warlockery:veil_ring_transposes_living_and_dropped_travellers",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 160,
   "padding": 16
 }

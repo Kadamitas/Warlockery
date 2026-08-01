@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.CreatureBehaviorProfile.Feature;
 import com.kadamitas.warlockery.item.BeastSpeechCharmItem;
@@ -487,7 +488,7 @@ public final class CreatureBehaviorRuntime {
             return level.getBlockState(wall).isFaceSturdy(level, wall, direction.getOpposite());
         }).count();
         final HellhoundCureRules.Result result = HellhoundCureRules.advance(
-            creature.getPersistentData().getIntOr(HELLHOUND_CURE, 0),
+            WarlockeryEntityData.get(creature).getIntOr(HELLHOUND_CURE, 0),
             creature.hasEffect(MobEffects.WEAKNESS),
             held.is(Items.GOLDEN_APPLE),
             walls
@@ -501,7 +502,7 @@ public final class CreatureBehaviorRuntime {
             return InteractionResult.FAIL;
         }
         consumeOne(player, held);
-        creature.getPersistentData().putInt(HELLHOUND_CURE, result.progress());
+        WarlockeryEntityData.get(creature).putInt(HELLHOUND_CURE, result.progress());
         if (!result.cured()) {
             return InteractionResult.SUCCESS;
         }
@@ -631,7 +632,7 @@ public final class CreatureBehaviorRuntime {
             ) == 6) {
             com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime
                 .recordNaamahAudience(serverPlayer);
-            creature.getPersistentData().putString(
+            WarlockeryEntityData.get(creature).putString(
                 com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime.NAAMAH_TRIAL_OWNER,
                 player.getStringUUID()
             );
@@ -1041,7 +1042,7 @@ public final class CreatureBehaviorRuntime {
     }
 
     private static void tickReflection(final Mob creature, final ServerLevel level) {
-        final String targetId = creature.getPersistentData().getStringOr("WarlockeryReflectedTarget", "");
+        final String targetId = WarlockeryEntityData.get(creature).getStringOr("WarlockeryReflectedTarget", "");
         if (targetId.isBlank()) {
             return;
         }
@@ -1088,11 +1089,11 @@ public final class CreatureBehaviorRuntime {
 
     private static void tickAbyssalRegent(final Mob creature, final ServerLevel level) {
         pulseFear(creature);
-        final boolean phaseTriggered = creature.getPersistentData().getBooleanOr(ABYSSAL_TORMENT_PHASE, false);
+        final boolean phaseTriggered = WarlockeryEntityData.get(creature).getBooleanOr(ABYSSAL_TORMENT_PHASE, false);
         if (!AbyssalRegentRules.beginsTormentPhase(creature.getHealth(), phaseTriggered)) {
             return;
         }
-        creature.getPersistentData().putBoolean(ABYSSAL_TORMENT_PHASE, true);
+        WarlockeryEntityData.get(creature).putBoolean(ABYSSAL_TORMENT_PHASE, true);
         creature.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 240, 1, true, true));
         creature.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 240, 1, true, true));
         level.getEntitiesOfClass(

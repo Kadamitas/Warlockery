@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:spirit_world_entry_creates_state_body_and_diagnostic",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

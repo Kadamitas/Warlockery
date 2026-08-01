@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.ritual.hex;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,14 +24,14 @@ public final class HexEntityMarkers {
         final UUID targetId,
         final long expiration
     ) {
-        final CompoundTag data = entity.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(entity);
         data.putString(THREAT_KIND, kind.id());
         data.putString(THREAT_TARGET, targetId.toString());
         data.putLong(THREAT_EXPIRATION, expiration);
     }
 
     public static Optional<ThreatMarker> threat(final Entity entity) {
-        final CompoundTag data = entity.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(entity);
         final String kindId = data.getStringOr(THREAT_KIND, "");
         final String targetId = data.getStringOr(THREAT_TARGET, "");
         if (kindId.isBlank() || targetId.isBlank()) {
@@ -53,14 +54,14 @@ public final class HexEntityMarkers {
         final long expiration,
         final long detonation
     ) {
-        final CompoundTag data = entity.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(entity);
         data.putString(TOAD_ROLE, role.name());
         data.putLong(TOAD_EXPIRATION, expiration);
         data.putLong(TOAD_DETONATION, detonation);
     }
 
     public static Optional<ToadMarker> toad(final Entity entity) {
-        final CompoundTag data = entity.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(entity);
         final String role = data.getStringOr(TOAD_ROLE, "");
         if (role.isBlank()) {
             return Optional.empty();

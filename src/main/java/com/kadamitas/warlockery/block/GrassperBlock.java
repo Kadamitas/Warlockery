@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.block;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -60,7 +61,7 @@ public final class GrassperBlock extends BushBlock {
                 display.discard();
                 return InteractionResult.FAIL;
             }
-            display.getPersistentData().putLong(ANCHOR, pos.asLong());
+            WarlockeryEntityData.get(display).putLong(ANCHOR, pos.asLong());
             display.snapTo(pos.getX() + 0.5, pos.getY() + 0.65, pos.getZ() + 0.5);
             serverLevel.addFreshEntity(display);
             stack.consume(1, player);
@@ -151,7 +152,7 @@ public final class GrassperBlock extends BushBlock {
         return level.getEntitiesOfClass(
             Display.ItemDisplay.class,
             new AABB(pos).inflate(1.0),
-            display -> display.getPersistentData().getLongOr(ANCHOR, Long.MIN_VALUE) == pos.asLong()
+            display -> WarlockeryEntityData.get(display).getLongOr(ANCHOR, Long.MIN_VALUE) == pos.asLong()
         ).stream().findFirst();
     }
 

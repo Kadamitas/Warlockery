@@ -69,7 +69,7 @@ final class CommonIngredientCompatibilityTest {
     }
 
     @Test
-    void forgeCommonTagsBackTheStandardInterchangeFamilies() {
+    void fabricConventionalTagsBackTheStandardInterchangeFamilies() {
         final String allData = Stream.of(
             DATA.resolve("recipe"),
             DATA.resolve("ritual"),

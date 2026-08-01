@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.fabric.event.BlockBreakContext;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,26 +12,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraftforge.event.level.BlockEvent;
 
 public final class EntRuntime {
-    private static boolean registered;
-
     private EntRuntime() {
     }
 
-    public static void registerEvents() {
-        if (registered) {
-            return;
-        }
-        registered = true;
-        BlockEvent.BreakEvent.BUS.addListener(EntRuntime::handleLogBreak);
-    }
-
-    public static void handleLogBreak(final BlockEvent.BreakEvent event) {
-        if (!(event.getLevel() instanceof ServerLevel level)
-            || !(event.getPlayer() instanceof ServerPlayer player)
-            || !event.getState().is(WarlockeryTags.Blocks.ENT_SPAWNING_LOGS)) {
+    public static void handleLogBreak(final BlockBreakContext event) {
+        final ServerLevel level = event.getLevel();
+        final ServerPlayer player = event.getPlayer();
+        if (!event.getState().is(WarlockeryTags.Blocks.ENT_SPAWNING_LOGS)) {
             return;
         }
         final int neighboringLogs = neighboringLogCount(level, event.getPos());

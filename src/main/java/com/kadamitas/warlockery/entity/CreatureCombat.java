@@ -17,13 +17,13 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
 
 public final class CreatureCombat {
     private CreatureCombat() {
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         if (event.getAmount() <= 0.0F) {
             return;
         }
@@ -108,7 +108,7 @@ public final class CreatureCombat {
         return kind == ArcaneCreature.CreatureKind.DEATH ? DeathCombatRules.capIncoming(damage) : damage;
     }
 
-    public static boolean isNullifyingHunterShot(final LivingDamageEvent event) {
+    public static boolean isNullifyingHunterShot(final LivingDamageContext event) {
         return event.getSource().getDirectEntity() instanceof AbstractArrow arrow
             && arrow.getPickupItemStackOrigin().is(ModItems.ALL.get("ingredient_bolt_anti_magic").get())
             && event.getSource().getEntity() instanceof Player shooter
@@ -131,7 +131,7 @@ public final class CreatureCombat {
             || target instanceof ArcaneCreature creature && creature.creatureKind().isVampiric();
     }
 
-    public static void capDeathDamage(final LivingDamageEvent event) {
+    public static void capDeathDamage(final LivingDamageContext event) {
         if (event.getEntity() instanceof ArcaneCreature creature
             && creature.creatureKind() == ArcaneCreature.CreatureKind.DEATH) {
             event.setAmount(DeathCombatRules.capIncoming(event.getAmount()));
@@ -142,7 +142,7 @@ public final class CreatureCombat {
         return kind == ArcaneCreature.CreatureKind.WEREWOLF || kind == ArcaneCreature.CreatureKind.LYCAN_VILLAGER;
     }
 
-    public static boolean isSilverDamage(final LivingDamageEvent event) {
+    public static boolean isSilverDamage(final LivingDamageContext event) {
         final ItemStack projectile = event.getSource().getDirectEntity() instanceof AbstractArrow arrow
             ? arrow.getPickupItemStackOrigin() : ItemStack.EMPTY;
         final ItemStack weapon = event.getSource().getWeaponItem();
@@ -151,7 +151,7 @@ public final class CreatureCombat {
     }
 
     private static void applyPairedPatronProtection(
-        final LivingDamageEvent event,
+        final LivingDamageContext event,
         final ArcaneCreature.CreatureKind kind
     ) {
         final var counterpart = GoblinBossRules.counterpart(kind);
@@ -168,7 +168,7 @@ public final class CreatureCombat {
         event.setAmount(event.getAmount() * GoblinBossRules.pairedDamageMultiplier(distanceSquared));
     }
 
-    private static void transferDamageToFamiliar(final LivingDamageEvent event) {
+    private static void transferDamageToFamiliar(final LivingDamageContext event) {
         if (!(event.getEntity() instanceof Player player)
             || !(player.level() instanceof ServerLevel playerLevel)
             || event.getAmount() <= 0.0F) {

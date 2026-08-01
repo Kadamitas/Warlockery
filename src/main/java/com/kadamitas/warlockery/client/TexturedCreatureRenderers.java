@@ -9,6 +9,7 @@ import com.kadamitas.warlockery.entity.NaamahEntity;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
@@ -16,7 +17,6 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
-import net.minecraftforge.client.event.EntityRenderersEvent;
 
 final class TexturedCreatureRenderers {
     private TexturedCreatureRenderers() {
@@ -28,33 +28,26 @@ final class TexturedCreatureRenderers {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     static void registerArcane(
-        final EntityRenderersEvent.RegisterRenderers event,
         final net.minecraft.world.entity.EntityType<?> type,
         final CreatureModelProfile profile
     ) {
-        event.registerEntityRenderer(
+        EntityRenderers.register(
             (net.minecraft.world.entity.EntityType) type,
             context -> new Arcane(context, profile)
         );
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    static void registerNaamah(
-        final EntityRenderersEvent.RegisterRenderers event,
-        final net.minecraft.world.entity.EntityType<?> type
-    ) {
-        event.registerEntityRenderer(
+    static void registerNaamah(final net.minecraft.world.entity.EntityType<?> type) {
+        EntityRenderers.register(
             (net.minecraft.world.entity.EntityType) type,
             Naamah::new
         );
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    static void registerNami(
-        final EntityRenderersEvent.RegisterRenderers event,
-        final net.minecraft.world.entity.EntityType<?> type
-    ) {
-        event.registerEntityRenderer(
+    static void registerNami(final net.minecraft.world.entity.EntityType<?> type) {
+        EntityRenderers.register(
             (net.minecraft.world.entity.EntityType) type,
             Nami::new
         );

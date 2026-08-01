@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -26,7 +27,7 @@ public final class InfernalAnimusItem extends Item {
             return InteractionResult.PASS;
         }
         if (!player.level().isClientSide()) {
-            target.getPersistentData().putString(InfernalPactEffects.OWNER_KEY, player.getStringUUID());
+            WarlockeryEntityData.get(target).putString(InfernalPactEffects.OWNER_KEY, player.getStringUUID());
             if (target instanceof Mob mob) {
                 mob.setPersistenceRequired();
                 mob.setTarget(null);

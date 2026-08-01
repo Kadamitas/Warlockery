@@ -26,7 +26,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
@@ -86,12 +85,6 @@ public final class BrewItem extends SplashPotionItem {
             return result.plus(BrewRuntime.ImpactResult.event());
         }
         return result;
-    }
-
-    @Override
-    public int getBurnTime(final ItemStack itemStack, final @Nullable RecipeType<?> recipeType) {
-        final int burnTime = kind.fuelBurnTime();
-        return burnTime > 0 ? burnTime : super.getBurnTime(itemStack, recipeType);
     }
 
     @Override

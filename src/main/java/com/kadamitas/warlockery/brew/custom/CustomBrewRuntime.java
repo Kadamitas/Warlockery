@@ -25,7 +25,6 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import org.jspecify.annotations.Nullable;
 
 public final class CustomBrewRuntime {
@@ -190,20 +189,20 @@ public final class CustomBrewRuntime {
             .count();
     }
 
-    public static void handleFinishUse(final LivingEntityUseItemEvent.Finish event) {
-        if (!(event.getEntity().level() instanceof ServerLevel level)) {
+    public static void handleFinishUse(final LivingEntity entity, final ItemStack consumedItem) {
+        if (!(entity.level() instanceof ServerLevel level)) {
             return;
         }
-        read(event.getItem())
+        read(consumedItem)
             .filter(formula -> formula.delivery() == CustomBrewDelivery.DRINKABLE)
             .ifPresent(formula -> {
-                applyDrinkEffects(level, formula, event.getEntity());
+                applyDrinkEffects(level, formula, entity);
                 handleImpact(
                     level,
                     formula,
-                    event.getEntity().position(),
-                    event.getEntity(),
-                    event.getEntity()
+                    entity.position(),
+                    entity,
+                    entity
                 );
             });
     }

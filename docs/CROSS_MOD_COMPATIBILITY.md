@@ -1,6 +1,6 @@
 # Cross-mod compatibility
 
-Warlockery targets Forge 65.1.0 for Minecraft 26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and Forge capabilities.
+Warlockery targets Fabric Loader 0.19.3 and Fabric API 0.155.2+26.2 for Minecraft 26.2. Codecs serialize data. They do not replace shared material contracts. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, Fabric Transfer API storage, and Fabric API lookups.
 
 ## Tag strategy
 
@@ -27,7 +27,7 @@ The compatibility catalog is stored in `src/main/resources/data/warlockery/compa
 | Bolts and crossbows | `minecraft:arrows` and Minecraft's vanilla crossbow |
 | Building forms | Common fence, wooden fence, fence gate, glass block, and furnace-workstation tags where the live block behavior matches |
 | Oven upgrades | `warlockery:machine_upgrades/fume_funnels`, its filtered tier, and `warlockery:alchemical_fumes` for compatible blocks and fume outputs |
-| Brazier conjurations | Reloadable machine recipes, `warlockery:brazier/*` ingredient tags, `warlockery:brazier_igniters`, sided item capability automation, redstone ignition, and comparator output |
+| Brazier conjurations | Reloadable machine recipes, `warlockery:brazier/*` ingredient tags, `warlockery:brazier_igniters`, sided Transfer API automation, redstone ignition, and comparator output |
 | Ritual tools and creatures | `warlockery:arthanas`, `warlockery:altar_range_foci`, specialist-drop entity tags, `warlockery:nightmares`, and creature-role tags |
 
 The eight Warlockery crop seeds are real `CropBlock` planting items. The villager seed tag also flows into vanilla's `villager_picks_up` tag, so farmer AI can collect and plant compatible magical crops.
@@ -42,7 +42,7 @@ The `ritual` and `warlockery_machine` reload listeners accept valid definitions 
 
 Every complete manual remains a normal registered item whose use action opens the shared searchable library. Book-collection mods that store an item and later invoke that real item, including Akashic Tome and Eccentric Tome style systems, therefore retain the Warlockery screen without a hard dependency or special API adapter.
 
-Complete manuals are published in `warlockery:guide_books` and `minecraft:bookshelf_books`. The torn page stays in the broader `warlockery:manuals` tag but is intentionally excluded from the complete guide list. Forge 65.1.0 has no canonical `c:books` contract, so Warlockery does not invent one.
+Complete manuals are published in `warlockery:guide_books` and `minecraft:bookshelf_books`. The torn page stays in the broader `warlockery:manuals` tag but is intentionally excluded from the complete guide list. Fabric's conventional tags have no canonical `c:books` contract, so Warlockery does not invent one.
 
 Magical damage and brew gas participation use the private extension tags `warlockery:magical_damage` and `warlockery:brew_gases`. Other mods can add their damage types or gas blocks through a data pack without relying on invented global `c:` conventions.
 
@@ -50,15 +50,19 @@ Magical damage and brew gas participation use the private extension tags `warloc
 
 Silver, holy, stake, splitting, and anti-magic bolts are `ArrowItem` instances in `minecraft:arrows` and are fired by Minecraft's vanilla crossbow. Throwing Rocks extend vanilla `SnowballItem`. Fixed brews extend `SplashPotionItem`.
 
-The fixed Brew of Combustion supplies 2,400 burn ticks through `Item.getBurnTime(ItemStack, RecipeType)`, which is Forge 65.1.0's item fuel hook. The inactive `brew.fuel` registry placeholder is not advertised as fuel.
+The fixed Brew of Combustion supplies 2,400 burn ticks through Fabric's fuel registry event. The inactive `brew.fuel` registry placeholder is not advertised as fuel.
 
-## Machine capabilities
+## Fabric Transfer API
 
-All nine machine block variants expose sided `ForgeCapabilities.ITEM_HANDLER` views. Top, bottom, and horizontal access use the machine slot layout. Distilleries, kettles, cauldrons, and silver vats also expose `ForgeCapabilities.FLUID_HANDLER` because their profiles store transferable fluids. Machines without a tank do not publish a fake fluid handler.
+All nine machine block variants expose sided `ItemStorage.SIDED` views. Top, bottom, and horizontal access use the machine slot layout. Distilleries, kettles, cauldrons, and silver vats also expose `FluidStorage.SIDED` because their profiles store transferable fluids. Inserts and extracts participate in Fabric transactions, and machines without a tank do not publish fake fluid storage.
+
+Machine interaction uses Fabric's fluid-container bridge, so vanilla buckets and compatible containers from other mods can move liquid without Warlockery recognizing each container class. Internal recipes retain their documented millibucket amounts and convert only at the Transfer API boundary to Fabric droplets.
+
+Living and player progression state uses Fabric Data Attachments with persistent codecs. Network synchronization uses registered Fabric payload types, and biome additions use Fabric biome modifications rather than loader-specific data patches.
 
 The Silver Vat recognizes adjacent furnace recipes whose inputs use `c:ores/gold` and whose outputs use `c:ingots/gold`. Each completed smelt adds a Silver Deposit to the vat's ordinary output inventory, so a hopper or compatible item pipe can extract it from below.
 
-Forge 65.1.0 has no universal mana capability. Its built-in capability set provides energy, fluid handlers, fluid container handlers, and item handlers. Warlockery altar power is not Forge Energy and is not labeled as another mod's mana. Optional mana support requires a soft adapter for each external mana API.
+Fabric API has no universal energy or mana storage. Warlockery altar power is not labeled as another mod's mana. Items from an optional integration can expose `warlockery:energy_reserve` through `FabricEnergyCompatibility.ITEM`; integrations for incompatible mana systems still require a soft adapter for that API.
 
 ## Advanced mutation extension points
 
@@ -66,7 +70,7 @@ The Mutating Sprig is published through `c:tools` and `minecraft:enchantable/dur
 
 Structure roles use private tags so other mods can opt in without claiming that a magical reagent is a common material. Shared structure tags are `warlockery:mutation/cobwebs`, `warlockery:mutation/grasspers`, and the fluid tag `warlockery:mutation/water`. Toad mutations add `warlockery:mutation/toad/slime_snares` and `warlockery:mutation/toad/hosts`. Minedrake mutations add `warlockery:mutation/minedrake/mandrake_crops`, `warlockery:mutation/minedrake/creeper_hosts`, and `warlockery:mutation/minedrake/living_mandrakes`.
 
-Stored ingredients use `warlockery:mutation/mutandis_extremis`, `warlockery:mutation/focused_will`, and `warlockery:mutation/charged_attuned_stones`. A tagged external Grassper block should expose `ForgeCapabilities.ITEM_HANDLER` on at least one face. A tagged external slime-snare block represents an already filled snare and is consumed on success. Warlockery Critter Snares instead keep their block and return to the empty payload state.
+Stored ingredients use `warlockery:mutation/mutandis_extremis`, `warlockery:mutation/focused_will`, and `warlockery:mutation/charged_attuned_stones`. A tagged external Grassper block should expose `ItemStorage.SIDED` on at least one face. A tagged external slime-snare block represents an already filled snare and is consumed on success. Warlockery Critter Snares instead keep their block and return to the empty payload state.
 
 ## Ritual tools and creature roles
 
@@ -84,8 +88,8 @@ The magical tree oven routes use `warlockery:alder_saplings`, `warlockery:hawtho
 
 - Unique magical reagents stay in private Warlockery tags unless a canonical material, food, container, tool, or equipment meaning applies.
 - Spirit is not water, milk, experience, or another canonical common fluid, so it remains in `warlockery:spirit`.
-- Colored Brew Water and Erosion Brew use `warlockery:colored_brew_water` and `warlockery:erosion_brews`. Their source and flowing forms work with Forge fluid handlers, while `bucketbrew` and `bucketerosionbrew` are functional `BucketItem` containers published through `c:buckets`.
+- Colored Brew Water and Erosion Brew use `warlockery:colored_brew_water` and `warlockery:erosion_brews`. Their source and flowing forms work with Fabric fluid storage, while `bucketbrew` and `bucketerosionbrew` are functional `BucketItem` containers published through `c:buckets`.
 - Shadedglass is a glass building block but does not implement vanilla tinted-glass light behavior, so it is not in `c:glass_blocks/tinted`.
 - Hexwood's current `hex_leaves` and `hex_sapling` registrations are static legacy blocks, not live leaf and sapling implementations. They are not placed in vanilla leaf or sapling tags.
 - Inactive registry placeholders such as `brew.fuel` and `brew.water` are not assigned container, potion, fuel, or fluid contracts. All four functional magical fluid buckets participate in `c:buckets`.
-- Warlockery does not invent a global pipe, furnace, mana, or magic-reagent tag when Forge or the cross-loader `c:` namespace has no matching semantic contract.
+- Warlockery does not invent a global pipe, furnace, mana, or magic-reagent tag when Fabric API or the cross-loader `c:` namespace has no matching semantic contract.

@@ -1,20 +1,14 @@
 package com.kadamitas.warlockery.registry;
 
-import com.kadamitas.warlockery.Warlockery;
-import net.minecraft.core.registries.Registries;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 
 public final class ModCreativeTabs {
-    public static final DeferredRegister<CreativeModeTab> REGISTRY =
-        DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Warlockery.MOD_ID);
-
-    public static final RegistryObject<CreativeModeTab> MAIN = REGISTRY.register("main", () -> CreativeModeTab.builder()
+    public static final RegistrationHandle<CreativeModeTab> MAIN = RegistrationHandle.create("main", () ->
+        FabricCreativeModeTab.builder()
         .title(Component.translatable("itemGroup.warlockery.main"))
-        .withTabsBefore(CreativeModeTabs.INGREDIENTS)
         .icon(() -> ModItems.ALL.get("ritual_knife").get().getDefaultInstance())
         .displayItems((_, output) -> CreativeInventoryCatalog.sortedIds(ModItems.ALL.keySet()).stream()
             .map(ModItems.ALL::get)
@@ -22,5 +16,9 @@ public final class ModCreativeTabs {
         .build());
 
     private ModCreativeTabs() {
+    }
+
+    public static void register() {
+        MAIN.register(BuiltInRegistries.CREATIVE_MODE_TAB);
     }
 }

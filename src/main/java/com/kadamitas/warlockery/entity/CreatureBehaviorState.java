@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.util.DataParsing;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,7 +20,7 @@ public final class CreatureBehaviorState {
     }
 
     public static Optional<UUID> owner(final Entity entity) {
-        return DataParsing.uuid(entity.getPersistentData().getStringOr(OWNER, ""));
+        return DataParsing.uuid(WarlockeryEntityData.get(entity).getStringOr(OWNER, ""));
     }
 
     public static boolean bind(final Entity entity, final UUID ownerId) {
@@ -27,7 +28,7 @@ public final class CreatureBehaviorState {
         if (current.isPresent() && !current.orElseThrow().equals(ownerId)) {
             return false;
         }
-        entity.getPersistentData().putString(OWNER, ownerId.toString());
+        WarlockeryEntityData.get(entity).putString(OWNER, ownerId.toString());
         return true;
     }
 
@@ -36,12 +37,12 @@ public final class CreatureBehaviorState {
     }
 
     public static void unbind(final Entity entity) {
-        entity.getPersistentData().remove(OWNER);
+        WarlockeryEntityData.get(entity).remove(OWNER);
     }
 
     public static int empowerment(final Entity entity) {
         return Math.clamp(
-            entity.getPersistentData().getIntOr(EMPOWERMENT, 0),
+            WarlockeryEntityData.get(entity).getIntOr(EMPOWERMENT, 0),
             0,
             CreatureBehaviorRules.MAX_EMPOWERMENT
         );
@@ -50,37 +51,37 @@ public final class CreatureBehaviorState {
     public static EmpowermentResult empower(final Entity entity, final int amount) {
         final int before = empowerment(entity);
         final int after = CreatureBehaviorRules.empoweredLevel(before, amount);
-        entity.getPersistentData().putInt(EMPOWERMENT, after);
+        WarlockeryEntityData.get(entity).putInt(EMPOWERMENT, after);
         return new EmpowermentResult(before, after);
     }
 
     public static void setSampleBlock(final Entity entity, final Identifier blockId) {
-        entity.getPersistentData().putString(SAMPLE_BLOCK, blockId.toString());
+        WarlockeryEntityData.get(entity).putString(SAMPLE_BLOCK, blockId.toString());
     }
 
     public static Optional<Identifier> sampleBlock(final Entity entity) {
-        return DataParsing.identifier(entity.getPersistentData().getStringOr(SAMPLE_BLOCK, ""));
+        return DataParsing.identifier(WarlockeryEntityData.get(entity).getStringOr(SAMPLE_BLOCK, ""));
     }
 
     public static void storeEffect(final Entity entity, final StoredEffect effect) {
-        entity.getPersistentData().putString(STORED_EFFECT, effect.effectId().toString());
-        entity.getPersistentData().putInt(STORED_EFFECT_DURATION, effect.durationTicks());
-        entity.getPersistentData().putInt(STORED_EFFECT_AMPLIFIER, effect.amplifier());
+        WarlockeryEntityData.get(entity).putString(STORED_EFFECT, effect.effectId().toString());
+        WarlockeryEntityData.get(entity).putInt(STORED_EFFECT_DURATION, effect.durationTicks());
+        WarlockeryEntityData.get(entity).putInt(STORED_EFFECT_AMPLIFIER, effect.amplifier());
     }
 
     public static Optional<StoredEffect> storedEffect(final Entity entity) {
-        return DataParsing.identifier(entity.getPersistentData().getStringOr(STORED_EFFECT, ""))
+        return DataParsing.identifier(WarlockeryEntityData.get(entity).getStringOr(STORED_EFFECT, ""))
             .map(id -> new StoredEffect(
                 id,
-                Math.max(20, entity.getPersistentData().getIntOr(STORED_EFFECT_DURATION, 200)),
-                Math.max(0, entity.getPersistentData().getIntOr(STORED_EFFECT_AMPLIFIER, 0))
+                Math.max(20, WarlockeryEntityData.get(entity).getIntOr(STORED_EFFECT_DURATION, 200)),
+                Math.max(0, WarlockeryEntityData.get(entity).getIntOr(STORED_EFFECT_AMPLIFIER, 0))
             ));
     }
 
     public static void clearStoredEffect(final Entity entity) {
-        entity.getPersistentData().remove(STORED_EFFECT);
-        entity.getPersistentData().remove(STORED_EFFECT_DURATION);
-        entity.getPersistentData().remove(STORED_EFFECT_AMPLIFIER);
+        WarlockeryEntityData.get(entity).remove(STORED_EFFECT);
+        WarlockeryEntityData.get(entity).remove(STORED_EFFECT_DURATION);
+        WarlockeryEntityData.get(entity).remove(STORED_EFFECT_AMPLIFIER);
     }
 
     public static Snapshot snapshot(final Entity entity) {
@@ -88,12 +89,12 @@ public final class CreatureBehaviorState {
     }
 
     public static int impFavor(final Entity entity) {
-        return Math.clamp(entity.getPersistentData().getIntOr(IMP_FAVOR, 0), 0, 6);
+        return Math.clamp(WarlockeryEntityData.get(entity).getIntOr(IMP_FAVOR, 0), 0, 6);
     }
 
     public static int impressImp(final Entity entity) {
         final int next = Math.min(6, impFavor(entity) + 1);
-        entity.getPersistentData().putInt(IMP_FAVOR, next);
+        WarlockeryEntityData.get(entity).putInt(IMP_FAVOR, next);
         return next;
     }
 

@@ -14,8 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import com.kadamitas.warlockery.fabric.event.LivingDropsContext;
 
 public final class HexRuntime {
     private static final List<HexKind.EffectSpec> MISFORTUNE_OUTCOMES = List.of(
@@ -29,8 +28,7 @@ public final class HexRuntime {
     private HexRuntime() {
     }
 
-    public static void tick(final LivingEvent.LivingTickEvent event) {
-        final LivingEntity target = event.getEntity();
+    public static void tick(final LivingEntity target) {
         if (!(target.level() instanceof ServerLevel level)) {
             return;
         }
@@ -41,7 +39,7 @@ public final class HexRuntime {
         HexState.active(target).forEach(active -> tickActiveHex(level, target, active.kind()));
     }
 
-    public static void handleDrops(final LivingDropsEvent event) {
+    public static void handleDrops(final LivingDropsContext event) {
         if (HexEntityMarkers.isTemporary(event.getEntity())) {
             event.getDrops().clear();
         }

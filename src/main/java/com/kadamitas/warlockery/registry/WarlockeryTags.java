@@ -128,6 +128,10 @@ public final class WarlockeryTags {
 
     public static final class Biomes {
         public static final TagKey<Biome> OVERHEATING = create("overheating");
+        public static final TagKey<Biome> HAS_ALDER_TREES = create("has_alder_trees");
+        public static final TagKey<Biome> HAS_HAWTHORN_TREES = create("has_hawthorn_trees");
+        public static final TagKey<Biome> HAS_ROWAN_TREES = create("has_rowan_trees");
+        public static final TagKey<Biome> SPIRIT_HABITATS = create("spirit_habitats");
 
         private Biomes() {
         }

@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.block.ConnectedGlyphBlock;
 import com.kadamitas.warlockery.registry.ModBlocks;
@@ -33,7 +34,7 @@ public final class SpiritLocatorRuntime {
         if (!(entity.level() instanceof ServerLevel level)) {
             return;
         }
-        final CompoundTag data = entity.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(entity);
         if (data.getBooleanOr(USED, false)) {
             return;
         }
@@ -112,8 +113,8 @@ public final class SpiritLocatorRuntime {
             item -> item.getItem().getItem() instanceof AttunedStoneItem
                 || item.getItem().getItem() instanceof VillageSpiritItem
         ).forEach(item -> {
-            item.getPersistentData().putBoolean(USED, true);
-            item.getPersistentData().remove(ATTUNED_AT);
+            WarlockeryEntityData.get(item).putBoolean(USED, true);
+            WarlockeryEntityData.get(item).remove(ATTUNED_AT);
         });
     }
 

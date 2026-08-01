@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.block.ConnectedGlyphBlock;
 import com.kadamitas.warlockery.block.StatueBlock;
 import com.kadamitas.warlockery.crafting.AltarPowerNetwork;
@@ -38,7 +39,7 @@ public final class VeilWaystoneRuntime {
         if (!(entity.level() instanceof ServerLevel level) || kind == WaystoneItem.Kind.CREATURE) {
             return;
         }
-        final CompoundTag data = entity.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(entity);
         if (data.getBooleanOr(USED, false)) {
             return;
         }
@@ -63,7 +64,7 @@ public final class VeilWaystoneRuntime {
     }
 
     static boolean attempted(final ItemEntity entity) {
-        return entity.getPersistentData().getBooleanOr(USED, false);
+        return WarlockeryEntityData.get(entity).getBooleanOr(USED, false);
     }
 
     static Optional<BlockPos> ringCenter(
@@ -288,8 +289,8 @@ public final class VeilWaystoneRuntime {
 
     private static void markUsed(final List<ItemEntity> items) {
         items.forEach(item -> {
-            item.getPersistentData().putBoolean(USED, true);
-            item.getPersistentData().remove(READY_AT);
+            WarlockeryEntityData.get(item).putBoolean(USED, true);
+            WarlockeryEntityData.get(item).remove(READY_AT);
         });
     }
 

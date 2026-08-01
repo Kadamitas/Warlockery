@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:spirit_world_inhibits_every_circle_ritual",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

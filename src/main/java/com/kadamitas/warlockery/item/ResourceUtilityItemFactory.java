@@ -15,19 +15,19 @@ public final class ResourceUtilityItemFactory {
         Map.ofEntries(
             FactoryCatalog.entry("circletalisman", properties -> new CircleTalismanItem(properties.stacksTo(1))),
             FactoryCatalog.entry("bucketbrew", properties -> new BucketItem(
-                ModFluids.COLORED_BREW_WATER_SOURCE,
+                ModFluids.COLORED_BREW_WATER_SOURCE.get(),
                 properties.stacksTo(1).craftRemainder(Items.BUCKET)
             )),
             FactoryCatalog.entry("bucketerosionbrew", properties -> new BucketItem(
-                ModFluids.EROSION_SOURCE,
+                ModFluids.EROSION_SOURCE.get(),
                 properties.stacksTo(1).craftRemainder(Items.BUCKET)
             )),
             FactoryCatalog.entry("bucketspirit", properties -> new BucketItem(
-                ModFluids.SPIRIT_SOURCE,
+                ModFluids.SPIRIT_SOURCE.get(),
                 properties.stacksTo(1).craftRemainder(Items.BUCKET)
             )),
             FactoryCatalog.entry("buckethollowtears", properties -> new BucketItem(
-                ModFluids.HOLLOW_TEARS_SOURCE,
+                ModFluids.HOLLOW_TEARS_SOURCE.get(),
                 properties.stacksTo(1).craftRemainder(Items.BUCKET)
             )),
             FactoryCatalog.entry("mutator", MutatingSprigItem::new),

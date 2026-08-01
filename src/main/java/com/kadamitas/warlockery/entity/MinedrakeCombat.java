@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
@@ -12,7 +13,7 @@ public final class MinedrakeCombat {
     }
 
     public static boolean detonate(final Mob minedrake, final ServerLevel level) {
-        final CompoundTag data = minedrake.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(minedrake);
         final long gameTime = level.getGameTime();
         if (DETONATING.get() || !MinedrakeCombatRules.blastReady(
             data.contains(LAST_BLAST),

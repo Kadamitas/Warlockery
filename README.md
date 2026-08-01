@@ -2,18 +2,19 @@
 
 [Releases](https://github.com/Kadamitas/Warlockery/releases) | [Issue tracker](https://github.com/Kadamitas/Warlockery/issues) | [MIT license](LICENSE)
 
-Warlockery is a standalone ritual magic mod by Kadamitas for Minecraft 26.2 and Forge 65.1.0.
+Warlockery is a standalone ritual magic mod by Kadamitas for Minecraft 26.2 and Fabric.
 
 It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, goblin village enclaves, silver hunting equipment, and Netherite-tier Goblinite gear.
 
 ## Installation
 
-1. Install Minecraft 26.2 with Forge 65.1.0 or newer.
-2. Download the matching Warlockery release and copy its JAR into the instance or server `mods` folder.
-3. Install the same Warlockery version on the client and server.
-4. Start Minecraft and confirm that Warlockery appears in the Mods screen.
+1. Install Minecraft 26.2 with Fabric Loader 0.19.3 or newer.
+2. Install Fabric API 0.155.2+26.2 or newer for Minecraft 26.2.
+3. Download the Fabric Warlockery release and copy its JAR into the instance or server `mods` folder.
+4. Install the same Warlockery and Fabric API versions on the client and server.
+5. Start Minecraft and confirm that Warlockery loaded successfully.
 
-JEI integration is optional and activates when a compatible Forge JEI build is installed. The integration targets JEI 30.15.0 or newer through its common API.
+JEI integration is optional and activates when a compatible Fabric JEI build is installed. The integration targets JEI 30.7.0.41 or newer through its Fabric API.
 
 ## Languages
 
@@ -33,11 +34,11 @@ Standard Minecraft resource packs can replace Warlockery textures, item and bloc
 
 ## Support
 
-Report bugs through the [issue tracker](https://github.com/Kadamitas/Warlockery/issues). Include the Warlockery, Minecraft, Forge, and optional-mod versions, a clear reproduction, and the relevant `latest.log` or crash report. Confirm the problem with the latest Warlockery release before filing an issue.
+Report bugs through the [issue tracker](https://github.com/Kadamitas/Warlockery/issues). Include the Warlockery, Minecraft, Fabric Loader, Fabric API, and optional-mod versions, a clear reproduction, and the relevant `latest.log` or crash report. Confirm the problem with the latest Warlockery release before filing an issue.
 
 ## Repository structure
 
-- `src/main/java` contains the Forge runtime and client implementation.
+- `src/main/java` contains the Fabric runtime and client implementation.
 - `src/main/resources` contains assets, recipes, tags, loot, world generation, manuals, and other data-driven content.
 - `src/test/java` contains unit, integration, and resource-contract tests.
 - `docs` contains player and compatibility documentation.

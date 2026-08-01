@@ -31,7 +31,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
 import org.jspecify.annotations.Nullable;
 
 public final class DollItem extends Item {
@@ -151,7 +151,7 @@ public final class DollItem extends Item {
         return true;
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || event.getAmount() <= 0.0F) {
             return;
         }
@@ -326,7 +326,7 @@ public final class DollItem extends Item {
             || kind.definition().ability() instanceof DollAbility.HexGuard;
     }
 
-    private static void transferLinkedDamage(final ServerPlayer player, final LivingDamageEvent event) {
+    private static void transferLinkedDamage(final ServerPlayer player, final LivingDamageContext event) {
         findBoundDoll(
             player,
             item -> item.kind.definition().ability() instanceof DollAbility.DamageLink

@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.transformation;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.util.EnumLookup;
 import com.kadamitas.warlockery.util.StringIdentified;
 import java.util.Arrays;
@@ -54,15 +55,15 @@ public final class SupernaturalProgression {
     }
 
     public static int level(final Player player, final Path path) {
-        final Optional<CompoundTag> current = pathState(player.getPersistentData(), path, false);
-        final int legacy = player.getPersistentData().getIntOr(path.key(), 0);
+        final Optional<CompoundTag> current = pathState(WarlockeryEntityData.get(player), path, false);
+        final int legacy = WarlockeryEntityData.get(player).getIntOr(path.key(), 0);
         return Math.clamp(current.map(tag -> tag.getIntOr(LEVEL, legacy)).orElse(legacy), 0, MAX_LEVEL);
     }
 
     public static void setLevel(final Player player, final Path path, final int requestedLevel) {
         final int level = Math.clamp(requestedLevel, 0, MAX_LEVEL);
-        player.getPersistentData().putInt(path.key(), level);
-        pathState(player.getPersistentData(), path, true).orElseThrow().putInt(LEVEL, level);
+        WarlockeryEntityData.get(player).putInt(path.key(), level);
+        pathState(WarlockeryEntityData.get(player), path, true).orElseThrow().putInt(LEVEL, level);
         setResource(player, path, Math.min(resource(player, path), maximumResource(path, level)));
     }
 
@@ -78,14 +79,14 @@ public final class SupernaturalProgression {
 
     public static int resource(final Player player, final Path path) {
         final int maximum = maximumResource(path, level(player, path));
-        return pathState(player.getPersistentData(), path, false)
+        return pathState(WarlockeryEntityData.get(player), path, false)
             .map(tag -> Math.clamp(tag.getIntOr(RESOURCE, 0), 0, maximum))
             .orElse(0);
     }
 
     public static void setResource(final Player player, final Path path, final int amount) {
         final int maximum = maximumResource(path, level(player, path));
-        pathState(player.getPersistentData(), path, true).orElseThrow()
+        pathState(WarlockeryEntityData.get(player), path, true).orElseThrow()
             .putInt(RESOURCE, Math.clamp(amount, 0, maximum));
     }
 
@@ -107,7 +108,7 @@ public final class SupernaturalProgression {
     }
 
     public static int counter(final Player player, final Path path, final Enum<?> metric) {
-        return counters(player.getPersistentData(), path, false)
+        return counters(WarlockeryEntityData.get(player), path, false)
             .map(tag -> Math.max(0, tag.getIntOr(metric.name(), 0)))
             .orElse(0);
     }
@@ -116,14 +117,14 @@ public final class SupernaturalProgression {
         if (amount <= 0) {
             return counter(player, path, metric);
         }
-        final CompoundTag counters = counters(player.getPersistentData(), path, true).orElseThrow();
+        final CompoundTag counters = counters(WarlockeryEntityData.get(player), path, true).orElseThrow();
         final int updated = (int) Math.min(Integer.MAX_VALUE, (long) counter(player, path, metric) + amount);
         counters.putInt(metric.name(), updated);
         return updated;
     }
 
     public static void setCounter(final Player player, final Path path, final Enum<?> metric, final int value) {
-        final CompoundTag counters = counters(player.getPersistentData(), path, true).orElseThrow();
+        final CompoundTag counters = counters(WarlockeryEntityData.get(player), path, true).orElseThrow();
         if (value <= 0) {
             counters.remove(metric.name());
         } else {
@@ -137,7 +138,7 @@ public final class SupernaturalProgression {
         final Enum<?> metric,
         final long marker
     ) {
-        final CompoundTag state = pathState(player.getPersistentData(), path, true).orElseThrow();
+        final CompoundTag state = pathState(WarlockeryEntityData.get(player), path, true).orElseThrow();
         final String key = metric.name() + "_seen";
         final long[] markers = state.getLongArray(key).orElseGet(() -> new long[0]);
         if (Arrays.stream(markers).anyMatch(existing -> existing == marker)) {
@@ -152,19 +153,19 @@ public final class SupernaturalProgression {
     }
 
     public static void clearCounters(final Player player, final Path path) {
-        final CompoundTag state = pathState(player.getPersistentData(), path, true).orElseThrow();
+        final CompoundTag state = pathState(WarlockeryEntityData.get(player), path, true).orElseThrow();
         state.put(COUNTERS, new CompoundTag());
         state.keySet().stream().filter(key -> key.endsWith("_seen")).toList().forEach(state::remove);
     }
 
     public static boolean flag(final Player player, final Path path, final String flag) {
-        return pathState(player.getPersistentData(), path, false)
+        return pathState(WarlockeryEntityData.get(player), path, false)
             .map(state -> state.getBooleanOr("flag_" + flag, false))
             .orElse(false);
     }
 
     public static boolean markFlag(final Player player, final Path path, final String flag) {
-        final CompoundTag state = pathState(player.getPersistentData(), path, true).orElseThrow();
+        final CompoundTag state = pathState(WarlockeryEntityData.get(player), path, true).orElseThrow();
         final String key = "flag_" + flag;
         final boolean changed = !state.getBooleanOr(key, false);
         state.putBoolean(key, true);
@@ -172,13 +173,13 @@ public final class SupernaturalProgression {
     }
 
     public static long value(final Player player, final Path path, final String key) {
-        return pathState(player.getPersistentData(), path, false)
+        return pathState(WarlockeryEntityData.get(player), path, false)
             .map(state -> state.getLongOr("value_" + key, 0L))
             .orElse(0L);
     }
 
     public static void setValue(final Player player, final Path path, final String key, final long value) {
-        pathState(player.getPersistentData(), path, true).orElseThrow().putLong("value_" + key, value);
+        pathState(WarlockeryEntityData.get(player), path, true).orElseThrow().putLong("value_" + key, value);
     }
 
     public static SupernaturalPower selectedPower(final Player player) {
@@ -187,7 +188,7 @@ public final class SupernaturalProgression {
         if (unlocked.isEmpty()) {
             return null;
         }
-        final String stored = pathState(player.getPersistentData(), path, false)
+        final String stored = pathState(WarlockeryEntityData.get(player), path, false)
             .map(tag -> tag.getStringOr(SELECTED_POWER, ""))
             .orElse("");
         return SupernaturalPower.find(stored).filter(unlocked::contains).orElse(unlocked.getFirst());
@@ -208,7 +209,7 @@ public final class SupernaturalProgression {
         }
         final SupernaturalPower current = selectedPower(player);
         final SupernaturalPower next = unlocked.get((unlocked.indexOf(current) + 1) % unlocked.size());
-        pathState(player.getPersistentData(), path, true).orElseThrow()
+        pathState(WarlockeryEntityData.get(player), path, true).orElseThrow()
             .putString(SELECTED_POWER, next.id());
         return next;
     }
@@ -218,7 +219,7 @@ public final class SupernaturalProgression {
             || level(player, power.path()) < power.level()) {
             return false;
         }
-        pathState(player.getPersistentData(), power.path(), true).orElseThrow()
+        pathState(WarlockeryEntityData.get(player), power.path(), true).orElseThrow()
             .putString(SELECTED_POWER, power.id());
         return true;
     }
@@ -228,45 +229,45 @@ public final class SupernaturalProgression {
     }
 
     public static long cooldown(final Player player, final SupernaturalPower power) {
-        return cooldowns(player.getPersistentData(), power.path(), false)
+        return cooldowns(WarlockeryEntityData.get(player), power.path(), false)
             .map(tag -> tag.getLongOr(power.id(), 0L))
             .orElse(0L);
     }
 
     public static void startCooldown(final Player player, final SupernaturalPower power) {
-        cooldowns(player.getPersistentData(), power.path(), true).orElseThrow()
+        cooldowns(WarlockeryEntityData.get(player), power.path(), true).orElseThrow()
             .putLong(power.id(), player.level().getGameTime() + power.cooldown());
     }
 
     public static WerewolfShape werewolfShape(final Player player) {
-        return root(player.getPersistentData(), false)
+        return root(WarlockeryEntityData.get(player), false)
             .map(tag -> WerewolfShape.parse(tag.getStringOr(WEREWOLF_SHAPE, WerewolfShape.HUMAN.name())))
             .orElse(WerewolfShape.HUMAN);
     }
 
     public static void setWerewolfShape(final Player player, final WerewolfShape shape) {
-        root(player.getPersistentData(), true).orElseThrow().putString(WEREWOLF_SHAPE, shape.name());
+        root(WarlockeryEntityData.get(player), true).orElseThrow().putString(WEREWOLF_SHAPE, shape.name());
     }
 
     public static long batSwarmUntil(final Player player) {
-        return root(player.getPersistentData(), false).map(tag -> tag.getLongOr(BAT_SWARM_UNTIL, 0L)).orElse(0L);
+        return root(WarlockeryEntityData.get(player), false).map(tag -> tag.getLongOr(BAT_SWARM_UNTIL, 0L)).orElse(0L);
     }
 
     public static void setBatSwarmUntil(final Player player, final long gameTime) {
-        root(player.getPersistentData(), true).orElseThrow().putLong(BAT_SWARM_UNTIL, Math.max(0L, gameTime));
+        root(WarlockeryEntityData.get(player), true).orElseThrow().putLong(BAT_SWARM_UNTIL, Math.max(0L, gameTime));
     }
 
     public static void copy(final Player source, final Player destination) {
-        source.getPersistentData().getCompound(ROOT)
-            .ifPresent(state -> destination.getPersistentData().put(ROOT, state.copy()));
+        WarlockeryEntityData.get(source).getCompound(ROOT)
+            .ifPresent(state -> WarlockeryEntityData.get(destination).put(ROOT, state.copy()));
         for (final Path path : Path.values()) {
-            destination.getPersistentData().putInt(path.key(), level(source, path));
+            WarlockeryEntityData.get(destination).putInt(path.key(), level(source, path));
         }
     }
 
     private static void clearPath(final Player player, final Path path) {
-        player.getPersistentData().putInt(path.key(), 0);
-        root(player.getPersistentData(), false).ifPresent(root -> root.remove(path.id()));
+        WarlockeryEntityData.get(player).putInt(path.key(), 0);
+        root(WarlockeryEntityData.get(player), false).ifPresent(root -> root.remove(path.id()));
     }
 
     private static Optional<CompoundTag> root(final CompoundTag data, final boolean create) {

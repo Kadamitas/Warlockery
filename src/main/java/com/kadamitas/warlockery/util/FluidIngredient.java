@@ -6,14 +6,13 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidStack;
 
 public record FluidIngredient(String value, Identifier id, boolean tag) implements RegistryIngredient {
     public static Optional<FluidIngredient> parse(final String value) {
         return RegistryIngredient.parse(value, FluidIngredient::new);
     }
 
-    public boolean matches(final FluidStack stack) {
+    public boolean matches(final FluidContents stack) {
         if (stack.isEmpty()) {
             return false;
         }

@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.transformation;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.entity.CreatureCombat;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
@@ -13,8 +14,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.MoonPhase;
 import net.minecraft.world.attribute.EnvironmentAttributes;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
+import com.kadamitas.warlockery.fabric.event.PlayerCloneContext;
 
 public final class SupernaturalState {
     private static final String FORM_KEY = "WarlockerySupernaturalForm";
@@ -24,7 +25,7 @@ public final class SupernaturalState {
     }
 
     public static SupernaturalForm getForm(final Player player) {
-        final String stored = player.getPersistentData().getStringOr(FORM_KEY, SupernaturalForm.NONE.name());
+        final String stored = WarlockeryEntityData.get(player).getStringOr(FORM_KEY, SupernaturalForm.NONE.name());
         return SupernaturalForm.parse(stored);
     }
 
@@ -37,7 +38,7 @@ public final class SupernaturalState {
     }
 
     static void setIdentity(final Player player, final SupernaturalForm form) {
-        final CompoundTag data = player.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(player);
         data.putString(FORM_KEY, form.name());
         if (form == SupernaturalForm.NONE) {
             data.putInt(LEGACY_RESERVE_KEY, 0);
@@ -61,7 +62,7 @@ public final class SupernaturalState {
             .ifPresent(path -> SupernaturalProgression.addResource(player, path, amount));
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }
@@ -116,10 +117,10 @@ public final class SupernaturalState {
         }
     }
 
-    public static void copyAfterClone(final PlayerEvent.Clone event) {
+    public static void copyAfterClone(final PlayerCloneContext event) {
         final Player oldPlayer = event.getOriginal();
         final Player newPlayer = event.getEntity();
-        newPlayer.getPersistentData().putString(FORM_KEY, getForm(oldPlayer).name());
+        WarlockeryEntityData.get(newPlayer).putString(FORM_KEY, getForm(oldPlayer).name());
         SupernaturalProgression.copy(oldPlayer, newPlayer);
     }
 
@@ -205,7 +206,7 @@ public final class SupernaturalState {
         }
     }
 
-    private static boolean isWeakness(final SupernaturalForm form, final LivingDamageEvent event) {
+    private static boolean isWeakness(final SupernaturalForm form, final LivingDamageContext event) {
         if (event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return true;
         }

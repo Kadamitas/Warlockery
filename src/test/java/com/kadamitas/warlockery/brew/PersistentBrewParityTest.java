@@ -41,7 +41,7 @@ final class PersistentBrewParityTest {
         marked("keep_inventory", BrewBehavior.APPLY_KEEP_INVENTORY, BrewMarkerKind.KEEP_INVENTORY, "storeItems"),
         fixed("nightmare", BrewBehavior.APPLY_NIGHTMARE, "HexKind.WAKING_NIGHTMARE"),
         marked("poison_weapon", BrewBehavior.APPLY_POISON_WEAPON, BrewMarkerKind.POISON_WEAPON, "MobEffects.POISON"),
-        marked("reflect_arrows", BrewBehavior.APPLY_REFLECT_ARROWS, BrewMarkerKind.REFLECT_ARROWS, "SKIP_ENTITY"),
+        marked("reflect_arrows", BrewBehavior.APPLY_REFLECT_ARROWS, BrewMarkerKind.REFLECT_ARROWS, "event.skipEntity()"),
         marked("reflect_damage", BrewBehavior.APPLY_REFLECT_DAMAGE, BrewMarkerKind.REFLECT_DAMAGE, "reflectDamage"),
         marked("reincarnate", BrewBehavior.APPLY_REINCARNATE, BrewMarkerKind.REINCARNATE, "reincarnate"),
         marked("repel_attacker", BrewBehavior.APPLY_REPEL_ATTACKER, BrewMarkerKind.REPEL_ATTACKER, "radialVelocity"),

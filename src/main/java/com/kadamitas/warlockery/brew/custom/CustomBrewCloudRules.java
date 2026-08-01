@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.brew.custom;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.world.entity.Entity;
@@ -13,24 +14,24 @@ public final class CustomBrewCloudRules {
     }
 
     public static void mark(final Entity cloud, final CustomBrewDelivery delivery) {
-        cloud.getPersistentData().putString(DELIVERY_KEY, delivery.id());
+        WarlockeryEntityData.get(cloud).putString(DELIVERY_KEY, delivery.id());
     }
 
     public static boolean isDelivery(final Entity cloud, final CustomBrewDelivery delivery) {
-        return delivery.id().equals(cloud.getPersistentData().getStringOr(DELIVERY_KEY, ""));
+        return delivery.id().equals(WarlockeryEntityData.get(cloud).getStringOr(DELIVERY_KEY, ""));
     }
 
     public static Optional<CustomBrewDelivery> delivery(final Entity cloud) {
-        return CustomBrewDelivery.find(cloud.getPersistentData().getStringOr(DELIVERY_KEY, ""));
+        return CustomBrewDelivery.find(WarlockeryEntityData.get(cloud).getStringOr(DELIVERY_KEY, ""));
     }
 
     public static boolean claim(final Entity cloud, final UUID target, final long gameTime) {
         final String key = NEXT_APPLICATION_PREFIX + target;
-        final long nextApplication = cloud.getPersistentData().getLongOr(key, 0L);
+        final long nextApplication = WarlockeryEntityData.get(cloud).getLongOr(key, 0L);
         if (!ready(gameTime, nextApplication)) {
             return false;
         }
-        cloud.getPersistentData().putLong(key, nextApplicationTime(gameTime));
+        WarlockeryEntityData.get(cloud).putLong(key, nextApplicationTime(gameTime));
         return true;
     }
 

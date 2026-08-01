@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.registry.ModItems;
@@ -14,7 +15,9 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,9 +33,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingGetProjectileEvent;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
+import com.kadamitas.warlockery.fabric.event.ProjectileSelectionContext;
 
 public final class EquipmentSetEffects {
     private static final String STONEBROKER_QUIVER_SHOT = "WarlockeryStonebrokerQuiverShot";
@@ -94,7 +96,7 @@ public final class EquipmentSetEffects {
         applyTwistingBand(player, level);
     }
 
-    public static void handleGetProjectile(final LivingGetProjectileEvent event) {
+    public static void handleGetProjectile(final ProjectileSelectionContext event) {
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }
@@ -113,21 +115,20 @@ public final class EquipmentSetEffects {
         event.setProjectileItemStack(supplied);
     }
 
-    public static void handleEntityJoinLevel(final EntityJoinLevelEvent event) {
-        if (event.loadedFromDisk()
-            || !(event.getLevel() instanceof ServerLevel)
-            || !(event.getEntity() instanceof AbstractArrow arrow)
+    public static void handleEntityJoinLevel(final Entity entity, final ServerLevel level, final boolean loadedFromDisk) {
+        if (loadedFromDisk
+            || !(entity instanceof AbstractArrow arrow)
             || !(arrow.getOwner() instanceof Player shooter)
             || !shooter.getItemBySlot(EquipmentSlot.CHEST).is(WarlockeryTags.Items.ARCHERY_ARMOR)) {
             return;
         }
-        arrow.getPersistentData().putBoolean(STONEBROKER_QUIVER_SHOT, true);
+        WarlockeryEntityData.get(arrow).putBoolean(STONEBROKER_QUIVER_SHOT, true);
         arrow.setDeltaMovement(arrow.getDeltaMovement().scale(
             StonebrokerQuiverRules.PROJECTILE_VELOCITY_MULTIPLIER
         ));
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         if (event.getEntity().level().isClientSide() || event.getAmount() <= 0.0F) {
             return;
         }
@@ -169,7 +170,7 @@ public final class EquipmentSetEffects {
         return BrewingGarbRules.duplicate(outputs, additionalCopies);
     }
 
-    private static void applyIncomingProtection(final LivingDamageEvent event) {
+    private static void applyIncomingProtection(final LivingDamageContext event) {
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }
@@ -239,7 +240,7 @@ public final class EquipmentSetEffects {
         }
     }
 
-    private static void applyOffensiveEquipment(final LivingDamageEvent event) {
+    private static void applyOffensiveEquipment(final LivingDamageContext event) {
         if (!(event.getSource().getEntity() instanceof Player attacker)) {
             return;
         }
@@ -349,7 +350,7 @@ public final class EquipmentSetEffects {
         }
     }
 
-    private static boolean tryHedgeCroneEvasion(final Player player, final LivingDamageEvent event) {
+    private static boolean tryHedgeCroneEvasion(final Player player, final LivingDamageContext event) {
         if (!(player.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof HedgeCroneHatItem)
             || !HedgeCroneHatRules.shouldEvade(!MagicPathState.active(player).isEmpty(), player.getRandom().nextFloat())) {
             return false;
@@ -453,8 +454,8 @@ public final class EquipmentSetEffects {
         }
     }
 
-    private static boolean isStonebrokerQuiverShot(final LivingDamageEvent event) {
+    private static boolean isStonebrokerQuiverShot(final LivingDamageContext event) {
         return event.getSource().getDirectEntity() instanceof AbstractArrow arrow
-            && arrow.getPersistentData().getBooleanOr(STONEBROKER_QUIVER_SHOT, false);
+            && WarlockeryEntityData.get(arrow).getBooleanOr(STONEBROKER_QUIVER_SHOT, false);
     }
 }

@@ -1,6 +1,5 @@
 package com.kadamitas.warlockery.registry;
 
-import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.brew.CauldronChalkCircleGameTests;
 import com.kadamitas.warlockery.brew.SolidifyingBrewGameTests;
 import com.kadamitas.warlockery.dream.SpiritWorldGameTests;
@@ -14,14 +13,16 @@ import com.kadamitas.warlockery.ritual.NamiRitualGameTests;
 import com.kadamitas.warlockery.ritual.SeerCovenGameTests;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionGameTests;
 import com.kadamitas.warlockery.world.VillageGuardGameTests;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.core.registries.Registries;
+import java.util.function.Supplier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraftforge.registries.DeferredRegister;
 
 public final class ModGameTests {
-    public static final DeferredRegister<Consumer<GameTestHelper>> REGISTRY =
-        DeferredRegister.create(Registries.TEST_FUNCTION, Warlockery.MOD_ID);
+    private static final List<RegistrationHandle<Consumer<GameTestHelper>>> TESTS = new ArrayList<>();
+    private static final TestRegistrar REGISTRY = new TestRegistrar();
 
     static {
         REGISTRY.register("ritual_catalog_loads", () -> WarlockeryGameTests::ritualCatalogLoads);
@@ -178,5 +179,15 @@ public final class ModGameTests {
     }
 
     private ModGameTests() {
+    }
+
+    public static void register() {
+        TESTS.forEach(test -> test.register(BuiltInRegistries.TEST_FUNCTION));
+    }
+
+    private static final class TestRegistrar {
+        private void register(final String id, final Supplier<Consumer<GameTestHelper>> factory) {
+            TESTS.add(RegistrationHandle.create(id, factory));
+        }
     }
 }

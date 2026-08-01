@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:shelved_mending_dolls_repair_once_per_second",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

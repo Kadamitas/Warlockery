@@ -1,17 +1,10 @@
 package com.kadamitas.warlockery.registry;
 
-import com.kadamitas.warlockery.Warlockery;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.TicketType;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 
 public final class ModChunkTickets {
-    public static final DeferredRegister<TicketType> REGISTRY = DeferredRegister.create(
-        Registries.TICKET_TYPE,
-        Warlockery.MOD_ID
-    );
-    public static final RegistryObject<TicketType> DOLL_SHELF = REGISTRY.register(
+    public static final RegistrationHandle<TicketType> DOLL_SHELF = RegistrationHandle.create(
         "doll_shelf",
         () -> new TicketType(
             TicketType.NO_TIMEOUT,
@@ -23,5 +16,9 @@ public final class ModChunkTickets {
     );
 
     private ModChunkTickets() {
+    }
+
+    public static void register() {
+        DOLL_SHELF.register(BuiltInRegistries.TICKET_TYPE);
     }
 }

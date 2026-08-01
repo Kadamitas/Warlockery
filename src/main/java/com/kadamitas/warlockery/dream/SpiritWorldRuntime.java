@@ -1,5 +1,7 @@
 package com.kadamitas.warlockery.dream;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
 import com.kadamitas.warlockery.util.DataParsing;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.block.DreamWeaverBlock;
@@ -47,9 +49,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 
 public final class SpiritWorldRuntime {
     public static final ResourceKey<Level> SPIRIT_WORLD = ResourceKey.create(
@@ -71,21 +70,8 @@ public final class SpiritWorldRuntime {
     private static final int SPIRIT_CAP = 4;
     private static final Set<MinecraftServer> CONFIGURED_CLOCKS = Collections.newSetFromMap(new WeakHashMap<>());
     private static final Map<ServerPlayer, ServerLevel> GAME_TEST_DESTINATIONS = new WeakHashMap<>();
-    private static boolean registered;
 
     private SpiritWorldRuntime() {
-    }
-
-    public static synchronized void registerEvents() {
-        if (registered) {
-            return;
-        }
-        registered = true;
-        TickEvent.LevelTickEvent.Post.BUS.addListener(SpiritWorldRuntime::tickLevel);
-        TickEvent.PlayerTickEvent.Post.BUS.addListener(SpiritWorldRuntime::tickPlayer);
-        LivingDamageEvent.BUS.addListener(SpiritWorldRuntime::handleDamage);
-        PlayerEvent.Clone.BUS.addListener(SpiritWorldState::copyAfterClone);
-        PlayerEvent.Clone.BUS.addListener(SpiritManifestationState::copyAfterClone);
     }
 
     public static EntryResult enterFromSleepingApple(final ServerPlayer player) {
@@ -94,10 +80,10 @@ public final class SpiritWorldRuntime {
 
     public static EntryResult enterFromSleepingBrew(final ServerPlayer player) {
         final long attempt = sleepingBrewMarker(player);
-        if (attempt <= 0L || player.getPersistentData().getLongOr(SLEEPING_BREW_ATTEMPT, Long.MIN_VALUE) == attempt) {
+        if (attempt <= 0L || WarlockeryEntityData.get(player).getLongOr(SLEEPING_BREW_ATTEMPT, Long.MIN_VALUE) == attempt) {
             return new EntryResult(SpiritWorldRules.EntryDiagnostic.ALREADY_DREAMING, false);
         }
-        player.getPersistentData().putLong(SLEEPING_BREW_ATTEMPT, attempt);
+        WarlockeryEntityData.get(player).putLong(SLEEPING_BREW_ATTEMPT, attempt);
         return enterInternal(player, false, true);
     }
 
@@ -203,11 +189,11 @@ public final class SpiritWorldRuntime {
     }
 
     public static boolean isSleepingBody(final Entity entity) {
-        return entity.getPersistentData().contains(BODY_DREAMER);
+        return WarlockeryEntityData.get(entity).contains(BODY_DREAMER);
     }
 
     public static Optional<UUID> bodyDreamer(final Entity entity) {
-        return DataParsing.uuid(entity.getPersistentData().getStringOr(BODY_DREAMER, ""));
+        return DataParsing.uuid(WarlockeryEntityData.get(entity).getStringOr(BODY_DREAMER, ""));
     }
 
     private static EntryResult enterInternal(
@@ -318,14 +304,14 @@ public final class SpiritWorldRuntime {
         return new EntryResult(SpiritWorldRules.EntryDiagnostic.READY, nightmare);
     }
 
-    private static void tickLevel(final TickEvent.LevelTickEvent.Post event) {
-        if (event.level() instanceof ServerLevel level && isSpiritWorld(level)) {
+    public static void tickLevel(final ServerLevel level) {
+        if (isSpiritWorld(level)) {
             configureClock(level);
         }
     }
 
-    private static void tickPlayer(final TickEvent.PlayerTickEvent.Post event) {
-        if (!(event.player() instanceof ServerPlayer player) || !SpiritWorldState.active(player)) {
+    public static void tickPlayer(final ServerPlayer player) {
+        if (!SpiritWorldState.active(player)) {
             return;
         }
         if (ManifestationRuntime.isActive(player)) {
@@ -363,7 +349,7 @@ public final class SpiritWorldRuntime {
         tickNaturalSources(player);
     }
 
-    private static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
             || !SpiritWorldState.active(player)
             || !SpiritWorldRules.fatalDreamDamage(player.getHealth(), event.getAmount())) {
@@ -393,7 +379,7 @@ public final class SpiritWorldRuntime {
         body.setNoGravity(true);
         body.setCustomName(Component.translatable("entity.warlockery.sleeping_body", player.getDisplayName()));
         body.setCustomNameVisible(true);
-        body.getPersistentData().putString(BODY_DREAMER, player.getStringUUID());
+        WarlockeryEntityData.get(body).putString(BODY_DREAMER, player.getStringUUID());
         return level.addFreshEntity(body) ? Optional.of(body) : Optional.empty();
     }
 

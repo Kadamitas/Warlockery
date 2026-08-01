@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.block;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -71,7 +72,7 @@ public final class VoidBrambleBlock extends BushBlock {
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
-        final long cooldownUntil = living.getPersistentData().getLongOr(TELEPORT_COOLDOWN, 0L);
+        final long cooldownUntil = WarlockeryEntityData.get(living).getLongOr(TELEPORT_COOLDOWN, 0L);
         if (!VoidBrambleRules.teleportReady(level.getGameTime(), cooldownUntil)) {
             return;
         }
@@ -85,7 +86,7 @@ public final class VoidBrambleBlock extends BushBlock {
         );
         final int targetY = serverLevel.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, targetX, targetZ) + 1;
         if (living.randomTeleport(targetX + 0.5, targetY, targetZ + 0.5, true)) {
-            living.getPersistentData().putLong(
+            WarlockeryEntityData.get(living).putLong(
                 TELEPORT_COOLDOWN,
                 level.getGameTime() + VoidBrambleRules.TELEPORT_COOLDOWN_TICKS
             );

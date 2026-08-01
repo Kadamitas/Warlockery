@@ -5,75 +5,68 @@ import com.kadamitas.warlockery.item.FlyingBroomItem;
 import com.kadamitas.warlockery.ritual.RitualManager;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.network.CustomPayloadEvent;
-import net.minecraftforge.network.ChannelBuilder;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.SimpleChannel;
 
 public final class ModNetwork {
     private static final int MAX_RITUALS = 128;
     private static final int MAX_REQUIREMENTS = 32;
     private static final int MAX_STRING = 256;
-    private static Consumer<OpenRitualScreenPayload> clientScreenHandler = payload -> {
-    };
-    private static Consumer<DollActivationPayload> clientDollHandler = payload -> {
-    };
-    private static Consumer<SupernaturalSnapshotPayload> clientSupernaturalHandler = payload -> {
-    };
-
-    private static final SimpleChannel CHANNEL = ChannelBuilder
-        .named(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "main"))
-        .networkProtocolVersion(4)
-        .simpleChannel()
-        .play()
-        .clientbound()
-        .addMain(OpenRitualScreenPayload.class, OpenRitualScreenPayload.STREAM_CODEC, ModNetwork::handleOpenScreen)
-        .addMain(DollActivationPayload.class, DollActivationPayload.STREAM_CODEC, ModNetwork::handleDollActivation)
-        .addMain(
-            SupernaturalSnapshotPayload.class,
-            SupernaturalSnapshotPayload.STREAM_CODEC,
-            ModNetwork::handleSupernaturalSnapshot
-        )
-        .serverbound()
-        .addMain(RitualActionPayload.class, RitualActionPayload.STREAM_CODEC, ModNetwork::handleRitualAction)
-        .addMain(
-            SupernaturalActionPayload.class,
-            SupernaturalActionPayload.STREAM_CODEC,
-            ModNetwork::handleSupernaturalAction
-        )
-        .addMain(BroomControlPayload.class, BroomControlPayload.STREAM_CODEC, ModNetwork::handleBroomControl)
-        .build();
+    private static final String PROTOCOL_PATH = "network/v4/";
+    private static boolean initialized;
 
     private ModNetwork() {
     }
 
-    public static void init() {
+    public static synchronized void init() {
+        if (initialized) {
+            return;
+        }
+        PayloadTypeRegistry.clientboundPlay().register(
+            OpenRitualScreenPayload.TYPE,
+            OpenRitualScreenPayload.STREAM_CODEC
+        );
+        PayloadTypeRegistry.clientboundPlay().register(
+            DollActivationPayload.TYPE,
+            DollActivationPayload.STREAM_CODEC
+        );
+        PayloadTypeRegistry.clientboundPlay().register(
+            SupernaturalSnapshotPayload.TYPE,
+            SupernaturalSnapshotPayload.STREAM_CODEC
+        );
+        PayloadTypeRegistry.serverboundPlay().register(RitualActionPayload.TYPE, RitualActionPayload.STREAM_CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(
+            SupernaturalActionPayload.TYPE,
+            SupernaturalActionPayload.STREAM_CODEC
+        );
+        PayloadTypeRegistry.serverboundPlay().register(BroomControlPayload.TYPE, BroomControlPayload.STREAM_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(
+            RitualActionPayload.TYPE,
+            (payload, context) -> handleRitualAction(payload, context.player())
+        );
+        ServerPlayNetworking.registerGlobalReceiver(
+            SupernaturalActionPayload.TYPE,
+            (payload, context) -> handleSupernaturalAction(payload, context.player())
+        );
+        ServerPlayNetworking.registerGlobalReceiver(
+            BroomControlPayload.TYPE,
+            (payload, context) -> handleBroomControl(payload, context.player())
+        );
+        initialized = true;
     }
 
     public static void openRitualScreen(final ServerPlayer player, final BlockPos center) {
         sendOptions(player, center);
-    }
-
-    public static void setClientScreenHandler(final Consumer<OpenRitualScreenPayload> handler) {
-        clientScreenHandler = handler;
-    }
-
-    public static void setClientDollHandler(final Consumer<DollActivationPayload> handler) {
-        clientDollHandler = handler;
-    }
-
-    public static void setClientSupernaturalHandler(final Consumer<SupernaturalSnapshotPayload> handler) {
-        clientSupernaturalHandler = handler;
     }
 
     public static void notifyDollActivation(
@@ -84,10 +77,7 @@ public final class ModNetwork {
         if (player.connection == null) {
             return;
         }
-        CHANNEL.send(
-            new DollActivationPayload(dollKind, Math.clamp(displayTicks, 1, 20 * 10)),
-            PacketDistributor.PLAYER.with(player)
-        );
+        send(player, new DollActivationPayload(dollKind, Math.clamp(displayTicks, 1, 20 * 10)));
     }
 
     public static void sendSupernaturalSnapshot(
@@ -97,81 +87,20 @@ public final class ModNetwork {
         if (player.connection == null) {
             return;
         }
-        CHANNEL.send(
-            new SupernaturalSnapshotPayload(snapshot),
-            PacketDistributor.PLAYER.with(player)
-        );
-    }
-
-    public static void requestSupernaturalAction(final SupernaturalAction action) {
-        CHANNEL.send(new SupernaturalActionPayload(action), PacketDistributor.SERVER.noArg());
-    }
-
-    public static void requestBroomControl(
-        final int strafe,
-        final int forward,
-        final boolean ascend,
-        final boolean gliding
-    ) {
-        CHANNEL.send(
-            new BroomControlPayload((byte) Math.clamp(strafe, -1, 1), (byte) Math.clamp(forward, -1, 1), ascend, gliding),
-            PacketDistributor.SERVER.noArg()
-        );
-    }
-
-    public static void requestRefresh(final BlockPos center) {
-        CHANNEL.send(new RitualActionPayload(center, "", false), PacketDistributor.SERVER.noArg());
-    }
-
-    public static void requestActivation(final BlockPos center, final String ritualId) {
-        CHANNEL.send(new RitualActionPayload(center, ritualId, true), PacketDistributor.SERVER.noArg());
+        send(player, new SupernaturalSnapshotPayload(snapshot));
     }
 
     private static void sendOptions(final ServerPlayer player, final BlockPos center) {
         if (!(player.level() instanceof ServerLevel level)) {
             return;
         }
-        CHANNEL.send(
-            new OpenRitualScreenPayload(center, RitualManager.INSTANCE.options(level, center, player)),
-            PacketDistributor.PLAYER.with(player)
-        );
-    }
-
-    private static void handleOpenScreen(
-        final OpenRitualScreenPayload payload,
-        final CustomPayloadEvent.Context context
-    ) {
-        if (context.isClientSide()) {
-            clientScreenHandler.accept(payload);
-        }
-    }
-
-    private static void handleDollActivation(
-        final DollActivationPayload payload,
-        final CustomPayloadEvent.Context context
-    ) {
-        if (context.isClientSide()) {
-            clientDollHandler.accept(payload);
-        }
-    }
-
-    private static void handleSupernaturalSnapshot(
-        final SupernaturalSnapshotPayload payload,
-        final CustomPayloadEvent.Context context
-    ) {
-        if (context.isClientSide()) {
-            clientSupernaturalHandler.accept(payload);
-        }
+        send(player, new OpenRitualScreenPayload(center, RitualManager.INSTANCE.options(level, center, player)));
     }
 
     private static void handleSupernaturalAction(
         final SupernaturalActionPayload payload,
-        final CustomPayloadEvent.Context context
+        final ServerPlayer player
     ) {
-        final ServerPlayer player = context.getSender();
-        if (player == null) {
-            return;
-        }
         switch (payload.action()) {
             case CYCLE -> SupernaturalProgressionRuntime.cyclePower(player);
             case ACTIVATE -> SupernaturalProgressionRuntime.activateSelectedPower(player);
@@ -180,28 +109,24 @@ public final class ModNetwork {
 
     private static void handleBroomControl(
         final BroomControlPayload payload,
-        final CustomPayloadEvent.Context context
+        final ServerPlayer player
     ) {
-        final ServerPlayer player = context.getSender();
-        if (player != null) {
-            FlyingBroomItem.setControls(
-                player,
-                new com.kadamitas.warlockery.item.FlyingBroomRules.ControlInput(
-                    Math.clamp(payload.strafe(), -1, 1),
-                    Math.clamp(payload.forward(), -1, 1),
-                    payload.ascend()
-                ),
-                payload.gliding()
-            );
-        }
+        FlyingBroomItem.setControls(
+            player,
+            new com.kadamitas.warlockery.item.FlyingBroomRules.ControlInput(
+                Math.clamp(payload.strafe(), -1, 1),
+                Math.clamp(payload.forward(), -1, 1),
+                payload.ascend()
+            ),
+            payload.gliding()
+        );
     }
 
     private static void handleRitualAction(
         final RitualActionPayload payload,
-        final CustomPayloadEvent.Context context
+        final ServerPlayer player
     ) {
-        final ServerPlayer player = context.getSender();
-        if (player == null || !(player.level() instanceof ServerLevel level)
+        if (!(player.level() instanceof ServerLevel level)
             || player.distanceToSqr(Vec3.atCenterOf(payload.center())) > 64.0
             || !level.isLoaded(payload.center())
             || !RitualManager.isCircleCenter(level, payload.center())) {
@@ -216,7 +141,21 @@ public final class ModNetwork {
         sendOptions(player, payload.center());
     }
 
-    public record OpenRitualScreenPayload(BlockPos center, List<RitualManager.RitualOption> options) {
+    private static void send(final ServerPlayer player, final CustomPacketPayload payload) {
+        if (player.connection != null && ServerPlayNetworking.canSend(player, payload.type())) {
+            ServerPlayNetworking.send(player, payload);
+        }
+    }
+
+    private static <T extends CustomPacketPayload> CustomPacketPayload.Type<T> payloadType(final String path) {
+        return new CustomPacketPayload.Type<>(
+            Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, PROTOCOL_PATH + path)
+        );
+    }
+
+    public record OpenRitualScreenPayload(BlockPos center, List<RitualManager.RitualOption> options)
+        implements CustomPacketPayload {
+        public static final Type<OpenRitualScreenPayload> TYPE = payloadType("open_ritual_screen");
         public static final StreamCodec<RegistryFriendlyByteBuf, OpenRitualScreenPayload> STREAM_CODEC =
             new StreamCodec<>() {
                 @Override
@@ -241,9 +180,16 @@ public final class ModNetwork {
         public OpenRitualScreenPayload {
             options = List.copyOf(options);
         }
+
+        @Override
+        public Type<OpenRitualScreenPayload> type() {
+            return TYPE;
+        }
     }
 
-    public record RitualActionPayload(BlockPos center, String ritualId, boolean activate) {
+    public record RitualActionPayload(BlockPos center, String ritualId, boolean activate)
+        implements CustomPacketPayload {
+        public static final Type<RitualActionPayload> TYPE = payloadType("ritual_action");
         public static final StreamCodec<RegistryFriendlyByteBuf, RitualActionPayload> STREAM_CODEC =
             StreamCodec.of(
                 (output, value) -> {
@@ -253,9 +199,15 @@ public final class ModNetwork {
                 },
                 input -> new RitualActionPayload(input.readBlockPos(), input.readUtf(MAX_STRING), input.readBoolean())
             );
+
+        @Override
+        public Type<RitualActionPayload> type() {
+            return TYPE;
+        }
     }
 
-    public record DollActivationPayload(String dollKind, int displayTicks) {
+    public record DollActivationPayload(String dollKind, int displayTicks) implements CustomPacketPayload {
+        public static final Type<DollActivationPayload> TYPE = payloadType("doll_activation");
         public static final StreamCodec<RegistryFriendlyByteBuf, DollActivationPayload> STREAM_CODEC =
             StreamCodec.of(
                 (output, value) -> {
@@ -267,6 +219,11 @@ public final class ModNetwork {
                     Math.clamp(input.readVarInt(), 1, 20 * 10)
                 )
             );
+
+        @Override
+        public Type<DollActivationPayload> type() {
+            return TYPE;
+        }
     }
 
     public enum SupernaturalAction {
@@ -274,7 +231,8 @@ public final class ModNetwork {
         ACTIVATE
     }
 
-    public record SupernaturalActionPayload(SupernaturalAction action) {
+    public record SupernaturalActionPayload(SupernaturalAction action) implements CustomPacketPayload {
+        public static final Type<SupernaturalActionPayload> TYPE = payloadType("supernatural_action");
         public static final StreamCodec<RegistryFriendlyByteBuf, SupernaturalActionPayload> STREAM_CODEC =
             StreamCodec.of(
                 (output, value) -> output.writeByte(value.action().ordinal()),
@@ -286,9 +244,16 @@ public final class ModNetwork {
                 ? SupernaturalAction.values()[ordinal]
                 : SupernaturalAction.CYCLE;
         }
+
+        @Override
+        public Type<SupernaturalActionPayload> type() {
+            return TYPE;
+        }
     }
 
-    public record BroomControlPayload(byte strafe, byte forward, boolean ascend, boolean gliding) {
+    public record BroomControlPayload(byte strafe, byte forward, boolean ascend, boolean gliding)
+        implements CustomPacketPayload {
+        public static final Type<BroomControlPayload> TYPE = payloadType("broom_control");
         public static final StreamCodec<RegistryFriendlyByteBuf, BroomControlPayload> STREAM_CODEC =
             StreamCodec.of(
                 (output, value) -> {
@@ -304,6 +269,11 @@ public final class ModNetwork {
                     input.readBoolean()
                 )
             );
+
+        @Override
+        public Type<BroomControlPayload> type() {
+            return TYPE;
+        }
     }
 
     public record SupernaturalSnapshot(
@@ -374,12 +344,18 @@ public final class ModNetwork {
         }
     }
 
-    public record SupernaturalSnapshotPayload(SupernaturalSnapshot snapshot) {
+    public record SupernaturalSnapshotPayload(SupernaturalSnapshot snapshot) implements CustomPacketPayload {
+        public static final Type<SupernaturalSnapshotPayload> TYPE = payloadType("supernatural_snapshot");
         public static final StreamCodec<RegistryFriendlyByteBuf, SupernaturalSnapshotPayload> STREAM_CODEC =
             StreamCodec.of(
                 (output, value) -> writeSnapshot(output, value.snapshot()),
                 input -> new SupernaturalSnapshotPayload(readSnapshot(input))
             );
+
+        @Override
+        public Type<SupernaturalSnapshotPayload> type() {
+            return TYPE;
+        }
     }
 
     private static RitualManager.RitualOption readOption(final RegistryFriendlyByteBuf input) {

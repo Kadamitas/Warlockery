@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:goblin_raid_wave_is_grouped_and_coordinated",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

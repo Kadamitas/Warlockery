@@ -2,7 +2,7 @@
   "type": "minecraft:function",
   "function": "warlockery:spirit_locator_requires_an_exact_ritual_chalk_ring",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100,
   "padding": 4
 }

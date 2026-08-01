@@ -1,6 +1,8 @@
 package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.fabric.event.LivingDropsContext;
+import com.kadamitas.warlockery.fabric.event.ProjectileImpactContext;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import net.minecraft.server.level.ServerLevel;
@@ -11,14 +13,12 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableIt
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
 
 public final class ResourceInteractionEvents {
     private ResourceInteractionEvents() {
     }
 
-    public static void handleDrops(final LivingDropsEvent event) {
+    public static void handleDrops(final LivingDropsContext event) {
         if (!(event.getEntity().level() instanceof ServerLevel level)) {
             return;
         }
@@ -46,7 +46,7 @@ public final class ResourceInteractionEvents {
         return taggedSource && form == SupernaturalForm.WEREWOLF;
     }
 
-    public static void handleProjectileImpact(final ProjectileImpactEvent event) {
+    public static void handleProjectileImpact(final ProjectileImpactContext event) {
         if (!(event.getProjectile() instanceof ThrowableItemProjectile projectile)
             || !projectile.getItem().is(WarlockeryTags.Items.THROWING_STONES)
             || !(event.getRayTraceResult() instanceof EntityHitResult hit)) {

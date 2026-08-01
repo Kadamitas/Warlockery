@@ -8,8 +8,14 @@ import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModEntities;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -23,11 +29,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
 
 public final class AdvancedMutationResolver {
     private AdvancedMutationResolver() {
@@ -216,35 +219,46 @@ public final class AdvancedMutationResolver {
         if (level.getBlockState(pos).getBlock() instanceof GrassperBlock) {
             return GrassperBlock.storedItem(level, pos);
         }
-        return itemHandlers(level.getBlockEntity(pos)).stream()
+        return itemStorages(level, pos).stream()
             .map(handler -> firstStack(handler, false))
             .flatMap(Optional::stream)
             .findFirst();
     }
 
-    private static Optional<ItemStack> firstStack(final IItemHandler handler, final boolean extract) {
-        for (int slot = 0; slot < handler.getSlots(); slot++) {
-            if (!handler.getStackInSlot(slot).isEmpty()) {
-                return Optional.of(extract
-                    ? handler.extractItem(slot, 1, false)
-                    : handler.getStackInSlot(slot).copyWithCount(1));
+    private static Optional<ItemStack> firstStack(final Storage<ItemVariant> storage, final boolean extract) {
+        for (StorageView<ItemVariant> view : storage) {
+            if (view.isResourceBlank() || view.getAmount() <= 0) {
+                continue;
+            }
+            if (!extract) {
+                return Optional.of(view.getResource().toStack());
+            }
+            final ItemVariant resource = view.getResource();
+            try (Transaction transaction = Transaction.openOuter()) {
+                if (view.extract(resource, 1, transaction) == 1) {
+                    transaction.commit();
+                    return Optional.of(resource.toStack());
+                }
             }
         }
         return Optional.empty();
     }
 
-    private static List<IItemHandler> itemHandlers(final BlockEntity blockEntity) {
-        if (blockEntity == null) {
-            return List.of();
+    private static List<Storage<ItemVariant>> itemStorages(final ServerLevel level, final BlockPos pos) {
+        final List<Storage<ItemVariant>> storages = new ArrayList<>();
+        final IdentityHashMap<Storage<ItemVariant>, Boolean> seen = new IdentityHashMap<>();
+        final Storage<ItemVariant> unsided = ItemStorage.SIDED.find(level, pos, null);
+        if (unsided != null) {
+            storages.add(unsided);
+            seen.put(unsided, Boolean.TRUE);
         }
-        final List<IItemHandler> handlers = new ArrayList<>();
         for (Direction direction : Direction.values()) {
-            blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction)
-                .resolve()
-                .filter(handler -> handlers.stream().noneMatch(existing -> existing == handler))
-                .ifPresent(handlers::add);
+            final Storage<ItemVariant> storage = ItemStorage.SIDED.find(level, pos, direction);
+            if (storage != null && seen.put(storage, Boolean.TRUE) == null) {
+                storages.add(storage);
+            }
         }
-        return List.copyOf(handlers);
+        return List.copyOf(storages);
     }
 
     private static int createToads(final ServerLevel level, final MutationContext context) {
@@ -314,7 +328,7 @@ public final class AdvancedMutationResolver {
             GrassperBlock.takeStoredItem(level, pos);
             return;
         }
-        itemHandlers(level.getBlockEntity(pos)).stream()
+        itemStorages(level, pos).stream()
             .map(handler -> firstStack(handler, true))
             .flatMap(Optional::stream)
             .findFirst();

@@ -1,9 +1,9 @@
-
 plugins {
     id 'java'
     id 'idea'
     id 'eclipse'
-    id 'net.minecraftforge.gradle' version '7.0.17'
+    id 'maven-publish'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
 }
 
 abstract class ReleaseBundleTask extends DefaultTask {
@@ -58,56 +58,36 @@ abstract class ReleaseBundleTask extends DefaultTask {
     }
 }
 
-version = '1.2.0'
-group = 'com.kadamitas.warlockery'
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
     withSourcesJar()
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-tasks.named('processResources', ProcessResources) {
-    exclude 'assets/warlockery/icon.png'
-    from('src/main/resources/assets/warlockery/icon.png') {
-        into ''
-        rename { 'warlockery-icon.png' }
-    }
-}
-
-sourceSets.test.compileClasspath += sourceSets.main.output
-sourceSets.test.runtimeClasspath += sourceSets.main.output
-
-minecraft {
+loom {
     runs {
-        configureEach {
-            workingDir = layout.projectDirectory.dir('run')
-
-            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
-            systemProperty 'forge.enabledGameTestNamespaces', 'warlockery'
-        }
-
-        register('client')
-
-        register('server') {
-            args '--nogui'
-        }
-
-        register('gameTestServer')
-
-        register('data') {
-            workingDir = layout.projectDirectory.dir('run-data')
-
-            args '--mod', 'warlockery', '--all', '--output', layout.projectDirectory.dir('src/generated/resources'), '--existing', layout.projectDirectory.dir('src/main/resources')
+        gametest {
+            server()
+            name = 'Warlockery GameTest'
+            vmArg '-Dfabric-api.gametest'
+            vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.file('gametest-results.xml').get().asFile}"
+            vmArg '-Dfabric-tag-conventions-v2.missingTagTranslationWarning=VERBOSE'
+            runDir 'build/gametest'
         }
     }
 }
 
 repositories {
-    minecraft.mavenizer(it)
-    maven fg.forgeMaven
-    maven fg.minecraftLibsMaven
     maven {
         url = 'https://maven.blamejared.com'
         content { includeGroup 'mezz.jei' }
@@ -116,12 +96,23 @@ repositories {
 }
 
 dependencies {
-    implementation minecraft.dependency('net.minecraftforge:forge:26.2-65.1.0')
-    compileOnly 'mezz.jei:jei-26.2-common-api:30.15.0.104'
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.5'
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    compileOnly 'mezz.jei:jei-26.2-fabric-api:30.7.0.41'
+    runtimeOnly 'mezz.jei:jei-26.2-fabric:30.7.0.41'
+
+    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
     testImplementation platform('org.junit:junit-bom:6.1.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('processResources', ProcessResources) {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand version: project.version
+    }
 }
 
 tasks.named('test', Test) {
@@ -131,7 +122,12 @@ tasks.named('test', Test) {
     }
 }
 
+tasks.named('runGametest') {
+    outputs.file layout.buildDirectory.file('gametest-results.xml')
+}
+
 tasks.withType(JavaCompile).configureEach {
+    options.release = 25
     options.encoding = 'UTF-8'
     options.compilerArgs.addAll(['-Xlint:deprecation', '-Xlint:unchecked'])
 }
@@ -167,11 +163,19 @@ tasks.named('jar', Jar) {
     }
 }
 
+publishing {
+    publications {
+        create('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+}
+
 def releaseDirectory = layout.projectDirectory.dir("release/${project.version}")
 
 tasks.register('releaseBundle', ReleaseBundleTask) {
     group = 'build'
-    description = 'Collects release artifacts and SHA-256 checksums.'
+    description = 'Collects Fabric release artifacts and SHA-256 checksums.'
     dependsOn tasks.named('build')
     artifacts.from(tasks.named('jar').flatMap { it.archiveFile })
     artifacts.from(tasks.named('sourcesJar').flatMap { it.archiveFile })

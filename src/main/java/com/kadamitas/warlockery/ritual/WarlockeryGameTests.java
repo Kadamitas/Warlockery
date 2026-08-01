@@ -13,6 +13,7 @@ import com.kadamitas.warlockery.brew.custom.CustomBrewDelivery;
 import com.kadamitas.warlockery.brew.custom.CustomBrewFormula;
 import com.kadamitas.warlockery.brew.custom.CustomBrewRuntime;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
 import com.kadamitas.warlockery.entity.GoblinHostilityRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
@@ -37,8 +38,18 @@ import com.kadamitas.warlockery.transformation.SupernaturalState;
 import com.kadamitas.warlockery.transformation.WerewolfProgressionRules;
 import java.util.UUID;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 import io.netty.channel.embedded.EmbeddedChannel;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -59,12 +70,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -474,7 +479,7 @@ public final class WarlockeryGameTests {
         final ItemStack doll = boundDoll(player, "death_guard_doll");
         player.getInventory().setItem(0, doll);
         player.setHealth(4.0F);
-        final LivingDamageEvent event = new LivingDamageEvent(player, helper.getLevel().damageSources().generic(), 20.0F);
+        final LivingDamageContext event = new LivingDamageContext(player, helper.getLevel().damageSources().generic(), 20.0F);
         DollItem.handleDamage(event);
         helper.assertValueEqual(event.getAmount(), 0.0F, "lethal damage after death guard");
         helper.assertValueEqual(
@@ -496,7 +501,7 @@ public final class WarlockeryGameTests {
         player.setHealth(1.0F);
         player.getFoodData().setFoodLevel(0);
         player.getFoodData().setSaturation(0.0F);
-        final LivingDamageEvent event = new LivingDamageEvent(player, helper.getLevel().damageSources().starve(), 2.0F);
+        final LivingDamageContext event = new LivingDamageContext(player, helper.getLevel().damageSources().starve(), 2.0F);
         DollItem.handleDamage(event);
         helper.assertValueEqual(player.getFoodData().getFoodLevel(), 20, "restored hunger");
         helper.assertTrue(player.getFoodData().getSaturationLevel() >= 10.0F, "hunger guard must restore saturation");
@@ -596,7 +601,7 @@ public final class WarlockeryGameTests {
         helper.assertTrue(shelf.requiresChunkTicket(), "a shelf containing a bound doll must retain its chunk");
 
         player.setHealth(1.0F);
-        final LivingDamageEvent event = new LivingDamageEvent(
+        final LivingDamageContext event = new LivingDamageContext(
             player,
             helper.getLevel().damageSources().generic(),
             2.0F
@@ -876,7 +881,7 @@ public final class WarlockeryGameTests {
         helper.assertValueEqual(doll.getDamageValue(), 1, "hex guard durability spent");
         HexRuntime.apply(player, HexKind.HEAT_METAL, 200);
         helper.assertTrue(HexState.isActive(player, HexKind.HEAT_METAL), "Heat Metal must begin active");
-        HexRuntime.tick(new LivingEvent.LivingTickEvent(player));
+        HexRuntime.tick(player);
         helper.assertFalse(HexState.isActive(player, HexKind.HEAT_METAL), "hex guard must remove Heat Metal");
         helper.assertValueEqual(doll.getDamageValue(), 2, "Heat Metal protection must spend durability");
         helper.succeed();
@@ -897,7 +902,7 @@ public final class WarlockeryGameTests {
 
         player.getInventory().setItem(0, boundDoll(player, "earth_guard_doll"));
         player.setHealth(1.0F);
-        final LivingDamageEvent fall = new LivingDamageEvent(player, helper.getLevel().damageSources().fall(), 2.0F);
+        final LivingDamageContext fall = new LivingDamageContext(player, helper.getLevel().damageSources().fall(), 2.0F);
         DollItem.handleDamage(fall);
         helper.assertValueEqual(fall.getAmount(), 0.0F, "earth guard lethal fall damage");
         helper.assertTrue(player.hasEffect(MobEffects.SLOW_FALLING), "earth guard must apply vanilla Slow Falling");
@@ -906,7 +911,7 @@ public final class WarlockeryGameTests {
         player.getInventory().setItem(0, boundDoll(player, "water_guard_doll"));
         player.setHealth(1.0F);
         player.setAirSupply(0);
-        final LivingDamageEvent drowning = new LivingDamageEvent(player, helper.getLevel().damageSources().drown(), 2.0F);
+        final LivingDamageContext drowning = new LivingDamageContext(player, helper.getLevel().damageSources().drown(), 2.0F);
         DollItem.handleDamage(drowning);
         helper.assertValueEqual(drowning.getAmount(), 0.0F, "water guard lethal drowning damage");
         helper.assertValueEqual(player.getAirSupply(), player.getMaxAirSupply(), "water guard restored air");
@@ -916,7 +921,7 @@ public final class WarlockeryGameTests {
         player.removeAllEffects();
         player.getInventory().setItem(0, boundDoll(player, "fire_guard_doll"));
         player.setHealth(1.0F);
-        final LivingDamageEvent lava = new LivingDamageEvent(player, helper.getLevel().damageSources().lava(), 2.0F);
+        final LivingDamageContext lava = new LivingDamageContext(player, helper.getLevel().damageSources().lava(), 2.0F);
         DollItem.handleDamage(lava);
         helper.assertValueEqual(lava.getAmount(), 0.0F, "fire guard lethal lava damage");
         helper.assertTrue(player.hasEffect(MobEffects.FIRE_RESISTANCE),
@@ -973,31 +978,73 @@ public final class WarlockeryGameTests {
         final BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, ModBlocks.ALL.get("spinningwheel").get());
         final MagicMachineBlockEntity machine = helper.getBlockEntity(relative, MagicMachineBlockEntity.class);
-        final IItemHandler top = machine.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP)
-            .orElseThrow(() -> new IllegalStateException("Missing top item handler"));
-
-        helper.assertTrue(top.insertItem(0, new ItemStack(Items.IRON_SWORD), true).is(Items.IRON_SWORD),
-            "top pipe must reject items unrelated to every spinning-wheel recipe");
-        final ItemStack simulatedRemainder = top.insertItem(0, new ItemStack(Items.STRING, 8), true);
-        helper.assertTrue(simulatedRemainder.isEmpty(), "top pipe must simulate accepting recipe inputs");
+        final Storage<ItemVariant> top = Objects.requireNonNull(
+            ItemStorage.SIDED.find(helper.getLevel(), absolute, Direction.UP),
+            "Missing top item storage"
+        );
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                top.insert(ItemVariant.of(Items.IRON_SWORD), 1, transaction),
+                0L,
+                "top pipe must reject items unrelated to every spinning-wheel recipe"
+            );
+        }
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                top.insert(ItemVariant.of(Items.STRING), 8, transaction),
+                8L,
+                "top pipe must simulate accepting recipe inputs"
+            );
+        }
         helper.assertTrue(machine.getItem(0).isEmpty(), "simulated pipe insertion must not mutate inventory");
-        helper.assertTrue(top.insertItem(0, new ItemStack(Items.STRING, 8), false).isEmpty(),
-            "top pipe must insert recipe inputs");
-        helper.assertTrue(top.extractItem(0, 1, false).isEmpty(), "top pipe must not extract recipe inputs");
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                top.insert(ItemVariant.of(Items.STRING), 8, transaction),
+                8L,
+                "top pipe must insert recipe inputs"
+            );
+            transaction.commit();
+        }
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                top.extract(ItemVariant.of(Items.STRING), 1, transaction),
+                0L,
+                "top pipe must not extract recipe inputs"
+            );
+        }
 
         IntStream.range(0, 160).forEach(_ -> MagicMachineBlockEntity.serverTick(
             helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
         ));
 
-        final IItemHandler bottom = machine.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN)
-            .orElseThrow(() -> new IllegalStateException("Missing bottom item handler"));
-        helper.assertTrue(bottom.insertItem(0, new ItemStack(Items.STRING), false).is(Items.STRING),
-            "bottom pipe must reject insertion");
-        final ItemStack simulatedOutput = bottom.extractItem(0, 1, true);
-        helper.assertTrue(simulatedOutput.is(Items.WOOL.white()), "bottom pipe must expose finished output");
+        final Storage<ItemVariant> bottom = Objects.requireNonNull(
+            ItemStorage.SIDED.find(helper.getLevel(), absolute, Direction.DOWN),
+            "Missing bottom item storage"
+        );
+        final ItemVariant whiteWool = ItemVariant.of(Items.WOOL.white());
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                bottom.insert(ItemVariant.of(Items.STRING), 1, transaction),
+                0L,
+                "bottom pipe must reject insertion"
+            );
+        }
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                bottom.extract(whiteWool, 1, transaction),
+                1L,
+                "bottom pipe must expose finished output"
+            );
+        }
         helper.assertTrue(machine.getItem(6).is(Items.WOOL.white()), "simulated extraction must preserve output");
-        final ItemStack output = bottom.extractItem(0, 1, false);
-        helper.assertTrue(output.is(Items.WOOL.white()), "bottom pipe must extract finished output");
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                bottom.extract(whiteWool, 1, transaction),
+                1L,
+                "bottom pipe must extract finished output"
+            );
+            transaction.commit();
+        }
         helper.assertTrue(machine.getItem(6).isEmpty(), "real extraction must remove output");
 
         final BlockPos ovenRelative = new BlockPos(2, 1, 1);
@@ -1026,30 +1073,52 @@ public final class WarlockeryGameTests {
 
     public static void fluidPipesConnectToLiquidMachines(final GameTestHelper helper) {
         final BlockPos relative = new BlockPos(1, 1, 1);
+        final BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, ModBlocks.ALL.get("kettle").get());
-        final MagicMachineBlockEntity machine = helper.getBlockEntity(relative, MagicMachineBlockEntity.class);
-        final IFluidHandler handler = machine.getCapability(ForgeCapabilities.FLUID_HANDLER, Direction.NORTH)
-            .orElseThrow(() -> new IllegalStateException("Missing fluid handler"));
-        final FluidStack water = new FluidStack(Fluids.WATER, 1_000);
-        helper.assertValueEqual(
-            handler.fill(water, IFluidHandler.FluidAction.SIMULATE),
-            1_000,
-            "fluid pipe simulation"
+        final Storage<FluidVariant> handler = Objects.requireNonNull(
+            FluidStorage.SIDED.find(helper.getLevel(), absolute, Direction.NORTH),
+            "Missing fluid storage"
         );
-        helper.assertValueEqual(handler.getFluidInTank(0).getAmount(), 0, "simulation must preserve the tank");
+        final FluidVariant water = FluidVariant.of(Fluids.WATER);
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                handler.insert(water, FluidConstants.BUCKET, transaction),
+                FluidConstants.BUCKET,
+                "fluid pipe simulation"
+            );
+        }
+        helper.assertValueEqual(fluidAmount(handler, water), 0L, "simulation must preserve the tank");
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                handler.insert(water, FluidConstants.BUCKET, transaction),
+                FluidConstants.BUCKET,
+                "fluid pipe insertion"
+            );
+            transaction.commit();
+        }
+        helper.assertValueEqual(fluidAmount(handler, water), FluidConstants.BUCKET, "tank amount after insertion");
+        final long quarterBucket = FluidConstants.BUCKET / 4;
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(
+                handler.extract(water, quarterBucket, transaction),
+                quarterBucket,
+                "fluid pipe extraction"
+            );
+            transaction.commit();
+        }
         helper.assertValueEqual(
-            handler.fill(water, IFluidHandler.FluidAction.EXECUTE),
-            1_000,
-            "fluid pipe insertion"
+            fluidAmount(handler, water),
+            FluidConstants.BUCKET - quarterBucket,
+            "tank amount after extraction"
         );
-        helper.assertValueEqual(handler.getFluidInTank(0).getAmount(), 1_000, "tank amount after insertion");
-        helper.assertValueEqual(
-            handler.drain(250, IFluidHandler.FluidAction.EXECUTE).getAmount(),
-            250,
-            "fluid pipe extraction"
-        );
-        helper.assertValueEqual(handler.getFluidInTank(0).getAmount(), 750, "tank amount after extraction");
         helper.succeed();
+    }
+
+    private static long fluidAmount(final Storage<FluidVariant> storage, final FluidVariant fluid) {
+        return StreamSupport.stream(storage.spliterator(), false)
+            .filter(view -> view.getResource().equals(fluid))
+            .mapToLong(StorageView::getAmount)
+            .sum();
     }
 
     private static TagKey<Item> itemTag(final String path) {

@@ -1,94 +1,87 @@
 package com.kadamitas.warlockery.client;
 
-import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.block.FetishBlock;
 import com.kadamitas.warlockery.entity.CreatureVisualProfile;
 import com.kadamitas.warlockery.item.ManualScreenBridge;
 import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
-import com.kadamitas.warlockery.registry.ModEntities;
-import com.kadamitas.warlockery.registry.ModMenus;
 import com.kadamitas.warlockery.registry.ModBlocks;
-import com.kadamitas.warlockery.block.FetishBlock;
-import net.minecraft.client.gui.screens.MenuScreens;
+import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.registry.ModFluids;
+import com.kadamitas.warlockery.registry.ModMenus;
+import java.util.List;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderingRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.color.block.BlockTintSource;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.client.gui.overlay.ForgeLayeredDraw;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.client.color.block.BlockTintSources;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.resources.Identifier;
 
-@Mod.EventBusSubscriber(modid = Warlockery.MOD_ID, value = Dist.CLIENT)
-public final class WarlockeryClient {
-    private WarlockeryClient() {
-    }
-
-    @SubscribeEvent
-    public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
+public final class WarlockeryClient implements ClientModInitializer {
+    @Override
+    public void onInitializeClient() {
+        ModNetwork.init();
+        ModClientNetwork.init();
         ManualScreenBridge.setOpenHandler(ManualScreen::open);
-        ModNetwork.setClientScreenHandler(payload ->
-            RitualSelectionScreen.openOrUpdate(payload.center(), payload.options()));
-        ModNetwork.setClientDollHandler(DollStatusOverlay::activate);
-        ModNetwork.setClientSupernaturalHandler(SupernaturalStatusOverlay::update);
         ModMenus.MACHINES.values().forEach(type -> MenuScreens.register(type.get(), MachineScreen::new));
         MenuScreens.register(ModMenus.DOLL_SHELF.get(), DollShelfScreen::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.MAGIC_MACHINE.get(), MachineOverlayRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.WOLF_TRAP.get(), WolfTrapOverlayRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.ALTAR.get(), AltarOverlayRenderer::new);
-        event.registerEntityRenderer(ModEntities.BROOM.get(), BroomEntityRenderer::new);
+        BlockEntityRenderers.register(ModBlockEntities.MAGIC_MACHINE.get(), MachineOverlayRenderer::new);
+        BlockEntityRenderers.register(ModBlockEntities.WOLF_TRAP.get(), WolfTrapOverlayRenderer::new);
+        BlockEntityRenderers.register(ModBlockEntities.ALTAR.get(), AltarOverlayRenderer::new);
+        EntityRenderers.register(ModEntities.BROOM.get(), BroomEntityRenderer::new);
         ModEntities.ALL.forEach((id, type) -> {
             if ("nami".equals(id)) {
-                TexturedCreatureRenderers.registerNami(event, type.get());
+                TexturedCreatureRenderers.registerNami(type.get());
                 return;
             }
             if ("naamah".equals(id)) {
-                TexturedCreatureRenderers.registerNaamah(event, type.get());
+                TexturedCreatureRenderers.registerNaamah(type.get());
                 return;
             }
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(ModEntities.kindFor(id));
-            TexturedCreatureRenderers.registerArcane(
-                event,
-                type.get(),
-                CreatureModelProfile.forEntity(id, visual)
-            );
+            TexturedCreatureRenderers.registerArcane(type.get(), CreatureModelProfile.forEntity(id, visual));
         });
+        SupernaturalControls.register();
+        BroomControls.register();
+        BlockColorRegistry.register(
+            List.of((BlockTintSource) state -> state.getValue(FetishBlock.ROBE).getTextureDiffuseColor()),
+            ModBlocks.ALL.get("scarecrow").get()
+        );
+        ModFluids.families().forEach(WarlockeryClient::registerFluidRenderer);
+        ClientTickEvents.END_CLIENT_TICK.register(minecraft -> {
+            SupernaturalControls.tick(minecraft);
+            BroomControls.tick(minecraft);
+        });
+        HudElementRegistry.attachElementBefore(
+            VanillaHudElements.SLEEP,
+            SupernaturalStatusOverlay.LAYER,
+            SupernaturalStatusOverlay::extract
+        );
+        HudElementRegistry.attachElementBefore(
+            VanillaHudElements.SLEEP,
+            DollStatusOverlay.LAYER,
+            DollStatusOverlay::extract
+        );
     }
 
-    @SubscribeEvent
-    public static void registerKeyMappings(final RegisterKeyMappingsEvent event) {
-        SupernaturalControls.register(event);
-        BroomControls.register(event);
-    }
-
-    @SubscribeEvent
-    public static void registerBlockColors(final RegisterColorHandlersEvent.Block event) {
-        event.register(java.util.List.of((BlockTintSource) state ->
-            state.getValue(FetishBlock.ROBE).getTextureDiffuseColor()
-        ), ModBlocks.ALL.get("scarecrow").get());
-    }
-
-    @SubscribeEvent
-    public static void clientTick(final TickEvent.ClientTickEvent.Post event) {
-        SupernaturalControls.tick(event);
-        BroomControls.tick(event);
-    }
-
-    @SubscribeEvent
-    public static void addHudLayers(final AddGuiOverlayLayersEvent event) {
-        if (event.getLayeredDraw().getName().equals(ForgeLayeredDraw.VANILLA_ROOT)) {
-            event.getLayeredDraw().add(
-                ForgeLayeredDraw.PRE_SLEEP_STACK,
-                DollStatusOverlay.LAYER,
-                DollStatusOverlay::extract
-            );
-            event.getLayeredDraw().add(
-                ForgeLayeredDraw.PRE_SLEEP_STACK,
-                SupernaturalStatusOverlay.LAYER,
-                SupernaturalStatusOverlay::extract
-            );
-        }
+    private static void registerFluidRenderer(final ModFluids.RenderFamily family) {
+        FluidRenderingRegistry.register(
+            family.source().get(),
+            family.flowing().get(),
+            new FluidModel.Unbaked(
+                new Material(family.stillTexture()),
+                new Material(family.flowingTexture()),
+                new Material(Identifier.withDefaultNamespace("block/water_overlay")),
+                BlockTintSources.constant(family.tint())
+            )
+        );
     }
 }

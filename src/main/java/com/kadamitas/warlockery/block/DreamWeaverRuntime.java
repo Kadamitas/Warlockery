@@ -11,24 +11,26 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
-import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 
 public final class DreamWeaverRuntime {
     private DreamWeaverRuntime() {
     }
 
-    public static void handleWake(final PlayerWakeUpEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)
-            || !(player.level() instanceof ServerLevel level)) {
+    public static void handleWake(
+        final ServerPlayer player,
+        final BlockPos sleepingPosition,
+        final boolean wakeImmediately
+    ) {
+        if (!(player.level() instanceof ServerLevel level)) {
             return;
         }
-        final Optional<BlockPos> sleeping = player.getSleepingPos();
+        final Optional<BlockPos> sleeping = Optional.of(sleepingPosition);
         final java.util.List<Weaver> weavers = sleeping.map(pos -> nearby(level, pos)).orElseGet(java.util.List::of);
         final Optional<Weaver> weaver = sleeping.flatMap(pos -> nearest(pos, weavers));
         if (!DreamWeaverRules.canReward(
             true,
             player.getSleepTimer(),
-            event.wakeImmediately(),
+            wakeImmediately,
             weaver.isPresent()
         )) {
             return;

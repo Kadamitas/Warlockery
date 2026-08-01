@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.brew;
 
 import com.kadamitas.warlockery.brew.custom.CustomBrewCloudRules;
 import com.kadamitas.warlockery.brew.custom.CustomBrewDelivery;
+import com.kadamitas.warlockery.compat.fabric.FabricEnergyCompatibility;
 
 import com.kadamitas.warlockery.brew.BrewTargeting.Target;
 import com.kadamitas.warlockery.entity.CreatureBehaviorState;
@@ -54,14 +55,13 @@ import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.IPlantable;
 import org.jspecify.annotations.Nullable;
 
 public final class BrewRuntime {
@@ -1141,11 +1141,9 @@ public final class BrewRuntime {
             if (entity instanceof Player player) {
                 stacks.addAll(player.getInventory().getNonEquipmentItems());
             }
-            final int drained = stacks.stream().mapToInt(stack -> stack
-                .getCapability(ForgeCapabilities.ENERGY)
-                .map(storage -> storage.extractEnergy(50_000, false))
-                .orElse(0)
-            ).sum();
+            final long drained = stacks.stream()
+                .mapToLong(stack -> FabricEnergyCompatibility.extract(stack, 50_000))
+                .sum();
             if (!beneficial.isEmpty() || drained > 0) {
                 affected++;
             }
@@ -1259,26 +1257,21 @@ public final class BrewRuntime {
             ItemEntity.class,
             area,
             item -> item.isAlive() && item.getItem().getItem() instanceof BlockItem blockItem
-                && blockItem.getBlock() instanceof IPlantable
+                && blockItem.getBlock() instanceof BushBlock
         );
         int planted = 0;
         for (ItemEntity drop : drops) {
             final BlockItem blockItem = (BlockItem) drop.getItem().getItem();
-            final IPlantable plantable = (IPlantable) blockItem.getBlock();
+            final BlockState plant = blockItem.getBlock().defaultBlockState();
             final Optional<BlockPos> ground = BrewArea.sphere(center, (int) Math.ceil(context.radius()))
-                .filter(pos -> context.level().getBlockState(pos).canSustainPlant(
-                    context.level(), pos, Direction.UP, plantable
-                ))
                 .filter(pos -> context.level().getBlockState(pos.above()).canBeReplaced())
-                .filter(pos -> plantable.getPlant(context.level(), pos.above()).canSurvive(
-                    context.level(), pos.above()
-                ))
+                .filter(pos -> plant.canSurvive(context.level(), pos.above()))
                 .min(Comparator.comparingDouble(pos -> pos.distSqr(drop.blockPosition())));
             if (ground.isEmpty()) {
                 continue;
             }
             final BlockPos position = ground.orElseThrow().above();
-            if (!context.level().setBlockAndUpdate(position, plantable.getPlant(context.level(), position))) {
+            if (!context.level().setBlockAndUpdate(position, plant)) {
                 continue;
             }
             drop.getItem().shrink(1);

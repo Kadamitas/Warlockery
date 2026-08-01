@@ -2,7 +2,7 @@
   "type": "minecraft:function",
   "function": "warlockery:complete_large_chalk_ring_is_recognized",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100,
   "padding": 16
 }

@@ -19,6 +19,7 @@ import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModSounds;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.util.FluidContents;
 import com.kadamitas.warlockery.item.EquipmentSetEffects;
 import com.kadamitas.warlockery.menu.MachineMenu;
 import com.kadamitas.warlockery.brew.custom.CustomBrewCauldronState;
@@ -31,6 +32,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.fluid.base.SingleFluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -61,18 +69,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
 import org.jspecify.annotations.Nullable;
 
-public final class MagicMachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
+public final class MagicMachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SidedStorageBlockEntity {
     private static final int INVENTORY_SIZE = 9;
 
     private NonNullList<ItemStack> items = NonNullList.withSize(INVENTORY_SIZE, ItemStack.EMPTY);
@@ -91,15 +90,10 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     private final SilverVatFurnaceObserver silverVatFurnaceObserver = new SilverVatFurnaceObserver();
     private int pendingSilverDeposits;
     private MachineSlotLayout slotLayout;
-    private LazyOptional<? extends IItemHandler>[] itemHandlers = createItemHandlers();
-    private final FluidTank fluidTank = new FluidTank(4_000) {
-        @Override
-        protected void onContentsChanged() {
-            invalidateRecipeCache();
-            setChanged();
-        }
-    };
-    private LazyOptional<IFluidHandler> fluidHandler = LazyOptional.of(() -> fluidTank);
+    private final SingleFluidStorage fluidStorage = SingleFluidStorage.withFixedCapacity(
+        4L * FluidConstants.BUCKET,
+        this::handleFluidChanged
+    );
 
     public MagicMachineBlockEntity(final BlockPos pos, final BlockState state) {
         super(ModBlockEntities.MAGIC_MACHINE.get(), pos, state);
@@ -204,7 +198,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
                 return;
             }
             MachineRecipeManager.INSTANCE.consumeInputs(recipe, machine.items, profile.inputSlots());
-            MachineRecipeManager.INSTANCE.consumeFluid(recipe, machine.fluidTank);
+            machine.consumeFluid(recipe);
             machine.insertOutputs(outputs, profile);
             if (level instanceof ServerLevel serverLevel && "cauldron".equals(profile.recipeType())) {
                 ArchfiendBrewingRisk.apply(serverLevel, pos, machine.cauldronChalkCircles);
@@ -241,7 +235,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         final CustomBrewDefinitionManager.Inspection inspection = CustomBrewDefinitionManager.INSTANCE.inspect(
             items,
             profile.inputSlots(),
-            fluidTank.getFluid(),
+            fluidContents(),
             altarPower,
             isHeated(level, pos),
             items.get(profile.outputStart()).isEmpty(),
@@ -286,7 +280,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
                 return true;
             }
             items.stream().limit(profile.inputSlots()).filter(stack -> !stack.isEmpty()).forEach(stack -> stack.shrink(1));
-            fluidTank.drain(CustomBrewComposer.WATER_REQUIRED, IFluidHandler.FluidAction.EXECUTE);
+            extractFluid(CustomBrewComposer.WATER_REQUIRED);
             items.set(profile.outputStart(), output);
             ArchfiendBrewingRisk.apply(serverLevel, pos, cauldronChalkCircles);
             customBrewProgress = 0;
@@ -386,8 +380,8 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             value.assemble(recipeInput),
             value.cookingTime()
         )).orElse(fallback);
-        final boolean goldOre = input.is(Tags.Items.ORES_GOLD);
-        final boolean goldResult = process.result().is(Tags.Items.INGOTS_GOLD) || process.result().is(Items.GOLD_INGOT);
+        final boolean goldOre = input.is(ConventionalItemTags.GOLD_ORES);
+        final boolean goldResult = process.result().is(ConventionalItemTags.GOLD_INGOTS) || process.result().is(Items.GOLD_INGOT);
         final ItemStack output = furnace.getItem(2);
         final boolean outputAvailable = output.isEmpty()
             || ItemStack.isSameItemSameComponents(output, process.result())
@@ -481,7 +475,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             cachedRecipe = manager.find(
                 profile,
                 items,
-                profile.supportsFluids() ? fluidTank.getFluid() : FluidStack.EMPTY,
+                profile.supportsFluids() ? fluidContents() : FluidContents.EMPTY,
                 altarPower
             );
             cachedRevision = manager.revision();
@@ -493,6 +487,34 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
 
     private void invalidateRecipeCache() {
         recipeDirty = true;
+    }
+
+    private void handleFluidChanged() {
+        invalidateRecipeCache();
+        setChanged();
+    }
+
+    private FluidContents fluidContents() {
+        return FluidContents.fromDroplets(fluidStorage.getResource(), fluidStorage.getAmount());
+    }
+
+    private void consumeFluid(final MachineRecipeDefinition recipe) {
+        recipe.fluid().ifPresent(input -> extractFluid(input.amount()));
+    }
+
+    private long extractFluid(final int milliBuckets) {
+        if (fluidStorage.isResourceBlank() || milliBuckets <= 0) {
+            return 0;
+        }
+        try (Transaction transaction = Transaction.openOuter()) {
+            final long extracted = fluidStorage.extract(
+                fluidStorage.getResource(),
+                FluidContents.dropletsFromMilliBuckets(milliBuckets),
+                transaction
+            );
+            transaction.commit();
+            return extracted;
+        }
     }
 
     public String machineKind() {
@@ -552,7 +574,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         final MachineRecipeManager.Diagnostic diagnostic = MachineRecipeManager.INSTANCE.diagnose(
             profile,
             items,
-            profile.supportsFluids() ? fluidTank.getFluid() : FluidStack.EMPTY,
+            profile.supportsFluids() ? fluidContents() : FluidContents.EMPTY,
             level instanceof ServerLevel serverLevel ? AltarPowerNetwork.available(serverLevel, pos) : 0
         );
         final MachineStatus status;
@@ -659,36 +681,8 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(final Capability<T> capability, final @Nullable Direction facing) {
-        if (capability == ForgeCapabilities.FLUID_HANDLER && machineProfile().supportsFluids() && !remove) {
-            return fluidHandler.cast();
-        }
-        if (capability == ForgeCapabilities.ITEM_HANDLER && facing != null && !remove) {
-            return switch (facing) {
-                case UP -> itemHandlers[0].cast();
-                case DOWN -> itemHandlers[1].cast();
-                default -> itemHandlers[2].cast();
-            };
-        }
-        return super.getCapability(capability, facing);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        java.util.Arrays.stream(itemHandlers).forEach(LazyOptional::invalidate);
-        fluidHandler.invalidate();
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        itemHandlers = createItemHandlers();
-        fluidHandler = LazyOptional.of(() -> fluidTank);
-    }
-
-    private LazyOptional<? extends IItemHandler>[] createItemHandlers() {
-        return SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH);
+    public @Nullable Storage<FluidVariant> getFluidStorage(final @Nullable Direction side) {
+        return machineProfile().supportsFluids() && !remove ? fluidStorage : null;
     }
 
     @Override
@@ -779,7 +773,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
                 Math::max
             )
         ));
-        fluidTank.readFrom(input.childOrEmpty("FluidTank"));
+        fluidStorage.readValue(input.childOrEmpty("FluidTank"));
         invalidateRecipeCache();
     }
 
@@ -802,8 +796,8 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             observed.putLong("Position", position);
             observed.putInt("Progress", observedProgress);
         });
-        if (!fluidTank.isEmpty()) {
-            fluidTank.writeTo(output.child("FluidTank"));
+        if (!fluidStorage.isResourceBlank()) {
+            fluidStorage.writeValue(output.child("FluidTank"));
         }
     }
 

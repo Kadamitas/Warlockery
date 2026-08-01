@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:hobgoblins_flee_human_villagers_and_keep_custom_professions",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

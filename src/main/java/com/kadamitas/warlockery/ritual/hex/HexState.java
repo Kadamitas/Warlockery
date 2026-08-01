@@ -1,10 +1,11 @@
 package com.kadamitas.warlockery.ritual.hex;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import java.util.Arrays;
 import java.util.List;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import com.kadamitas.warlockery.fabric.event.PlayerCloneContext;
 
 public final class HexState {
     private static final String ACTIVE_HEXES = "WarlockeryActiveHexes";
@@ -54,12 +55,12 @@ public final class HexState {
         activeTag(target, false).ifPresent(active -> {
             active.remove(kind.id());
             if (active.isEmpty()) {
-                target.getPersistentData().remove(ACTIVE_HEXES);
+                WarlockeryEntityData.get(target).remove(ACTIVE_HEXES);
             }
         });
     }
 
-    public static void copyAfterClone(final PlayerEvent.Clone event) {
+    public static void copyAfterClone(final PlayerCloneContext event) {
         Arrays.stream(HexKind.values()).forEach(kind -> {
             if (kind == HexKind.HEAT_METAL) {
                 return;
@@ -75,7 +76,7 @@ public final class HexState {
         final LivingEntity target,
         final boolean create
     ) {
-        final CompoundTag data = target.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(target);
         final java.util.Optional<CompoundTag> existing = data.getCompound(ACTIVE_HEXES);
         if (existing.isPresent() || !create) {
             return existing;

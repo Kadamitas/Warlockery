@@ -136,7 +136,7 @@ final class BroomPresentationAssetTest {
         assertTrue(renderer.contains("entity.isGliding()"));
         assertTrue(renderer.contains("ItemDisplayContext.GROUND"));
         assertFalse(renderer.contains("getDefaultInstance()"));
-        assertTrue(client.contains("event.registerEntityRenderer(ModEntities.BROOM.get(), BroomEntityRenderer::new)"));
+        assertTrue(client.contains("EntityRenderers.register(ModEntities.BROOM.get(), BroomEntityRenderer::new)"));
     }
 
     private static JsonObject read(final Path path) throws IOException {

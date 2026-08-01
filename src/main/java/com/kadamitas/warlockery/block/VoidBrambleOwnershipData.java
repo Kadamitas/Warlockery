@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.fabric.event.BlockBreakContext;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashMap;
@@ -16,8 +17,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
-import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.common.util.Result;
 
 public final class VoidBrambleOwnershipData extends SavedData {
     private static final Codec<VoidBrambleOwnershipData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -64,15 +63,15 @@ public final class VoidBrambleOwnershipData extends SavedData {
         }
     }
 
-    public static void handleBreak(final BlockEvent.BreakEvent event) {
-        if (!(event.getLevel() instanceof ServerLevel level)
-            || !(event.getPlayer() instanceof ServerPlayer player)
-            || !(event.getState().getBlock() instanceof VoidBrambleBlock)) {
+    public static void handleBreak(final BlockBreakContext event) {
+        final ServerLevel level = event.getLevel();
+        final ServerPlayer player = event.getPlayer();
+        if (!(event.getState().getBlock() instanceof VoidBrambleBlock)) {
             return;
         }
         final VoidBrambleOwnershipData data = get(level);
         if (!data.permits(event.getPos(), player)) {
-            event.setResult(Result.DENY);
+            event.cancel();
             player.sendOverlayMessage(Component.translatable("message.warlockery.void_bramble.owner_only"));
             return;
         }

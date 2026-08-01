@@ -1,151 +1,54 @@
 package com.kadamitas.warlockery;
 
+import com.kadamitas.warlockery.compat.fabric.FabricEnergyCompatibility;
+import com.kadamitas.warlockery.config.WarlockeryConfig;
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
+import com.kadamitas.warlockery.fabric.WarlockeryFabricEvents;
+import com.kadamitas.warlockery.fabric.WarlockeryWorldGeneration;
+import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
-import com.kadamitas.warlockery.registry.ModCreativeTabs;
 import com.kadamitas.warlockery.registry.ModChunkTickets;
+import com.kadamitas.warlockery.registry.ModCreativeTabs;
+import com.kadamitas.warlockery.registry.ModEffects;
+import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.registry.ModFluids;
+import com.kadamitas.warlockery.registry.ModGameTests;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModMenus;
-import com.kadamitas.warlockery.registry.ModVillagers;
-import com.kadamitas.warlockery.registry.ModEntities;
-import com.kadamitas.warlockery.registry.ModGameTests;
 import com.kadamitas.warlockery.registry.ModSounds;
-import com.kadamitas.warlockery.registry.ModFluids;
-import com.kadamitas.warlockery.registry.ModEffects;
-import com.kadamitas.warlockery.crafting.MachineRecipeManager;
-import com.kadamitas.warlockery.brew.BrewPersistentRuntime;
-import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
-import com.kadamitas.warlockery.brew.custom.CustomBrewDefinitionManager;
-import com.kadamitas.warlockery.brew.custom.CustomBrewRuntime;
-import com.kadamitas.warlockery.item.DollItem;
-import com.kadamitas.warlockery.item.EquipmentSetEffects;
-import com.kadamitas.warlockery.item.InfernalPactEffects;
-import com.kadamitas.warlockery.item.ResourceInteractionEvents;
-import com.kadamitas.warlockery.item.FlyingBroomItem;
-import com.kadamitas.warlockery.item.FancifulCharmRuntime;
-import com.kadamitas.warlockery.item.ParasyticLouseItem;
-import com.kadamitas.warlockery.item.SeerCovenRuntime;
-import com.kadamitas.warlockery.magic.MagicPathRuntime;
-import com.kadamitas.warlockery.magic.SymbolMagicRuntime;
-import com.kadamitas.warlockery.block.DreamWeaverRuntime;
-import com.kadamitas.warlockery.block.BoundStatueData;
-import com.kadamitas.warlockery.block.VoidBrambleOwnershipData;
-import com.kadamitas.warlockery.block.StatueWardData;
-import com.kadamitas.warlockery.network.ModNetwork;
-import com.kadamitas.warlockery.ritual.RitualManager;
-import com.kadamitas.warlockery.ritual.RitualSessionData;
-import com.kadamitas.warlockery.ritual.RitualEclipseData;
-import com.kadamitas.warlockery.ritual.HellRiftData;
-import com.kadamitas.warlockery.ritual.RitualWardData;
-import com.kadamitas.warlockery.ritual.PriorIncarnationRuntime;
-import com.kadamitas.warlockery.ritual.hex.HexRuntime;
-import com.kadamitas.warlockery.ritual.hex.HexState;
-import com.kadamitas.warlockery.ritual.marriage.MarriageRuntime;
-import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
-import com.kadamitas.warlockery.entity.CreatureCombat;
-import com.kadamitas.warlockery.world.CreatureWorldIntegration;
-import com.kadamitas.warlockery.world.WarlockVillagerFarming;
-import com.kadamitas.warlockery.world.VillageGuardRuntime;
-import com.kadamitas.warlockery.config.WarlockeryConfig;
+import com.kadamitas.warlockery.registry.ModVillagers;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.living.LivingGetProjectileEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.eventbus.api.listener.Priority;
+import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 
-@Mod(Warlockery.MOD_ID)
-public final class Warlockery {
+public final class Warlockery implements ModInitializer {
     public static final String MOD_ID = "warlockery";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public Warlockery(final FMLJavaModLoadingContext context) {
-        final var modBus = context.getModBusGroup();
-        context.registerConfig(ModConfig.Type.SERVER, WarlockeryConfig.SPEC);
-        ModFluids.TYPES.register(modBus);
-        ModFluids.REGISTRY.register(modBus);
-        ModEntities.REGISTRY.register(modBus);
-        ModEffects.REGISTRY.register(modBus);
-        ModItems.registerSpawnEggs(ModEntities.ALL);
-        ModBlocks.REGISTRY.register(modBus);
-        ModItems.REGISTRY.register(modBus);
-        ModVillagers.POI_TYPES.register(modBus);
-        ModVillagers.PROFESSIONS.register(modBus);
-        ModSounds.REGISTRY.register(modBus);
-        ModMenus.REGISTRY.register(modBus);
-        ModBlockEntities.REGISTRY.register(modBus);
-        ModChunkTickets.REGISTRY.register(modBus);
-        ModCreativeTabs.REGISTRY.register(modBus);
-        ModGameTests.REGISTRY.register(modBus);
-        EntityAttributeCreationEvent.BUS.addListener(ModEntities::registerAttributes);
-        SpawnPlacementRegisterEvent.BUS.addListener(ModEntities::registerSpawnPlacements);
+    @Override
+    public void onInitialize() {
+        WarlockeryConfig.initialize();
+        WarlockeryEntityData.initialize();
         ModNetwork.init();
-        BrewPersistentRuntime.registerEvents();
-        SpiritWorldRuntime.registerEvents();
-        MagicPathRuntime.registerEvents();
-        SupernaturalProgressionRuntime.registerEvents();
-        VillageGuardRuntime.registerEvents();
-        com.kadamitas.warlockery.entity.EntRuntime.registerEvents();
-        net.minecraftforge.event.level.BlockEvent.BreakEvent.BUS.addListener(VoidBrambleOwnershipData::handleBreak);
-        AddReloadListenerEvent.BUS.addListener(event -> {
-            event.addListener(RitualManager.INSTANCE);
-            event.addListener(MachineRecipeManager.INSTANCE);
-            event.addListener(CustomBrewDefinitionManager.INSTANCE);
-        });
-        TickEvent.LevelTickEvent.Post.BUS.addListener(event -> {
-            if (event.level() instanceof ServerLevel level) {
-                RitualSessionData.get(level).tick(level);
-                RitualWardData.get(level).tick(level);
-                RitualEclipseData.get(level).tick(level);
-                HellRiftData.get(level).tick(level);
-                BoundStatueData.get(level).tick(level);
-                StatueWardData.get(level).tick(level);
-                CreatureWorldIntegration.tick(level);
-            }
-        });
-        TickEvent.PlayerTickEvent.Post.BUS.addListener(event -> {
-            EquipmentSetEffects.tick(event.player());
-            InfernalPactEffects.tick(event.player());
-            MarriageRuntime.tick(event.player());
-        });
-        LivingDamageEvent.BUS.addListener(CreatureCombat::handleDamage);
-        LivingDamageEvent.BUS.addListener(EquipmentSetEffects::handleDamage);
-        LivingDamageEvent.BUS.addListener(FancifulCharmRuntime::handleDamage);
-        LivingDamageEvent.BUS.addListener(ParasyticLouseItem::handleDamage);
-        LivingDamageEvent.BUS.addListener(RitualWardData::handleDamage);
-        LivingDamageEvent.BUS.addListener(Priority.LOWEST, DollItem::handleDamage);
-        LivingGetProjectileEvent.BUS.addListener(EquipmentSetEffects::handleGetProjectile);
-        EntityJoinLevelEvent.BUS.addListener(EquipmentSetEffects::handleEntityJoinLevel);
-        LivingDeathEvent.BUS.addListener(SeerCovenRuntime::handleDeath);
-        LivingDeathEvent.BUS.addListener(Priority.HIGHEST, FlyingBroomItem::handleDeath);
-        LivingEvent.LivingTickEvent.BUS.addListener(HexRuntime::tick);
-        LivingEvent.LivingTickEvent.BUS.addListener(WarlockVillagerFarming::handleTick);
-        LivingEntityUseItemEvent.Finish.BUS.addListener(CustomBrewRuntime::handleFinishUse);
-        LivingDropsEvent.BUS.addListener(ResourceInteractionEvents::handleDrops);
-        LivingDropsEvent.BUS.addListener(HexRuntime::handleDrops);
-        LivingDropsEvent.BUS.addListener(PriorIncarnationRuntime::handleDrops);
-        ProjectileImpactEvent.BUS.addListener(ResourceInteractionEvents::handleProjectileImpact);
-        ProjectileImpactEvent.BUS.addListener(SymbolMagicRuntime::handleProjectileImpact);
-        PlayerWakeUpEvent.BUS.addListener(DreamWeaverRuntime::handleWake);
-        PlayerEvent.Clone.BUS.addListener(HexState::copyAfterClone);
-        PlayerEvent.PlayerLoggedInEvent.BUS.addListener(FlyingBroomItem::handleLogin);
-        PlayerEvent.PlayerLoggedOutEvent.BUS.addListener(FlyingBroomItem::handleLogout);
-        LOGGER.info("Loading Warlockery for Minecraft 26.2");
-    }
+        FabricEnergyCompatibility.initialize();
 
+        ModFluids.register();
+        ModEntities.register();
+        ModEffects.register();
+        ModItems.registerSpawnEggs(ModEntities.ALL);
+        ModBlocks.register();
+        ModItems.register();
+        ModVillagers.register();
+        ModSounds.register();
+        ModMenus.register();
+        ModBlockEntities.register();
+        ModChunkTickets.register();
+        ModCreativeTabs.register();
+        ModGameTests.register();
+
+        WarlockeryWorldGeneration.initialize();
+        WarlockeryFabricEvents.initialize();
+        LOGGER.info("Loading Warlockery for Minecraft 26.2 on Fabric");
+    }
 }

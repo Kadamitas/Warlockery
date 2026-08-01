@@ -1,6 +1,6 @@
 # Developing Warlockery
 
-Warlockery is a Forge mod for Minecraft 26.2. This guide covers local setup, the project layout, common development tasks, testing, and release builds.
+Warlockery is a Fabric mod for Minecraft 26.2. This guide covers local setup, the project layout, common development tasks, testing, and release builds.
 
 ## Requirements
 
@@ -43,16 +43,15 @@ The task writes the binary JAR, source JAR, license, changelog, and SHA-256 chec
 
 ## Running Minecraft
 
-ForgeGradle provides the development launch tasks:
+Fabric Loom provides the development launch tasks:
 
 ```powershell
 .\gradlew.bat --no-daemon runClient
 .\gradlew.bat --no-daemon runServer
-.\gradlew.bat --no-daemon runGameTestServer
-.\gradlew.bat --no-daemon runData
+.\gradlew.bat --no-daemon runGametest
 ```
 
-Client and server instances use the `run` directory. Data generation writes to `src/generated/resources` and reads the handwritten resources in `src/main/resources`.
+Client, server, and GameTest instances use the `run` directory. Handwritten resources live in `src/main/resources`.
 
 Delete a development world before retesting world generation changes. Keep test worlds, logs, and generated launch files out of commits.
 
@@ -99,21 +98,21 @@ Server code owns gameplay state. Menus, overlays, and floating diagnostics shoul
 
 Register payloads in `ModNetwork`. Keep payload records immutable and validate positions, identifiers, counts, and permissions again on the server before changing the world.
 
-Client event subscribers, renderers, screens, and HUD layers belong in the client package and use `Dist.CLIENT` registration. Start `runServer` after client work to catch accidental client class loading on a dedicated server.
+Client renderers, screens, key bindings, and HUD layers belong in the client package and are registered from the Fabric client entry point. Start `runServer` after client work to catch accidental client class loading on a dedicated server.
 
 ## Compatibility
 
-Warlockery uses Forge item and fluid capabilities for machine automation. Shared materials use established `c:` or vanilla tags. Magical concepts use Warlockery tags so integrations can opt in without claiming a global standard that Forge does not provide.
+Warlockery uses Fabric Transfer API item and fluid storage for machine automation. Shared materials use established `c:` or vanilla tags. Magical concepts use Warlockery tags so integrations can opt in without claiming a global standard that Fabric does not provide.
 
-Altar power is its own gameplay resource, not Forge Energy. Integrating another mod's energy or mana system requires an optional adapter for that specific API.
+Altar power is its own gameplay resource. Fabric has no universal energy or mana contract, so Warlockery publishes an item energy lookup for optional adapters without requiring another power mod.
 
-The optional JEI integration compiles against JEI 30.15.0's common API. It loads only when a compatible Forge JEI runtime is present, so Warlockery remains usable without JEI. Do not use a NeoForge-only JEI file in a Forge installation.
+The optional JEI integration compiles against JEI 30.7.0.41's Fabric API. It loads only when a compatible Fabric JEI runtime is present, so Warlockery remains usable without JEI.
 
 The available material, equipment, creature, machine, and guide-book extension points are documented in [Cross-mod compatibility](docs/CROSS_MOD_COMPATIBILITY.md).
 
 ## Server configuration
 
-Warlockery creates `warlockery-server.toml` in a world's `serverconfig` directory. Server owners can enable or disable hobgoblin enclaves, silver hunts, and automatic silver equipment for pillagers. The same file also controls the check intervals and event chances. New worlds use the gameplay defaults defined in `WarlockeryConfig`.
+Warlockery creates `config/warlockery.json` in the Fabric instance. Server owners can enable or disable hobgoblin enclaves, silver hunts, and automatic silver equipment for pillagers. The same file also controls the check intervals and event chances. Missing or invalid values use the gameplay defaults defined in `WarlockeryConfig`.
 
 Keep server configuration with the world or modpack configuration. Do not place it in a resource pack or data pack.
 
@@ -165,10 +164,10 @@ Run all JUnit tests with:
 
 HTML reports are written to `build/reports/tests/test`. Machine-readable results are written to `build/test-results/test`.
 
-Run Forge GameTests after changing world interactions, entities, item use, capabilities, networking, rituals, or machines:
+Run Fabric GameTests after changing world interactions, entities, item use, transfer storage, networking, rituals, or machines:
 
 ```powershell
-.\gradlew.bat --no-daemon runGameTestServer
+.\gradlew.bat --no-daemon runGametest
 ```
 
 Keep small rules and serialization tests in JUnit. Use GameTests when the behavior needs a real level, registry access, ticking, entities, inventories, or block entities.
@@ -179,7 +178,7 @@ If a resource fails to load, check `run/logs/latest.log` for the first recipe, t
 
 If Gradle uses the wrong Java version, compare `java -version` with `.\gradlew.bat --version` and set `JAVA_HOME` to a JDK 25 installation.
 
-If a client feature crashes a dedicated server, inspect common classes for imports from `net.minecraft.client` and move the client registration behind a client-only event subscriber.
+If a client feature crashes a dedicated server, inspect common classes for imports from `net.minecraft.client` and move the registration to the Fabric client entry point.
 
 ## Preparing a release
 
@@ -187,7 +186,7 @@ If a client feature crashes a dedicated server, inspect common classes for impor
 2. Run `clean build` and inspect the JUnit report.
 3. Run `runGameTestServer` for gameplay changes.
 4. Run `releaseBundle` to collect the binary JAR, source JAR, license, changelog, and SHA-256 checksums in `release/<version>`.
-5. Test the binary JAR in clean client and dedicated-server Forge instances.
+5. Test the binary JAR in clean client and dedicated-server Fabric instances with Fabric API installed.
 6. Check both logs for missing translations, models, textures, tags, recipes, and optional-integration errors.
 7. Create a matching Git tag and attach the binary JAR from `release` to the release page.
 8. Upload the same binary JAR and changelog to the supported mod hosting sites with matching game and loader metadata.

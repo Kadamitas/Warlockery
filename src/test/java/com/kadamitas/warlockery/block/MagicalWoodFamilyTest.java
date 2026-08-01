@@ -126,6 +126,10 @@ final class MagicalWoodFamilyTest {
 
     @Test
     void configuredTreesGrowAndGenerateRenewablyInFamilyBiomes() {
+        final String worldGeneration = readString(Path.of(
+            "src/main/java/com/kadamitas/warlockery/fabric/WarlockeryWorldGeneration.java"
+        ));
+        assertTrue(worldGeneration.contains("BiomeModifications.addFeature"));
         FAMILIES.forEach(family -> {
             final String configured = readString(DATA.resolve(
                 "warlockery/worldgen/configured_feature/" + family + "_tree.json"
@@ -137,11 +141,10 @@ final class MagicalWoodFamilyTest {
             ));
             assertTrue(placed.contains("warlockery:" + family + "_sapling"), family);
             assertTrue(placed.contains("minecraft:would_survive"), family);
-            final String modifier = readString(DATA.resolve(
-                "warlockery/forge/biome_modifier/" + family + "_trees.json"
-            ));
-            assertTrue(modifier.contains("#warlockery:has_" + family + "_trees"), family);
-            assertTrue(modifier.contains("warlockery:" + family + "_tree"), family);
+            assertTrue(worldGeneration.contains(
+                "addFeature(WarlockeryTags.Biomes.HAS_" + family.toUpperCase()
+                    + "_TREES, \"" + family + "_tree\""
+            ), family);
             final JsonObject biomes = readJson(DATA.resolve(
                 "warlockery/tags/worldgen/biome/has_" + family + "_trees.json"
             ));

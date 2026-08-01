@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.transformation.SupernaturalProgression;
@@ -9,13 +10,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 
 public final class FlyingBroomItem extends Item implements GlyphClearingTool {
     private static final String LEGACY_ACTIVE = "WarlockeryBroomFlight";
@@ -97,16 +97,11 @@ public final class FlyingBroomItem extends Item implements GlyphClearingTool {
         return player.getVehicle() instanceof BroomEntity broom && broom.getControllingPassenger() == player;
     }
 
-    public static void handleLogin(final PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            cleanLegacyFlight(player);
-        }
+    public static void handleLogin(final ServerPlayer player) {
+        cleanLegacyFlight(player);
     }
 
-    public static void handleLogout(final PlayerEvent.PlayerLoggedOutEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
-            return;
-        }
+    public static void handleLogout(final ServerPlayer player) {
         cleanLegacyFlight(player);
         if (player.getVehicle() instanceof BroomEntity broom) {
             player.stopRiding();
@@ -114,14 +109,14 @@ public final class FlyingBroomItem extends Item implements GlyphClearingTool {
         }
     }
 
-    public static void handleDeath(final LivingDeathEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && player.getVehicle() instanceof BroomEntity broom) {
+    public static void handleDeath(final LivingEntity entity) {
+        if (entity instanceof ServerPlayer player && player.getVehicle() instanceof BroomEntity broom) {
             broom.returnBroomTo(player);
         }
     }
 
     private static void cleanLegacyFlight(final ServerPlayer player) {
-        final var data = player.getPersistentData();
+        final var data = WarlockeryEntityData.get(player);
         if (data.getBooleanOr(LEGACY_ACTIVE, false)) {
             final boolean privileged = player.isCreative() || player.isSpectator();
             final boolean batFlight = SupernaturalProgression.batSwarmUntil(player) > player.level().getGameTime();

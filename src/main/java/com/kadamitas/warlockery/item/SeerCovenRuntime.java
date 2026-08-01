@@ -15,13 +15,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 public final class SeerCovenRuntime {
     public static final int PARTICIPANT_RADIUS = 8;
@@ -73,11 +73,11 @@ public final class SeerCovenRuntime {
         CovenRosterData.get(level).register(owner.getUUID(), mage.getUUID());
     }
 
-    public static void handleDeath(final LivingDeathEvent event) {
-        if (event.getEntity() instanceof ArcaneCreature creature
+    public static void handleDeath(final LivingEntity entity) {
+        if (entity instanceof ArcaneCreature creature
             && creature.creatureKind() == CreatureKind.CIRCLE_MAGE
-            && event.getEntity().level() instanceof ServerLevel level) {
-            CovenRosterData.get(level).unregister(event.getEntity().getUUID());
+            && entity.level() instanceof ServerLevel level) {
+            CovenRosterData.get(level).unregister(entity.getUUID());
         }
     }
 

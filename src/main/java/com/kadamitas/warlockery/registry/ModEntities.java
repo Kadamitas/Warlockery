@@ -26,29 +26,30 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 public final class ModEntities {
     private static final String BROOM_ID = "broom";
-    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Warlockery.MOD_ID);
-    private static final Map<String, RegistryObject<? extends EntityType<?>>> MUTABLE = new LinkedHashMap<>();
+    private static final Map<String, RegistrationHandle<? extends EntityType<?>>> MUTABLE = new LinkedHashMap<>();
 
     private static final Map<String, CreatureKind> ARCANE_KINDS = Map.ofEntries(
         Map.entry("hex_bat", CreatureKind.HEX_BAT), Map.entry("hedge_crone", CreatureKind.HEDGE_CRONE),
@@ -130,42 +131,42 @@ public final class ModEntities {
         new AttributeFactoryRule(SPIRIT_IDS::contains, _ -> Vex.createAttributes().build())
     );
 
-    public static final RegistryObject<EntityType<EntEntity>> ENT = register("ent",
+    public static final RegistrationHandle<EntityType<EntEntity>> ENT = register("ent",
         () -> {
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.ENT);
             return EntityType.Builder.of(EntEntity::new, MobCategory.CREATURE)
-                .sized(visual.width(), visual.height()).build(REGISTRY.key("ent"));
+                .sized(visual.width(), visual.height()).build(entityKey("ent"));
         });
-    public static final RegistryObject<EntityType<BroomEntity>> BROOM = REGISTRY.register(BROOM_ID,
+    public static final RegistrationHandle<EntityType<BroomEntity>> BROOM = RegistrationHandle.create(BROOM_ID,
         () -> EntityType.Builder.of(BroomEntity::new, MobCategory.MISC)
             .sized(1.45F, 0.35F)
             .clientTrackingRange(10)
             .updateInterval(1)
             .noSummon()
-            .build(REGISTRY.key(BROOM_ID)));
-    public static final RegistryObject<EntityType<WerewolfEntity>> WEREWOLF = register("werewolf",
+            .build(entityKey(BROOM_ID)));
+    public static final RegistrationHandle<EntityType<WerewolfEntity>> WEREWOLF = register("werewolf",
         () -> {
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.WEREWOLF);
             return EntityType.Builder.of(WerewolfEntity::new, MobCategory.MONSTER)
-                .sized(visual.width(), visual.height()).notInPeaceful().build(REGISTRY.key("werewolf"));
+                .sized(visual.width(), visual.height()).notInPeaceful().build(entityKey("werewolf"));
         });
-    public static final RegistryObject<EntityType<WerewolfHunterEntity>> WEREWOLF_HUNTER = register("werewolf_hunter",
+    public static final RegistrationHandle<EntityType<WerewolfHunterEntity>> WEREWOLF_HUNTER = register("werewolf_hunter",
         () -> {
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.WEREWOLF_HUNTER);
             return EntityType.Builder.of(WerewolfHunterEntity::new, MobCategory.MONSTER)
-                .sized(visual.width(), visual.height()).notInPeaceful().build(REGISTRY.key("werewolf_hunter"));
+                .sized(visual.width(), visual.height()).notInPeaceful().build(entityKey("werewolf_hunter"));
         });
-    public static final RegistryObject<EntityType<HobgoblinEntity>> HOBGOBLIN = hobgoblin("hobgoblin", CreatureKind.HOBGOBLIN);
-    public static final RegistryObject<EntityType<HobgoblinEntity>> GOBLIN = hobgoblin("goblin", CreatureKind.GOBLIN);
-    public static final RegistryObject<EntityType<HobgoblinEntity>> STONEBROKER = hobgoblin("stonebroker", CreatureKind.STONEBROKER);
-    public static final RegistryObject<EntityType<HobgoblinEntity>> FORGEWARDEN = hobgoblin("forgewarden", CreatureKind.FORGEWARDEN);
-    public static final RegistryObject<EntityType<NamiEntity>> NAMI = register("nami",
+    public static final RegistrationHandle<EntityType<HobgoblinEntity>> HOBGOBLIN = hobgoblin("hobgoblin", CreatureKind.HOBGOBLIN);
+    public static final RegistrationHandle<EntityType<HobgoblinEntity>> GOBLIN = hobgoblin("goblin", CreatureKind.GOBLIN);
+    public static final RegistrationHandle<EntityType<HobgoblinEntity>> STONEBROKER = hobgoblin("stonebroker", CreatureKind.STONEBROKER);
+    public static final RegistrationHandle<EntityType<HobgoblinEntity>> FORGEWARDEN = hobgoblin("forgewarden", CreatureKind.FORGEWARDEN);
+    public static final RegistrationHandle<EntityType<NamiEntity>> NAMI = register("nami",
         () -> EntityType.Builder.of(NamiEntity::new, MobCategory.CREATURE)
             .sized(0.6F, 1.8F)
             .clientTrackingRange(10)
-            .build(REGISTRY.key("nami")));
+            .build(entityKey("nami")));
 
-    public static final Map<String, RegistryObject<? extends EntityType<?>>> ALL;
+    public static final Map<String, RegistrationHandle<? extends EntityType<?>>> ALL;
 
     static {
         ARCANE_KINDS.forEach((id, kind) -> register(id, () -> createArcaneType(id, kind)));
@@ -175,7 +176,7 @@ public final class ModEntities {
     private ModEntities() {
     }
 
-    private static RegistryObject<EntityType<HobgoblinEntity>> hobgoblin(final String id, final CreatureKind kind) {
+    private static RegistrationHandle<EntityType<HobgoblinEntity>> hobgoblin(final String id, final CreatureKind kind) {
         return register(id, () -> {
             final boolean boss = GoblinBossRules.isBoss(kind);
             final boolean hostile = boss || kind == CreatureKind.GOBLIN;
@@ -187,7 +188,7 @@ public final class ModEntities {
             if (hostile) {
                 builder.notInPeaceful();
             }
-            return builder.build(REGISTRY.key(id));
+            return builder.build(entityKey(id));
         });
     }
 
@@ -202,7 +203,7 @@ public final class ModEntities {
         return EntityType.Builder.of(WerewolfEntity::new, MobCategory.MONSTER)
             .sized(registration.width(), registration.height())
             .notInPeaceful()
-            .build(REGISTRY.key(registration.id()));
+            .build(entityKey(registration.id()));
     }
 
     private static EntityType<?> createImp(final EntityRegistration registration) {
@@ -210,19 +211,19 @@ public final class ModEntities {
             .sized(registration.width(), registration.height())
             .fireImmune()
             .notInPeaceful()
-            .build(REGISTRY.key(registration.id()));
+            .build(entityKey(registration.id()));
     }
 
     private static EntityType<?> createStormSimian(final EntityRegistration registration) {
         return EntityType.Builder.of(StormSimianEntity::new, MobCategory.CREATURE)
             .sized(registration.width(), registration.height())
-            .build(REGISTRY.key(registration.id()));
+            .build(entityKey(registration.id()));
     }
 
     private static EntityType<?> createLycanVillager(final EntityRegistration registration) {
         return EntityType.Builder.of(LycanVillagerEntity::new, MobCategory.CREATURE)
             .sized(registration.width(), registration.height())
-            .build(REGISTRY.key(registration.id()));
+            .build(entityKey(registration.id()));
     }
 
     private static EntityType<?> createNaamah(final EntityRegistration registration) {
@@ -230,7 +231,7 @@ public final class ModEntities {
             .sized(registration.width(), registration.height())
             .fireImmune()
             .notInPeaceful()
-            .build(REGISTRY.key(registration.id()));
+            .build(entityKey(registration.id()));
     }
 
     private static EntityType<?> createGround(final EntityRegistration registration) {
@@ -246,7 +247,7 @@ public final class ModEntities {
         if (FIRE_IMMUNE_GROUND_KINDS.contains(registration.kind())) {
             builder.fireImmune();
         }
-        return builder.build(REGISTRY.key(registration.id()));
+        return builder.build(entityKey(registration.id()));
     }
 
     private static EntityType<?> createSpirit(final EntityRegistration registration) {
@@ -259,13 +260,17 @@ public final class ModEntities {
         if (!passive) {
             builder.notInPeaceful();
         }
-        return builder.build(REGISTRY.key(registration.id()));
+        return builder.build(entityKey(registration.id()));
     }
 
-    private static <T extends EntityType<?>> RegistryObject<T> register(final String id, final java.util.function.Supplier<T> factory) {
-        final RegistryObject<T> object = REGISTRY.register(id, factory);
-        MUTABLE.put(id, object);
-        return object;
+    private static <T extends EntityType<?>> RegistrationHandle<T> register(final String id, final Supplier<T> factory) {
+        final RegistrationHandle<T> handle = RegistrationHandle.create(id, factory);
+        MUTABLE.put(id, handle);
+        return handle;
+    }
+
+    private static ResourceKey<EntityType<?>> entityKey(final String id) {
+        return ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, id));
     }
 
     public static boolean isSpiritKind(final CreatureKind kind) {
@@ -278,12 +283,21 @@ public final class ModEntities {
             .orElseThrow(() -> new IllegalArgumentException("Unknown Warlockery creature id: " + id));
     }
 
+    public static void register() {
+        BROOM.register(BuiltInRegistries.ENTITY_TYPE);
+        ALL.values().forEach(ModEntities::registerType);
+        ALL.forEach(ModEntities::registerAttributes);
+        registerSpawnPlacements();
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static void registerAttributes(final EntityAttributeCreationEvent event) {
-        ALL.forEach((id, object) -> {
-            final EntityType type = object.get();
-            event.put(type, attributesFor(id));
-        });
+    private static void registerType(final RegistrationHandle<? extends EntityType<?>> handle) {
+        ((RegistrationHandle) handle).register(BuiltInRegistries.ENTITY_TYPE);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerAttributes(final String id, final RegistrationHandle<? extends EntityType<?>> handle) {
+        FabricDefaultAttributeRegistry.register((EntityType) handle.get(), attributesFor(id));
     }
 
     private static AttributeSupplier attributesFor(final String id) {
@@ -326,23 +340,26 @@ public final class ModEntities {
             .build();
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static void registerSpawnPlacements(final SpawnPlacementRegisterEvent event) {
-        event.register(
+    private static void registerSpawnPlacements() {
+        SpawnPlacements.register(
             HOBGOBLIN.get(),
             SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            HobgoblinEntity::checkNaturalSpawnRules,
-            SpawnPlacementRegisterEvent.Operation.REPLACE
+            HobgoblinEntity::checkNaturalSpawnRules
         );
         NATURAL_SPAWN_IDS.stream().filter(id -> !"hobgoblin".equals(id)).forEach(id -> {
-            final EntityType type = ALL.get(id).get();
-            event.register(type, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                PASSIVE_SPAWN_IDS.contains(id)
-                    ? Mob::checkMobSpawnRules
-                    : Monster::checkMonsterSpawnRules,
-                SpawnPlacementRegisterEvent.Operation.REPLACE);
+            registerSpawnPlacement(id, ALL.get(id).get());
         });
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerSpawnPlacement(final String id, final EntityType<?> type) {
+        SpawnPlacements.register(
+            (EntityType) type,
+            SpawnPlacementTypes.ON_GROUND,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            PASSIVE_SPAWN_IDS.contains(id) ? Mob::checkMobSpawnRules : Monster::checkMonsterSpawnRules
+        );
     }
 
     private record EntityRegistration(

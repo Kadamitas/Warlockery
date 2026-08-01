@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,7 +25,7 @@ public final class InfernalPactEffects {
             Mob.class,
             new AABB(owner.blockPosition()).inflate(32),
             mob -> mob.typeHolder().is(WarlockeryTags.EntityTypes.DEMONS)
-                && owner.getStringUUID().equals(mob.getPersistentData().getStringOr(OWNER_KEY, ""))
+                && owner.getStringUUID().equals(WarlockeryEntityData.get(mob).getStringOr(OWNER_KEY, ""))
         ).forEach(demon -> {
             if (demon.getTarget() == owner) {
                 demon.setTarget(null);

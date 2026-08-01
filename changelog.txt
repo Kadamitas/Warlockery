@@ -1,6 +1,7 @@
 Warlockery 1.2.0
 ================
 
+- Added a native Fabric 26.2 build using Fabric Transfer API automation, Data Attachments, payload networking, biome modifications, conventional tags, and optional Fabric JEI integration.
 - Added coordinated goblin raids on villages, goblin children, and clearer separation between hostile goblins and peaceful travelling hobgoblins.
 - Improved hobgoblin life in the world with village avoidance, fear of human villagers, reliable professions, stable trading, and goblin-inspired sounds and presentation.
 - Rebalanced goblinite trading and processing so its high-tier equipment takes substantially more emeralds and dust to obtain.

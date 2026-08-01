@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.brew;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import java.util.Arrays;
@@ -76,7 +77,7 @@ public final class BrewMarkerState {
         root(target, false).ifPresent(active -> {
             active.remove(kind.id());
             if (active.isEmpty()) {
-                target.getPersistentData().remove(ACTIVE_MARKERS);
+                WarlockeryEntityData.get(target).remove(ACTIVE_MARKERS);
             }
         });
     }
@@ -218,7 +219,7 @@ public final class BrewMarkerState {
     }
 
     private static Optional<CompoundTag> root(final LivingEntity target, final boolean create) {
-        final CompoundTag data = target.getPersistentData();
+        final CompoundTag data = WarlockeryEntityData.get(target);
         final Optional<CompoundTag> existing = data.getCompound(ACTIVE_MARKERS);
         if (existing.isPresent() || !create) {
             return existing;

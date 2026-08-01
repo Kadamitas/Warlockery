@@ -2,12 +2,11 @@ package com.kadamitas.warlockery.client;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.entity.BroomEntity;
-import com.kadamitas.warlockery.network.ModNetwork;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.event.TickEvent;
 import org.lwjgl.glfw.GLFW;
 
 public final class BroomControls {
@@ -16,6 +15,7 @@ public final class BroomControls {
     );
     private static final KeyMapping GLIDE = new KeyMapping(
         "key.warlockery.broom_glide",
+        InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_LEFT_ALT,
         CATEGORY
     );
@@ -25,12 +25,11 @@ public final class BroomControls {
     private BroomControls() {
     }
 
-    public static void register(final RegisterKeyMappingsEvent event) {
-        event.register(GLIDE);
+    public static void register() {
+        KeyMappingHelper.registerKeyMapping(GLIDE);
     }
 
-    public static void tick(final TickEvent.ClientTickEvent.Post event) {
-        final Minecraft minecraft = Minecraft.getInstance();
+    public static void tick(final Minecraft minecraft) {
         if (minecraft.player == null || minecraft.getConnection() == null) {
             lastState = ControlState.IDLE;
             heartbeatTicks = 0;
@@ -50,7 +49,7 @@ public final class BroomControls {
             acceptingInput && GLIDE.isDown()
         );
         if (!state.equals(lastState) || ++heartbeatTicks >= 5) {
-            ModNetwork.requestBroomControl(state.strafe(), state.forward(), state.ascend(), state.gliding());
+            ModClientNetwork.requestBroomControl(state.strafe(), state.forward(), state.ascend(), state.gliding());
             lastState = state;
             heartbeatTicks = 0;
         }

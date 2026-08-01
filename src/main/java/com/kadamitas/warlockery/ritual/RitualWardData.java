@@ -24,7 +24,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
 
 public final class RitualWardData extends SavedData {
     private static final Codec<RitualWardData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -149,7 +149,7 @@ public final class RitualWardData extends SavedData {
         });
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         if (!(event.getEntity().level() instanceof ServerLevel level)
             || event.getAmount() <= 0.0F
             || event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {

@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:seer_stone_leaves_ordinary_divination_available",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

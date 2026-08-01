@@ -1,7 +1,5 @@
 package com.kadamitas.warlockery.client;
 
-import com.kadamitas.warlockery.network.ModNetwork;
-import com.kadamitas.warlockery.diagnostic.DiagnosticChecklist;
 import com.kadamitas.warlockery.ritual.RitualManager;
 import com.kadamitas.warlockery.ritual.RitualUiState;
 import java.util.List;
@@ -79,7 +77,7 @@ public final class RitualSelectionScreen extends Screen {
             rebuildWidgets();
         }).bounds(left + 8, top + 210, 28, 20).build()).active = page > 0;
         addRenderableWidget(Button.builder(Component.translatable("screen.warlockery.ritual.refresh"), button ->
-            ModNetwork.requestRefresh(center)
+            ModClientNetwork.requestRefresh(center)
         ).bounds(left + 42, top + 210, listWidth - 84, 20).build());
         addRenderableWidget(Button.builder(Component.literal("›"), button -> {
             page = Math.min(lastPage(), page + 1);
@@ -94,7 +92,7 @@ public final class RitualSelectionScreen extends Screen {
             button -> {
                 final RitualManager.RitualOption current = selected();
                 if (current != null && current.ready()) {
-                    ModNetwork.requestActivation(center, current.id());
+                    ModClientNetwork.requestActivation(center, current.id());
                 }
             }
         ).bounds(left + listWidth + 12, top + 210, panelWidth - listWidth - 20, 20).build());

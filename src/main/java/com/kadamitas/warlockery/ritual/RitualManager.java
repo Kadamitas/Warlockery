@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.ritual;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
 import com.kadamitas.warlockery.compat.jei.JeiRecipeRefreshSignal;
@@ -97,7 +98,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.ForgeEventFactory;
 import org.jspecify.annotations.Nullable;
 
 public final class RitualManager extends SimpleJsonResourceReloadListener<RitualDefinition> {
@@ -969,9 +969,6 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
     }
 
     private static void cureZombieVillager(final ServerLevel level, final ZombieVillager zombie) {
-        if (!ForgeEventFactory.canLivingConvert(zombie, EntityTypes.VILLAGER, _ -> { })) {
-            return;
-        }
         zombie.convertTo(EntityTypes.VILLAGER, ConversionParams.single(zombie, false, false), villager -> {
             villager.setVillagerDataFinalized(zombie.getVillagerDataFinalized());
             villager.setVillagerData(zombie.getVillagerData());
@@ -984,7 +981,6 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             );
             villager.refreshBrain(level);
             level.levelEvent(null, 1027, zombie.blockPosition(), 0);
-            ForgeEventFactory.onLivingConvert(zombie, villager);
         });
     }
 
@@ -1278,7 +1274,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         naamah.snapTo(nami.getX(), nami.getY(), nami.getZ());
         naamah.setYRot(nami.getYRot());
         if (caster instanceof ServerPlayer player) {
-            naamah.getPersistentData().putString(
+            WarlockeryEntityData.get(naamah).putString(
                 com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime.NAAMAH_TRIAL_OWNER,
                 player.getStringUUID()
             );
@@ -1510,7 +1506,6 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             if (caster instanceof ServerPlayer serverPlayer) {
                 lightning.setCause(serverPlayer);
             }
-            lightning.setDamage(5.0F + Math.max(0, definition.amplifier()) * 2.0F);
             lightning.snapTo(strike.x(), strike.y(), strike.z());
             level.addFreshEntity(lightning);
         }

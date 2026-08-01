@@ -12,13 +12,13 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
-public final class MinedrakeBulbItem extends BlockItem {
+public final class MinedrakeBulbItem extends BlockItem implements DroppedItemBehavior {
     public MinedrakeBulbItem(final Block block, final Properties properties) {
         super(block, properties);
     }
 
     @Override
-    public boolean onEntityItemUpdate(final ItemStack stack, final ItemEntity entity) {
+    public boolean tickDroppedItem(final ItemStack stack, final ItemEntity entity) {
         if (!(entity.level() instanceof ServerLevel level)
             || !MinedrakeCombatRules.bulbReady(entity.getAge(), stack.getCount(), true)) {
             return false;

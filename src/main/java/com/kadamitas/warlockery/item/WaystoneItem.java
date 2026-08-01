@@ -18,7 +18,7 @@ import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
-public final class WaystoneItem extends Item {
+public final class WaystoneItem extends Item implements DroppedItemBehavior {
     private final Kind kind;
 
     public WaystoneItem(final Properties properties, final Kind kind) {
@@ -31,7 +31,7 @@ public final class WaystoneItem extends Item {
     }
 
     @Override
-    public boolean onEntityItemUpdate(final ItemStack stack, final ItemEntity entity) {
+    public boolean tickDroppedItem(final ItemStack stack, final ItemEntity entity) {
         VeilWaystoneRuntime.tick(entity, kind);
         return false;
     }

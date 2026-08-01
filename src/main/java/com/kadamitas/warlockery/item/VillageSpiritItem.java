@@ -20,7 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Block;
 
-public final class VillageSpiritItem extends Item {
+public final class VillageSpiritItem extends Item implements DroppedItemBehavior {
     private static final String DIMENSION = "WarlockeryVillageDimension";
     private static final String POSITION = "WarlockeryVillagePosition";
     private final boolean vessel;
@@ -62,7 +62,7 @@ public final class VillageSpiritItem extends Item {
     }
 
     @Override
-    public boolean onEntityItemUpdate(final ItemStack stack, final ItemEntity entity) {
+    public boolean tickDroppedItem(final ItemStack stack, final ItemEntity entity) {
         if (vessel) {
             SpiritLocatorRuntime.tick(entity);
         }

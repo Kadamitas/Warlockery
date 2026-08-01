@@ -1,5 +1,7 @@
 package com.kadamitas.warlockery.magic;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
 import com.kadamitas.warlockery.util.DataParsing;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.entity.CreatureBehaviorState;
@@ -47,36 +49,17 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.Relative;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.level.BlockEvent;
 
 public final class MagicPathRuntime {
     private static final String GRAVE_OWNER = "WarlockeryGraveOwner";
     private static final String GRAVE_EXPIRATION = "WarlockeryGraveExpiration";
-    private static boolean registered;
 
     private MagicPathRuntime() {
     }
 
-    public static void registerEvents() {
-        if (registered) {
-            return;
-        }
-        registered = true;
-        TickEvent.PlayerTickEvent.Post.BUS.addListener(event -> tick(event.player()));
-        TickEvent.LevelTickEvent.Post.BUS.addListener(event -> {
-            if (event.level() instanceof ServerLevel level) {
-                MagicConstructData.get(level).tick(level);
-                ManifestationRuntime.tick(level);
-            }
-        });
-        LivingDamageEvent.BUS.addListener(MagicPathRuntime::handleDamage);
-        LivingDeathEvent.BUS.addListener(MagicPathRuntime::handleDeath);
-        PlayerEvent.Clone.BUS.addListener(MagicPathState::copyAfterClone);
-        BlockEvent.BreakEvent.BUS.addListener(ImpContractRuntime::handleBlockBreak);
+    public static void tickLevel(final ServerLevel level) {
+        MagicConstructData.get(level).tick(level);
+        ManifestationRuntime.tick(level);
     }
 
     public static void infuse(final List<? extends Player> players, final MagicPath path) {
@@ -187,7 +170,7 @@ public final class MagicPathRuntime {
         }
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         if (event.getEntity() instanceof ServerPlayer player
             && MagicPathState.has(player, MagicPath.INFERNAL)) {
             final InfernalPower power = MagicPathState.lastPower(player);
@@ -222,9 +205,8 @@ public final class MagicPathRuntime {
         }
     }
 
-    public static void handleDeath(final LivingDeathEvent event) {
-        final LivingEntity victim = event.getEntity();
-        final ServerPlayer killer = ownerFrom(event.getSource().getEntity()).orElse(null);
+    public static void handleDeath(final LivingEntity victim, final net.minecraft.world.damagesource.DamageSource source) {
+        final ServerPlayer killer = ownerFrom(source.getEntity()).orElse(null);
         if (killer != null
             && MagicPathState.has(killer, MagicPath.GRAVE)
             && isNourishing(victim)) {
@@ -242,7 +224,7 @@ public final class MagicPathRuntime {
         if (!(source instanceof Mob mob) || !(mob.level() instanceof ServerLevel level)) {
             return Optional.empty();
         }
-        return DataParsing.uuid(mob.getPersistentData().getStringOr(GRAVE_OWNER, ""))
+        return DataParsing.uuid(WarlockeryEntityData.get(mob).getStringOr(GRAVE_OWNER, ""))
             .map(level.getServer().getPlayerList()::getPlayer);
     }
 
@@ -288,12 +270,12 @@ public final class MagicPathRuntime {
         level.getEntitiesOfClass(
             Mob.class,
             player.getBoundingBox().inflate(48.0),
-            mob -> player.getStringUUID().equals(mob.getPersistentData().getStringOr(GRAVE_OWNER, ""))
+            mob -> player.getStringUUID().equals(WarlockeryEntityData.get(mob).getStringOr(GRAVE_OWNER, ""))
         ).forEach(thrall -> {
-            if (level.getGameTime() >= thrall.getPersistentData().getLongOr(GRAVE_EXPIRATION, 0L)
+            if (level.getGameTime() >= WarlockeryEntityData.get(thrall).getLongOr(GRAVE_EXPIRATION, 0L)
                 || !MagicPathState.has(player, MagicPath.GRAVE)) {
-                thrall.getPersistentData().remove(GRAVE_OWNER);
-                thrall.getPersistentData().remove(GRAVE_EXPIRATION);
+                WarlockeryEntityData.get(thrall).remove(GRAVE_OWNER);
+                WarlockeryEntityData.get(thrall).remove(GRAVE_EXPIRATION);
                 return;
             }
             if (thrall.getTarget() == player) {
@@ -356,7 +338,7 @@ public final class MagicPathRuntime {
         }
         final Mob mob = (Mob) target;
         final boolean owned = player.getStringUUID().equals(
-            mob.getPersistentData().getStringOr(InfernalPactEffects.OWNER_KEY, "")
+            WarlockeryEntityData.get(mob).getStringOr(InfernalPactEffects.OWNER_KEY, "")
         );
         if (secondary && owned) {
             final InfernalPower power = classifySacrifice(mob);
@@ -364,7 +346,7 @@ public final class MagicPathRuntime {
             MagicPathState.recharge(player, MagicPath.INFERNAL, 24);
             mob.discard();
         } else if (secondary) {
-            mob.getPersistentData().putString(InfernalPactEffects.OWNER_KEY, player.getStringUUID());
+            WarlockeryEntityData.get(mob).putString(InfernalPactEffects.OWNER_KEY, player.getStringUUID());
             mob.setTarget(null);
             mob.setPersistenceRequired();
         } else {
@@ -379,7 +361,7 @@ public final class MagicPathRuntime {
             Mob.class,
             player.getBoundingBox().inflate(32.0),
             mob -> player.getStringUUID().equals(
-                mob.getPersistentData().getStringOr(InfernalPactEffects.OWNER_KEY, "")
+                WarlockeryEntityData.get(mob).getStringOr(InfernalPactEffects.OWNER_KEY, "")
             )
         ).forEach(mob -> mob.setTarget(target));
     }
@@ -546,8 +528,8 @@ public final class MagicPathRuntime {
             return fail(player, MagicPath.GRAVE, decision);
         }
         final Mob mob = (Mob) target;
-        mob.getPersistentData().putString(GRAVE_OWNER, player.getStringUUID());
-        mob.getPersistentData().putLong(GRAVE_EXPIRATION, player.level().getGameTime() + 144_000L);
+        WarlockeryEntityData.get(mob).putString(GRAVE_OWNER, player.getStringUUID());
+        WarlockeryEntityData.get(mob).putLong(GRAVE_EXPIRATION, player.level().getGameTime() + 144_000L);
         mob.setTarget(null);
         mob.setPersistenceRequired();
         return succeed(player, MagicPath.GRAVE, decision);
@@ -661,7 +643,7 @@ public final class MagicPathRuntime {
         final List<Mob> owned = level.getEntitiesOfClass(
             Mob.class,
             player.getBoundingBox().inflate(32.0),
-            mob -> player.getStringUUID().equals(mob.getPersistentData().getStringOr(ownerKey, ""))
+            mob -> player.getStringUUID().equals(WarlockeryEntityData.get(mob).getStringOr(ownerKey, ""))
         );
         final MagicPathRules.Decision decision = decision(
             player,
@@ -984,7 +966,7 @@ public final class MagicPathRuntime {
         return succeed(player, MagicPath.SKY, decision);
     }
 
-    private static void cushionOverworldFall(final ServerPlayer player, final LivingDamageEvent event) {
+    private static void cushionOverworldFall(final ServerPlayer player, final LivingDamageContext event) {
         final BlockPos below = player.blockPosition().below();
         final ServerLevel level = (ServerLevel) player.level();
         if (!level.getBlockState(below).is(MagicCompatibilityTags.OVERWORLD_LANDING_BLOCKS)

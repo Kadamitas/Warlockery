@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:murderous_flock_spawns_targeted_hex_bats",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

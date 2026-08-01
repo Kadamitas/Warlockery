@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.magic;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -7,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import com.kadamitas.warlockery.fabric.event.PlayerCloneContext;
 
 public final class MagicPathState {
     private static final String ROOT = "WarlockeryMagicPaths";
@@ -23,14 +24,14 @@ public final class MagicPathState {
     }
 
     public static void grantPermanent(final Player player, final MagicPath path) {
-        final CompoundTag state = pathState(player.getPersistentData(), path, true).orElseThrow();
+        final CompoundTag state = pathState(WarlockeryEntityData.get(player), path, true).orElseThrow();
         state.putBoolean(PERMANENT, true);
         state.putInt(RESERVE, path.maximumReserve());
-        root(player.getPersistentData(), true).orElseThrow().putString(SELECTED, path.id());
+        root(WarlockeryEntityData.get(player), true).orElseThrow().putString(SELECTED, path.id());
     }
 
     public static void grantTimed(final Player player, final MagicPath path, final int durationTicks) {
-        final CompoundTag state = pathState(player.getPersistentData(), path, true).orElseThrow();
+        final CompoundTag state = pathState(WarlockeryEntityData.get(player), path, true).orElseThrow();
         final long expiration = player.level().getGameTime() + Math.max(1, durationTicks);
         state.putLong(EXPIRATION, Math.max(expiration, state.getLongOr(EXPIRATION, 0L)));
         if (!state.contains(RESERVE)) {
@@ -39,7 +40,7 @@ public final class MagicPathState {
     }
 
     public static boolean has(final Player player, final MagicPath path) {
-        return has(player.getPersistentData(), path, player.level().getGameTime());
+        return has(WarlockeryEntityData.get(player), path, player.level().getGameTime());
     }
 
     public static boolean has(final CompoundTag data, final MagicPath path, final long gameTime) {
@@ -50,7 +51,7 @@ public final class MagicPathState {
     }
 
     public static int reserve(final Player player, final MagicPath path) {
-        return pathState(player.getPersistentData(), path, false)
+        return pathState(WarlockeryEntityData.get(player), path, false)
             .map(state -> Math.clamp(state.getIntOr(RESERVE, 0), 0, path.maximumReserve()))
             .orElse(0);
     }
@@ -63,12 +64,12 @@ public final class MagicPathState {
         if (!has(player, path) || current < amount) {
             return false;
         }
-        pathState(player.getPersistentData(), path, true).orElseThrow().putInt(RESERVE, current - amount);
+        pathState(WarlockeryEntityData.get(player), path, true).orElseThrow().putInt(RESERVE, current - amount);
         return true;
     }
 
     public static int recharge(final Player player, final MagicPath path, final int amount) {
-        final CompoundTag state = pathState(player.getPersistentData(), path, true).orElseThrow();
+        final CompoundTag state = pathState(WarlockeryEntityData.get(player), path, true).orElseThrow();
         final int next = MagicPathRules.adjustedReserve(reserve(player, path), amount, path.maximumReserve());
         state.putInt(RESERVE, next);
         return next;
@@ -83,7 +84,7 @@ public final class MagicPathState {
         if (active.isEmpty()) {
             return Optional.empty();
         }
-        final String selected = root(player.getPersistentData(), false)
+        final String selected = root(WarlockeryEntityData.get(player), false)
             .map(tag -> tag.getStringOr(SELECTED, ""))
             .orElse("");
         return MagicPath.find(selected).filter(active::contains).or(() -> Optional.of(active.getFirst()));
@@ -96,29 +97,29 @@ public final class MagicPathState {
         }
         final MagicPath current = selected(player).orElse(active.getFirst());
         final MagicPath next = active.get((active.indexOf(current) + 1) % active.size());
-        root(player.getPersistentData(), true).orElseThrow().putString(SELECTED, next.id());
+        root(WarlockeryEntityData.get(player), true).orElseThrow().putString(SELECTED, next.id());
         return Optional.of(next);
     }
 
     public static void setLastPower(final Player player, final InfernalPower power) {
-        root(player.getPersistentData(), true).orElseThrow().putString(LAST_POWER, power.id());
+        root(WarlockeryEntityData.get(player), true).orElseThrow().putString(LAST_POWER, power.id());
     }
 
     public static InfernalPower lastPower(final Player player) {
-        final String id = root(player.getPersistentData(), false)
+        final String id = root(WarlockeryEntityData.get(player), false)
             .map(tag -> tag.getStringOr(LAST_POWER, InfernalPower.HEALING.id()))
             .orElse(InfernalPower.HEALING.id());
         return InfernalPower.find(id).orElse(InfernalPower.HEALING);
     }
 
     public static void setRecall(final Player player, final Identifier dimension, final BlockPos position) {
-        final CompoundTag root = root(player.getPersistentData(), true).orElseThrow();
+        final CompoundTag root = root(WarlockeryEntityData.get(player), true).orElseThrow();
         root.putString(RECALL_DIMENSION, dimension.toString());
         root.putLong(RECALL_POSITION, position.asLong());
     }
 
     public static Optional<Recall> recall(final Player player) {
-        return root(player.getPersistentData(), false).flatMap(root -> {
+        return root(WarlockeryEntityData.get(player), false).flatMap(root -> {
             final Identifier dimension = Identifier.tryParse(root.getStringOr(RECALL_DIMENSION, ""));
             if (dimension == null || !root.contains(RECALL_POSITION)) {
                 return Optional.empty();
@@ -127,12 +128,12 @@ public final class MagicPathState {
         });
     }
 
-    public static void copyAfterClone(final PlayerEvent.Clone event) {
+    public static void copyAfterClone(final PlayerCloneContext event) {
         if (event.isWasDeath()) {
             return;
         }
-        event.getOriginal().getPersistentData().getCompound(ROOT)
-            .ifPresent(state -> event.getEntity().getPersistentData().put(ROOT, state.copy()));
+        WarlockeryEntityData.get(event.getOriginal()).getCompound(ROOT)
+            .ifPresent(state -> WarlockeryEntityData.get(event.getEntity()).put(ROOT, state.copy()));
     }
 
     static Optional<CompoundTag> root(final CompoundTag data, final boolean create) {

@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.block;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.ritual.ManifestationRuntime;
 import com.kadamitas.warlockery.world.LegacyStructureRules;
 import java.util.Comparator;
@@ -167,8 +168,8 @@ public final class FetishRuntime {
         sentinel.setHomeTo(center, FetishRules.RADIUS);
         sentinel.setTarget(threats.getFirst());
         sentinel.setCustomName(Component.translatable("entity.warlockery.fetish_sentinel"));
-        sentinel.getPersistentData().putBoolean(SENTINEL, true);
-        sentinel.getPersistentData().putLong(EXPIRATION, level.getGameTime() + FetishRules.SENTINEL_LIFETIME);
+        WarlockeryEntityData.get(sentinel).putBoolean(SENTINEL, true);
+        WarlockeryEntityData.get(sentinel).putLong(EXPIRATION, level.getGameTime() + FetishRules.SENTINEL_LIFETIME);
         level.addFreshEntity(sentinel);
     }
 
@@ -176,7 +177,7 @@ public final class FetishRuntime {
         return level.getEntitiesOfClass(
             IronGolem.class,
             area,
-            entity -> entity.getPersistentData().getBooleanOr(SENTINEL, false)
+            entity -> WarlockeryEntityData.get(entity).getBooleanOr(SENTINEL, false)
         ).stream().findAny().isPresent();
     }
 
@@ -184,9 +185,9 @@ public final class FetishRuntime {
         level.getEntitiesOfClass(
             IronGolem.class,
             area,
-            entity -> entity.getPersistentData().getBooleanOr(SENTINEL, false)
+            entity -> WarlockeryEntityData.get(entity).getBooleanOr(SENTINEL, false)
         ).stream()
-            .filter(entity -> level.getGameTime() >= entity.getPersistentData().getLongOr(EXPIRATION, 0L))
+            .filter(entity -> level.getGameTime() >= WarlockeryEntityData.get(entity).getLongOr(EXPIRATION, 0L))
             .sorted(Comparator.comparingInt(IronGolem::getId))
             .forEach(IronGolem::discard);
     }

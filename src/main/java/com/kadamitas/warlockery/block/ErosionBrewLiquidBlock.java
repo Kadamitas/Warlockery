@@ -2,7 +2,6 @@ package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.brew.BrewMarkerKind;
 import com.kadamitas.warlockery.brew.BrewMarkerState;
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -17,7 +16,7 @@ import net.minecraft.world.level.material.FlowingFluid;
 
 public final class ErosionBrewLiquidBlock extends LiquidBlock {
     public ErosionBrewLiquidBlock(
-        final Supplier<? extends FlowingFluid> fluid,
+        final FlowingFluid fluid,
         final BlockBehaviour.Properties properties
     ) {
         super(fluid, properties);

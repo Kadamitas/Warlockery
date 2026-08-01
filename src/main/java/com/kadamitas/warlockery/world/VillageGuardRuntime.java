@@ -9,28 +9,23 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public final class VillageGuardRuntime {
     private VillageGuardRuntime() {
     }
 
-    public static void registerEvents() {
-        PlayerInteractEvent.EntityInteractSpecific.BUS.addListener(VillageGuardRuntime::handleInteract);
-    }
-
-    private static boolean handleInteract(final PlayerInteractEvent.EntityInteractSpecific event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)
-            || !(event.getTarget() instanceof Villager villager)
-            || !isCommissionableTarget(villager)) {
+    public static boolean handleInteract(final ServerPlayer player, final Entity target, final ItemStack heldItem) {
+        if (!(target instanceof Villager villager) || !isCommissionableTarget(villager)) {
             return false;
         }
         final boolean eligible = VillageGuardRules.canCommission(
             player.hasEffect(MobEffects.HERO_OF_THE_VILLAGE),
             player.level().isVillage(villager.blockPosition()),
             !villager.isBaby(),
-            event.getItemStack().is(Items.LEATHER_CHESTPLATE)
+            heldItem.is(Items.LEATHER_CHESTPLATE)
         );
         if (!eligible) {
             return false;
@@ -48,11 +43,10 @@ public final class VillageGuardRuntime {
         player.level().addFreshEntity(guard);
         villager.discard();
         if (!player.hasInfiniteMaterials()) {
-            event.getItemStack().shrink(1);
+            heldItem.shrink(1);
         }
         player.sendOverlayMessage(Component.translatable("message.warlockery.village.guard_commissioned")
             .withStyle(ChatFormatting.GREEN));
-        event.setCancellationResult(InteractionResult.SUCCESS);
         return true;
     }
 

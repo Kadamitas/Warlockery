@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.block;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.item.ResourceCompatibilityTags;
 import com.kadamitas.warlockery.item.SympatheticBinding;
 import com.kadamitas.warlockery.registry.ModItems;
@@ -46,8 +47,8 @@ public final class BloodPoppyBlock extends BushBlock {
     ) {
         entity.makeStuckInBlock(state, new Vec3(0.45, 0.8, 0.45));
         if (entity instanceof LivingEntity living && !level.isClientSide()) {
-            living.getPersistentData().putLong(SAMPLE_POSITION, pos.asLong());
-            living.getPersistentData().putLong(SAMPLE_TIME, level.getGameTime());
+            WarlockeryEntityData.get(living).putLong(SAMPLE_POSITION, pos.asLong());
+            WarlockeryEntityData.get(living).putLong(SAMPLE_TIME, level.getGameTime());
         }
     }
 
@@ -123,8 +124,8 @@ public final class BloodPoppyBlock extends BushBlock {
 
     private static Optional<LivingEntity> recentVictim(final ServerLevel level, final BlockPos pos) {
         return level.getEntitiesOfClass(LivingEntity.class, new AABB(pos).inflate(2.0), entity -> {
-            final long markedPosition = entity.getPersistentData().getLongOr(SAMPLE_POSITION, Long.MIN_VALUE);
-            final long markedTime = entity.getPersistentData().getLongOr(SAMPLE_TIME, -1L);
+            final long markedPosition = WarlockeryEntityData.get(entity).getLongOr(SAMPLE_POSITION, Long.MIN_VALUE);
+            final long markedTime = WarlockeryEntityData.get(entity).getLongOr(SAMPLE_TIME, -1L);
             return markedPosition == pos.asLong() && BloodPoppyRules.sampleIsFresh(level.getGameTime(), markedTime);
         }).stream().min(Comparator.comparingDouble(entity -> entity.distanceToSqr(Vec3.atCenterOf(pos))));
     }

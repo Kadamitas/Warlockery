@@ -1,82 +1,172 @@
 package com.kadamitas.warlockery.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import net.fabricmc.loader.api.FabricLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class WarlockeryConfig {
-    public static final ForgeConfigSpec SPEC;
+    private static final String FILE_NAME = "warlockery.json";
+    private static final String WORLD_EVENTS = "worldEvents";
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+    private static final Logger LOGGER = LoggerFactory.getLogger(WarlockeryConfig.class);
+    private static final Settings DEFAULTS = new Settings(
+        true,
+        200,
+        true,
+        2_400,
+        0.1D,
+        true,
+        1_200,
+        1.0D / 14.0D
+    );
 
-    private static final ForgeConfigSpec.BooleanValue ARM_PILLAGERS;
-    private static final ForgeConfigSpec.IntValue PILLAGER_SCAN_INTERVAL;
-    private static final ForgeConfigSpec.BooleanValue HOBGOBLIN_ENCLAVES;
-    private static final ForgeConfigSpec.IntValue HOBGOBLIN_ENCLAVE_INTERVAL;
-    private static final ForgeConfigSpec.DoubleValue HOBGOBLIN_ENCLAVE_CHANCE;
-    private static final ForgeConfigSpec.BooleanValue SILVER_HUNTS;
-    private static final ForgeConfigSpec.IntValue SILVER_HUNT_INTERVAL;
-    private static final ForgeConfigSpec.DoubleValue SILVER_HUNT_CHANCE;
-
-    static {
-        final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-        builder.push("worldEvents");
-        ARM_PILLAGERS = builder
-            .comment("Allows nearby pillagers to equip silver weapons when they encounter werewolves.")
-            .define("armPillagersAgainstWerewolves", true);
-        PILLAGER_SCAN_INTERVAL = builder
-            .comment("Ticks between checks for pillagers and werewolves near a player.")
-            .defineInRange("pillagerScanIntervalTicks", 200, 20, Integer.MAX_VALUE);
-        HOBGOBLIN_ENCLAVES = builder
-            .comment("Allows travelling hobgoblins to establish small wilderness huts.")
-            .define("enableHobgoblinEnclaves", true);
-        HOBGOBLIN_ENCLAVE_INTERVAL = builder
-            .comment("Ticks between attempts to found a hobgoblin enclave.")
-            .defineInRange("hobgoblinEnclaveAttemptIntervalTicks", 2_400, 20, Integer.MAX_VALUE);
-        HOBGOBLIN_ENCLAVE_CHANCE = builder
-            .comment("Chance from 0.0 to 1.0 for each eligible hobgoblin enclave attempt.")
-            .defineInRange("hobgoblinEnclaveChance", 0.1D, 0.0D, 1.0D);
-        SILVER_HUNTS = builder
-            .comment("Allows rare full-moon battles between werewolves and silver-equipped hunters.")
-            .define("enableSilverHunts", true);
-        SILVER_HUNT_INTERVAL = builder
-            .comment("Ticks between attempts to begin a full-moon silver hunt.")
-            .defineInRange("silverHuntAttemptIntervalTicks", 1_200, 20, Integer.MAX_VALUE);
-        SILVER_HUNT_CHANCE = builder
-            .comment("Chance from 0.0 to 1.0 for each eligible full-moon silver hunt attempt.")
-            .defineInRange("silverHuntChance", 1.0D / 14.0D, 0.0D, 1.0D);
-        builder.pop();
-        SPEC = builder.build();
-    }
+    private static volatile Settings settings = DEFAULTS;
 
     private WarlockeryConfig() {
     }
 
+    public static void initialize() {
+        reload();
+    }
+
+    public static synchronized void reload() {
+        final Path path = path();
+        try {
+            Files.createDirectories(path.getParent());
+            if (Files.notExists(path)) {
+                settings = DEFAULTS;
+                write(path, settings);
+                return;
+            }
+
+            final JsonObject root = GSON.fromJson(Files.readString(path, StandardCharsets.UTF_8), JsonObject.class);
+            settings = decode(root);
+        } catch (IOException | RuntimeException exception) {
+            settings = DEFAULTS;
+            LOGGER.warn("Could not load {}; using defaults", path, exception);
+        }
+    }
+
+    public static Path path() {
+        return FabricLoader.getInstance().getConfigDir().resolve(FILE_NAME);
+    }
+
     public static boolean armPillagers() {
-        return ARM_PILLAGERS.get();
+        return settings.armPillagers();
     }
 
     public static int pillagerScanInterval() {
-        return PILLAGER_SCAN_INTERVAL.get();
+        return settings.pillagerScanInterval();
     }
 
     public static boolean hobgoblinEnclaves() {
-        return HOBGOBLIN_ENCLAVES.get();
+        return settings.hobgoblinEnclaves();
     }
 
     public static int hobgoblinEnclaveInterval() {
-        return HOBGOBLIN_ENCLAVE_INTERVAL.get();
+        return settings.hobgoblinEnclaveInterval();
     }
 
     public static double hobgoblinEnclaveChance() {
-        return HOBGOBLIN_ENCLAVE_CHANCE.get();
+        return settings.hobgoblinEnclaveChance();
     }
 
     public static boolean silverHunts() {
-        return SILVER_HUNTS.get();
+        return settings.silverHunts();
     }
 
     public static int silverHuntInterval() {
-        return SILVER_HUNT_INTERVAL.get();
+        return settings.silverHuntInterval();
     }
 
     public static double silverHuntChance() {
-        return SILVER_HUNT_CHANCE.get();
+        return settings.silverHuntChance();
+    }
+
+    private static Settings decode(final JsonObject root) {
+        if (root == null) {
+            return DEFAULTS;
+        }
+        final JsonObject worldEvents = object(root, WORLD_EVENTS);
+        return new Settings(
+            booleanValue(worldEvents, "armPillagersAgainstWerewolves", DEFAULTS.armPillagers()),
+            rangedInt(worldEvents, "pillagerScanIntervalTicks", DEFAULTS.pillagerScanInterval(), 20),
+            booleanValue(worldEvents, "enableHobgoblinEnclaves", DEFAULTS.hobgoblinEnclaves()),
+            rangedInt(worldEvents, "hobgoblinEnclaveAttemptIntervalTicks", DEFAULTS.hobgoblinEnclaveInterval(), 20),
+            probability(worldEvents, "hobgoblinEnclaveChance", DEFAULTS.hobgoblinEnclaveChance()),
+            booleanValue(worldEvents, "enableSilverHunts", DEFAULTS.silverHunts()),
+            rangedInt(worldEvents, "silverHuntAttemptIntervalTicks", DEFAULTS.silverHuntInterval(), 20),
+            probability(worldEvents, "silverHuntChance", DEFAULTS.silverHuntChance())
+        );
+    }
+
+    private static JsonObject object(final JsonObject parent, final String key) {
+        return parent.has(key) && parent.get(key).isJsonObject() ? parent.getAsJsonObject(key) : new JsonObject();
+    }
+
+    private static boolean booleanValue(final JsonObject object, final String key, final boolean fallback) {
+        if (!object.has(key) || !(object.get(key) instanceof JsonPrimitive primitive) || !primitive.isBoolean()) {
+            return fallback;
+        }
+        return primitive.getAsBoolean();
+    }
+
+    private static int rangedInt(final JsonObject object, final String key, final int fallback, final int minimum) {
+        if (!object.has(key) || !(object.get(key) instanceof JsonPrimitive primitive) || !primitive.isNumber()) {
+            return fallback;
+        }
+        try {
+            return Math.max(minimum, primitive.getAsInt());
+        } catch (NumberFormatException exception) {
+            return fallback;
+        }
+    }
+
+    private static double probability(final JsonObject object, final String key, final double fallback) {
+        if (!object.has(key) || !(object.get(key) instanceof JsonPrimitive primitive) || !primitive.isNumber()) {
+            return fallback;
+        }
+        try {
+            final double value = primitive.getAsDouble();
+            return Double.isFinite(value) ? Math.clamp(value, 0.0D, 1.0D) : fallback;
+        } catch (NumberFormatException exception) {
+            return fallback;
+        }
+    }
+
+    private static void write(final Path path, final Settings value) throws IOException {
+        final JsonObject worldEvents = new JsonObject();
+        worldEvents.addProperty("armPillagersAgainstWerewolves", value.armPillagers());
+        worldEvents.addProperty("pillagerScanIntervalTicks", value.pillagerScanInterval());
+        worldEvents.addProperty("enableHobgoblinEnclaves", value.hobgoblinEnclaves());
+        worldEvents.addProperty("hobgoblinEnclaveAttemptIntervalTicks", value.hobgoblinEnclaveInterval());
+        worldEvents.addProperty("hobgoblinEnclaveChance", value.hobgoblinEnclaveChance());
+        worldEvents.addProperty("enableSilverHunts", value.silverHunts());
+        worldEvents.addProperty("silverHuntAttemptIntervalTicks", value.silverHuntInterval());
+        worldEvents.addProperty("silverHuntChance", value.silverHuntChance());
+
+        final JsonObject root = new JsonObject();
+        root.add(WORLD_EVENTS, worldEvents);
+        Files.writeString(path, GSON.toJson(root) + System.lineSeparator(), StandardCharsets.UTF_8);
+    }
+
+    private record Settings(
+        boolean armPillagers,
+        int pillagerScanInterval,
+        boolean hobgoblinEnclaves,
+        int hobgoblinEnclaveInterval,
+        double hobgoblinEnclaveChance,
+        boolean silverHunts,
+        int silverHuntInterval,
+        double silverHuntChance
+    ) {
     }
 }

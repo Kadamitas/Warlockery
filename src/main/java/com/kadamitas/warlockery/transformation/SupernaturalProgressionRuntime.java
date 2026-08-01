@@ -1,5 +1,10 @@
 package com.kadamitas.warlockery.transformation;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
+import com.kadamitas.warlockery.fabric.event.BlockBreakContext;
+import com.kadamitas.warlockery.fabric.event.BreakSpeedContext;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
+import com.kadamitas.warlockery.fabric.event.PlayerCloneContext;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.item.BloodGobletItem;
 import com.kadamitas.warlockery.item.BloodGobletState;
@@ -58,13 +63,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.level.BlockEvent;
 
 public final class SupernaturalProgressionRuntime {
     private static final String BLOOD_REMAINING = "WarlockeryBloodRemaining";
@@ -75,25 +73,8 @@ public final class SupernaturalProgressionRuntime {
     private static final String BAT_FORM_VISUAL = "WarlockeryBatFormVisual";
     private static final SupernaturalProgression.Path VAMPIRE = SupernaturalProgression.Path.VAMPIRE;
     private static final SupernaturalProgression.Path WEREWOLF = SupernaturalProgression.Path.WEREWOLF;
-    private static boolean registered;
 
     private SupernaturalProgressionRuntime() {
-    }
-
-    public static void registerEvents() {
-        if (registered) {
-            return;
-        }
-        registered = true;
-        TickEvent.PlayerTickEvent.Post.BUS.addListener(event -> tick(event.player()));
-        LivingDamageEvent.BUS.addListener(SupernaturalState::handleDamage);
-        LivingDamageEvent.BUS.addListener(SupernaturalProgressionRuntime::handleDamage);
-        LivingHurtEvent.BUS.addListener(SupernaturalProgressionRuntime::handleHurt);
-        LivingDeathEvent.BUS.addListener(SupernaturalProgressionRuntime::handleDeath);
-        PlayerInteractEvent.EntityInteractSpecific.BUS.addListener(SupernaturalProgressionRuntime::handleInteract);
-        PlayerEvent.BreakSpeed.BUS.addListener(SupernaturalProgressionRuntime::handleBreakSpeed);
-        BlockEvent.BreakEvent.BUS.addListener(SupernaturalProgressionRuntime::handleBlockBreak);
-        PlayerEvent.Clone.BUS.addListener(SupernaturalProgressionRuntime::copyAfterClone);
     }
 
     public static void cyclePower(final ServerPlayer player) {
@@ -240,8 +221,8 @@ public final class SupernaturalProgressionRuntime {
             return false;
         }
         if (target instanceof Villager villager) {
-            if (!villager.getPersistentData().getBooleanOr("WarlockeryCreationTargetDrained", false)
-                || !creator.getStringUUID().equals(villager.getPersistentData().getStringOr(MESMERIZED_BY, ""))) {
+            if (!WarlockeryEntityData.get(villager).getBooleanOr("WarlockeryCreationTargetDrained", false)
+                || !creator.getStringUUID().equals(WarlockeryEntityData.get(villager).getStringOr(MESMERIZED_BY, ""))) {
                 return false;
             }
             final Entity converted = ModEntities.ALL.get("vampire").get().create(
@@ -262,8 +243,8 @@ public final class SupernaturalProgressionRuntime {
         } else if (target instanceof Player targetPlayer
             && targetPlayer.isShiftKeyDown()
             && SupernaturalState.getForm(targetPlayer) == SupernaturalForm.NONE
-            && targetPlayer.getPersistentData().getBooleanOr("WarlockeryCreationTargetDrained", false)
-            && creator.getStringUUID().equals(targetPlayer.getPersistentData().getStringOr(MESMERIZED_BY, ""))) {
+            && WarlockeryEntityData.get(targetPlayer).getBooleanOr("WarlockeryCreationTargetDrained", false)
+            && creator.getStringUUID().equals(WarlockeryEntityData.get(targetPlayer).getStringOr(MESMERIZED_BY, ""))) {
             SupernaturalAdvancement.beginVampire(targetPlayer);
         } else {
             return false;
@@ -390,7 +371,7 @@ public final class SupernaturalProgressionRuntime {
         );
     }
 
-    private static void tick(final Player player) {
+    public static void tick(final Player player) {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
@@ -504,15 +485,17 @@ public final class SupernaturalProgressionRuntime {
         }
     }
 
-    private static void handleInteract(final PlayerInteractEvent.EntityInteractSpecific event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)
-            || !(event.getTarget() instanceof LivingEntity target)
-            || !event.getItemStack().isEmpty()) {
-            return;
+    public static boolean handleInteract(
+        final ServerPlayer player,
+        final net.minecraft.world.entity.Entity targetEntity,
+        final ItemStack heldItem
+    ) {
+        if (!(targetEntity instanceof LivingEntity target) || !heldItem.isEmpty()) {
+            return false;
         }
         if (SupernaturalState.getForm(player) == SupernaturalForm.VAMPIRE && player.isShiftKeyDown()) {
             drinkBlood(player, target);
-            return;
+            return true;
         }
         final int level = SupernaturalProgression.level(player, WEREWOLF);
         if (SupernaturalState.getForm(player) == SupernaturalForm.WEREWOLF
@@ -531,7 +514,9 @@ public final class SupernaturalProgressionRuntime {
                 wolf.setPersistentAngerTarget(net.minecraft.world.entity.EntityReference.of(player.getUUID()));
             }
             sync(player);
+            return true;
         }
+        return false;
     }
 
     private static void drinkBlood(final ServerPlayer player, final LivingEntity target) {
@@ -546,7 +531,7 @@ public final class SupernaturalProgressionRuntime {
         }
         final boolean human = target instanceof Player || target instanceof Villager;
         final int maximum = human ? 500 : 100;
-        final int remaining = target.getPersistentData().getIntOr(BLOOD_REMAINING, maximum);
+        final int remaining = WarlockeryEntityData.get(target).getIntOr(BLOOD_REMAINING, maximum);
         if (remaining <= 0) {
             show(player, "message.warlockery.vampire_progression.target_drained", ChatFormatting.RED);
             return;
@@ -560,7 +545,7 @@ public final class SupernaturalProgressionRuntime {
             remaining,
             SupernaturalAbilityRules.bloodSipAmount(human ? 10 : 2, batSwarmForm)
         );
-        target.getPersistentData().putInt(BLOOD_REMAINING, remaining - amount);
+        WarlockeryEntityData.get(target).putInt(BLOOD_REMAINING, remaining - amount);
         SupernaturalProgression.addResource(player, VAMPIRE, amount);
         player.getFoodData().eat(Math.max(1, amount / 5), 0.5F);
         if (target.getHealth() > 1.0F) {
@@ -583,7 +568,7 @@ public final class SupernaturalProgressionRuntime {
             }
         }
         if (SupernaturalProgression.level(player, VAMPIRE) == 9 && remaining - amount == 0) {
-            target.getPersistentData().putBoolean("WarlockeryCreationTargetDrained", true);
+            WarlockeryEntityData.get(target).putBoolean("WarlockeryCreationTargetDrained", true);
         }
         if (SupernaturalProgression.level(player, VAMPIRE) == 1) {
             SupernaturalAdvancement.recordVampireValue(
@@ -601,7 +586,7 @@ public final class SupernaturalProgressionRuntime {
         sync(player);
     }
 
-    private static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         if (event.getSource().getEntity() instanceof ServerPlayer attacker) {
             final SupernaturalForm form = SupernaturalState.getForm(attacker);
             final int level = SupernaturalProgression.Path.forForm(form)
@@ -645,7 +630,7 @@ public final class SupernaturalProgressionRuntime {
         }
     }
 
-    private static void handleHurt(final LivingHurtEvent event) {
+    public static void handleHurt(final LivingDamageContext event) {
         if (!(event.getSource().getEntity() instanceof ServerPlayer attacker)
             || event.getSource().getDirectEntity() != attacker
             || SupernaturalState.getForm(attacker) != SupernaturalForm.WEREWOLF) {
@@ -671,11 +656,13 @@ public final class SupernaturalProgressionRuntime {
         event.setAmount((float) piercingDamage);
     }
 
-    private static void handleDeath(final LivingDeathEvent event) {
-        if (!(event.getSource().getEntity() instanceof ServerPlayer killer)) {
+    public static void handleDeath(
+        final LivingEntity victim,
+        final net.minecraft.world.damagesource.DamageSource source
+    ) {
+        if (!(source.getEntity() instanceof ServerPlayer killer)) {
             return;
         }
-        final LivingEntity victim = event.getEntity();
         if (SupernaturalState.getForm(killer) == SupernaturalForm.VAMPIRE) {
             final int level = SupernaturalProgression.level(killer, VAMPIRE);
             if (level == 5 && victim instanceof Blaze) {
@@ -726,7 +713,7 @@ public final class SupernaturalProgressionRuntime {
         sync(killer);
     }
 
-    private static void handleBreakSpeed(final PlayerEvent.BreakSpeed event) {
+    public static void handleBreakSpeed(final BreakSpeedContext event) {
         final Player player = event.getEntity();
         if (SupernaturalState.getForm(player) != SupernaturalForm.WEREWOLF
             || SupernaturalProgression.level(player, WEREWOLF) < 3
@@ -740,7 +727,7 @@ public final class SupernaturalProgressionRuntime {
         }
     }
 
-    private static void handleBlockBreak(final BlockEvent.BreakEvent event) {
+    public static void handleBlockBreak(final BlockBreakContext event) {
         final Player player = event.getPlayer();
         if (!(player instanceof ServerPlayer serverPlayer)
             || SupernaturalState.getForm(player) != SupernaturalForm.WEREWOLF
@@ -788,7 +775,7 @@ public final class SupernaturalProgressionRuntime {
         target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, duration, mesmerize ? 6 : 4));
         target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, duration, 2));
         if (mesmerize) {
-            target.getPersistentData().putString(MESMERIZED_BY, player.getStringUUID());
+            WarlockeryEntityData.get(target).putString(MESMERIZED_BY, player.getStringUUID());
             if (target instanceof Villager villager) {
                 villager.getNavigation().moveTo(player, 1.1);
             }
@@ -831,8 +818,8 @@ public final class SupernaturalProgressionRuntime {
         player.level().getEntities(
             player,
             player.getBoundingBox().inflate(96.0),
-            entity -> player.getStringUUID().equals(entity.getPersistentData().getStringOr(SUMMON_OWNER, ""))
-                && entity.getPersistentData().getBooleanOr(BAT_FORM_VISUAL, false)
+            entity -> player.getStringUUID().equals(WarlockeryEntityData.get(entity).getStringOr(SUMMON_OWNER, ""))
+                && WarlockeryEntityData.get(entity).getBooleanOr(BAT_FORM_VISUAL, false)
         ).forEach(Entity::discard);
         SupernaturalProgression.setValue(player, VAMPIRE, "bat_previous_mayfly",
             player.getAbilities().mayfly ? 1L : 0L);
@@ -936,8 +923,8 @@ public final class SupernaturalProgressionRuntime {
             }
             wolf.setPos(player.getX() + index - 1.0, player.getY(), player.getZ() + 1.0);
             wolf.tame(player);
-            wolf.getPersistentData().putString(SUMMON_OWNER, player.getStringUUID());
-            wolf.getPersistentData().putLong(SUMMON_EXPIRES, player.level().getGameTime() + 200L);
+            WarlockeryEntityData.get(wolf).putString(SUMMON_OWNER, player.getStringUUID());
+            WarlockeryEntityData.get(wolf).putLong(SUMMON_EXPIRES, player.level().getGameTime() + 200L);
             player.level().addFreshEntity(wolf);
         }
         howlParticles(player);
@@ -978,8 +965,8 @@ public final class SupernaturalProgressionRuntime {
                 player.getAbilities().flying = true;
                 player.onUpdateAbilities();
             }
-            if (player.getForcedPose() == null) {
-                player.setForcedPose(Pose.SWIMMING);
+            if (player.getPose() != Pose.SWIMMING) {
+                player.setPose(Pose.SWIMMING);
                 SupernaturalProgression.setValue(player, VAMPIRE, "bat_pose_active", 1L);
             }
             if (player.tickCount % 40 == 0 && !SupernaturalProgression.spend(player, VAMPIRE, 1)) {
@@ -999,8 +986,8 @@ public final class SupernaturalProgressionRuntime {
         }
         player.onUpdateAbilities();
         if (SupernaturalProgression.value(player, VAMPIRE, "bat_pose_active") == 1L) {
-            if (player.getForcedPose() == Pose.SWIMMING) {
-                player.setForcedPose(null);
+            if (player.getPose() == Pose.SWIMMING && !player.isInWater()) {
+                player.setPose(Pose.STANDING);
             }
             SupernaturalProgression.setValue(player, VAMPIRE, "bat_pose_active", 0L);
         }
@@ -1010,7 +997,7 @@ public final class SupernaturalProgressionRuntime {
         final List<Entity> summons = player.level().getEntities(
             player,
             player.getBoundingBox().inflate(96.0),
-            entity -> player.getStringUUID().equals(entity.getPersistentData().getStringOr(SUMMON_OWNER, ""))
+            entity -> player.getStringUUID().equals(WarlockeryEntityData.get(entity).getStringOr(SUMMON_OWNER, ""))
         );
         if (summons.isEmpty()) {
             return;
@@ -1019,7 +1006,7 @@ public final class SupernaturalProgressionRuntime {
             .filter(target -> target != player
                 && target.isAlive()
                 && !player.getStringUUID().equals(
-                    target.getPersistentData().getStringOr(SUMMON_OWNER, "")
+                    WarlockeryEntityData.get(target).getStringOr(SUMMON_OWNER, "")
                 ))
             .orElse(null);
         final LivingEntity retaliationTarget = player.getLastHurtMob() != null
@@ -1034,10 +1021,10 @@ public final class SupernaturalProgressionRuntime {
             case NONE -> null;
         };
         summons.forEach(entity -> {
-            if (entity.getPersistentData().getLongOr(SUMMON_EXPIRES, 0L) <= player.level().getGameTime()) {
+            if (WarlockeryEntityData.get(entity).getLongOr(SUMMON_EXPIRES, 0L) <= player.level().getGameTime()) {
                 entity.discard();
             } else if (entity instanceof Bat bat
-                && entity.getPersistentData().getBooleanOr(BAT_FORM_VISUAL, false)) {
+                && WarlockeryEntityData.get(entity).getBooleanOr(BAT_FORM_VISUAL, false)) {
                 if (SupernaturalAbilityRules.batSwarmFormActive(
                     SupernaturalProgression.level(player, VAMPIRE),
                     SupernaturalProgression.batSwarmUntil(player),
@@ -1072,9 +1059,9 @@ public final class SupernaturalProgressionRuntime {
             player.getY() + 1.0 + player.getRandom().nextDouble() * Math.max(1.0, radius),
             player.getZ() + player.getRandom().nextDouble() * radius * 2.0 - radius
         );
-        bat.getPersistentData().putString(SUMMON_OWNER, player.getStringUUID());
-        bat.getPersistentData().putLong(SUMMON_EXPIRES, player.level().getGameTime() + lifetime);
-        bat.getPersistentData().putBoolean(BAT_FORM_VISUAL, formVisual);
+        WarlockeryEntityData.get(bat).putString(SUMMON_OWNER, player.getStringUUID());
+        WarlockeryEntityData.get(bat).putLong(SUMMON_EXPIRES, player.level().getGameTime() + lifetime);
+        WarlockeryEntityData.get(bat).putBoolean(BAT_FORM_VISUAL, formVisual);
         player.level().addFreshEntity(bat);
     }
 
@@ -1114,7 +1101,7 @@ public final class SupernaturalProgressionRuntime {
         player.level().getEntitiesOfClass(
             Villager.class,
             player.getBoundingBox().inflate(32.0),
-            villager -> player.getStringUUID().equals(villager.getPersistentData().getStringOr(MESMERIZED_BY, ""))
+            villager -> player.getStringUUID().equals(WarlockeryEntityData.get(villager).getStringOr(MESMERIZED_BY, ""))
         ).forEach(villager -> {
             if (villager.distanceToSqr(player) > 6.0) {
                 villager.getNavigation().moveTo(player, 1.1);
@@ -1193,7 +1180,7 @@ public final class SupernaturalProgressionRuntime {
         if (target instanceof Player player) {
             SupernaturalAdvancement.beginWerewolf(player);
         } else if (target instanceof Villager) {
-            target.getPersistentData().putBoolean("WarlockeryLycanthropy", true);
+            WarlockeryEntityData.get(target).putBoolean("WarlockeryLycanthropy", true);
             target.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 12_000, 1));
             target.addEffect(new MobEffectInstance(MobEffects.SPEED, 12_000, 1));
         }
@@ -1270,7 +1257,7 @@ public final class SupernaturalProgressionRuntime {
         );
     }
 
-    private static void copyAfterClone(final PlayerEvent.Clone event) {
+    public static void copyAfterClone(final PlayerCloneContext event) {
         SupernaturalState.copyAfterClone(event);
         if (event.isWasDeath()
             && SupernaturalState.getForm(event.getEntity()) == SupernaturalForm.VAMPIRE

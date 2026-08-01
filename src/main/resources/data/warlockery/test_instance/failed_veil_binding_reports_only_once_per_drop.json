@@ -2,7 +2,7 @@
   "type": "minecraft:function",
   "function": "warlockery:failed_veil_binding_reports_only_once_per_drop",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 160,
   "padding": 16
 }

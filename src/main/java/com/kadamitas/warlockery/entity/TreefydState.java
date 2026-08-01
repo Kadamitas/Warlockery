@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.item.SympatheticBinding;
 import java.util.UUID;
 import net.minecraft.world.entity.Entity;
@@ -22,8 +23,8 @@ public final class TreefydState {
         if (empty < 0) {
             return false;
         }
-        treefyd.getPersistentData().putString(key(empty, "Uuid"), binding.targetId().toString());
-        treefyd.getPersistentData().putString(key(empty, "Name"), binding.targetName());
+        WarlockeryEntityData.get(treefyd).putString(key(empty, "Uuid"), binding.targetId().toString());
+        WarlockeryEntityData.get(treefyd).putString(key(empty, "Name"), binding.targetName());
         return true;
     }
 
@@ -33,18 +34,18 @@ public final class TreefydState {
 
     public static boolean toggleWandering(final Entity treefyd) {
         final boolean next = !wandering(treefyd);
-        treefyd.getPersistentData().putBoolean(WANDERING, next);
+        WarlockeryEntityData.get(treefyd).putBoolean(WANDERING, next);
         return next;
     }
 
     public static boolean wandering(final Entity treefyd) {
-        return !treefyd.getPersistentData().contains(WANDERING)
-            || treefyd.getPersistentData().getBooleanOr(WANDERING, true);
+        return !WarlockeryEntityData.get(treefyd).contains(WANDERING)
+            || WarlockeryEntityData.get(treefyd).getBooleanOr(WANDERING, true);
     }
 
     private static int indexOf(final Entity treefyd, final UUID target) {
         for (int index = 0; index < MAX_ALLOWLIST; index++) {
-            if (target.toString().equals(treefyd.getPersistentData().getStringOr(key(index, "Uuid"), ""))) {
+            if (target.toString().equals(WarlockeryEntityData.get(treefyd).getStringOr(key(index, "Uuid"), ""))) {
                 return index;
             }
         }
@@ -53,7 +54,7 @@ public final class TreefydState {
 
     private static int firstEmpty(final Entity treefyd) {
         for (int index = 0; index < MAX_ALLOWLIST; index++) {
-            if (treefyd.getPersistentData().getStringOr(key(index, "Uuid"), "").isBlank()) {
+            if (WarlockeryEntityData.get(treefyd).getStringOr(key(index, "Uuid"), "").isBlank()) {
                 return index;
             }
         }
@@ -63,14 +64,14 @@ public final class TreefydState {
     private static void compact(final Entity treefyd) {
         int write = 0;
         for (int read = 0; read < MAX_ALLOWLIST; read++) {
-            final String uuid = treefyd.getPersistentData().getStringOr(key(read, "Uuid"), "");
+            final String uuid = WarlockeryEntityData.get(treefyd).getStringOr(key(read, "Uuid"), "");
             if (uuid.isBlank()) {
                 continue;
             }
-            final String name = treefyd.getPersistentData().getStringOr(key(read, "Name"), "?");
+            final String name = WarlockeryEntityData.get(treefyd).getStringOr(key(read, "Name"), "?");
             if (write != read) {
-                treefyd.getPersistentData().putString(key(write, "Uuid"), uuid);
-                treefyd.getPersistentData().putString(key(write, "Name"), name);
+                WarlockeryEntityData.get(treefyd).putString(key(write, "Uuid"), uuid);
+                WarlockeryEntityData.get(treefyd).putString(key(write, "Name"), name);
                 clearSlot(treefyd, read);
             }
             write++;
@@ -78,8 +79,8 @@ public final class TreefydState {
     }
 
     private static void clearSlot(final Entity treefyd, final int index) {
-        treefyd.getPersistentData().remove(key(index, "Uuid"));
-        treefyd.getPersistentData().remove(key(index, "Name"));
+        WarlockeryEntityData.get(treefyd).remove(key(index, "Uuid"));
+        WarlockeryEntityData.get(treefyd).remove(key(index, "Name"));
     }
 
     private static String key(final int index, final String suffix) {

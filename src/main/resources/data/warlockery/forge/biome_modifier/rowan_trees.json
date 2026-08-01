@@ -1,8 +1,0 @@
-{
-  "type": "forge:add_features",
-  "biomes": "#warlockery:has_rowan_trees",
-  "features": [
-    "warlockery:rowan_tree"
-  ],
-  "step": "vegetal_decoration"
-}

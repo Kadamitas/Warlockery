@@ -33,7 +33,9 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -59,13 +61,9 @@ import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 public final class ModItems {
-    public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, Warlockery.MOD_ID);
-    private static final Map<String, RegistryObject<Item>> MUTABLE_ITEMS = new LinkedHashMap<>();
+    private static final Map<String, RegistrationHandle<Item>> MUTABLE_ITEMS = new LinkedHashMap<>();
     private static final Set<String> SINGLE_STACK_ITEMS = Set.of(
         "ritual_knife", "boline", "canesword", "coffin", "deathscowl", "deathshand", "divinerlava", "divinerwater",
         "replication_staff", "hornofthehunt", "thorn_spear", "delvealloypickaxe", "mirror", "mysticbranch",
@@ -139,7 +137,7 @@ public final class ModItems {
         ItemFactoryRule.exact("ingredient_bolt_splitting", (_, properties) -> new SplittingBoltItem(properties))
     );
 
-    public static final Map<String, RegistryObject<Item>> ALL;
+    public static final Map<String, RegistrationHandle<Item>> ALL;
 
     static {
         ModBlocks.ALL.forEach((id, block) -> {
@@ -214,16 +212,18 @@ public final class ModItems {
     }
 
     private static void register(final String id, final java.util.function.Supplier<? extends Item> factory) {
-        MUTABLE_ITEMS.put(id, REGISTRY.register(id, factory));
+        MUTABLE_ITEMS.put(id, RegistrationHandle.create(id, factory));
     }
 
-    public static void registerSpawnEggs(final Map<String, RegistryObject<? extends net.minecraft.world.entity.EntityType<?>>> entityTypes) {
+    public static void registerSpawnEggs(
+        final Map<String, RegistrationHandle<? extends net.minecraft.world.entity.EntityType<?>>> entityTypes
+    ) {
         entityTypes.forEach((id, type) -> register(id + "_spawn_egg",
-            () -> new SpawnEggItem(new Item.Properties().setId(REGISTRY.key(id + "_spawn_egg")).spawnEgg(type.get()))));
+            () -> new SpawnEggItem(new Item.Properties().setId(itemKey(id + "_spawn_egg")).spawnEgg(type.get()))));
     }
 
     private static Item.Properties properties(final String id) {
-        Item.Properties properties = new Item.Properties().setId(REGISTRY.key(id));
+        Item.Properties properties = new Item.Properties().setId(itemKey(id));
         if ("sympathetic_vial".equals(id)) {
             properties = properties.component(DataComponents.LORE, new ItemLore(java.util.List.of(
                 net.minecraft.network.chat.Component.translatable("tooltip.warlockery.sympathetic_vial.empty")
@@ -241,6 +241,14 @@ public final class ModItems {
         properties = applyFoodProperties(id, properties);
         properties = applyBrewProperties(id, properties);
         return SINGLE_STACK_ITEMS.contains(id) ? properties.stacksTo(1) : properties;
+    }
+
+    private static ResourceKey<Item> itemKey(final String id) {
+        return ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, id));
+    }
+
+    public static void register() {
+        ALL.values().forEach(handle -> handle.register(BuiltInRegistries.ITEM));
     }
 
     private static Item.Properties applyEquipmentProperties(final String id, final Item.Properties properties) {

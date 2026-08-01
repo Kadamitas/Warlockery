@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:hunger_guard_restores_hunger_and_saturation","environment":"minecraft:default","structure":"forge:empty3x3x3","max_ticks":100}
+{"type":"minecraft:function","function":"warlockery:hunger_guard_restores_hunger_and_saturation","environment":"minecraft:default","structure":"fabric-gametest-api-v1:empty","max_ticks":100}

@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalProgression;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
@@ -24,7 +25,7 @@ public final class NaamahEntity extends ArcaneMob {
     public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
         if (amount >= getHealth()
             && source.getEntity() instanceof ServerPlayer player
-            && player.getStringUUID().equals(getPersistentData().getStringOr(
+            && player.getStringUUID().equals(WarlockeryEntityData.get(this).getStringOr(
                 SupernaturalProgressionRuntime.NAAMAH_TRIAL_OWNER,
                 ""
             ))

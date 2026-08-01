@@ -25,7 +25,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
 
 public final class ParasyticLouseItem extends Item {
     private static final String EFFECT = "WarlockeryLouseEffect";
@@ -95,7 +95,7 @@ public final class ParasyticLouseItem extends Item {
         )));
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         if (!(event.getEntity() instanceof Player player) || player.level().isClientSide()) {
             return;
         }

@@ -1,8 +1,0 @@
-{
-  "type": "forge:add_features",
-  "biomes": "#warlockery:has_alder_trees",
-  "features": [
-    "warlockery:alder_tree"
-  ],
-  "step": "vegetal_decoration"
-}

@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.dream;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +9,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ItemStackWithSlot;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import com.kadamitas.warlockery.fabric.event.PlayerCloneContext;
 
 public final class SpiritManifestationState {
     private static final String ROOT = "WarlockerySpiritManifestation";
@@ -33,23 +34,23 @@ public final class SpiritManifestationState {
             root.getLongOr(EXPIRATION, 0L),
             expiration
         ));
-        player.getPersistentData().put(ROOT, root);
+        WarlockeryEntityData.get(player).put(ROOT, root);
     }
 
     public static boolean granted(final ServerPlayer player, final long serverTick) {
-        return player.getPersistentData().getCompound(ROOT)
+        return WarlockeryEntityData.get(player).getCompound(ROOT)
             .map(root -> !SpiritManifestationRules.expired(serverTick, root.getLongOr(EXPIRATION, 0L)))
             .orElse(false);
     }
 
     public static long expiration(final ServerPlayer player) {
-        return player.getPersistentData().getCompound(ROOT)
+        return WarlockeryEntityData.get(player).getCompound(ROOT)
             .map(root -> root.getLongOr(EXPIRATION, 0L))
             .orElse(0L);
     }
 
     public static boolean active(final ServerPlayer player) {
-        return player.getPersistentData().getCompound(ROOT)
+        return WarlockeryEntityData.get(player).getCompound(ROOT)
             .map(root -> root.getBooleanOr(ACTIVE, false))
             .orElse(false);
     }
@@ -80,11 +81,11 @@ public final class SpiritManifestationState {
             player.registryAccess().createSerializationContext(NbtOps.INSTANCE),
             List.copyOf(storedInventory)
         );
-        player.getPersistentData().put(ROOT, root);
+        WarlockeryEntityData.get(player).put(ROOT, root);
     }
 
     public static Optional<ActiveManifestation> read(final ServerPlayer player) {
-        return player.getPersistentData().getCompound(ROOT).flatMap(root -> {
+        return WarlockeryEntityData.get(player).getCompound(ROOT).flatMap(root -> {
             if (!root.getBooleanOr(ACTIVE, false)) {
                 return Optional.empty();
             }
@@ -112,7 +113,7 @@ public final class SpiritManifestationState {
     }
 
     public static void finish(final ServerPlayer player) {
-        player.getPersistentData().getCompound(ROOT).ifPresent(root -> {
+        WarlockeryEntityData.get(player).getCompound(ROOT).ifPresent(root -> {
             root.putBoolean(ACTIVE, false);
             root.remove(RETURN_DIMENSION);
             root.remove(RETURN_X);
@@ -122,21 +123,21 @@ public final class SpiritManifestationState {
             root.remove(RETURN_PITCH);
             root.remove(STORED_INVENTORY);
             root.remove(SELECTED_SLOT);
-            player.getPersistentData().put(ROOT, root);
+            WarlockeryEntityData.get(player).put(ROOT, root);
         });
     }
 
     public static void clear(final ServerPlayer player) {
-        player.getPersistentData().remove(ROOT);
+        WarlockeryEntityData.get(player).remove(ROOT);
     }
 
-    public static void copyAfterClone(final PlayerEvent.Clone event) {
-        event.getOriginal().getPersistentData().getCompound(ROOT)
-            .ifPresent(root -> event.getEntity().getPersistentData().put(ROOT, root.copy()));
+    public static void copyAfterClone(final PlayerCloneContext event) {
+        WarlockeryEntityData.get(event.getOriginal()).getCompound(ROOT)
+            .ifPresent(root -> WarlockeryEntityData.get(event.getEntity()).put(ROOT, root.copy()));
     }
 
     private static CompoundTag root(final ServerPlayer player) {
-        return player.getPersistentData().getCompound(ROOT).map(CompoundTag::copy).orElseGet(CompoundTag::new);
+        return WarlockeryEntityData.get(player).getCompound(ROOT).map(CompoundTag::copy).orElseGet(CompoundTag::new);
     }
 
     public record ActiveManifestation(

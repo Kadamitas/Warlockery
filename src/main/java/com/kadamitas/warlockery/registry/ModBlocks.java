@@ -25,19 +25,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DragonEggBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 public final class ModBlocks {
-    public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, Warlockery.MOD_ID);
-    private static final Map<String, RegistryObject<Block>> MUTABLE_BLOCKS = new LinkedHashMap<>();
+    private static final Map<String, RegistrationHandle<Block>> MUTABLE_BLOCKS = new LinkedHashMap<>();
     private static final FactoryCatalog<BlockBehaviour.Properties, Block> FIXED_FACTORIES = new FactoryCatalog<>(
         "block",
         Map.ofEntries(
@@ -46,19 +46,19 @@ public final class ModBlocks {
             FactoryCatalog.entry("filteredfumefunnel", properties -> new FumeFunnelBlock(properties.noOcclusion())),
             FactoryCatalog.entry("wolftrap", properties -> new WolfTrapBlock(properties.noOcclusion())),
             FactoryCatalog.entry("spiritflowing", properties -> new SpiritLiquidBlock(
-                ModFluids.SPIRIT_SOURCE,
-                liquidProperties(properties)
+                ModFluids.SPIRIT_SOURCE.get(),
+                liquidProperties(properties).lightLevel(state -> 4)
             )),
             FactoryCatalog.entry("hollowtears", properties -> new HollowTearsLiquidBlock(
-                ModFluids.HOLLOW_TEARS_SOURCE,
-                liquidProperties(properties)
+                ModFluids.HOLLOW_TEARS_SOURCE.get(),
+                liquidProperties(properties).lightLevel(state -> 2)
             )),
             FactoryCatalog.entry("brewliquid", properties -> new LiquidBlock(
-                ModFluids.COLORED_BREW_WATER_SOURCE,
+                ModFluids.COLORED_BREW_WATER_SOURCE.get(),
                 liquidProperties(properties)
             )),
             FactoryCatalog.entry("erosionbrew", properties -> new ErosionBrewLiquidBlock(
-                ModFluids.EROSION_SOURCE,
+                ModFluids.EROSION_SOURCE.get(),
                 liquidProperties(properties)
             )),
             FactoryCatalog.entry("somniancotton", properties ->
@@ -88,19 +88,23 @@ public final class ModBlocks {
         new BlockFactoryRule(ModernBlockFactory::supports, ModernBlockFactory::create)
     );
 
-    public static final RegistryObject<Block> ALTAR;
-    public static final Map<String, RegistryObject<Block>> ALL;
+    public static final RegistrationHandle<Block> ALTAR;
+    public static final Map<String, RegistrationHandle<Block>> ALL;
 
     static {
         ContentCatalog.BLOCKS.forEach(catalogName -> {
             final String id = ContentCatalog.modernize(catalogName);
-            MUTABLE_BLOCKS.put(id, REGISTRY.register(id, () -> create(id)));
+            MUTABLE_BLOCKS.put(id, RegistrationHandle.create(id, () -> create(id)));
         });
         ALTAR = MUTABLE_BLOCKS.get("altar");
         ALL = Collections.unmodifiableMap(new LinkedHashMap<>(MUTABLE_BLOCKS));
     }
 
     private ModBlocks() {
+    }
+
+    public static void register() {
+        ALL.values().forEach(handle -> handle.register(BuiltInRegistries.BLOCK));
     }
 
     private static Block create(final String id) {
@@ -120,7 +124,10 @@ public final class ModBlocks {
 
     private static BlockBehaviour.Properties properties(final String id) {
         final var properties = BlockBehaviour.Properties.of()
-            .setId(REGISTRY.key(id))
+            .setId(ResourceKey.create(
+                Registries.BLOCK,
+                Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, id)
+            ))
             .mapColor(mapColor(id))
             .strength(id.contains("barrier") ? -1.0F : 1.5F, 6.0F)
             .sound(sound(id));

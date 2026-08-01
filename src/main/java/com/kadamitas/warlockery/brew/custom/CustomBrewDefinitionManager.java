@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.brew.custom;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.util.FluidContents;
 import com.kadamitas.warlockery.util.ItemIngredient;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +23,6 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.tags.FluidTags;
-import net.minecraftforge.fluids.FluidStack;
 
 public final class CustomBrewDefinitionManager extends SimpleJsonResourceReloadListener<CustomBrewComponentDefinition> {
     public static final CustomBrewDefinitionManager INSTANCE = new CustomBrewDefinitionManager();
@@ -68,7 +68,7 @@ public final class CustomBrewDefinitionManager extends SimpleJsonResourceReloadL
     public Inspection inspect(
         final NonNullList<ItemStack> inventory,
         final int inputSlots,
-        final FluidStack fluid,
+        final FluidContents fluid,
         final int availablePower,
         final boolean heated,
         final boolean outputAvailable,

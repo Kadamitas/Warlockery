@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.block.entity;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.transformation.SupernaturalAbilityRules;
@@ -175,7 +176,7 @@ public final class WolfTrapBlockEntity extends BlockEntity {
         werewolf.setCustomName(Component.translatable("entity.warlockery.lured_werewolf"));
         werewolf.setCustomNameVisible(true);
         werewolf.setPersistenceRequired();
-        werewolf.getPersistentData().putLong("WarlockeryWolfTrap", worldPosition.asLong());
+        WarlockeryEntityData.get(werewolf).putLong("WarlockeryWolfTrap", worldPosition.asLong());
         werewolf.setTarget(bait);
         if (level.addFreshEntity(werewolf)) {
             luredTarget = werewolf.getUUID();

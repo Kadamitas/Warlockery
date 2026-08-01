@@ -2,7 +2,7 @@
   "type": "minecraft:function",
   "function": "warlockery:scattered_chalk_marks_do_not_form_a_ritual_ring",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100,
   "padding": 16
 }

@@ -13,7 +13,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.context.UseOnContext;
 
-public final class AttunedStoneItem extends Item {
+public final class AttunedStoneItem extends Item implements DroppedItemBehavior {
     private static final String POWER = "WarlockeryAltarPower";
     private final int defaultPower;
 
@@ -57,7 +57,7 @@ public final class AttunedStoneItem extends Item {
     }
 
     @Override
-    public boolean onEntityItemUpdate(final ItemStack stack, final ItemEntity entity) {
+    public boolean tickDroppedItem(final ItemStack stack, final ItemEntity entity) {
         SpiritLocatorRuntime.tick(entity);
         return false;
     }

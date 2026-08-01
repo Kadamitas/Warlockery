@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.fabric.event.LivingDropsContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,7 +21,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
 
 public final class ArthanaHarvestRuntime {
     private static final List<BonusDrop> BONUS_DROPS = List.of(
@@ -35,7 +35,7 @@ public final class ArthanaHarvestRuntime {
     private ArthanaHarvestRuntime() {
     }
 
-    public static void addDrops(final LivingDropsEvent event, final ServerLevel level) {
+    public static void addDrops(final LivingDropsContext event, final ServerLevel level) {
         final ItemStack weapon = event.getSource().getWeaponItem();
         if (weapon == null || !weapon.is(WarlockeryTags.Items.ARTHANAS)) {
             return;

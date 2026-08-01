@@ -19,6 +19,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -30,7 +31,6 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import org.jspecify.annotations.Nullable;
 
 public final class CustomBrewTriggerData extends SavedData {
@@ -89,10 +89,8 @@ public final class CustomBrewTriggerData extends SavedData {
         return true;
     }
 
-    public static void handleBlockUse(final PlayerInteractEvent.RightClickBlock event) {
-        if (event.getLevel() instanceof ServerLevel level) {
-            get(level).noteActivator(level, event.getPos(), event.getEntity());
-        }
+    public static void handleBlockUse(final ServerLevel level, final BlockPos position, final ServerPlayer player) {
+        get(level).noteActivator(level, position, player);
     }
 
     private void noteActivator(

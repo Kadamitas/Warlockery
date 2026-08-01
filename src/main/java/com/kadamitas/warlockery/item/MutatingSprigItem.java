@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class MutatingSprigItem extends Item {
+public final class MutatingSprigItem extends Item implements BlockBreakBehavior {
     public static final int DURABILITY = 128;
 
     public MutatingSprigItem(final Properties properties) {
@@ -46,7 +46,7 @@ public final class MutatingSprigItem extends Item {
     }
 
     @Override
-    public boolean onBlockStartBreak(final ItemStack stack, final BlockPos pos, final Player player) {
+    public boolean beforeBlockBreak(final ItemStack stack, final BlockPos pos, final Player player) {
         final BlockState state = player.level().getBlockState(pos);
         final boolean immersed = player.level().getFluidState(pos.above())
             .is(AdvancedMutationTags.Fluids.MUTATION_WATER);

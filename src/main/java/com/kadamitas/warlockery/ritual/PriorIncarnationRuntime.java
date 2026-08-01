@@ -1,5 +1,7 @@
 package com.kadamitas.warlockery.ritual;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
+import com.kadamitas.warlockery.fabric.event.LivingDropsContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,7 +14,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
 
 public final class PriorIncarnationRuntime {
     private static final String OWNER = "WarlockeryPriorOwner";
@@ -21,7 +22,7 @@ public final class PriorIncarnationRuntime {
     private PriorIncarnationRuntime() {
     }
 
-    public static void handleDrops(final LivingDropsEvent event) {
+    public static void handleDrops(final LivingDropsContext event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
             || !(player.level() instanceof ServerLevel level)
             || event.getDrops().isEmpty()) {
@@ -29,8 +30,8 @@ public final class PriorIncarnationRuntime {
         }
         final long deathTime = level.getGameTime();
         event.getDrops().forEach(drop -> {
-            drop.getPersistentData().putString(OWNER, player.getUUID().toString());
-            drop.getPersistentData().putLong(DEATH_TIME, deathTime);
+            WarlockeryEntityData.get(drop).putString(OWNER, player.getUUID().toString());
+            WarlockeryEntityData.get(drop).putLong(DEATH_TIME, deathTime);
             drop.setExtendedLifetime();
         });
         PriorIncarnationData.get(level).record(
@@ -148,7 +149,7 @@ public final class PriorIncarnationRuntime {
     }
 
     private static boolean matches(final Entity entity, final UUID player, final long deathTime) {
-        final var data = entity.getPersistentData();
+        final var data = WarlockeryEntityData.get(entity);
         return data.getStringOr(OWNER, "").equals(player.toString())
             && data.getLongOr(DEATH_TIME, Long.MIN_VALUE) == deathTime;
     }

@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:hell_on_earth_uses_tagged_demons",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

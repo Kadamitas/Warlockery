@@ -1,243 +1,289 @@
 package com.kadamitas.warlockery.registry;
 
 import com.kadamitas.warlockery.Warlockery;
-import java.util.function.Consumer;
+import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.common.SoundActions;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.world.level.material.FluidState;
 
 public final class ModFluids {
-    public static final DeferredRegister<FluidType> TYPES = DeferredRegister.create(
-        ForgeRegistries.Keys.FLUID_TYPES,
-        Warlockery.MOD_ID
-    );
-    public static final DeferredRegister<Fluid> REGISTRY = DeferredRegister.create(ForgeRegistries.FLUIDS, Warlockery.MOD_ID);
-    public static final RegistryObject<FluidType> SPIRIT_TYPE = TYPES.register("spirit", SpiritFluidType::new);
-    public static final RegistryObject<FluidType> HOLLOW_TEARS_TYPE = TYPES.register(
+    public static final RegistrationHandle<FlowingFluid> SPIRIT_SOURCE = source("spirit", FluidKind.SPIRIT);
+    public static final RegistrationHandle<FlowingFluid> FLOWING_SPIRIT = flowing("flowing_spirit", FluidKind.SPIRIT);
+    public static final RegistrationHandle<FlowingFluid> HOLLOW_TEARS_SOURCE = source(
         "hollow_tears",
-        HollowTearsFluidType::new
+        FluidKind.HOLLOW_TEARS
     );
-    public static final RegistryObject<FluidType> COLORED_BREW_WATER_TYPE = TYPES.register(
-        "colored_brew_water",
-        () -> new ArcaneBrewFluidType("colored_brew_water", 0xFF9A4FC3, 1_000, 1_100)
-    );
-    public static final RegistryObject<FluidType> EROSION_TYPE = TYPES.register(
-        "erosion_brew",
-        () -> new ArcaneBrewFluidType("erosion_brew", 0xFFA1C84C, 1_180, 1_800)
-    );
-    public static final RegistryObject<FlowingFluid> SPIRIT_SOURCE = REGISTRY.register(
-        "spirit",
-        () -> new ForgeFlowingFluid.Source(spiritProperties())
-    );
-    public static final RegistryObject<FlowingFluid> FLOWING_SPIRIT = REGISTRY.register(
-        "flowing_spirit",
-        () -> new ForgeFlowingFluid.Flowing(spiritProperties())
-    );
-    public static final RegistryObject<FlowingFluid> HOLLOW_TEARS_SOURCE = REGISTRY.register(
-        "hollow_tears",
-        () -> new ForgeFlowingFluid.Source(hollowTearsProperties())
-    );
-    public static final RegistryObject<FlowingFluid> FLOWING_HOLLOW_TEARS = REGISTRY.register(
+    public static final RegistrationHandle<FlowingFluid> FLOWING_HOLLOW_TEARS = flowing(
         "flowing_hollow_tears",
-        () -> new ForgeFlowingFluid.Flowing(hollowTearsProperties())
+        FluidKind.HOLLOW_TEARS
     );
-    public static final RegistryObject<FlowingFluid> COLORED_BREW_WATER_SOURCE = REGISTRY.register(
+    public static final RegistrationHandle<FlowingFluid> COLORED_BREW_WATER_SOURCE = source(
         "colored_brew_water",
-        () -> new ForgeFlowingFluid.Source(coloredBrewWaterProperties())
+        FluidKind.COLORED_BREW_WATER
     );
-    public static final RegistryObject<FlowingFluid> FLOWING_COLORED_BREW_WATER = REGISTRY.register(
+    public static final RegistrationHandle<FlowingFluid> FLOWING_COLORED_BREW_WATER = flowing(
         "flowing_colored_brew_water",
-        () -> new ForgeFlowingFluid.Flowing(coloredBrewWaterProperties())
+        FluidKind.COLORED_BREW_WATER
     );
-    public static final RegistryObject<FlowingFluid> EROSION_SOURCE = REGISTRY.register(
+    public static final RegistrationHandle<FlowingFluid> EROSION_SOURCE = source(
         "erosion_brew",
-        () -> new ForgeFlowingFluid.Source(erosionProperties())
+        FluidKind.EROSION
     );
-    public static final RegistryObject<FlowingFluid> FLOWING_EROSION = REGISTRY.register(
+    public static final RegistrationHandle<FlowingFluid> FLOWING_EROSION = flowing(
         "flowing_erosion_brew",
-        () -> new ForgeFlowingFluid.Flowing(erosionProperties())
+        FluidKind.EROSION
+    );
+    private static final List<RenderFamily> FAMILIES = List.of(
+        new RenderFamily(
+            SPIRIT_SOURCE,
+            FLOWING_SPIRIT,
+            texture("flowspirit_still"),
+            texture("flowspirit_flow"),
+            0xFFD4C7FF
+        ),
+        new RenderFamily(
+            HOLLOW_TEARS_SOURCE,
+            FLOWING_HOLLOW_TEARS,
+            texture("flowspirit_still"),
+            texture("flowspirit_flow"),
+            0xFF20285C
+        ),
+        new RenderFamily(
+            COLORED_BREW_WATER_SOURCE,
+            FLOWING_COLORED_BREW_WATER,
+            Identifier.withDefaultNamespace("block/water_still"),
+            Identifier.withDefaultNamespace("block/water_flow"),
+            0xFF9A4FC3
+        ),
+        new RenderFamily(
+            EROSION_SOURCE,
+            FLOWING_EROSION,
+            Identifier.withDefaultNamespace("block/water_still"),
+            Identifier.withDefaultNamespace("block/water_flow"),
+            0xFFA1C84C
+        )
     );
 
     private ModFluids() {
     }
 
-    private static ForgeFlowingFluid.Properties spiritProperties() {
-        return properties(SPIRIT_TYPE, SPIRIT_SOURCE, FLOWING_SPIRIT, "bucketspirit", "spiritflowing")
-            .tickRate(8)
-            .slopeFindDistance(3)
-            .levelDecreasePerBlock(2)
-            .explosionResistance(10.0F);
+    public static void register() {
+        FLOWING_SPIRIT.register(BuiltInRegistries.FLUID);
+        SPIRIT_SOURCE.register(BuiltInRegistries.FLUID);
+        FLOWING_HOLLOW_TEARS.register(BuiltInRegistries.FLUID);
+        HOLLOW_TEARS_SOURCE.register(BuiltInRegistries.FLUID);
+        FLOWING_COLORED_BREW_WATER.register(BuiltInRegistries.FLUID);
+        COLORED_BREW_WATER_SOURCE.register(BuiltInRegistries.FLUID);
+        FLOWING_EROSION.register(BuiltInRegistries.FLUID);
+        EROSION_SOURCE.register(BuiltInRegistries.FLUID);
     }
 
-    private static ForgeFlowingFluid.Properties hollowTearsProperties() {
-        return properties(
-            HOLLOW_TEARS_TYPE,
-            HOLLOW_TEARS_SOURCE,
-            FLOWING_HOLLOW_TEARS,
-            "buckethollowtears",
-            "hollowtears"
-        )
-            .tickRate(12)
-            .slopeFindDistance(2)
-            .levelDecreasePerBlock(2)
-            .explosionResistance(12.0F);
+    public static List<RenderFamily> families() {
+        return FAMILIES;
     }
 
-    private static ForgeFlowingFluid.Properties coloredBrewWaterProperties() {
-        return properties(
-            COLORED_BREW_WATER_TYPE,
-            COLORED_BREW_WATER_SOURCE,
-            FLOWING_COLORED_BREW_WATER,
-            "bucketbrew",
-            "brewliquid"
-        )
-            .tickRate(6)
-            .slopeFindDistance(4)
-            .levelDecreasePerBlock(1)
-            .explosionResistance(5.0F);
+    private static RegistrationHandle<FlowingFluid> source(final String id, final FluidKind kind) {
+        return RegistrationHandle.create(id, () -> new Source(kind));
     }
 
-    private static ForgeFlowingFluid.Properties erosionProperties() {
-        return properties(
-            EROSION_TYPE,
-            EROSION_SOURCE,
-            FLOWING_EROSION,
-            "bucketerosionbrew",
-            "erosionbrew"
-        )
-            .tickRate(14)
-            .slopeFindDistance(2)
-            .levelDecreasePerBlock(2)
-            .explosionResistance(8.0F);
+    private static RegistrationHandle<FlowingFluid> flowing(final String id, final FluidKind kind) {
+        return RegistrationHandle.create(id, () -> new Flowing(kind));
     }
 
-    private static ForgeFlowingFluid.Properties properties(
-        final RegistryObject<FluidType> type,
-        final RegistryObject<FlowingFluid> source,
-        final RegistryObject<FlowingFluid> flowing,
-        final String bucket,
-        final String block
+    private static Identifier texture(final String path) {
+        return Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "block/" + path);
+    }
+
+    private static RegistrationHandle<FlowingFluid> source(final FluidKind kind) {
+        return switch (kind) {
+            case SPIRIT -> SPIRIT_SOURCE;
+            case HOLLOW_TEARS -> HOLLOW_TEARS_SOURCE;
+            case COLORED_BREW_WATER -> COLORED_BREW_WATER_SOURCE;
+            case EROSION -> EROSION_SOURCE;
+        };
+    }
+
+    private static RegistrationHandle<FlowingFluid> flowing(final FluidKind kind) {
+        return switch (kind) {
+            case SPIRIT -> FLOWING_SPIRIT;
+            case HOLLOW_TEARS -> FLOWING_HOLLOW_TEARS;
+            case COLORED_BREW_WATER -> FLOWING_COLORED_BREW_WATER;
+            case EROSION -> FLOWING_EROSION;
+        };
+    }
+
+    public record RenderFamily(
+        RegistrationHandle<FlowingFluid> source,
+        RegistrationHandle<FlowingFluid> flowing,
+        Identifier stillTexture,
+        Identifier flowingTexture,
+        int tint
     ) {
-        return new ForgeFlowingFluid.Properties(type, source, flowing)
-            .bucket(() -> ModItems.ALL.get(bucket).get())
-            .block(() -> (net.minecraft.world.level.block.LiquidBlock) ModBlocks.ALL.get(block).get());
     }
 
-    private static final class SpiritFluidType extends FluidType {
-        private SpiritFluidType() {
-            super(Properties.create()
-                .descriptionId("fluid_type.warlockery.spirit")
-                .rarity(Rarity.UNCOMMON)
-                .density(850)
-                .viscosity(1_400)
-                .lightLevel(4)
-                .canDrown(false)
-                .sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL)
-                .sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY));
-        }
+    private enum FluidKind {
+        SPIRIT("bucketspirit", "spiritflowing", 8, 3, 2, 10.0F),
+        HOLLOW_TEARS("buckethollowtears", "hollowtears", 12, 2, 2, 12.0F),
+        COLORED_BREW_WATER("bucketbrew", "brewliquid", 6, 4, 1, 5.0F),
+        EROSION("bucketerosionbrew", "erosionbrew", 14, 2, 2, 8.0F);
 
-        @Override
-        public void initializeClient(final Consumer<IClientFluidTypeExtensions> consumer) {
-            consumer.accept(new IClientFluidTypeExtensions() {
-                @Override
-                public Identifier getStillTexture() {
-                    return Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "block/flowspirit_still");
-                }
+        private final String bucket;
+        private final String block;
+        private final int tickDelay;
+        private final int slopeDistance;
+        private final int dropOff;
+        private final float explosionResistance;
 
-                @Override
-                public Identifier getFlowingTexture() {
-                    return Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "block/flowspirit_flow");
-                }
-
-                @Override
-                public int getTintColor() {
-                    return 0xFFD4C7FF;
-                }
-            });
-        }
-    }
-
-    private static final class HollowTearsFluidType extends FluidType {
-        private HollowTearsFluidType() {
-            super(Properties.create()
-                .descriptionId("fluid_type.warlockery.hollow_tears")
-                .rarity(Rarity.UNCOMMON)
-                .density(1_100)
-                .viscosity(1_600)
-                .lightLevel(2)
-                .canDrown(false)
-                .sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL)
-                .sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY));
-        }
-
-        @Override
-        public void initializeClient(final Consumer<IClientFluidTypeExtensions> consumer) {
-            consumer.accept(new IClientFluidTypeExtensions() {
-                @Override
-                public Identifier getStillTexture() {
-                    return Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "block/flowspirit_still");
-                }
-
-                @Override
-                public Identifier getFlowingTexture() {
-                    return Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "block/flowspirit_flow");
-                }
-
-                @Override
-                public int getTintColor() {
-                    return 0xFF20285C;
-                }
-            });
-        }
-    }
-
-    private static final class ArcaneBrewFluidType extends FluidType {
-        private final int tint;
-
-        private ArcaneBrewFluidType(
-            final String id,
-            final int tint,
-            final int density,
-            final int viscosity
+        FluidKind(
+            final String bucket,
+            final String block,
+            final int tickDelay,
+            final int slopeDistance,
+            final int dropOff,
+            final float explosionResistance
         ) {
-            super(Properties.create()
-                .descriptionId("fluid_type.warlockery." + id)
-                .rarity(Rarity.UNCOMMON)
-                .density(density)
-                .viscosity(viscosity)
-                .canDrown(false)
-                .sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL)
-                .sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY));
-            this.tint = tint;
+            this.bucket = bucket;
+            this.block = block;
+            this.tickDelay = tickDelay;
+            this.slopeDistance = slopeDistance;
+            this.dropOff = dropOff;
+            this.explosionResistance = explosionResistance;
+        }
+    }
+
+    private abstract static class ArcaneFluid extends FlowingFluid {
+        private final FluidKind kind;
+
+        private ArcaneFluid(final FluidKind kind) {
+            this.kind = kind;
         }
 
         @Override
-        public void initializeClient(final Consumer<IClientFluidTypeExtensions> consumer) {
-            consumer.accept(new IClientFluidTypeExtensions() {
-                @Override
-                public Identifier getStillTexture() {
-                    return Identifier.fromNamespaceAndPath("minecraft", "block/water_still");
-                }
+        public Fluid getFlowing() {
+            return flowing(kind).get();
+        }
 
-                @Override
-                public Identifier getFlowingTexture() {
-                    return Identifier.fromNamespaceAndPath("minecraft", "block/water_flow");
-                }
+        @Override
+        public Fluid getSource() {
+            return source(kind).get();
+        }
 
-                @Override
-                public int getTintColor() {
-                    return tint;
-                }
-            });
+        @Override
+        public boolean isSame(final Fluid fluid) {
+            return fluid == getSource() || fluid == getFlowing();
+        }
+
+        @Override
+        public Item getBucket() {
+            return ModItems.ALL.get(kind.bucket).get();
+        }
+
+        @Override
+        protected boolean canConvertToSource(final ServerLevel level) {
+            return false;
+        }
+
+        @Override
+        protected void beforeDestroyingBlock(final LevelAccessor level, final BlockPos pos, final BlockState state) {
+            final BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
+            Block.dropResources(state, level, pos, blockEntity);
+        }
+
+        @Override
+        protected int getSlopeFindDistance(final LevelReader level) {
+            return kind.slopeDistance;
+        }
+
+        @Override
+        public int getDropOff(final LevelReader level) {
+            return kind.dropOff;
+        }
+
+        @Override
+        public int getTickDelay(final LevelReader level) {
+            return kind.tickDelay;
+        }
+
+        @Override
+        public boolean canBeReplacedWith(
+            final FluidState state,
+            final BlockGetter level,
+            final BlockPos pos,
+            final Fluid fluid,
+            final Direction direction
+        ) {
+            return direction == Direction.DOWN && !isSame(fluid);
+        }
+
+        @Override
+        protected float getExplosionResistance() {
+            return kind.explosionResistance;
+        }
+
+        @Override
+        public Optional<SoundEvent> getPickupSound() {
+            return Optional.of(SoundEvents.BUCKET_FILL);
+        }
+
+        @Override
+        protected BlockState createLegacyBlock(final FluidState state) {
+            return ModBlocks.ALL.get(kind.block).get().defaultBlockState()
+                .setValue(LiquidBlock.LEVEL, getLegacyLevel(state));
+        }
+    }
+
+    private static final class Flowing extends ArcaneFluid {
+        private Flowing(final FluidKind kind) {
+            super(kind);
+        }
+
+        @Override
+        protected void createFluidStateDefinition(final StateDefinition.Builder<Fluid, FluidState> builder) {
+            super.createFluidStateDefinition(builder);
+            builder.add(LEVEL);
+        }
+
+        @Override
+        public int getAmount(final FluidState state) {
+            return state.getValue(LEVEL);
+        }
+
+        @Override
+        public boolean isSource(final FluidState state) {
+            return false;
+        }
+    }
+
+    private static final class Source extends ArcaneFluid {
+        private Source(final FluidKind kind) {
+            super(kind);
+        }
+
+        @Override
+        public int getAmount(final FluidState state) {
+            return 8;
+        }
+
+        @Override
+        public boolean isSource(final FluidState state) {
+            return true;
         }
     }
 }

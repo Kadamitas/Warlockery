@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -28,12 +27,6 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
-import org.jspecify.annotations.Nullable;
 
 public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
     private static final Set<DollShelfBlockEntity> LOADED = ConcurrentHashMap.newKeySet();
@@ -41,7 +34,6 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
         .comparing((DollShelfBlockEntity shelf) -> ((ServerLevel) shelf.level).dimension().identifier().toString())
         .thenComparingLong(shelf -> shelf.worldPosition.asLong());
     private NonNullList<ItemStack> items = NonNullList.withSize(DollShelfRules.CAPACITY, ItemStack.EMPTY);
-    private LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> new InvWrapper(this));
 
     public DollShelfBlockEntity(final BlockPos position, final BlockState state) {
         super(ModBlockEntities.DOLL_SHELF.get(), position, state);
@@ -56,6 +48,7 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
+        shelf.trackLoaded();
         final MinecraftServer server = serverLevel.getServer();
         if (DollMendingSchedule.forServer(server).beginShelfScan(server.getTickCount())) {
             processShelvedMending(server);
@@ -76,16 +69,20 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
     }
 
     @Override
-    public void onLoad() {
-        super.onLoad();
-        LOADED.add(this);
-        updateChunkTicket();
+    public void setLevel(final Level level) {
+        super.setLevel(level);
+        trackLoaded();
+    }
+
+    @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        trackLoaded();
     }
 
     @Override
     public void setRemoved() {
         LOADED.remove(this);
-        itemHandler.invalidate();
         super.setRemoved();
     }
 
@@ -141,6 +138,7 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
     @Override
     public void setChanged() {
         super.setChanged();
+        trackLoaded();
         updateChunkTicket();
     }
 
@@ -159,6 +157,8 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
         super.loadAdditional(input);
         items = NonNullList.withSize(DollShelfRules.CAPACITY, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
+        trackLoaded();
+        updateChunkTicket();
     }
 
     @Override
@@ -167,29 +167,15 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
         ContainerHelper.saveAllItems(output, items);
     }
 
-    @Override
-    public <T> LazyOptional<T> getCapability(final Capability<T> capability, final @Nullable Direction side) {
-        if (capability == ForgeCapabilities.ITEM_HANDLER && !remove) {
-            return itemHandler.cast();
-        }
-        return super.getCapability(capability, side);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        itemHandler.invalidate();
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        itemHandler = LazyOptional.of(() -> new InvWrapper(this));
-    }
-
     private void updateChunkTicket() {
         if (level instanceof ServerLevel serverLevel && LOADED.contains(this)) {
             updateChunkTicket(serverLevel, chunkX(), chunkZ());
+        }
+    }
+
+    private void trackLoaded() {
+        if (level instanceof ServerLevel && !isRemoved()) {
+            LOADED.add(this);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.registry.ModItems;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -23,7 +24,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 
 public final class BroomFlightGameTests {
     private BroomFlightGameTests() {
@@ -74,7 +74,7 @@ public final class BroomFlightGameTests {
         helper.assertTrue(player.getVehicle() instanceof BroomEntity,
             "the logout lifecycle test requires an active broom mount");
         final BroomEntity vehicle = (BroomEntity) player.getVehicle();
-        FlyingBroomItem.handleLogout(new PlayerEvent.PlayerLoggedOutEvent(player));
+        FlyingBroomItem.handleLogout(player);
         helper.assertTrue(!player.isPassenger(), "logout must dismount the rider before player data is saved");
         helper.assertTrue(vehicle.isRemoved(), "logout must remove the transient broom mount");
         helper.assertTrue(player.getOffhandItem().is(ModItems.ALL.get("ingredient_broom_enchanted").get()),
@@ -86,24 +86,24 @@ public final class BroomFlightGameTests {
 
     public static void legacyCreativeFlightStateIsRemovedOnLogin(final GameTestHelper helper) {
         final ServerPlayer player = connectedSurvivalPlayer(helper);
-        player.getPersistentData().putBoolean("WarlockeryBroomFlight", true);
-        player.getPersistentData().putBoolean("WarlockeryBroomPreviousMayFly", false);
-        player.getPersistentData().putFloat("WarlockeryBroomPreviousSpeed", 0.04F);
+        WarlockeryEntityData.get(player).putBoolean("WarlockeryBroomFlight", true);
+        WarlockeryEntityData.get(player).putBoolean("WarlockeryBroomPreviousMayFly", false);
+        WarlockeryEntityData.get(player).putFloat("WarlockeryBroomPreviousSpeed", 0.04F);
         player.getAbilities().mayfly = true;
         player.getAbilities().flying = true;
         player.getAbilities().setFlyingSpeed(0.075F);
-        FlyingBroomItem.handleLogin(new PlayerEvent.PlayerLoggedInEvent(player));
+        FlyingBroomItem.handleLogin(player);
         helper.assertTrue(!player.getAbilities().mayfly,
             "legacy broom state must not leave survival players with creative flight");
         helper.assertTrue(!player.getAbilities().flying,
             "legacy broom state must stop active creative-style flight");
         helper.assertValueEqual(player.getAbilities().getFlyingSpeed(), 0.04F,
             "pre-broom flying speed restored during migration");
-        helper.assertTrue(!player.getPersistentData().contains("WarlockeryBroomFlight"),
+        helper.assertTrue(!WarlockeryEntityData.get(player).contains("WarlockeryBroomFlight"),
             "legacy active marker removed");
-        helper.assertTrue(!player.getPersistentData().contains("WarlockeryBroomPreviousMayFly"),
+        helper.assertTrue(!WarlockeryEntityData.get(player).contains("WarlockeryBroomPreviousMayFly"),
             "legacy mayfly marker removed");
-        helper.assertTrue(!player.getPersistentData().contains("WarlockeryBroomPreviousSpeed"),
+        helper.assertTrue(!WarlockeryEntityData.get(player).contains("WarlockeryBroomPreviousSpeed"),
             "legacy speed marker removed");
         helper.succeed();
     }

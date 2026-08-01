@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -40,7 +41,7 @@ public final class SummoningFocusItem extends Item {
                 (Entity) null,
                 new AABB(player.blockPosition()).inflate(64),
                 entity -> entity.getType() == entityType()
-                    && owner.equals(entity.getPersistentData().getStringOr(OWNER, ""))
+                    && owner.equals(WarlockeryEntityData.get(entity).getStringOr(OWNER, ""))
             );
             if (!existing.isEmpty()) {
                 existing.forEach(Entity::discard);
@@ -52,7 +53,7 @@ public final class SummoningFocusItem extends Item {
         if (summoned == null) {
             return InteractionResult.FAIL;
         }
-        summoned.getPersistentData().putString(OWNER, owner);
+        WarlockeryEntityData.get(summoned).putString(OWNER, owner);
         if (!toggle && !player.hasInfiniteMaterials()) {
             player.getItemInHand(hand).shrink(1);
         }

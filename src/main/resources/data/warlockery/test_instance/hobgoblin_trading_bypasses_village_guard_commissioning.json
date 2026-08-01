@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:hobgoblin_trading_bypasses_village_guard_commissioning",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

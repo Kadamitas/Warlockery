@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.magic;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.fabric.event.ProjectileImpactContext;
 import com.kadamitas.warlockery.item.AbyssalBanishment;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.ritual.RitualWardData;
@@ -28,7 +29,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraftforge.event.entity.ProjectileImpactEvent;
 
 public final class SymbolMagicRuntime {
     private static final int COST = 2;
@@ -139,7 +139,7 @@ public final class SymbolMagicRuntime {
         return InteractionResult.SUCCESS;
     }
 
-    public static void handleProjectileImpact(final ProjectileImpactEvent event) {
+    public static void handleProjectileImpact(final ProjectileImpactContext event) {
         if (!(event.getProjectile() instanceof Projectile projectile)
             || !(event.getRayTraceResult() instanceof EntityHitResult hit)
             || !(hit.getEntity() instanceof ServerPlayer player)
@@ -148,7 +148,7 @@ public final class SymbolMagicRuntime {
         }
         projectile.setOwner(player);
         projectile.setDeltaMovement(projectile.getDeltaMovement().scale(-1.2));
-        event.setImpactResult(ProjectileImpactEvent.ImpactResult.SKIP_ENTITY);
+        event.skipEntity();
     }
 
     private static boolean prepare(final ServerPlayer player, final ItemStack branch, final SymbolSpell spell) {

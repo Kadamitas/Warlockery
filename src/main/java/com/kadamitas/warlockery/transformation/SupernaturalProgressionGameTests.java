@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.transformation;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.item.BloodGobletItem;
 import com.kadamitas.warlockery.item.BloodGobletState;
 import com.kadamitas.warlockery.item.SympatheticBinding;
@@ -129,8 +130,8 @@ public final class SupernaturalProgressionGameTests {
         final BlockPos targetPosition = new BlockPos(1, 1, 1);
         final Villager target = helper.spawn(EntityTypes.VILLAGER, targetPosition);
         final Villager foreignOwner = helper.spawn(EntityTypes.VILLAGER, new BlockPos(1, 1, 2));
-        target.getPersistentData().putBoolean("WarlockeryCreationTargetDrained", true);
-        target.getPersistentData().putString("WarlockeryMesmerizedBy", creator.getStringUUID());
+        WarlockeryEntityData.get(target).putBoolean("WarlockeryCreationTargetDrained", true);
+        WarlockeryEntityData.get(target).putString("WarlockeryMesmerizedBy", creator.getStringUUID());
         helper.setBlock(new BlockPos(2, 1, 1), ModBlocks.ALL.get("coffinblock").get());
 
         final BloodGobletItem gobletItem = (BloodGobletItem) ModItems.ALL.get("glassgoblet").get();

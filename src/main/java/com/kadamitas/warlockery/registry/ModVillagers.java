@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import com.kadamitas.warlockery.Warlockery;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.util.Set;
+import net.fabricmc.fabric.api.object.builder.v1.world.poi.PoiHelper;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -13,16 +15,8 @@ import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.item.trading.TradeSet;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 public final class ModVillagers {
-    public static final DeferredRegister<PoiType> POI_TYPES = DeferredRegister.create(ForgeRegistries.POI_TYPES, Warlockery.MOD_ID);
-    public static final DeferredRegister<VillagerProfession> PROFESSIONS = DeferredRegister.create(
-        ForgeRegistries.VILLAGER_PROFESSIONS,
-        Warlockery.MOD_ID
-    );
     public static final ResourceKey<PoiType> WARLOCK_STILL_KEY = ResourceKey.create(
         Registries.POINT_OF_INTEREST_TYPE,
         Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "warlock_still")
@@ -31,11 +25,8 @@ public final class ModVillagers {
         Registries.VILLAGER_PROFESSION,
         Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "warlock")
     );
-    public static final RegistryObject<PoiType> WARLOCK_STILL = POI_TYPES.register(
-        "warlock_still",
-        () -> new PoiType(Set.copyOf(ModBlocks.ALL.get("distilleryidle").get().getStateDefinition().getPossibleStates()), 1, 1)
-    );
-    public static final RegistryObject<VillagerProfession> WARLOCK = PROFESSIONS.register(
+    public static final RegistrationHandle<PoiType> WARLOCK_STILL = RegistrationHandle.external("warlock_still");
+    public static final RegistrationHandle<VillagerProfession> WARLOCK = RegistrationHandle.create(
         "warlock",
         () -> new VillagerProfession(
             Component.translatable("entity.warlockery.villager.warlock"),
@@ -60,6 +51,19 @@ public final class ModVillagers {
     );
 
     private ModVillagers() {
+    }
+
+    public static void register() {
+        WARLOCK_STILL.bind(
+            BuiltInRegistries.POINT_OF_INTEREST_TYPE,
+            PoiHelper.register(
+                WARLOCK_STILL.id(),
+                1,
+                1,
+                Set.copyOf(ModBlocks.ALL.get("distilleryidle").get().getStateDefinition().getPossibleStates())
+            )
+        );
+        WARLOCK.register(BuiltInRegistries.VILLAGER_PROFESSION);
     }
 
     private static ResourceKey<TradeSet> tradeSet(final int level) {

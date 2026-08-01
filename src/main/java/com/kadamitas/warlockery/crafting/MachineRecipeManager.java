@@ -3,6 +3,7 @@ package com.kadamitas.warlockery.crafting;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.brew.custom.CustomBrewDefinitionManager;
 import com.kadamitas.warlockery.compat.jei.JeiRecipeRefreshSignal;
+import com.kadamitas.warlockery.util.FluidContents;
 import com.kadamitas.warlockery.util.FluidIngredient;
 import com.kadamitas.warlockery.util.ItemIngredient;
 import com.mojang.serialization.Codec;
@@ -23,8 +24,6 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 public final class MachineRecipeManager extends SimpleJsonResourceReloadListener<MachineRecipeDefinition> {
     public static final MachineRecipeManager INSTANCE = new MachineRecipeManager();
@@ -59,13 +58,13 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
     }
 
     public Optional<Match> find(final MachineProfile profile, final NonNullList<ItemStack> inventory) {
-        return find(profile, inventory, FluidStack.EMPTY, Integer.MAX_VALUE);
+        return find(profile, inventory, FluidContents.EMPTY, Integer.MAX_VALUE);
     }
 
     public Optional<Match> find(
         final MachineProfile profile,
         final NonNullList<ItemStack> inventory,
-        final FluidStack fluid
+        final FluidContents fluid
     ) {
         return find(profile, inventory, fluid, Integer.MAX_VALUE);
     }
@@ -73,7 +72,7 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
     public Optional<Match> find(
         final MachineProfile profile,
         final NonNullList<ItemStack> inventory,
-        final FluidStack fluid,
+        final FluidContents fluid,
         final int altarPower
     ) {
         final int inputSlots = profile.inputSlots();
@@ -104,13 +103,13 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
     }
 
     public Diagnostic diagnose(final MachineProfile profile, final NonNullList<ItemStack> inventory) {
-        return diagnose(profile, inventory, FluidStack.EMPTY, Integer.MAX_VALUE);
+        return diagnose(profile, inventory, FluidContents.EMPTY, Integer.MAX_VALUE);
     }
 
     public Diagnostic diagnose(
         final MachineProfile profile,
         final NonNullList<ItemStack> inventory,
-        final FluidStack fluid
+        final FluidContents fluid
     ) {
         return diagnose(profile, inventory, fluid, Integer.MAX_VALUE);
     }
@@ -118,7 +117,7 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
     public Diagnostic diagnose(
         final MachineProfile profile,
         final NonNullList<ItemStack> inventory,
-        final FluidStack fluid,
+        final FluidContents fluid,
         final int altarPower
     ) {
         final int inputSlots = profile.inputSlots();
@@ -156,10 +155,6 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
             .consumeFrom(inputs);
     }
 
-    public void consumeFluid(final MachineRecipeDefinition recipe, final IFluidHandler handler) {
-        recipe.fluid().ifPresent(input -> handler.drain(input.amount(), IFluidHandler.FluidAction.EXECUTE));
-    }
-
     public List<ItemStack> createOutputs(final MachineRecipeDefinition recipe) {
         return recipe.outputs().stream().map(output -> {
             final Item item = BuiltInRegistries.ITEM.getValue(Identifier.parse(output.item()));
@@ -171,7 +166,7 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         final MachineRecipeCatalog.PreparedRecipe prepared,
         final NonNullList<ItemStack> inventory,
         final int inputSlots,
-        final FluidStack fluid,
+        final FluidContents fluid,
         final int altarPower
     ) {
         final List<ItemStack> inputs = inventory.stream().limit(inputSlots).toList();
@@ -225,9 +220,8 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         return id == null ? "minecraft:air" : id.toString();
     }
 
-    private static String fluidId(final FluidStack stack) {
-        final Identifier id = BuiltInRegistries.FLUID.getKey(stack.getFluid());
-        return id == null ? "minecraft:empty" : id.toString();
+    private static String fluidId(final FluidContents stack) {
+        return stack.identifier();
     }
 
     private static boolean inputsReady(

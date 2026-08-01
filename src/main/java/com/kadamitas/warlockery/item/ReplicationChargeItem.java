@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.item;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.registry.ModEntities;
 import java.util.Comparator;
 import java.util.Optional;
@@ -85,7 +86,7 @@ public final class ReplicationChargeItem extends SplashPotionItem {
                     if (target instanceof Mob original) {
                         original.setTarget(duplicate);
                     }
-                    duplicate.getPersistentData().putString("WarlockeryReflectedTarget", target.getStringUUID());
+                    WarlockeryEntityData.get(duplicate).putString("WarlockeryReflectedTarget", target.getStringUUID());
                     level.addFreshEntity(duplicate);
                 }
             }

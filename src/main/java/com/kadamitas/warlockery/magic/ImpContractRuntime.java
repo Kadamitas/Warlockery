@@ -1,5 +1,7 @@
 package com.kadamitas.warlockery.magic;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
+import com.kadamitas.warlockery.fabric.event.BlockBreakContext;
 import com.kadamitas.warlockery.entity.CreatureBehaviorProfile;
 import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import com.kadamitas.warlockery.item.SympatheticBinding;
@@ -26,8 +28,6 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.util.Result;
-import net.minecraftforge.event.level.BlockEvent;
 
 public final class ImpContractRuntime {
     private static final String MELTING_EXPIRATION = "WarlockeryImpMeltingExpiration";
@@ -95,10 +95,10 @@ public final class ImpContractRuntime {
         return InteractionResult.SUCCESS;
     }
 
-    public static void handleBlockBreak(final BlockEvent.BreakEvent event) {
-        if (!(event.getPlayer() instanceof ServerPlayer player)
-            || !(event.getLevel() instanceof ServerLevel level)
-            || level.getGameTime() >= player.getPersistentData().getLongOr(MELTING_EXPIRATION, 0L)
+    public static void handleBlockBreak(final BlockBreakContext event) {
+        final ServerPlayer player = event.getPlayer();
+        final ServerLevel level = event.getLevel();
+        if (level.getGameTime() >= WarlockeryEntityData.get(player).getLongOr(MELTING_EXPIRATION, 0L)
             || !event.getState().is(MagicCompatibilityTags.IMP_SMELTABLE_BLOCKS)) {
             return;
         }
@@ -114,7 +114,7 @@ public final class ImpContractRuntime {
         if (converted.equals(drops)) {
             return;
         }
-        event.setResult(Result.DENY);
+        event.cancel();
         level.setBlockAndUpdate(event.getPos(), Blocks.AIR.defaultBlockState());
         converted.forEach(stack -> Block.popResource(level, event.getPos(), stack));
     }
@@ -147,7 +147,7 @@ public final class ImpContractRuntime {
                 .limit(64)
                 .forEach(pos -> level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()));
             case FIRE_TOLERANCE -> target.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 36_000, 0));
-            case MELTING_TOUCH -> target.getPersistentData().putLong(
+            case MELTING_TOUCH -> WarlockeryEntityData.get(target).putLong(
                 MELTING_EXPIRATION,
                 level.getGameTime() + 36_000L
             );

@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.block;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
 import com.kadamitas.warlockery.item.MirrorState;
 import com.kadamitas.warlockery.item.SympatheticBinding;
@@ -371,12 +372,12 @@ public final class InteractiveUtilityBlock extends Block {
             if (!level.isClientSide()) {
                 final SympatheticBinding target = binding.orElseThrow();
                 if (target.targetId().equals(player.getUUID())) {
-                    player.getPersistentData().remove("WarlockeryMirrorMasquerade");
+                    WarlockeryEntityData.get(player).remove("WarlockeryMirrorMasquerade");
                     player.setCustomName(null);
                     player.sendOverlayMessage(Component.translatable("message.warlockery.mirror.masquerade_restored")
                         .withStyle(ChatFormatting.GRAY));
                 } else {
-                    player.getPersistentData().putString("WarlockeryMirrorMasquerade", target.targetName());
+                    WarlockeryEntityData.get(player).putString("WarlockeryMirrorMasquerade", target.targetName());
                     player.setCustomName(Component.literal(target.targetName()));
                     player.sendOverlayMessage(Component.translatable(
                         "message.warlockery.mirror.masquerade_applied",

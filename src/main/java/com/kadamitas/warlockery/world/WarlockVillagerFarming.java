@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.world;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.block.WarlockeryCropBlock;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModVillagers;
@@ -17,7 +18,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingEvent;
 
 public final class WarlockVillagerFarming {
     private static final String STARTER_SEEDS = "warlockery:warlock_starter_seeds";
@@ -33,10 +33,8 @@ public final class WarlockVillagerFarming {
     private WarlockVillagerFarming() {
     }
 
-    public static void handleTick(final LivingEvent.LivingTickEvent event) {
-        if (event.getEntity() instanceof Villager villager) {
-            tick(villager);
-        }
+    public static void handleTick(final Villager villager) {
+        tick(villager);
     }
 
     public static void tick(final Villager villager) {
@@ -59,12 +57,12 @@ public final class WarlockVillagerFarming {
     }
 
     private static void supplyStarterSeeds(final Villager villager, final ServerLevel level) {
-        if (villager.getPersistentData().getBooleanOr(STARTER_SEEDS, false)) {
+        if (WarlockeryEntityData.get(villager).getBooleanOr(STARTER_SEEDS, false)) {
             return;
         }
         final String seed = SEEDS.get(level.getRandom().nextInt(SEEDS.size()));
         villager.getInventory().addItem(new ItemStack(ModItems.ALL.get(seed).get(), 4));
-        villager.getPersistentData().putBoolean(STARTER_SEEDS, true);
+        WarlockeryEntityData.get(villager).putBoolean(STARTER_SEEDS, true);
     }
 
     private static Optional<BlockPos> nearby(

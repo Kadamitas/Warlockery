@@ -3,6 +3,10 @@ package com.kadamitas.warlockery.brew;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.brew.custom.CustomBrewCloudRuntime;
 import com.kadamitas.warlockery.brew.custom.CustomBrewTriggerData;
+import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
+import com.kadamitas.warlockery.fabric.event.LivingDropsContext;
+import com.kadamitas.warlockery.fabric.event.PlayerCloneContext;
+import com.kadamitas.warlockery.fabric.event.ProjectileImpactContext;
 import com.kadamitas.warlockery.magic.MagicPathState;
 import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
@@ -10,7 +14,6 @@ import com.kadamitas.warlockery.ritual.hex.OverheatingRules;
 import com.kadamitas.warlockery.ritual.hex.SinkingRules;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import java.util.List;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,15 +41,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.EntityTeleportEvent;
-import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.TickEvent;
 
 public final class BrewPersistentRuntime {
     private static final Identifier RESIZING_MODIFIER_ID = Identifier.fromNamespaceAndPath(
@@ -58,42 +52,15 @@ public final class BrewPersistentRuntime {
         AttributeModifier.Operation.ADD_MULTIPLIED_BASE
     );
     private static final ThreadLocal<Boolean> REFLECTING_DAMAGE = ThreadLocal.withInitial(() -> false);
-    private static boolean registered;
-
     private BrewPersistentRuntime() {
     }
 
-    public static synchronized void registerEvents() {
-        if (registered) {
-            return;
-        }
-        registered = true;
-        LivingDamageEvent.BUS.addListener(BrewPersistentRuntime::handleDamage);
-        LivingEvent.LivingTickEvent.BUS.addListener(BrewPersistentRuntime::tick);
-        LivingDropsEvent.BUS.addListener(BrewPersistentRuntime::handleDrops);
-        LivingDeathEvent.BUS.addListener(BrewPersistentRuntime::handleDeath);
-        ProjectileImpactEvent.BUS.addListener(BrewPersistentRuntime::handleProjectileImpact);
-        PlayerEvent.Clone.BUS.addListener(BrewPersistentRuntime::handleClone);
-        PlayerInteractEvent.RightClickBlock.BUS.addListener(CustomBrewTriggerData::handleBlockUse);
-        TickEvent.LevelTickEvent.Post.BUS.addListener(event -> {
-            if (event.level() instanceof ServerLevel level) {
-                BrewWorldData.get(level).tick(level);
-                CustomBrewTriggerData.get(level).tick(level);
-            }
-        });
-        EntityTeleportEvent.EnderEntity.BUS.addListener(
-            (Predicate<EntityTeleportEvent.EnderEntity>) BrewPersistentRuntime::cancelTeleport
-        );
-        EntityTeleportEvent.EnderPearl.BUS.addListener(
-            (Predicate<EntityTeleportEvent.EnderPearl>) BrewPersistentRuntime::cancelTeleport
-        );
-        EntityTeleportEvent.ChorusFruit.BUS.addListener(
-            (Predicate<EntityTeleportEvent.ChorusFruit>) BrewPersistentRuntime::cancelTeleport
-        );
+    public static void tickLevel(final ServerLevel level) {
+        BrewWorldData.get(level).tick(level);
+        CustomBrewTriggerData.get(level).tick(level);
     }
 
-    public static void tick(final LivingEvent.LivingTickEvent event) {
-        final LivingEntity target = event.getEntity();
+    public static void tick(final LivingEntity target) {
         if (!(target.level() instanceof ServerLevel level)) {
             return;
         }
@@ -135,7 +102,7 @@ public final class BrewPersistentRuntime {
         }
     }
 
-    public static void handleDamage(final LivingDamageEvent event) {
+    public static void handleDamage(final LivingDamageContext event) {
         final LivingEntity target = event.getEntity();
         if (BrewMarkerState.isActive(target, BrewMarkerKind.MOONSHINE)) {
             event.setAmount(BrewMarkerRules.moonshineDamage(event.getAmount()));
@@ -176,7 +143,7 @@ public final class BrewPersistentRuntime {
         }
     }
 
-    public static void handleProjectileImpact(final ProjectileImpactEvent event) {
+    public static void handleProjectileImpact(final ProjectileImpactContext event) {
         if (!(event.getProjectile() instanceof AbstractArrow arrow)
             || !(event.getRayTraceResult() instanceof EntityHitResult hit)
             || !(hit.getEntity() instanceof LivingEntity target)
@@ -192,16 +159,14 @@ public final class BrewPersistentRuntime {
         arrow.setDeltaMovement(reflected);
         arrow.setPos(hit.getLocation().add(reflected.normalize().scale(0.2)));
         arrow.needsSync = true;
-        event.setImpactResult(ProjectileImpactEvent.ImpactResult.SKIP_ENTITY);
+        event.skipEntity();
     }
 
-    public static boolean cancelTeleport(final EntityTeleportEvent event) {
-        return event.getEntity() instanceof LivingEntity target
-            && BrewMarkerState.isActive(target, BrewMarkerKind.ENDER_INHIBITION);
+    public static boolean cancelTeleport(final LivingEntity target) {
+        return BrewMarkerState.isActive(target, BrewMarkerKind.ENDER_INHIBITION);
     }
 
-    public static void handleDeath(final LivingDeathEvent event) {
-        final LivingEntity target = event.getEntity();
+    public static void handleDeath(final LivingEntity target) {
         if (BrewMarkerState.isActive(target, BrewMarkerKind.KEEP_EFFECTS)) {
             BrewMarkerState.storeEffects(target, List.copyOf(target.getActiveEffects()));
         }
@@ -212,7 +177,7 @@ public final class BrewPersistentRuntime {
         }
     }
 
-    public static void handleDrops(final LivingDropsEvent event) {
+    public static void handleDrops(final LivingDropsContext event) {
         if (!(event.getEntity() instanceof Player player)
             || !BrewMarkerState.isActive(player, BrewMarkerKind.KEEP_INVENTORY)
             || event.getDrops().isEmpty()) {
@@ -225,7 +190,7 @@ public final class BrewPersistentRuntime {
         event.getDrops().clear();
     }
 
-    public static void handleClone(final PlayerEvent.Clone event) {
+    public static void handleClone(final PlayerCloneContext event) {
         if (!event.isWasDeath()) {
             BrewMarkerState.copyActive(event.getOriginal(), event.getEntity());
             return;

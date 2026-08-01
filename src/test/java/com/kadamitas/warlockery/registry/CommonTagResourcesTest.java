@@ -19,6 +19,10 @@ import org.junit.jupiter.api.TestFactory;
 
 final class CommonTagResourcesTest {
     private static final Path DATA = Path.of("src/main/resources/data");
+    private static final Path LANG = Path.of("src/main/resources/assets/warlockery/lang");
+    private static final List<String> LOCALES = List.of(
+        "en_us", "fr_fr", "es_es", "pt_br", "de_de", "pl_pl", "ja_jp", "zh_tw"
+    );
     private static final List<TagExpectation> METAL_TAGS = List.of(
         tag("c/tags/item/ingots/silver.json", "warlockery:silver_ingot"),
         tag("c/tags/item/raw_materials/silver.json", "warlockery:raw_silver"),
@@ -110,7 +114,7 @@ final class CommonTagResourcesTest {
     }
 
     @Test
-    void recipesUseCanonicalTagsWithoutLegacyForgeIngredients() throws IOException {
+    void recipesUseFabricConventionalTagsWithoutLegacyForgeIngredients() throws IOException {
         try (var paths = Files.walk(DATA.resolve("warlockery"))) {
             final List<Path> jsonFiles = paths.filter(path -> path.toString().endsWith(".json")).toList();
             assertTrue(jsonFiles.stream().noneMatch(path -> readString(path).contains("#forge:")));
@@ -124,13 +128,39 @@ final class CommonTagResourcesTest {
     }
 
     @Test
-    void legacyForgeTagResourcesAreGone() throws IOException {
+    void legacyForgeNamespaceTagResourcesAreGone() throws IOException {
         final Path legacy = DATA.resolve("forge/tags");
         if (!Files.exists(legacy)) {
             return;
         }
         try (var paths = Files.walk(legacy)) {
             assertEquals(0, paths.filter(Files::isRegularFile).count());
+        }
+    }
+
+    @Test
+    void publicItemTagsHaveRecipeViewerNamesInEverySupportedLocale() throws IOException {
+        final List<String> keys = Stream.of("c", "warlockery").flatMap(namespace -> {
+            final Path root = DATA.resolve(namespace).resolve("tags/item");
+            try {
+                return Files.walk(root)
+                    .filter(path -> path.toString().endsWith(".json"))
+                    .map(path -> "tag.item." + namespace + "." + root.relativize(path).toString()
+                        .replace('\\', '.')
+                        .replace('/', '.')
+                        .replaceFirst("\\.json$", ""));
+            } catch (IOException exception) {
+                throw new UncheckedIOException(root.toString(), exception);
+            }
+        }).sorted().toList();
+
+        assertFalse(keys.isEmpty());
+        for (String locale : LOCALES) {
+            final JsonObject translations = readJson(LANG.resolve(locale + ".json"));
+            keys.forEach(key -> {
+                assertTrue(translations.has(key), () -> locale + " lacks " + key);
+                assertFalse(translations.get(key).getAsString().isBlank(), () -> locale + " has a blank " + key);
+            });
         }
     }
 

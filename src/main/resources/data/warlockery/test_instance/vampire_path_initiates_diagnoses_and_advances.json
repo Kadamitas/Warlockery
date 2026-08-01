@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:vampire_path_initiates_diagnoses_and_advances",
   "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "structure": "fabric-gametest-api-v1:empty",
   "max_ticks": 100
 }

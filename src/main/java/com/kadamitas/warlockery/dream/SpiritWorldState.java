@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.dream;
 
+import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.util.DataParsing;
 import com.mojang.serialization.Codec;
 import java.util.List;
@@ -13,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import com.kadamitas.warlockery.fabric.event.PlayerCloneContext;
 
 public final class SpiritWorldState {
     private static final String ROOT = "WarlockerySpiritWorldSession";
@@ -35,7 +36,7 @@ public final class SpiritWorldState {
     }
 
     public static boolean active(final net.minecraft.world.entity.player.Player player) {
-        return player.getPersistentData().getCompound(ROOT).isPresent();
+        return WarlockeryEntityData.get(player).getCompound(ROOT).isPresent();
     }
 
     public static void begin(final ServerPlayer player, final Session session) {
@@ -57,15 +58,15 @@ public final class SpiritWorldState {
             player.registryAccess().createSerializationContext(NbtOps.INSTANCE),
             session.originalInventory()
         );
-        player.getPersistentData().put(ROOT, root);
+        WarlockeryEntityData.get(player).put(ROOT, root);
     }
 
     public static Optional<Session> read(final ServerPlayer player) {
-        return player.getPersistentData().getCompound(ROOT).flatMap(root -> read(player, root));
+        return WarlockeryEntityData.get(player).getCompound(ROOT).flatMap(root -> read(player, root));
     }
 
     public static void clear(final net.minecraft.world.entity.player.Player player) {
-        player.getPersistentData().remove(ROOT);
+        WarlockeryEntityData.get(player).remove(ROOT);
     }
 
     public static List<ItemStackWithSlot> snapshot(final Inventory inventory) {
@@ -84,9 +85,9 @@ public final class SpiritWorldState {
         inventory.setChanged();
     }
 
-    public static void copyAfterClone(final PlayerEvent.Clone event) {
-        event.getOriginal().getPersistentData().getCompound(ROOT)
-            .ifPresent(session -> event.getEntity().getPersistentData().put(ROOT, session.copy()));
+    public static void copyAfterClone(final PlayerCloneContext event) {
+        WarlockeryEntityData.get(event.getOriginal()).getCompound(ROOT)
+            .ifPresent(session -> WarlockeryEntityData.get(event.getEntity()).put(ROOT, session.copy()));
     }
 
     private static Optional<Session> read(final ServerPlayer player, final CompoundTag root) {

@@ -173,31 +173,40 @@ final class CrossModCatalogContractTest {
     }
 
     @Test
-    void fuelsUseTheForgeItemBurnTimeHook() {
-        final String item = read(Path.of("src/main/java/com/kadamitas/warlockery/brew/BrewItem.java"));
+    void fuelsUseFabricFuelValueEvents() {
+        final String events = read(Path.of(
+            "src/main/java/com/kadamitas/warlockery/fabric/WarlockeryFabricItemEvents.java"
+        ));
         final String kind = read(Path.of("src/main/java/com/kadamitas/warlockery/brew/BrewKind.java"));
-        assertTrue(item.contains("int getBurnTime(final ItemStack itemStack"));
-        assertTrue(item.contains("kind.fuelBurnTime()"));
+        assertTrue(events.contains("FuelValueEvents.BUILD.register"));
+        assertTrue(events.contains("item.kind().fuelBurnTime()"));
+        assertTrue(events.contains("builder.add(item, item.kind().fuelBurnTime())"));
         assertTrue(kind.contains("return this == COMBUSTION ? 2_400 : 0;"));
     }
 
     @Test
-    void machinesExposeSidedItemAndApplicableFluidCapabilities() {
+    void machinesExposeFabricSidedItemAndFluidStorage() {
         final String machine = read(Path.of(
             "src/main/java/com/kadamitas/warlockery/block/entity/MagicMachineBlockEntity.java"
         ));
         final String profiles = read(Path.of(
             "src/main/java/com/kadamitas/warlockery/crafting/MachineProfiles.java"
         ));
-        assertTrue(machine.contains("ForgeCapabilities.ITEM_HANDLER"));
-        assertTrue(machine.contains("ForgeCapabilities.FLUID_HANDLER"));
-        assertTrue(machine.contains("SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH)"));
+        assertTrue(machine.contains("implements WorldlyContainer, SidedStorageBlockEntity"));
+        assertTrue(machine.contains("SingleFluidStorage.withFixedCapacity"));
+        assertTrue(machine.contains("Storage<FluidVariant> getFluidStorage"));
+        assertTrue(machine.contains("FluidConstants.BUCKET"));
         assertTrue(machine.contains("machineProfile().supportsFluids()"));
+        final String mutation = read(Path.of(
+            "src/main/java/com/kadamitas/warlockery/mutation/AdvancedMutationResolver.java"
+        ));
+        assertTrue(mutation.contains("ItemStorage.SIDED.find"));
+        assertTrue(mutation.contains("Transaction.openOuter()"));
         idClassifications("machine", "block").forEach(id -> assertTrue(profiles.contains("\"" + id + "\""), id));
     }
 
     @Test
-    void spiritFluidRemainsPrivateAndManaInteroperabilityIsDocumentedHonestly() throws IOException {
+    void spiritFluidRemainsPrivateAndEnergyInteroperabilityUsesAPublicFabricLookup() throws IOException {
         final Path commonFluids = DATA.resolve("c/tags/fluid");
         if (Files.exists(commonFluids)) {
             try (var paths = Files.walk(commonFluids)) {
@@ -210,9 +219,17 @@ final class CrossModCatalogContractTest {
                 });
             }
         }
-        final String documentation = read(Path.of("docs/CROSS_MOD_COMPATIBILITY.md"));
-        assertTrue(documentation.contains("Forge 65.1.0 has no universal mana capability"));
-        assertTrue(documentation.contains("Warlockery altar power is not Forge Energy"));
+        final String compatibility = read(Path.of(
+            "src/main/java/com/kadamitas/warlockery/compat/fabric/FabricEnergyCompatibility.java"
+        ));
+        final String reserve = read(Path.of(
+            "src/main/java/com/kadamitas/warlockery/compat/fabric/EnergyReserve.java"
+        ));
+        assertTrue(compatibility.contains("public static final ItemApiLookup<EnergyReserve, Void> ITEM"));
+        assertTrue(compatibility.contains("ItemApiLookup.get"));
+        assertTrue(compatibility.contains("Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, \"energy_reserve\")"));
+        assertTrue(reserve.contains("public interface EnergyReserve"));
+        assertTrue(reserve.contains("long extract(long maximum, boolean simulate)"));
     }
 
     @Test
