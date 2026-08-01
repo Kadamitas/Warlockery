@@ -136,6 +136,8 @@ jobs:
             local metadata
             local relations
             local response
+            local response_file
+            local http_status
             local file_id
             loader_version="$(resolve_version "$loader")"
             test -n "$loader_version" || { echo "CurseForge does not list loader $loader"; exit 1; }
@@ -165,12 +167,22 @@ jobs:
               '{changelog: $changelog, changelogType: "markdown", displayName: $displayName, gameVersionNames: $gameVersionNames, releaseType: $releaseType}
                 + (if ($relations.projects | length) == 0 then {} else {relations: $relations} end)')"
 
-            response="$(curl --silent --show-error --fail-with-body \
+            response_file="$(mktemp)"
+            http_status="$(curl --silent --show-error \
               --request POST \
               --header "X-Api-Token: $CURSEFORGE_API_TOKEN" \
               --form-string "metadata=$metadata" \
               --form "file=@${file}" \
+              --output "$response_file" \
+              --write-out '%{http_code}' \
               "https://minecraft.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
+            response="$(cat "$response_file")"
+            rm -f "$response_file"
+            if (( http_status < 200 || http_status >= 300 )); then
+              echo "CurseForge upload failed with HTTP ${http_status}"
+              jq . <<< "$response" || echo "$response"
+              return 1
+            fi
             file_id="$(jq --exit-status --raw-output .id <<< "$response")"
             echo "| ${loader} | ${file_id} | ${release_type} |" >> "$GITHUB_STEP_SUMMARY"
           }
