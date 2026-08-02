@@ -33,14 +33,14 @@ final class ManualSubchapterTest {
             .findFirst()
             .orElseThrow();
 
-        assertEquals(14, chapter.sections().size());
+        assertEquals(13, chapter.sections().size());
         assertTrue(chapter.sections().stream().allMatch(section -> section.startsWith("fetish_")));
-        assertEquals(6, chapter.sections().stream()
+        assertEquals(5, chapter.sections().stream()
             .filter(section -> section.startsWith("fetish_dream_weaver_"))
             .count());
         assertEquals(chapter.sections(), profile.sectionsInChapter(chapter.id(), profile.sections()));
         assertEquals(
-            List.of("sympathetic_vials"),
+            List.of("sympathetic_vials", "beast_speech"),
             profile.chapters().stream()
                 .filter(candidate -> candidate.id().equals("binding_tools"))
                 .findFirst()

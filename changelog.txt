@@ -1,3 +1,11 @@
+Warlockery 1.2.1
+================
+
+- Added clearer introductions and useful pictograms throughout the in-game manuals, with biome chapters that explain what each kind of land contains.
+- Fixed Observations of an Immortal so Torn Pages reveal its vampire lessons one at a time without unlocking unrelated books.
+- Made the Book of Biomes remember the selected biome and guide the Rite of Shifting Seasons across scalable chunk rings with optional empowerment and up to three Nether Stars.
+- Expanded animal, demon, goblin, and hobgoblin trade pools with more varied modern rewards and balanced rare exchanges.
+
 Warlockery 1.2.0
 ================
 

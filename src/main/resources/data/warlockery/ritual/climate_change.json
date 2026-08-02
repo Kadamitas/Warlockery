@@ -13,21 +13,6 @@
   "requirements": {
     "ingredients": [
       {
-        "ingredient": "warlockery:bookbiomes2",
-        "count": 1,
-        "consume": false
-      },
-      {
-        "ingredient": "warlockery:biomenote",
-        "count": 1,
-        "consume": false
-      },
-      {
-        "ingredient": "warlockery:ingredient_seer_stone",
-        "count": 1,
-        "consume": false
-      },
-      {
         "ingredient": "#c:dusts/glowstone",
         "count": 4,
         "consume": true
@@ -38,6 +23,6 @@
     "raining": false,
     "thundering": false,
     "dimension": "",
-    "minimum_players": 5
+    "minimum_players": 1
   }
 }

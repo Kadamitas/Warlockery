@@ -238,7 +238,7 @@ public record ManualProfile(
             return "item.warlockery." + "brew_" + section.substring(BREW_PREFIX.length());
         }
         if (isBiomeSection(section)) {
-            return "manual.warlockery.biome.entry";
+            return translatedBiomeEntryKey(section.substring(BIOME_PREFIX.length()));
         }
         if (isMachineRecipeSection(section)) {
             return "manual.warlockery.machine_recipe.entry";
@@ -247,6 +247,9 @@ public record ManualProfile(
     }
 
     public String translatedSectionTitleKey(final String section) {
+        if ("preamble".equals(section)) {
+            return "manual.warlockery.preamble.title";
+        }
         if (isRitualSection(section)) {
             return "ritual.warlockery." + section.substring(RITUAL_PREFIX.length()) + ".title";
         }
@@ -254,12 +257,25 @@ public record ManualProfile(
             return translatedSectionKey(section);
         }
         if (isBiomeSection(section)) {
-            return "biome.minecraft." + section.substring(BIOME_PREFIX.length());
+            return translatedBiomeTitleKey(section.substring(BIOME_PREFIX.length()));
         }
         if (isMachineRecipeSection(section)) {
             return "manual.warlockery.recipe." + section.substring(MACHINE_RECIPE_PREFIX.length()) + ".title";
         }
         return translatedSectionKey(section) + ".title";
+    }
+
+    public static String translatedBiomeEntryKey(final String biomeId) {
+        final String section = BIOME_PREFIX + biomeId;
+        return BIOME_SECTIONS.contains(section)
+            ? "manual.warlockery.biome.entry." + biomeChapter(section)
+            : "manual.warlockery.biome.entry";
+    }
+
+    public static String translatedBiomeTitleKey(final String biomeId) {
+        return "sulfur_caves".equals(biomeId)
+            ? "biome.warlockery.sulfur_caves"
+            : "biome.minecraft." + biomeId;
     }
 
     public Chapter chapterFor(final String section) {
@@ -304,7 +320,8 @@ public record ManualProfile(
     }
 
     private static ManualProfile profile(final String id, final String title, final String... sections) {
-        return groupedProfile(id, title, chapter("contents", "manual.warlockery.chapter.contents", sections));
+        final Chapter contents = chapter("contents", "manual.warlockery.chapter.contents", sections);
+        return new ManualProfile(id, title, contents.sections(), List.of(contents));
     }
 
     private static ManualProfile ritualProfile() {
@@ -440,7 +457,6 @@ public record ManualProfile(
                 "manual.warlockery.chapter.bound_fetishes",
                 "fetish_scarecrow",
                 "fetish_trent_effigy",
-                "fetish_dream_weaver_restoration",
                 "fetish_dream_weaver_fasting",
                 "fetish_dream_weaver_fleet_foot",
                 "fetish_dream_weaver_intensity",
@@ -456,7 +472,8 @@ public record ManualProfile(
             chapter(
                 "binding_tools",
                 "manual.warlockery.chapter.binding_tools",
-                "sympathetic_vials"
+                "sympathetic_vials",
+                "beast_speech"
             ),
             chapter(
                 "spirit_world",
@@ -625,7 +642,13 @@ public record ManualProfile(
         final String title,
         final Chapter... chapters
     ) {
-        final List<Chapter> ordered = List.of(chapters);
+        final List<Chapter> supplied = List.of(chapters);
+        final Chapter introduction = chapter(
+            "introduction",
+            "manual.warlockery.preamble.title",
+            "preamble"
+        );
+        final List<Chapter> ordered = Stream.concat(Stream.of(introduction), supplied.stream()).toList();
         return new ManualProfile(
             id,
             title,
@@ -668,11 +691,14 @@ public record ManualProfile(
         if (startsWithAny(id, "the_end", "end_", "small_end_islands")) {
             return "end_biomes";
         }
+        if (id.equals("cherry_grove")) {
+            return "green_lands";
+        }
+        if (containsAny(id, "snow", "ice", "frozen", "peak", "slope") || id.equals("grove")) {
+            return "cold_lands_and_peaks";
+        }
         if (containsAny(id, "ocean", "river", "beach", "shore", "swamp")) {
             return "waters_and_shores";
-        }
-        if (containsAny(id, "snow", "ice", "frozen", "grove", "peak", "slope")) {
-            return "cold_lands_and_peaks";
         }
         if (containsAny(id, "desert", "savanna", "badlands", "windswept")) {
             return "dry_and_windswept_lands";

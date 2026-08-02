@@ -3,6 +3,8 @@ package com.kadamitas.warlockery.transformation;
 import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.item.BloodGobletItem;
 import com.kadamitas.warlockery.item.BloodGobletState;
+import com.kadamitas.warlockery.item.ManualItem;
+import com.kadamitas.warlockery.item.ManualProgress;
 import com.kadamitas.warlockery.item.SympatheticBinding;
 import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.registry.ModBlocks;
@@ -27,6 +29,34 @@ import net.minecraft.world.phys.AABB;
 
 public final class SupernaturalProgressionGameTests {
     private SupernaturalProgressionGameTests() {
+    }
+
+    public static void tornPageUseRevealsOnlyTheNextImmortalLesson(final GameTestHelper helper) {
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        final ItemStack observations = new ItemStack(ModItems.ALL.get("vampirebook").get());
+        final ItemStack pages = new ItemStack(ModItems.ALL.get("ingredient_vbook_page").get(), 2);
+        player.getInventory().setItem(1, observations);
+        player.setItemInHand(InteractionHand.MAIN_HAND, pages);
+
+        helper.assertValueEqual(
+            pages.getItem().use(helper.getLevel(), player, InteractionHand.MAIN_HAND),
+            InteractionResult.SUCCESS,
+            "using a Torn Page while carrying Observations of an Immortal"
+        );
+
+        final ManualItem manual = (ManualItem) observations.getItem();
+        helper.assertValueEqual(
+            ManualProgress.insertedTornPages(manual.profile(), observations),
+            1,
+            "inserted Torn Page count"
+        );
+        helper.assertValueEqual(
+            ManualProgress.visibleSections(manual.profile(), observations).getLast(),
+            "vampire_level_2",
+            "only the next vampire lesson"
+        );
+        helper.assertValueEqual(pages.getCount(), 1, "remaining Torn Pages");
+        helper.succeed();
     }
 
     public static void vampirePathInitiatesDiagnosesAndAdvances(final GameTestHelper helper) {

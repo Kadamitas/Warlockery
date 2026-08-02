@@ -170,11 +170,16 @@ public final class RitualSelectionScreen extends Screen {
     private static Component requirementLine(final RitualManager.RequirementStatus requirement) {
         final Component label = requirementLabel(requirement);
         final Component line = switch (requirement.category()) {
-            case "chalk", "ingredient", "entity", "coven" -> Component.translatable(
+            case "chalk", "ingredient", "entity", "coven", "optional" -> Component.translatable(
                 "screen.warlockery.ritual.requirement_count", label, requirement.present(), requirement.required()
             );
             default -> Component.translatable("screen.warlockery.ritual.requirement", label);
         };
+        if ("optional".equals(requirement.category())) {
+            return Component.literal(requirement.met() ? "◇ " : "○ ")
+                .append(line)
+                .withColor(requirement.met() ? 0xDDAA33 : 0xAAAAAA);
+        }
         return Component.literal(requirement.met() ? "✓ " : "✗ ")
             .append(line)
             .withColor(requirement.met() ? 0x55FF55 : 0xFF5555);
@@ -191,6 +196,7 @@ public final class RitualSelectionScreen extends Screen {
             case "center" -> Component.translatable("screen.warlockery.ritual.requirement.center");
             case "session" -> Component.translatable("screen.warlockery.ritual.requirement.inactive");
             case "coven" -> Component.translatable("screen.warlockery.ritual.requirement.coven");
+            case "optional" -> Component.translatable("screen.warlockery.ritual.requirement." + requirement.label());
             case "condition" -> Component.translatable("screen.warlockery.ritual.requirement." + requirement.label().replace(':', '.'));
             default -> Component.literal(requirement.label());
         };

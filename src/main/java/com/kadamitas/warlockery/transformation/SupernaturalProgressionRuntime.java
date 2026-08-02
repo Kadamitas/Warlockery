@@ -1208,7 +1208,7 @@ public final class SupernaturalProgressionRuntime {
                 final ManualItem manual = (ManualItem) stack.getItem();
                 return new ManualState(
                     true,
-                    Math.max(0, ManualProgress.unlockedSectionCount(manual.profile(), stack) - 1)
+                    ManualProgress.insertedTornPages(manual.profile(), stack)
                 );
             })
             .max(Comparator.comparingInt(ManualState::pages))

@@ -10,7 +10,9 @@ public final class ManualProgress {
     private static final String OBSERVATIONS_ID = "vampirebook";
     private static final String TORN_PAGE_ID = "ingredient_vbook_page";
     private static final String UNLOCKED_SECTIONS = "WarlockeryUnlockedImmortalSections";
-    private static final int INITIAL_SECTIONS = 3;
+    private static final String PROGRESS_VERSION = "WarlockeryImmortalManualVersion";
+    private static final int CURRENT_PROGRESS_VERSION = 2;
+    private static final int INITIAL_SECTIONS = 4;
 
     private ManualProgress() {
     }
@@ -23,14 +25,28 @@ public final class ManualProgress {
         if (!isObservations(profile)) {
             return profile.sections().size();
         }
-        final int stored = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
-            .copyTag()
-            .getIntOr(UNLOCKED_SECTIONS, INITIAL_SECTIONS);
-        return Math.clamp(stored, INITIAL_SECTIONS, profile.sections().size());
+        final var tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (!tag.contains(UNLOCKED_SECTIONS)) {
+            return INITIAL_SECTIONS;
+        }
+        final int stored = tag.getIntOr(UNLOCKED_SECTIONS, INITIAL_SECTIONS);
+        if (tag.getIntOr(PROGRESS_VERSION, 1) >= CURRENT_PROGRESS_VERSION) {
+            return Math.clamp(stored, INITIAL_SECTIONS, profile.sections().size());
+        }
+        final int migrated = Math.clamp(stored + 1, INITIAL_SECTIONS, profile.sections().size());
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, data -> {
+            data.putInt(UNLOCKED_SECTIONS, migrated);
+            data.putInt(PROGRESS_VERSION, CURRENT_PROGRESS_VERSION);
+        });
+        return migrated;
     }
 
     public static int requiredTornPages(final ManualProfile profile, final ItemStack stack) {
         return isObservations(profile) ? profile.sections().size() - unlockedSectionCount(profile, stack) : 0;
+    }
+
+    public static int insertedTornPages(final ManualProfile profile, final ItemStack stack) {
+        return isObservations(profile) ? unlockedSectionCount(profile, stack) - INITIAL_SECTIONS : 0;
     }
 
     static RevealResult insertTornPage(
@@ -48,8 +64,10 @@ public final class ManualProgress {
             return RevealResult.complete();
         }
         final String revealedSection = bookProfile.sections().get(unlocked);
-        CustomData.update(DataComponents.CUSTOM_DATA, book,
-            data -> data.putInt(UNLOCKED_SECTIONS, unlocked + 1));
+        CustomData.update(DataComponents.CUSTOM_DATA, book, data -> {
+            data.putInt(UNLOCKED_SECTIONS, unlocked + 1);
+            data.putInt(PROGRESS_VERSION, CURRENT_PROGRESS_VERSION);
+        });
         if (!infiniteMaterials) {
             page.shrink(1);
         }
