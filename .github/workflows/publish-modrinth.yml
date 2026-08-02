@@ -1,0 +1,207 @@
+name: Publish to Modrinth
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: GitHub release tag to publish
+        required: true
+        default: v1.2.1
+      loader:
+        description: Mod loader versions to publish
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - forge
+          - neoforge
+          - fabric
+      release_type:
+        description: Modrinth release channel
+        required: true
+        default: release
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modrinth-${{ inputs.tag || github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID }}
+      RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
+      REQUESTED_LOADER: ${{ inputs.loader || 'all' }}
+      REQUESTED_RELEASE_TYPE: ${{ inputs.release_type }}
+      RELEASE_IS_PRERELEASE: ${{ github.event.release.prerelease }}
+
+    steps:
+      - name: Validate publishing configuration
+        shell: bash
+        run: |
+          test -n "$MODRINTH_TOKEN" || { echo "MODRINTH_TOKEN is not configured"; exit 1; }
+          test -n "$MODRINTH_PROJECT_ID" || { echo "MODRINTH_PROJECT_ID is not configured"; exit 1; }
+          test -n "$RELEASE_TAG" || { echo "A GitHub release tag is required"; exit 1; }
+          case "$REQUESTED_LOADER" in
+            all|forge|neoforge|fabric) ;;
+            *) echo "Unsupported loader selection: $REQUESTED_LOADER"; exit 1 ;;
+          esac
+
+      - name: Download release files
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${RELEASE_TAG#v}"
+          mkdir -p artifacts
+
+          download_file() {
+            local file="$1"
+            gh release download "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --dir artifacts \
+              --pattern "$file"
+            test -s "artifacts/$file" || { echo "Missing release asset: $file"; exit 1; }
+          }
+
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "forge" ]]; then
+            download_file "warlockery-${version}.jar"
+          fi
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "neoforge" ]]; then
+            download_file "warlockery-neoforge-${version}.jar"
+          fi
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "fabric" ]]; then
+            download_file "warlockery-fabric-${version}.jar"
+          fi
+
+          gh release view "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json body \
+            --jq .body > artifacts/changelog.md
+          test -s artifacts/changelog.md
+
+      - name: Publish loader versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${RELEASE_TAG#v}"
+          release_type="$REQUESTED_RELEASE_TYPE"
+          if [[ -z "$release_type" ]]; then
+            if [[ "${RELEASE_TAG,,}" == *alpha* ]]; then
+              release_type="alpha"
+            elif [[ "${RELEASE_TAG,,}" == *beta* || "$RELEASE_IS_PRERELEASE" == "true" ]]; then
+              release_type="beta"
+            else
+              release_type="release"
+            fi
+          fi
+
+          if ! existing_versions="$(curl --silent --show-error --fail \
+              --header "Authorization: $MODRINTH_TOKEN" \
+              --header "User-Agent: Kadamitas/Warlockery-GitHub-Actions/1.0" \
+              "https://api.modrinth.com/v2/project/${MODRINTH_PROJECT_ID}/version")"; then
+            echo "Existing versions are not readable yet; continuing with an empty draft project"
+            existing_versions='[]'
+          fi
+
+          publish_version() {
+            local loader="$1"
+            local display_loader="$2"
+            local file="$3"
+            local dependencies='[]'
+            local metadata
+            local response
+            local response_file
+            local http_status
+            local version_id
+
+            if jq --exit-status \
+              --arg version "$version" \
+              --arg loader "$loader" \
+              'any(.[]; .version_number == $version and (.loaders | index($loader) != null))' \
+              <<< "$existing_versions" > /dev/null; then
+              echo "Warlockery ${version} for ${display_loader} is already on Modrinth"
+              return 0
+            fi
+
+            if [[ "$loader" == "fabric" ]]; then
+              dependencies='[{"project_id":"P7dR8mSH","dependency_type":"required"}]'
+            fi
+
+            metadata="$(jq --null-input --compact-output \
+              --arg name "Warlockery ${version} for ${display_loader}" \
+              --arg version "$version" \
+              --arg changelog "$(cat artifacts/changelog.md)" \
+              --arg project_id "$MODRINTH_PROJECT_ID" \
+              --arg release_type "$release_type" \
+              --arg loader "$loader" \
+              --argjson dependencies "$dependencies" \
+              '{
+                name: $name,
+                version_number: $version,
+                changelog: $changelog,
+                dependencies: $dependencies,
+                game_versions: ["26.2"],
+                version_type: $release_type,
+                loaders: [$loader],
+                featured: true,
+                status: "listed",
+                project_id: $project_id,
+                file_parts: ["file"],
+                primary_file: "file",
+                environment: "client_and_server"
+              }')"
+
+            response_file="$(mktemp)"
+            http_status="$(curl --silent --show-error \
+              --request POST \
+              --header "Authorization: $MODRINTH_TOKEN" \
+              --header "User-Agent: Kadamitas/Warlockery-GitHub-Actions/1.0" \
+              --form-string "data=$metadata" \
+              --form "file=@${file}" \
+              --output "$response_file" \
+              --write-out '%{http_code}' \
+              "https://api.modrinth.com/v2/version")"
+            response="$(cat "$response_file")"
+            rm -f "$response_file"
+            if (( http_status < 200 || http_status >= 300 )); then
+              echo "Modrinth upload failed with HTTP ${http_status}"
+              jq . <<< "$response" || echo "$response"
+              return 1
+            fi
+
+            version_id="$(jq --exit-status --raw-output .id <<< "$response")"
+            echo "| ${display_loader} | ${version_id} | ${release_type} |" >> "$GITHUB_STEP_SUMMARY"
+          }
+
+          {
+            echo "## Modrinth publication"
+            echo
+            echo "| Loader | Version ID | Channel |"
+            echo "| --- | --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "forge" ]]; then
+            publish_version "forge" "Forge" "artifacts/warlockery-${version}.jar"
+          fi
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "neoforge" ]]; then
+            publish_version "neoforge" "NeoForge" "artifacts/warlockery-neoforge-${version}.jar"
+          fi
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "fabric" ]]; then
+            publish_version "fabric" "Fabric" "artifacts/warlockery-fabric-${version}.jar"
+          fi
