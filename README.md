@@ -17,7 +17,7 @@ JEI integration is optional and activates when a compatible Forge JEI build is i
 
 ## Languages
 
-Warlockery includes English, French, Spanish, Brazilian Portuguese, German, Polish, Japanese, and Traditional Chinese for Taiwan. Minecraft uses the English text as a fallback when a translated entry is unavailable.
+Warlockery includes English, French, Spanish, Brazilian Portuguese, German, Polish, Japanese, Korean, Russian, Turkish, Simplified Chinese, and Traditional Chinese for Taiwan. Minecraft uses the English text as a fallback when a translated entry is unavailable.
 
 ## Custom textures
 

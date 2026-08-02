@@ -1,3 +1,10 @@
+Warlockery 1.2.2
+================
+
+- Added complete Simplified Chinese, Russian, Korean, and Turkish translations.
+- Reviewed brew names and instructions so magical brews are not described as beer, coffee, or tea.
+- Added localization checks for complete keys, preserved placeholders, intended locale files, and readable manuals.
+
 Warlockery 1.2.1
 ================
 

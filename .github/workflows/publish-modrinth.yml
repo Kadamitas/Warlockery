@@ -9,7 +9,7 @@ on:
       tag:
         description: GitHub release tag to publish
         required: true
-        default: v1.2.1
+        default: v1.2.2
       loader:
         description: Mod loader versions to publish
         required: true

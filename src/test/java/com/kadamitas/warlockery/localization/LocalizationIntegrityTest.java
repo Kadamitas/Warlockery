@@ -42,7 +42,21 @@ final class LocalizationIntegrityTest {
     private static final Path DATA = RESOURCES.resolve("data/warlockery");
     private static final Path JAVA = Path.of("src", "main", "java");
     private static final List<String> LOCALES = List.of(
-        "en_us", "fr_fr", "es_es", "pt_br", "de_de", "pl_pl", "ja_jp", "zh_cn", "zh_tw"
+        "en_us", "fr_fr", "es_es", "pt_br", "de_de", "pl_pl", "ja_jp", "ko_kr", "ru_ru", "tr_tr",
+        "zh_cn", "zh_tw"
+    );
+    private static final Map<String, Pattern> ORDINARY_DRINK_TERMS = Map.ofEntries(
+        Map.entry("de_de", words("bier", "kaffee", "tee")),
+        Map.entry("es_es", words("cerveza", "cervecero", "café", "té")),
+        Map.entry("fr_fr", words("bière", "café", "thé")),
+        Map.entry("ja_jp", Pattern.compile("ビール|コーヒー|お茶|紅茶")),
+        Map.entry("ko_kr", Pattern.compile("맥주|커피|홍차|녹차")),
+        Map.entry("pl_pl", words("piwo", "piwny", "kawa", "herbata")),
+        Map.entry("pt_br", words("cerveja", "café", "chá")),
+        Map.entry("ru_ru", words("пиво", "пивной", "кофе", "чай")),
+        Map.entry("tr_tr", words("bira", "kahve", "çay")),
+        Map.entry("zh_cn", Pattern.compile("啤酒|咖啡|茶")),
+        Map.entry("zh_tw", Pattern.compile("啤酒|咖啡|茶"))
     );
     private static final Pattern PLACEHOLDER = Pattern.compile("%(?:\\d+\\$)?[a-zA-Z%]");
     private static final Pattern TRANSLATION_SHAPED_STRING = Pattern.compile(
@@ -62,6 +76,7 @@ final class LocalizationIntegrityTest {
                 final String translated = translations.get(key);
                 assertFalse(translated.isBlank(), locale + " has a blank value for " + key);
                 assertFalse(translated.contains("\uFFFD"), locale + " has a replacement character for " + key);
+                assertFalse(translated.contains("—"), locale + " has an em dash in " + key);
                 assertEquals(
                     placeholders(english),
                     placeholders(translated),
@@ -69,6 +84,28 @@ final class LocalizationIntegrityTest {
                 );
             });
         }
+    }
+
+    @Test
+    void onlyTheIntendedLocaleFilesArePackaged() throws IOException {
+        try (Stream<Path> paths = Files.list(ASSETS.resolve("lang"))) {
+            final Set<String> packaged = paths
+                .filter(path -> path.toString().endsWith(".json"))
+                .map(path -> path.getFileName().toString().replaceFirst("\\.json$", ""))
+                .collect(Collectors.toUnmodifiableSet());
+            assertEquals(Set.copyOf(LOCALES), packaged);
+            assertFalse(packaged.contains("uk_ua"));
+        }
+    }
+
+    @Test
+    void magicalBrewsAreNeverTranslatedAsOrdinaryDrinks() {
+        ORDINARY_DRINK_TERMS.forEach((locale, forbidden) -> locale(locale).entrySet().stream()
+            .filter(entry -> entry.getKey().toLowerCase(java.util.Locale.ROOT).contains("brew"))
+            .forEach(entry -> assertFalse(
+                forbidden.matcher(entry.getValue()).find(),
+                locale + " describes " + entry.getKey() + " as an ordinary drink: " + entry.getValue()
+            )));
     }
 
     @Test
@@ -272,6 +309,13 @@ final class LocalizationIntegrityTest {
 
     private static List<String> placeholders(final String value) {
         return PLACEHOLDER.matcher(value).results().map(MatchResult::group).toList();
+    }
+
+    private static Pattern words(final String... terms) {
+        return Pattern.compile(
+            "(?iu)(?<!\\p{L})(?:" + Stream.of(terms).map(Pattern::quote).collect(Collectors.joining("|"))
+                + ")(?!\\p{L})"
+        );
     }
 
     private static void assertKey(final String key) {

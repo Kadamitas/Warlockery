@@ -85,7 +85,7 @@ When a data format changes, update its Codec, validation, reload listener, and t
 
 ## Localization
 
-English in `assets/warlockery/lang/en_us.json` is the source language. French, Spanish, Brazilian Portuguese, German, Polish, Japanese, and Traditional Chinese for Taiwan use `fr_fr`, `es_es`, `pt_br`, `de_de`, `pl_pl`, `ja_jp`, and `zh_tw` files in the same directory.
+English in `assets/warlockery/lang/en_us.json` is the source language. French, Spanish, Brazilian Portuguese, German, Polish, Japanese, Korean, Russian, Turkish, Simplified Chinese, and Traditional Chinese for Taiwan use `fr_fr`, `es_es`, `pt_br`, `de_de`, `pl_pl`, `ja_jp`, `ko_kr`, `ru_ru`, `tr_tr`, `zh_cn`, and `zh_tw` files in the same directory.
 
 Use `Component.translatable` for player-facing Java text. Data-driven rituals store `title_key` and `description_key` values rather than embedded English sentences. Keep every locale's key set identical to `en_us.json`, save files as UTF-8, preserve formatting placeholders such as `%s`, and choose vocabulary by gameplay meaning. Run the localization integrity test after changing any locale:
 

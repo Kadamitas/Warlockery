@@ -22,7 +22,7 @@ final class ReleaseMetadataTest {
         final var matcher = GRADLE_VERSION.matcher(build);
         assertTrue(matcher.find());
         final String version = matcher.group(1);
-        assertEquals("1.2.1", version);
+        assertEquals("1.2.2", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
