@@ -10,6 +10,7 @@ import com.kadamitas.warlockery.item.BroomMotionGameTests;
 import com.kadamitas.warlockery.item.SpiritLocatorGameTests;
 import com.kadamitas.warlockery.item.VeilWaystoneGameTests;
 import com.kadamitas.warlockery.ritual.WarlockeryGameTests;
+import com.kadamitas.warlockery.ritual.BiomeRitualGameTests;
 import com.kadamitas.warlockery.ritual.NamiRitualGameTests;
 import com.kadamitas.warlockery.ritual.SeerCovenGameTests;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionGameTests;
@@ -25,6 +26,12 @@ public final class ModGameTests {
 
     static {
         REGISTRY.register("ritual_catalog_loads", () -> WarlockeryGameTests::ritualCatalogLoads);
+        REGISTRY.register("biome_book_capture_persists_and_names",
+            () -> BiomeRitualGameTests::biomeBookCapturePersistsAndNames);
+        REGISTRY.register("climate_shift_uses_bound_book_target",
+            () -> BiomeRitualGameTests::climateShiftUsesBoundBookTarget);
+        REGISTRY.register("climate_shift_empowerment_and_stars_are_optional_and_capped",
+            () -> BiomeRitualGameTests::climateShiftEmpowermentAndStarsAreOptionalAndCapped);
         REGISTRY.register("blood_audience_transforms_unmarried_nami",
             () -> NamiRitualGameTests::bloodAudienceTransformsUnmarriedNami);
         REGISTRY.register("blood_audience_protects_married_nami",
@@ -153,6 +160,8 @@ public final class ModGameTests {
             () -> SolidifyingBrewGameTests::sandstoneConvertsEveryHollowTearsState);
         REGISTRY.register("solidifying_erosion_clears_terrain_below_every_hollow_tears_state",
             () -> SolidifyingBrewGameTests::erosionClearsTerrainBelowEveryHollowTearsState);
+        REGISTRY.register("torn_page_use_reveals_only_the_next_immortal_lesson",
+            () -> SupernaturalProgressionGameTests::tornPageUseRevealsOnlyTheNextImmortalLesson);
         REGISTRY.register("vampire_path_initiates_diagnoses_and_advances",
             () -> SupernaturalProgressionGameTests::vampirePathInitiatesDiagnosesAndAdvances);
         REGISTRY.register("vampire_creation_rejects_foreign_goblet_then_completes_path",

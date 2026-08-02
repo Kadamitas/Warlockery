@@ -12,42 +12,51 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 final class GobliniteEconomyTest {
-    private static final Path ENTITY_SOURCE = Path.of(
-        "src/main/java/com/kadamitas/warlockery/entity/HobgoblinEntity.java"
-    );
     private static final Path DATA = Path.of("src/main/resources/data/warlockery");
 
+    @BeforeAll
+    static void bootstrapMinecraftRegistries() {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+    }
+
     @Test
-    void goblinitePurchasesUseScarceMaterialPrices() throws IOException {
-        final String source = normalizedSource();
+    void goblinitePurchasesUseScarceMaterialPrices() {
+        final List<GoblinTradeCatalog.OfferSpec> miner = GoblinTradeCatalog.coreOffers(
+            HobgoblinEntity.GoblinProfession.MINER
+        );
+        final List<GoblinTradeCatalog.OfferSpec> smith = GoblinTradeCatalog.coreOffers(
+            HobgoblinEntity.GoblinProfession.SMITH
+        );
+        final List<GoblinTradeCatalog.OfferSpec> prospector = GoblinTradeCatalog.coreOffers(
+            HobgoblinEntity.GoblinProfession.PROSPECTOR
+        );
 
         assertAll(
-            () -> assertTrue(source.contains(
-                "new MerchantOffer(new ItemCost(Items.EMERALD, 8), "
-                    + "new ItemStack(ModItems.ALL.get(\"raw_delvealloy\").get()),"
-            ), "one raw goblinite must cost eight emeralds"),
-            () -> assertTrue(source.contains(
-                "new MerchantOffer(new ItemCost(Items.EMERALD, 32), "
-                    + "new ItemStack(ModItems.ALL.get(\"delvealloypickaxe\").get()),"
-            ), "a goblinite pickaxe must cost thirty-two emeralds"),
-            () -> assertTrue(source.contains(
-                "new MerchantOffer(new ItemCost(Items.EMERALD, 12), "
-                    + "new ItemStack(ModItems.ALL.get(\"ingredient_delvealloynugget\").get()),"
-            ), "one goblinite nugget must cost twelve emeralds")
+            () -> assertTrue(hasOffer(miner, "minecraft:emerald", 8, "warlockery:raw_delvealloy", 1),
+                "one raw goblinite must cost eight emeralds"),
+            () -> assertTrue(hasOffer(smith, "minecraft:emerald", 32, "warlockery:delvealloypickaxe", 1),
+                "a goblinite pickaxe must cost thirty-two emeralds"),
+            () -> assertTrue(hasOffer(prospector, "minecraft:emerald", 12,
+                "warlockery:ingredient_delvealloynugget", 1),
+                "one goblinite nugget must cost twelve emeralds")
         );
     }
 
     @Test
-    void gobliniteNuggetRequiresEighteenDust() throws IOException {
-        final String source = normalizedSource();
+    void gobliniteNuggetRequiresEighteenDust() {
+        final List<GoblinTradeCatalog.OfferSpec> prospector = GoblinTradeCatalog.coreOffers(
+            HobgoblinEntity.GoblinProfession.PROSPECTOR
+        );
 
-        assertTrue(source.contains(
-            "new ItemCost(ModItems.ALL.get(\"ingredient_delvealloydust\").get(), 18), "
-                + "new ItemStack(ModItems.ALL.get(\"ingredient_delvealloynugget\").get()),"
-        ), "one goblinite nugget must require eighteen dust");
+        assertTrue(hasOffer(prospector, "warlockery:ingredient_delvealloydust", 18,
+            "warlockery:ingredient_delvealloynugget", 1), "one goblinite nugget must require eighteen dust");
     }
 
     @Test
@@ -103,7 +112,16 @@ final class GobliniteEconomyTest {
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
-    private static String normalizedSource() throws IOException {
-        return Files.readString(ENTITY_SOURCE).replaceAll("\\s+", " ");
+    private static boolean hasOffer(
+        final List<GoblinTradeCatalog.OfferSpec> offers,
+        final String cost,
+        final int costCount,
+        final String reward,
+        final int rewardCount
+    ) {
+        return offers.stream().anyMatch(offer -> offer.cost().id().equals(cost)
+            && offer.costCount() == costCount
+            && offer.reward().id().equals(reward)
+            && offer.rewardCount() == rewardCount);
     }
 }

@@ -1,3 +1,12 @@
+Warlockery 1.2.1
+================
+
+- Rewrote manual introductions and articles with clearer instructions, organized lessons, and useful pictograms.
+- Restored Torn Page progression so Observations of an Immortal reveals its lessons in order.
+- Made the Book of Biomes remember a bound biome and use it as the target for the climate-changing rite.
+- Scaled the climate rite from one chunk to additional chunk rings with empowerment and up to three Nether Stars.
+- Expanded animal, demon, goblin, and hobgoblin trades with broader modern loot and balanced rare rewards.
+
 Warlockery 1.2.0
 ================
 

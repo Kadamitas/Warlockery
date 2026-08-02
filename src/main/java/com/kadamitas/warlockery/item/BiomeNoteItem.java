@@ -30,15 +30,15 @@ public final class BiomeNoteItem extends Item {
         BiomeNoteState.write(context.getItemInHand(), biome);
         context.getItemInHand().set(DataComponents.CUSTOM_NAME, Component.translatable(
             "item.warlockery.biomenote.recorded",
-            biome.toString()
+            BiomeNoteState.displayName(biome)
         ));
         context.getItemInHand().set(DataComponents.LORE, new ItemLore(java.util.List.of(
-            Component.translatable("tooltip.warlockery.biome_note", biome.toString())
+            Component.translatable("tooltip.warlockery.biome_note", BiomeNoteState.displayName(biome))
         )));
         if (context.getPlayer() != null) {
             context.getPlayer().sendOverlayMessage(Component.translatable(
                 "message.warlockery.biome_note.recorded",
-                biome.toString()
+                BiomeNoteState.displayName(biome)
             ).withStyle(ChatFormatting.GREEN));
         }
         return InteractionResult.SUCCESS;

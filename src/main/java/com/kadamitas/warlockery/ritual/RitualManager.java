@@ -14,6 +14,7 @@ import com.kadamitas.warlockery.block.StatueBlock;
 import com.kadamitas.warlockery.block.StatueWardData;
 import com.kadamitas.warlockery.item.CircleTalismanItem;
 import com.kadamitas.warlockery.item.BiomeNoteState;
+import com.kadamitas.warlockery.item.ManualItem;
 import com.kadamitas.warlockery.item.EquipmentSetEffects;
 import com.kadamitas.warlockery.item.SympatheticBinding;
 import com.kadamitas.warlockery.item.SeerCovenRuntime;
@@ -58,7 +59,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -80,6 +80,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
@@ -97,12 +98,18 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.tags.TagKey;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.jspecify.annotations.Nullable;
 
 public final class RitualManager extends SimpleJsonResourceReloadListener<RitualDefinition> {
     private static final int REQUIRED_VOLCANIC_SOURCES = 4;
     private static final int VOLCANIC_SEARCH_DEPTH = 48;
+    private static final int CLIMATE_EMPOWERMENT_PARTICIPANTS = 5;
+    private static final TagKey<Item> COMMON_NETHER_STARS = TagKey.create(
+        Registries.ITEM,
+        Identifier.fromNamespaceAndPath("c", "nether_stars")
+    );
     private static final java.util.Set<String> TRANSFORMABLE_GLYPHS = java.util.Set.of(
         "circleglyphritual", "circleglyphinfernal", "circleglyph_veil"
     );
@@ -152,9 +159,13 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             return false;
         }
         final Optional<TransformSelection> transform = transformSelection(level, center, definition);
-        if (RitualAction.require(definition.action()) == RitualAction.GLYPH_TRANSFORM && transform.isEmpty()) {
+        final RitualAction action = RitualAction.require(definition.action());
+        if (action == RitualAction.GLYPH_TRANSFORM && transform.isEmpty()) {
             return false;
         }
+        final Optional<BiomeShiftPlan> climateShift = action == RitualAction.CLIMATE_SHIFT
+            ? Optional.of(climateShiftPlan(level, center))
+            : Optional.empty();
         final RitualSessionData sessions = RitualSessionData.get(level);
         if (sessions.isActive(center) || !consumeAltarPower(level, center, definition.power())) {
             return false;
@@ -164,8 +175,10 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         } else {
             consumeIngredients(level, center, definition.requirements().ingredients());
         }
+        climateShift.ifPresent(plan -> consumeClimateNetherStars(level, center, plan.netherStars()));
         consumeEntityRequirements(level, center, definition.requirements().entities());
-        final int variant = transform.map(selection -> selection.size().ordinal() + 1).orElse(0);
+        final int variant = transform.map(selection -> selection.size().ordinal() + 1)
+            .orElseGet(() -> climateShift.map(BiomeShiftPlan::chunkRadius).orElse(0));
         if (!sessions.start(center, ritualId, caster.getUUID(), definition.castingTime(), variant)) {
             return false;
         }
@@ -397,7 +410,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         if (action == RitualAction.CLIMATE_SHIFT) {
             final boolean present = nearbyRecordedBiome(level, center).isPresent();
             return Optional.of(new RequirementStatus(
-                "condition", "recorded_biome_note", 1, present ? 1 : 0, present
+                "condition", "recorded_biome_book", 1, present ? 1 : 0, present
             ));
         }
         if (action == RitualAction.PRIOR_INCARNATION) {
@@ -522,6 +535,21 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             ));
         }
         actionEnvironmentRequirement(definition, level, center, caster).ifPresent(statuses::add);
+        if (RitualAction.require(definition.action()) == RitualAction.CLIMATE_SHIFT) {
+            final ClimateShiftInputs inputs = climateShiftInputs(level, center);
+            final BiomeShiftPlan plan = inputs.plan();
+            statuses.add(new RequirementStatus(
+                "optional", "climate_seer_stone", 1, inputs.seerStone() ? 1 : 0, inputs.seerStone()
+            ));
+            statuses.add(new RequirementStatus(
+                "optional", "climate_participants", CLIMATE_EMPOWERMENT_PARTICIPANTS,
+                inputs.participants(), inputs.participants() >= CLIMATE_EMPOWERMENT_PARTICIPANTS
+            ));
+            statuses.add(new RequirementStatus(
+                "optional", "climate_nether_stars", BiomeShiftPlan.MAX_NETHER_STARS,
+                plan.netherStars(), plan.netherStars() > 0
+            ));
+        }
         final int inhibitors = countRitualInhibitors(level, center, definition.radius());
         statuses.add(new RequirementStatus(
             "condition",
@@ -541,7 +569,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             : definition.description();
         return new RitualOption(
             id.toString(), title, description, definition.power(), altarPower, definition.castingTime(),
-            immutable, immutable.stream().allMatch(RequirementStatus::met)
+            immutable, immutable.stream().filter(RequirementStatus::blocksActivation).allMatch(RequirementStatus::met)
         );
     }
 
@@ -881,7 +909,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             case IMPRISONMENT_WARD -> placeWard(level, center, definition, RitualWardType.IMPRISONMENT);
             case PROTECTION_WARD -> placeWard(level, center, definition, RitualWardType.PROTECTION);
             case SANCTITY_WARD -> placeWard(level, center, definition, RitualWardType.SANCTITY);
-            case CLIMATE_SHIFT -> shiftClimate(level, center, definition);
+            case CLIMATE_SHIFT -> shiftClimate(level, center, variant);
             case PRIOR_INCARNATION -> priorIncarnation(level, center, caster, definition);
             case INFUSE_PATH -> infusePath(level, center, definition);
             case RECHARGE_PATH -> rechargePaths(level, center, definition);
@@ -2188,26 +2216,79 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
     private static void shiftClimate(
         final ServerLevel level,
         final BlockPos center,
-        final RitualDefinition definition
+        final int chunkRadius
     ) {
         nearbyRecordedBiome(level, center).flatMap(id -> level.registryAccess()
             .lookupOrThrow(Registries.BIOME)
             .get(ResourceKey.create(Registries.BIOME, id)))
-            .ifPresent(biome -> FillBiomeCommand.fill(
-                level,
-                center.offset(-definition.radius(), -definition.radius(), -definition.radius()),
-                center.offset(definition.radius(), definition.radius(), definition.radius()),
-                biome
-            ));
+            .ifPresent(biome -> BiomeShiftRuntime.apply(level, center, biome, chunkRadius));
     }
 
-    private static Optional<Identifier> nearbyRecordedBiome(final ServerLevel level, final BlockPos center) {
+    static Optional<Identifier> nearbyRecordedBiome(final ServerLevel level, final BlockPos center) {
         return nearbyItems(level, center).stream()
             .map(ItemEntity::getItem)
-            .filter(stack -> stack.is(ModItems.ALL.get("biomenote").get()))
+            .filter(RitualManager::isBiomeRecord)
             .map(BiomeNoteState::read)
             .flatMap(Optional::stream)
+            .filter(biome -> level.registryAccess()
+                .lookupOrThrow(Registries.BIOME)
+                .get(ResourceKey.create(Registries.BIOME, biome))
+                .isPresent())
             .findFirst();
+    }
+
+    static BiomeShiftPlan climateShiftPlan(final ServerLevel level, final BlockPos center) {
+        return climateShiftInputs(level, center).plan();
+    }
+
+    private static ClimateShiftInputs climateShiftInputs(final ServerLevel level, final BlockPos center) {
+        final List<ItemStack> offerings = nearbyItems(level, center).stream().map(ItemEntity::getItem).toList();
+        final int participants = nearbyParticipants(level, center);
+        final boolean seerStone = offerings.stream()
+            .anyMatch(stack -> stack.is(ModItems.ALL.get("ingredient_seer_stone").get()));
+        final int stars = offerings.stream()
+            .filter(RitualManager::isNetherStar)
+            .mapToInt(ItemStack::getCount)
+            .sum();
+        return new ClimateShiftInputs(
+            BiomeShiftPlan.create(seerStone && participants >= CLIMATE_EMPOWERMENT_PARTICIPANTS, stars),
+            seerStone,
+            participants
+        );
+    }
+
+    private static boolean isBiomeRecord(final ItemStack stack) {
+        return stack.is(ModItems.ALL.get("biomenote").get())
+            || stack.getItem() instanceof ManualItem manual && manual.recordsBiomes();
+    }
+
+    private static boolean isNetherStar(final ItemStack stack) {
+        return stack.is(COMMON_NETHER_STARS) || stack.is(Items.NETHER_STAR);
+    }
+
+    static void consumeClimateNetherStars(
+        final ServerLevel level,
+        final BlockPos center,
+        final int requested
+    ) {
+        int remaining = Math.clamp(requested, 0, BiomeShiftPlan.MAX_NETHER_STARS);
+        for (final ItemEntity entity : nearbyItems(level, center)) {
+            if (remaining == 0) {
+                return;
+            }
+            final ItemStack stack = entity.getItem();
+            if (!isNetherStar(stack)) {
+                continue;
+            }
+            final int consumed = Math.min(remaining, stack.getCount());
+            stack.shrink(consumed);
+            remaining -= consumed;
+            if (stack.isEmpty()) {
+                entity.discard();
+            } else {
+                entity.setItem(stack);
+            }
+        }
     }
 
     private static void priorIncarnation(
@@ -2393,5 +2474,11 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         int present,
         boolean met
     ) {
+        public boolean blocksActivation() {
+            return !"optional".equals(category);
+        }
+    }
+
+    private record ClimateShiftInputs(BiomeShiftPlan plan, boolean seerStone, int participants) {
     }
 }
