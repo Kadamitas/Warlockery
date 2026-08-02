@@ -22,7 +22,7 @@ final class ReleaseMetadataTest {
         final var matcher = GRADLE_VERSION.matcher(build);
         assertTrue(matcher.find());
         final String version = matcher.group(1);
-        assertEquals("1.2.1", version);
+        assertEquals("1.2.2", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
@@ -33,6 +33,8 @@ final class ReleaseMetadataTest {
         final String changelog = read("changelog.txt");
         assertTrue(changelog.startsWith("Warlockery " + version));
         assertFalse(changelog.contains("alpha"));
+        assertTrue(read(".github/workflows/publish-curseforge.yml").contains("default: v" + version));
+        assertTrue(read(".github/ISSUE_TEMPLATE/bug_report.yml").contains("placeholder: " + version));
     }
 
     @Test

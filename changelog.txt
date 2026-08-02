@@ -1,3 +1,9 @@
+Warlockery 1.2.2
+================
+
+- Added complete Simplified Chinese, Russian, Korean, and Turkish translations for items, interfaces, messages, manuals, and ritual guidance.
+- Gave the new manual translations a playful witchy voice while keeping instructions, ingredients, controls, and failure messages easy to understand.
+
 Warlockery 1.2.1
 ================
 

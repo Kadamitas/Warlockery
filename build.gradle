@@ -119,7 +119,7 @@ abstract class GenerateEmptyGameTestStructure extends DefaultTask {
     }
 }
 
-version = '1.2.1'
+version = '1.2.2'
 group = 'com.kadamitas.warlockery'
 
 base {

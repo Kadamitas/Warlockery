@@ -21,7 +21,7 @@ final class ManualLibraryTest {
         "src/main/resources/assets/warlockery/lang/en_us.json"
     );
     private static final List<String> LANGUAGES = List.of(
-        "de_de", "en_us", "es_es", "fr_fr", "ja_jp", "pl_pl", "pt_br", "zh_tw"
+        "de_de", "en_us", "es_es", "fr_fr", "ja_jp", "ko_kr", "pl_pl", "pt_br", "ru_ru", "tr_tr", "zh_cn", "zh_tw"
     );
 
     @Test
