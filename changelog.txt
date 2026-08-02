@@ -1,3 +1,10 @@
+Warlockery 1.2.2
+================
+
+- Added complete Simplified Chinese, Russian, Korean, and Turkish localizations with clear gameplay terms and playful witchy flavor.
+- Localized Fabric-specific common tags, Warlockery extension tags, and biome-note guidance.
+- Expanded localization tests so every supported language must match the English key set and formatting placeholders.
+
 Warlockery 1.2.1
 ================
 

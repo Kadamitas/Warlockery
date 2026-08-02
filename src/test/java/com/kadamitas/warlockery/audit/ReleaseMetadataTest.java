@@ -17,7 +17,7 @@ final class ReleaseMetadataTest {
     @Test
     void stableVersionMatchesUpdateFeedAndChangelog() throws IOException {
         final String version = property("mod_version");
-        assertEquals("1.2.1", version);
+        assertEquals("1.2.2", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");

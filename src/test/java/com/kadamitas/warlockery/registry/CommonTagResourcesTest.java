@@ -21,7 +21,7 @@ final class CommonTagResourcesTest {
     private static final Path DATA = Path.of("src/main/resources/data");
     private static final Path LANG = Path.of("src/main/resources/assets/warlockery/lang");
     private static final List<String> LOCALES = List.of(
-        "en_us", "fr_fr", "es_es", "pt_br", "de_de", "pl_pl", "ja_jp", "zh_tw"
+        "en_us", "fr_fr", "es_es", "pt_br", "de_de", "pl_pl", "ja_jp", "ko_kr", "ru_ru", "tr_tr", "zh_cn", "zh_tw"
     );
     private static final List<TagExpectation> METAL_TAGS = List.of(
         tag("c/tags/item/ingots/silver.json", "warlockery:silver_ingot"),

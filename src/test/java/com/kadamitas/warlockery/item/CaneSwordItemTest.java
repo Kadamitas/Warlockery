@@ -103,7 +103,9 @@ final class CaneSwordItemTest {
 
     @Test
     void everySupportedLanguageExplainsBothToggleStates() throws IOException {
-        for (final String locale : Set.of("en_us", "fr_fr", "es_es", "pt_br", "de_de", "pl_pl", "ja_jp", "zh_cn", "zh_tw")) {
+        for (final String locale : Set.of(
+            "en_us", "fr_fr", "es_es", "pt_br", "de_de", "pl_pl", "ja_jp", "ko_kr", "ru_ru", "tr_tr", "zh_cn", "zh_tw"
+        )) {
             final JsonObject language = json(ASSETS.resolve("lang/" + locale + ".json"));
             assertTrue(language.has("message.warlockery.cane_sword.drawn"), locale);
             assertTrue(language.has("message.warlockery.cane_sword.sheathed"), locale);
