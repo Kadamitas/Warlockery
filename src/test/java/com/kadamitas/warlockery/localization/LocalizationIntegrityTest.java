@@ -42,7 +42,7 @@ final class LocalizationIntegrityTest {
     private static final Path DATA = RESOURCES.resolve("data/warlockery");
     private static final Path JAVA = Path.of("src", "main", "java");
     private static final List<String> LOCALES = List.of(
-        "en_us", "fr_fr", "es_es", "pt_br", "de_de", "pl_pl", "ja_jp", "zh_tw"
+        "en_us", "fr_fr", "es_es", "pt_br", "de_de", "pl_pl", "ja_jp", "zh_cn", "zh_tw"
     );
     private static final Pattern PLACEHOLDER = Pattern.compile("%(?:\\d+\\$)?[a-zA-Z%]");
     private static final Pattern TRANSLATION_SHAPED_STRING = Pattern.compile(
