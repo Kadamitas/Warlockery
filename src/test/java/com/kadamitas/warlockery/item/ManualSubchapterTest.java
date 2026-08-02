@@ -1,8 +1,10 @@
 package com.kadamitas.warlockery.item;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.kadamitas.warlockery.registry.ContentCatalog;
 import java.util.List;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,14 +35,19 @@ final class ManualSubchapterTest {
             .findFirst()
             .orElseThrow();
 
-        assertEquals(14, chapter.sections().size());
+        assertEquals(13, chapter.sections().size());
         assertTrue(chapter.sections().stream().allMatch(section -> section.startsWith("fetish_")));
-        assertEquals(6, chapter.sections().stream()
+        assertEquals(5, chapter.sections().stream()
             .filter(section -> section.startsWith("fetish_dream_weaver_"))
             .count());
+        assertTrue(chapter.sections().stream()
+            .filter(section -> section.startsWith("fetish_dream_weaver_"))
+            .map(section -> section.substring("fetish_".length()))
+            .allMatch(ContentCatalog.ITEMS::contains));
+        assertFalse(chapter.sections().contains("fetish_dream_weaver_restoration"));
         assertEquals(chapter.sections(), profile.sectionsInChapter(chapter.id(), profile.sections()));
         assertEquals(
-            List.of("sympathetic_vials"),
+            List.of("sympathetic_vials", "beast_speech"),
             profile.chapters().stream()
                 .filter(candidate -> candidate.id().equals("binding_tools"))
                 .findFirst()

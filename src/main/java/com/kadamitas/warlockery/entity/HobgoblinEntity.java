@@ -40,11 +40,8 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
-import net.minecraft.world.item.trading.ItemCost;
-import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -161,38 +158,16 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
 
     @Override
     protected void updateTrades(final ServerLevel level) {
-        switch (goblinProfession) {
-            case MINER -> {
-                this.getOffers().add(new MerchantOffer(new ItemCost(Items.COAL, 12), new ItemStack(Items.EMERALD), 16, 2, 0.05F));
-                this.getOffers().add(new MerchantOffer(new ItemCost(Items.EMERALD, 8), new ItemStack(ModItems.ALL.get("raw_delvealloy").get()), 8, 8, 0.12F));
-                this.getOffers().add(new MerchantOffer(
-                    new ItemCost(ModItems.ALL.get("ingredient_delvealloydust").get(), 8),
-                    new ItemStack(Items.EMERALD),
-                    12,
-                    10,
-                    0.08F
-                ));
-            }
-            case SMITH -> {
-                this.getOffers().add(new MerchantOffer(new ItemCost(ModItems.ALL.get("raw_delvealloy").get(), 4), new ItemStack(Items.EMERALD), 12, 5, 0.08F));
-                this.getOffers().add(new MerchantOffer(new ItemCost(Items.EMERALD, 32), new ItemStack(ModItems.ALL.get("delvealloypickaxe").get()), 2, 20, 0.2F));
-            }
-            case SHAMAN -> {
-                this.getOffers().add(new MerchantOffer(new ItemCost(Items.REDSTONE, 8), new ItemStack(ModItems.ALL.get("ingredient_whiff_of_magic").get()), 12, 8, 0.08F));
-                this.getOffers().add(new MerchantOffer(new ItemCost(Items.EMERALD, 6), new ItemStack(ModItems.ALL.get("ingredient_attuned_stone").get()), 8, 12, 0.12F));
-            }
-            case PROSPECTOR -> {
-                this.getOffers().add(new MerchantOffer(new ItemCost(ModItems.ALL.get("raw_silver").get(), 5), new ItemStack(Items.EMERALD), 12, 5, 0.08F));
-                this.getOffers().add(new MerchantOffer(
-                    new ItemCost(ModItems.ALL.get("ingredient_delvealloydust").get(), 18),
-                    new ItemStack(ModItems.ALL.get("ingredient_delvealloynugget").get()),
-                    12,
-                    12,
-                    0.12F
-                ));
-                this.getOffers().add(new MerchantOffer(new ItemCost(Items.EMERALD, 12), new ItemStack(ModItems.ALL.get("ingredient_delvealloynugget").get()), 12, 8, 0.12F));
-            }
-        }
+        final long seed = getUUID().getMostSignificantBits()
+            ^ getUUID().getLeastSignificantBits()
+            ^ ((long) goblinProfession.ordinal() << 32)
+            ^ kind.ordinal();
+        this.getOffers().addAll(GoblinTradeCatalog.createOffers(
+            kind,
+            goblinProfession,
+            seed,
+            getVillagerData().level()
+        ));
     }
 
     @Override

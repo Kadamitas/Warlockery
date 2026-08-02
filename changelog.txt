@@ -1,3 +1,11 @@
+Warlockery 1.2.1
+================
+
+- Rewrote manual preambles and articles for clearer guidance, added useful pictograms, and organized biome lessons by the kind of land they describe.
+- Restored Torn Page progression so Observations of an Immortal reveals its vampire lessons one page at a time.
+- Bound observed biomes directly into the Book of Biomes and expanded the climate rite from its target chunk into empowered rings, with up to three Nether Stars extending its reach.
+- Expanded animal, demon, goblin, and hobgoblin trades with weighted modern loot and rarer high-value rewards.
+
 Warlockery 1.2.0
 ================
 

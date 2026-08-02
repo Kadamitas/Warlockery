@@ -12,9 +12,11 @@ import java.nio.file.Path;
 import java.util.List;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -28,15 +30,16 @@ final class ManualProgressTest {
     }
 
     @Test
-    void observationsBeginsWithNamiTheBloodAudienceAndTheFirstVampireLevel() {
+    void observationsBeginsWithItsGuideNamiTheBloodAudienceAndTheFirstVampireLevel() {
         final ManualProfile observations = profile("vampirebook");
         final ItemStack book = bookStack();
 
-        assertEquals(3, ManualProgress.unlockedSectionCount(observations, book));
+        assertEquals(4, ManualProgress.unlockedSectionCount(observations, book));
+        assertEquals(0, ManualProgress.insertedTornPages(observations, book));
         assertEquals(9, ManualProgress.requiredTornPages(observations, book));
-        assertEquals(List.of("nami", "blood_audience", "vampire_level_1"),
+        assertEquals(List.of("preamble", "nami", "blood_audience", "vampire_level_1"),
             ManualProgress.visibleSections(observations, book));
-        assertEquals(List.of("nami", "blood_audience", "vampire_level_1"),
+        assertEquals(List.of("preamble", "nami", "blood_audience", "vampire_level_1"),
             ManualView.from(observations, book).sections());
     }
 
@@ -50,7 +53,8 @@ final class ManualProgressTest {
             final ManualProgress.RevealResult reveal = insertPage(observations, book, pages, false);
             assertEquals(ManualProgress.RevealStatus.REVEALED, reveal.status());
             assertEquals("vampire_level_" + level, reveal.section().orElseThrow());
-            assertEquals(level + 2, ManualProgress.unlockedSectionCount(observations, book));
+            assertEquals(level + 3, ManualProgress.unlockedSectionCount(observations, book));
+            assertEquals(level - 1, ManualProgress.insertedTornPages(observations, book));
             assertEquals(10 - level, ManualProgress.requiredTornPages(observations, book));
             assertEquals(11 - level, pages.getCount());
         }
@@ -80,7 +84,7 @@ final class ManualProgressTest {
         );
 
         assertEquals(ManualProgress.RevealStatus.UNSUPPORTED, rejected.status());
-        assertEquals(List.of("nami", "blood_audience", "vampire_level_1"),
+        assertEquals(List.of("preamble", "nami", "blood_audience", "vampire_level_1"),
             ManualProgress.visibleSections(observations, book));
         assertEquals(1, fakePage.getCount());
 
@@ -88,6 +92,33 @@ final class ManualProgressTest {
         assertEquals(ManualProgress.RevealStatus.REVEALED,
             insertPage(observations, book, creativePage, true).status());
         assertEquals(1, creativePage.getCount());
+    }
+
+    @Test
+    void oldSavedBooksGainTheNewPreambleWithoutLosingAnUnlockedLesson() {
+        final ManualProfile observations = profile("vampirebook");
+        final ItemStack legacyBook = legacyBook(6);
+
+        assertEquals(7, ManualProgress.unlockedSectionCount(observations, legacyBook));
+        assertEquals(3, ManualProgress.insertedTornPages(observations, legacyBook));
+        assertEquals("vampire_level_4", ManualProgress.visibleSections(observations, legacyBook).getLast());
+        assertEquals(2, legacyBook.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+            .copyTag().getIntOr("WarlockeryImmortalManualVersion", 0));
+    }
+
+    @Test
+    void migrationPreservesFreshAndCompleteLegacyBooksAtBothBoundaries() {
+        final ManualProfile observations = profile("vampirebook");
+        final ItemStack freshLegacyBook = legacyBook(3);
+        final ItemStack completeLegacyBook = legacyBook(12);
+
+        assertEquals(4, ManualProgress.unlockedSectionCount(observations, freshLegacyBook));
+        assertEquals(0, ManualProgress.insertedTornPages(observations, freshLegacyBook));
+        assertEquals(9, ManualProgress.requiredTornPages(observations, freshLegacyBook));
+
+        assertEquals(13, ManualProgress.unlockedSectionCount(observations, completeLegacyBook));
+        assertEquals(9, ManualProgress.insertedTornPages(observations, completeLegacyBook));
+        assertEquals(0, ManualProgress.requiredTornPages(observations, completeLegacyBook));
     }
 
     @Test
@@ -135,6 +166,13 @@ final class ManualProgressTest {
 
     private static ItemStack bookStack() {
         return new ItemStack(Holder.direct(Items.BOOK));
+    }
+
+    private static ItemStack legacyBook(final int unlockedSections) {
+        final ItemStack book = bookStack();
+        CustomData.update(DataComponents.CUSTOM_DATA, book,
+            tag -> tag.putInt("WarlockeryUnlockedImmortalSections", unlockedSections));
+        return book;
     }
 
     private static ManualProgress.RevealResult insertPage(

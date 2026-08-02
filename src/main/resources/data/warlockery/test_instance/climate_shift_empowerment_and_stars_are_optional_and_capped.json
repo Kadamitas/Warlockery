@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:climate_shift_empowerment_and_stars_are_optional_and_capped",
+  "environment": "minecraft:default",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 100
+}

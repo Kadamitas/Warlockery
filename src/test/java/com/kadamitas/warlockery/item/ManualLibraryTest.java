@@ -20,6 +20,9 @@ final class ManualLibraryTest {
     private static final Path LANGUAGE = Path.of(
         "src/main/resources/assets/warlockery/lang/en_us.json"
     );
+    private static final List<String> LANGUAGES = List.of(
+        "de_de", "en_us", "es_es", "fr_fr", "ja_jp", "pl_pl", "pt_br", "zh_tw"
+    );
 
     @Test
     void libraryPublishesEveryUniqueProfileAsAnImmutableList() {
@@ -50,7 +53,7 @@ final class ManualLibraryTest {
     void chapterNavigationCyclesInBothDirections() {
         final ManualProfile profile = ManualProfile.find("cauldronbook").orElseThrow();
         assertEquals("antidotes", profile.adjacentSection("custom_brews", 1));
-        assertEquals(profile.sections().getLast(), profile.adjacentSection("custom_brews", -1));
+        assertEquals("preamble", profile.adjacentSection("custom_brews", -1));
         assertEquals("brew_entry_heal", profile.adjacentSection("diagnostics", 1));
     }
 
@@ -62,17 +65,68 @@ final class ManualLibraryTest {
             profile.chapters().forEach(chapter ->
                 assertTrue(translations.has(chapter.titleKey()), chapter.titleKey()));
             profile.sections().forEach(section -> {
+                final String sectionTitleKey = profile.translatedSectionTitleKey(section);
                 assertTrue(
                     section.startsWith("biome_entry_")
-                        ? profile.translatedSectionTitleKey(section).startsWith("biome.minecraft.")
-                        : translations.has(profile.translatedSectionTitleKey(section)),
-                    profile.translatedSectionTitleKey(section)
+                        ? sectionTitleKey.startsWith("biome.minecraft.") || translations.has(sectionTitleKey)
+                        : translations.has(sectionTitleKey),
+                    sectionTitleKey
                 );
                 assertTrue(translations.has(profile.translatedSectionKey(section)),
                     profile.translatedSectionKey(section));
                 assertFalse(translations.get(profile.translatedSectionKey(section)).getAsString().isBlank());
             });
         });
+    }
+
+    @Test
+    void everyPhysicalManualStartsWithALocalizedSummaryPreamble() {
+        final List<ManualProfile> manuals = ManualProfile.profiles().stream()
+            .filter(profile -> !profile.id().equals("ingredient_vbook_page"))
+            .toList();
+
+        manuals.forEach(profile -> {
+            assertEquals("preamble", profile.sections().getFirst(), profile.id());
+            assertEquals("preamble", profile.chapters().getFirst().sections().getFirst(), profile.id());
+        });
+
+        final JsonObject english = translations();
+        assertEquals(manuals.size(), manuals.stream()
+            .map(profile -> english.get(profile.translatedSectionKey("preamble")).getAsString())
+            .distinct()
+            .count());
+
+        LANGUAGES.stream().map(ManualLibraryTest::translations).forEach(translations -> manuals.forEach(profile -> {
+            final String bodyKey = profile.translatedSectionKey("preamble");
+            final String titleKey = profile.translatedSectionTitleKey("preamble");
+            assertTrue(translations.has(bodyKey), bodyKey);
+            assertTrue(translations.has(titleKey), titleKey);
+            assertFalse(translations.get(bodyKey).getAsString().isBlank(), bodyKey);
+            assertFalse(translations.get(titleKey).getAsString().isBlank(), titleKey);
+        }));
+    }
+
+    @Test
+    void immortalPreambleExplainsTheWholeTornPageProgression() {
+        final String preamble = translations().get("manual.warlockery.immortal.preamble").getAsString();
+        assertTrue(preamble.contains("guide to becoming an immortal vampire"));
+        assertTrue(preamble.contains("this same book"));
+        assertTrue(preamble.contains("one at a time"));
+        assertTrue(preamble.contains("Nine Torn Pages"));
+    }
+
+    @Test
+    void biomeLessonsExplainTheBoundBookAndBothChunkRadiusPaths() {
+        final JsonObject translations = translations();
+        final String binding = translations.get("manual.warlockery.biomes_extended.biome_notes").getAsString();
+        final String shifting = translations.get("manual.warlockery.biomes_extended.shifting_rite").getAsString();
+        assertTrue(binding.contains("Crouch and use this book"));
+        assertTrue(binding.contains("adds its name"));
+        assertFalse(binding.contains("paper note"));
+        assertTrue(shifting.contains("1, 3, 5, or 7"));
+        assertTrue(shifting.contains("3, 5, 7, or 9"));
+        assertTrue(shifting.contains("book is kept"));
+        assertTrue(shifting.contains("Nether Star is consumed"));
     }
 
     @Test
@@ -100,12 +154,12 @@ final class ManualLibraryTest {
         final ManualProfile observations = ManualProfile.find("vampirebook").orElseThrow();
         assertEquals(
             java.util.stream.Stream.concat(
-                java.util.stream.Stream.of("nami", "blood_audience"),
+                java.util.stream.Stream.of("preamble", "nami", "blood_audience"),
                 java.util.stream.IntStream.rangeClosed(1, 10).mapToObj(level -> "vampire_level_" + level)
             ).toList(),
             observations.sections()
         );
-        assertEquals(List.of("vampire_awakening", "vampire_trials", "vampire_ascendance"),
+        assertEquals(List.of("introduction", "vampire_awakening", "vampire_trials", "vampire_ascendance"),
             observations.chapters().stream().map(ManualProfile.Chapter::id).toList());
 
         final ManualProfile circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
@@ -158,8 +212,12 @@ final class ManualLibraryTest {
     }
 
     private static JsonObject translations() {
+        return translations("en_us");
+    }
+
+    private static JsonObject translations(final String language) {
         try {
-            return JsonParser.parseString(Files.readString(LANGUAGE)).getAsJsonObject();
+            return JsonParser.parseString(Files.readString(LANGUAGE.resolveSibling(language + ".json"))).getAsJsonObject();
         } catch (IOException exception) {
             throw new UncheckedIOException(exception);
         }

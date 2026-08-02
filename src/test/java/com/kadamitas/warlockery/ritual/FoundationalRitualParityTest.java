@@ -29,13 +29,9 @@ final class FoundationalRitualParityTest {
     void shiftingSeasonsUsesARecordedBiomeAndLargeCircle() {
         final RitualDefinition rite = RITUALS.get("climate_change");
         assertEquals(15, rite.radius());
-        assertEquals(5, rite.requirements().minimumPlayers());
-        assertTrue(rite.requirements().ingredients().stream().anyMatch(ingredient ->
-            ingredient.ingredient().equals("warlockery:biomenote") && !ingredient.consume()
-        ));
-        assertTrue(rite.requirements().ingredients().stream().anyMatch(ingredient ->
-            ingredient.ingredient().equals("warlockery:ingredient_seer_stone") && !ingredient.consume()
-        ));
+        assertEquals(1, rite.requirements().minimumPlayers());
+        assertEquals(1, rite.requirements().ingredients().size());
+        assertEquals("#c:dusts/glowstone", rite.requirements().ingredients().getFirst().ingredient());
     }
 
     @Test
