@@ -9,13 +9,17 @@ import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModMenus;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.block.FetishBlock;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.client.event.RenderAvatarEvent;
 import net.minecraftforge.client.gui.overlay.ForgeLayeredDraw;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
@@ -23,6 +27,8 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Warlockery.MOD_ID, value = Dist.CLIENT)
 public final class WarlockeryClient {
+    private static WolfFormAvatarRenderer wolfFormAvatarRenderer;
+
     private WarlockeryClient() {
     }
 
@@ -32,7 +38,11 @@ public final class WarlockeryClient {
         ModNetwork.setClientScreenHandler(payload ->
             RitualSelectionScreen.openOrUpdate(payload.center(), payload.options()));
         ModNetwork.setClientDollHandler(DollStatusOverlay::activate);
-        ModNetwork.setClientSupernaturalHandler(SupernaturalStatusOverlay::update);
+        ModNetwork.setClientSupernaturalHandler(payload -> {
+            SupernaturalStatusOverlay.update(payload);
+            ClientSupernaturalState.update(payload);
+        });
+        ModNetwork.setClientPlayerWolfVisualHandler(PlayerWolfVisualState::update);
         ModMenus.MACHINES.values().forEach(type -> MenuScreens.register(type.get(), MachineScreen::new));
         MenuScreens.register(ModMenus.DOLL_SHELF.get(), DollShelfScreen::new);
         event.registerBlockEntityRenderer(ModBlockEntities.MAGIC_MACHINE.get(), MachineOverlayRenderer::new);
@@ -58,6 +68,30 @@ public final class WarlockeryClient {
     }
 
     @SubscribeEvent
+    public static void addPlayerLayers(final EntityRenderersEvent.AddLayers event) {
+        wolfFormAvatarRenderer = new WolfFormAvatarRenderer(event.getContext());
+    }
+
+    @SubscribeEvent
+    public static boolean renderWolfAvatar(final RenderAvatarEvent.Pre event) {
+        final Minecraft minecraft = Minecraft.getInstance();
+        if (wolfFormAvatarRenderer == null
+            || minecraft.level == null
+            || !(minecraft.level.getEntity(event.getState().id) instanceof AbstractClientPlayer player)
+            || !PlayerWolfVisualState.isWolf(player.getUUID())) {
+            return false;
+        }
+        wolfFormAvatarRenderer.submitAvatar(
+            player,
+            event.getState(),
+            event.getPoseStack(),
+            event.getNodeCollector(),
+            event.getCameraState()
+        );
+        return true;
+    }
+
+    @SubscribeEvent
     public static void registerKeyMappings(final RegisterKeyMappingsEvent event) {
         SupernaturalControls.register(event);
         BroomControls.register(event);
@@ -74,6 +108,11 @@ public final class WarlockeryClient {
     public static void clientTick(final TickEvent.ClientTickEvent.Post event) {
         SupernaturalControls.tick(event);
         BroomControls.tick(event);
+    }
+
+    @SubscribeEvent
+    public static void clientLogout(final ClientPlayerNetworkEvent.LoggingOut event) {
+        PlayerWolfVisualState.clear();
     }
 
     @SubscribeEvent

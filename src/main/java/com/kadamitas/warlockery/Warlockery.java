@@ -46,6 +46,7 @@ import com.kadamitas.warlockery.entity.CreatureCombat;
 import com.kadamitas.warlockery.world.CreatureWorldIntegration;
 import com.kadamitas.warlockery.world.WarlockVillagerFarming;
 import com.kadamitas.warlockery.world.VillageGuardRuntime;
+import com.kadamitas.warlockery.world.VillageAssaultRuntime;
 import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.fml.common.Mod;
@@ -100,6 +101,7 @@ public final class Warlockery {
         MagicPathRuntime.registerEvents();
         SupernaturalProgressionRuntime.registerEvents();
         VillageGuardRuntime.registerEvents();
+        VillageAssaultRuntime.registerEvents();
         com.kadamitas.warlockery.entity.EntRuntime.registerEvents();
         net.minecraftforge.event.level.BlockEvent.BreakEvent.BUS.addListener(VoidBrambleOwnershipData::handleBreak);
         AddReloadListenerEvent.BUS.addListener(event -> {

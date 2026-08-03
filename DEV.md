@@ -113,7 +113,7 @@ The available material, equipment, creature, machine, and guide-book extension p
 
 ## Server configuration
 
-Warlockery creates `warlockery-server.toml` in a world's `serverconfig` directory. Server owners can enable or disable hobgoblin enclaves, silver hunts, and automatic silver equipment for pillagers. The same file also controls the check intervals and event chances. New worlds use the gameplay defaults defined in `WarlockeryConfig`.
+Warlockery creates `warlockery-server.toml` in a world's `serverconfig` directory. Server owners can enable or disable hobgoblin settlements, settlement fortifications, village assaults, silver hunts, and automatic silver equipment for pillagers. The same file controls event chances, check intervals, and the multiplier used for time between village assaults. New worlds use the gameplay defaults defined in `WarlockeryConfig`.
 
 Keep server configuration with the world or modpack configuration. Do not place it in a resource pack or data pack.
 

@@ -2127,5 +2127,9 @@
   "overlay.warlockery.resource.mana_path": "%s魔力",
   "overlay.warlockery.resource.charges_short": "%s ×%s",
   "overlay.warlockery.resource.cooldown_short": "%s · %s秒",
-  "overlay.warlockery.resource.unattuned": "还没调和"
+  "overlay.warlockery.resource.unattuned": "还没调和",
+  "entity.warlockery.vampire.hobgoblin_variant": "霍布哥布林吸血鬼",
+  "entity.warlockery.werewolf.hobgoblin_variant": "霍布哥布林狼人",
+  "message.warlockery.villager.blood_drained": "这名村民失血过多，暂时无法交易。",
+  "message.warlockery.village.assault_defended": "聚落会记住你的守护。"
 }

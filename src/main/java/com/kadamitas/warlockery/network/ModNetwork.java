@@ -5,6 +5,8 @@ import com.kadamitas.warlockery.item.FlyingBroomItem;
 import com.kadamitas.warlockery.ritual.RitualManager;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
@@ -30,10 +32,12 @@ public final class ModNetwork {
     };
     private static Consumer<SupernaturalSnapshotPayload> clientSupernaturalHandler = payload -> {
     };
+    private static Consumer<PlayerWolfVisualPayload> clientPlayerWolfVisualHandler = payload -> {
+    };
 
     private static final SimpleChannel CHANNEL = ChannelBuilder
         .named(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "main"))
-        .networkProtocolVersion(4)
+        .networkProtocolVersion(5)
         .simpleChannel()
         .play()
         .clientbound()
@@ -43,6 +47,11 @@ public final class ModNetwork {
             SupernaturalSnapshotPayload.class,
             SupernaturalSnapshotPayload.STREAM_CODEC,
             ModNetwork::handleSupernaturalSnapshot
+        )
+        .addMain(
+            PlayerWolfVisualPayload.class,
+            PlayerWolfVisualPayload.STREAM_CODEC,
+            ModNetwork::handlePlayerWolfVisual
         )
         .serverbound()
         .addMain(RitualActionPayload.class, RitualActionPayload.STREAM_CODEC, ModNetwork::handleRitualAction)
@@ -76,6 +85,10 @@ public final class ModNetwork {
         clientSupernaturalHandler = handler;
     }
 
+    public static void setClientPlayerWolfVisualHandler(final Consumer<PlayerWolfVisualPayload> handler) {
+        clientPlayerWolfVisualHandler = handler;
+    }
+
     public static void notifyDollActivation(
         final ServerPlayer player,
         final String dollKind,
@@ -100,6 +113,34 @@ public final class ModNetwork {
         CHANNEL.send(
             new SupernaturalSnapshotPayload(snapshot),
             PacketDistributor.PLAYER.with(player)
+        );
+    }
+
+    public static void broadcastPlayerWolfVisual(final ServerPlayer player, final boolean wolf) {
+        CHANNEL.send(
+            new PlayerWolfVisualPayload(player.getUUID(), wolf),
+            PacketDistributor.TRACKING_ENTITY_AND_SELF.with(player)
+        );
+    }
+
+    public static void sendPlayerWolfVisual(
+        final ServerPlayer recipient,
+        final ServerPlayer subject,
+        final boolean wolf
+    ) {
+        if (recipient.connection == null) {
+            return;
+        }
+        CHANNEL.send(
+            new PlayerWolfVisualPayload(subject.getUUID(), wolf),
+            PacketDistributor.PLAYER.with(recipient)
+        );
+    }
+
+    public static void clearPlayerWolfVisual(final ServerPlayer player) {
+        CHANNEL.send(
+            new PlayerWolfVisualPayload(player.getUUID(), false),
+            PacketDistributor.TRACKING_ENTITY.with(player)
         );
     }
 
@@ -161,6 +202,15 @@ public final class ModNetwork {
     ) {
         if (context.isClientSide()) {
             clientSupernaturalHandler.accept(payload);
+        }
+    }
+
+    private static void handlePlayerWolfVisual(
+        final PlayerWolfVisualPayload payload,
+        final CustomPayloadEvent.Context context
+    ) {
+        if (context.isClientSide()) {
+            clientPlayerWolfVisualHandler.accept(payload);
         }
     }
 
@@ -380,6 +430,21 @@ public final class ModNetwork {
                 (output, value) -> writeSnapshot(output, value.snapshot()),
                 input -> new SupernaturalSnapshotPayload(readSnapshot(input))
             );
+    }
+
+    public record PlayerWolfVisualPayload(UUID playerId, boolean wolf) {
+        public static final StreamCodec<RegistryFriendlyByteBuf, PlayerWolfVisualPayload> STREAM_CODEC =
+            StreamCodec.of(
+                (output, value) -> {
+                    output.writeUUID(value.playerId());
+                    output.writeBoolean(value.wolf());
+                },
+                input -> new PlayerWolfVisualPayload(input.readUUID(), input.readBoolean())
+            );
+
+        public PlayerWolfVisualPayload {
+            Objects.requireNonNull(playerId, "playerId");
+        }
     }
 
     private static RitualManager.RitualOption readOption(final RegistryFriendlyByteBuf input) {

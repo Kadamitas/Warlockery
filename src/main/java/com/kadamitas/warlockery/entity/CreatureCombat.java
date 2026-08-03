@@ -6,6 +6,8 @@ import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import com.kadamitas.warlockery.item.EquipmentSetEffects;
 import com.kadamitas.warlockery.magic.MagicPathState;
+import com.kadamitas.warlockery.world.VillageGuardRules;
+import com.kadamitas.warlockery.world.VillageGuardRuntime;
 import java.util.Comparator;
 import java.util.stream.StreamSupport;
 import net.minecraft.core.Holder;
@@ -31,7 +33,11 @@ public final class CreatureCombat {
             ? arrow.getPickupItemStackOrigin() : ItemStack.EMPTY;
         final ItemStack weapon = event.getSource().getWeaponItem();
         final boolean silver = projectile.is(WarlockeryTags.Items.SILVER_PROJECTILES)
-            || weapon != null && weapon.is(WarlockeryTags.Items.SILVER_WEAPONS);
+            || weapon != null && weapon.is(WarlockeryTags.Items.SILVER_WEAPONS)
+            || VillageGuardRules.isSilverClassifiedAttack(
+                event.getSource().getEntity() != null
+                    && VillageGuardRuntime.isSettlementGuard(event.getSource().getEntity())
+            );
         final boolean wooden = projectile.is(ModItems.ALL.get("ingredient_bolt_stake").get());
         final boolean holy = projectile.is(ModItems.ALL.get("ingredient_bolt_holy").get());
         final boolean antiMagic = projectile.is(ModItems.ALL.get("ingredient_bolt_anti_magic").get());

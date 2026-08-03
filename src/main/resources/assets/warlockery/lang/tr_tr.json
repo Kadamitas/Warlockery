@@ -2127,5 +2127,9 @@
   "overlay.warlockery.resource.mana_path": "%s Mana",
   "overlay.warlockery.resource.charges_short": "%s ×%s",
   "overlay.warlockery.resource.cooldown_short": "%s · %s'ler",
-  "overlay.warlockery.resource.unattuned": "Uyumsuz"
+  "overlay.warlockery.resource.unattuned": "Uyumsuz",
+  "entity.warlockery.vampire.hobgoblin_variant": "Hobgoblin Vampir",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Hobgoblin Kurt Adam",
+  "message.warlockery.villager.blood_drained": "Bu köylü ticaret yapamayacak kadar kan kaybetmiş.",
+  "message.warlockery.village.assault_defended": "Yerleşim savunmanı hatırlıyor."
 }

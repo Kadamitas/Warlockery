@@ -2128,5 +2128,9 @@
   "overlay.warlockery.resource.mana_path": "%sのマナ",
   "overlay.warlockery.resource.charges_short": "%s ×%s",
   "overlay.warlockery.resource.cooldown_short": "%s · %s秒",
-  "overlay.warlockery.resource.unattuned": "未同調"
+  "overlay.warlockery.resource.unattuned": "未同調",
+  "entity.warlockery.vampire.hobgoblin_variant": "ホブゴブリンの吸血鬼",
+  "entity.warlockery.werewolf.hobgoblin_variant": "ホブゴブリンの人狼",
+  "message.warlockery.villager.blood_drained": "この村人は血を失いすぎて取引できない。",
+  "message.warlockery.village.assault_defended": "集落はあなたの守りを覚えている。"
 }

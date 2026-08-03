@@ -2128,5 +2128,9 @@
   "overlay.warlockery.resource.mana_path": "%s-Mana",
   "overlay.warlockery.resource.charges_short": "%s ×%s",
   "overlay.warlockery.resource.cooldown_short": "%s · %ss",
-  "overlay.warlockery.resource.unattuned": "Nicht eingestimmt"
+  "overlay.warlockery.resource.unattuned": "Nicht eingestimmt",
+  "entity.warlockery.vampire.hobgoblin_variant": "Hobgoblin-Vampir",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Hobgoblin-Werwolf",
+  "message.warlockery.villager.blood_drained": "Dieser Dorfbewohner ist zu blutleer zum Handeln.",
+  "message.warlockery.village.assault_defended": "Die Siedlung erinnert sich an deine Verteidigung."
 }

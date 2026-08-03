@@ -17,10 +17,19 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class ArcaneMob extends Zombie implements ArcaneCreature {
+    private static final EntityDataAccessor<Boolean> DATA_HOBGOBLIN_ASSAULT_VARIANT = SynchedEntityData.defineId(
+        ArcaneMob.class,
+        EntityDataSerializers.BOOLEAN
+    );
     private final CreatureKind kind;
     private final CreatureBehavior behavior;
 
@@ -48,6 +57,20 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
     @Override
     public CreatureKind creatureKind() {
         return this.kind;
+    }
+
+    public boolean isHobgoblinAssaultVariant() {
+        return entityData.get(DATA_HOBGOBLIN_ASSAULT_VARIANT);
+    }
+
+    public void setHobgoblinAssaultVariant(final boolean variant) {
+        entityData.set(DATA_HOBGOBLIN_ASSAULT_VARIANT, variant);
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_HOBGOBLIN_ASSAULT_VARIANT, false);
     }
 
     @Override
@@ -132,5 +155,17 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
     @Override
     protected float getRiddenSpeed(final Player controller) {
         return SpectralMountRules.speed(kind, getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED));
+    }
+
+    @Override
+    protected void addAdditionalSaveData(final ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putBoolean("WarlockeryHobgoblinAssaultVariant", isHobgoblinAssaultVariant());
+    }
+
+    @Override
+    protected void readAdditionalSaveData(final ValueInput input) {
+        super.readAdditionalSaveData(input);
+        setHobgoblinAssaultVariant(input.getBooleanOr("WarlockeryHobgoblinAssaultVariant", false));
     }
 }

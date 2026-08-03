@@ -2128,5 +2128,9 @@
   "overlay.warlockery.resource.mana_path": "Mana de %s",
   "overlay.warlockery.resource.charges_short": "%s ×%s",
   "overlay.warlockery.resource.cooldown_short": "%s · %ss",
-  "overlay.warlockery.resource.unattuned": "Não sintonizado"
+  "overlay.warlockery.resource.unattuned": "Não sintonizado",
+  "entity.warlockery.vampire.hobgoblin_variant": "Vampiro hobgoblin",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Lobisomem hobgoblin",
+  "message.warlockery.villager.blood_drained": "Este aldeão perdeu sangue demais para negociar.",
+  "message.warlockery.village.assault_defended": "O assentamento se lembra da sua defesa."
 }

@@ -11,6 +11,8 @@ public final class SupernaturalAbilityRules {
     public static final int BATSWARM_VISUAL_COUNT = 3;
     public static final int ATTACKING_BAT_COUNT = 15;
     public static final int MAX_BLOOD_RUSH_AMPLIFIER = 9;
+    public static final float WOLF_DIG_MIN_SPEED = 12.0F;
+    public static final float WOLF_DIG_MULTIPLIER = 6.0F;
     private static final List<SupernaturalPower> BLOOD_POWERS = List.of(
         SupernaturalPower.CALL_STORM,
         SupernaturalPower.TELEPORT,
@@ -125,6 +127,25 @@ public final class SupernaturalAbilityRules {
 
     public static boolean armorRendingActive(final int werewolfLevel, final WerewolfShape shape) {
         return werewolfLevel >= 9 && shape == WerewolfShape.WOLFMAN;
+    }
+
+    public static float wolfDiggingSpeed(
+        final float currentSpeed,
+        final int werewolfLevel,
+        final WerewolfShape shape,
+        final boolean emptyHand,
+        final boolean dirtOrSand,
+        final boolean crouching,
+        final boolean earth
+    ) {
+        Objects.requireNonNull(shape, "shape");
+        if (werewolfLevel < 3 || shape != WerewolfShape.WOLF || !emptyHand) {
+            return currentSpeed;
+        }
+        final float clawSpeed = dirtOrSand
+            ? Math.max(WOLF_DIG_MIN_SPEED, currentSpeed * WOLF_DIG_MULTIPLIER)
+            : currentSpeed;
+        return crouching && earth ? Math.max(clawSpeed, 30.0F) : clawSpeed;
     }
 
     public static double armorPiercingInputDamage(

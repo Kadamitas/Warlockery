@@ -85,6 +85,7 @@ public final class SupernaturalProgressionRuntime {
             return;
         }
         registered = true;
+        PlayerWolfVisualSync.registerEvents();
         TickEvent.PlayerTickEvent.Post.BUS.addListener(event -> tick(event.player()));
         LivingDamageEvent.BUS.addListener(SupernaturalState::handleDamage);
         LivingDamageEvent.BUS.addListener(SupernaturalProgressionRuntime::handleDamage);
@@ -726,18 +727,24 @@ public final class SupernaturalProgressionRuntime {
         sync(killer);
     }
 
-    private static void handleBreakSpeed(final PlayerEvent.BreakSpeed event) {
+    static void handleBreakSpeed(final PlayerEvent.BreakSpeed event) {
         final Player player = event.getEntity();
-        if (SupernaturalState.getForm(player) != SupernaturalForm.WEREWOLF
-            || SupernaturalProgression.level(player, WEREWOLF) < 3
-            || SupernaturalProgression.werewolfShape(player) == WerewolfShape.HUMAN
-            || !player.getMainHandItem().isEmpty()
-            || !player.isShiftKeyDown()) {
+        if (player.level().isClientSide()
+            || SupernaturalState.getForm(player) != SupernaturalForm.WEREWOLF) {
             return;
         }
-        if (isEarth(event.getState())) {
-            event.setNewSpeed(Math.max(event.getNewSpeed(), 30.0F));
-        }
+        final int werewolfLevel = SupernaturalProgression.level(player, WEREWOLF);
+        final WerewolfShape shape = SupernaturalProgression.werewolfShape(player);
+        final boolean emptyHand = player.getMainHandItem().isEmpty();
+        event.setNewSpeed(SupernaturalAbilityRules.wolfDiggingSpeed(
+            event.getNewSpeed(),
+            werewolfLevel,
+            shape,
+            emptyHand,
+            isLooseEarth(event.getState()),
+            player.isShiftKeyDown(),
+            isEarth(event.getState())
+        ));
     }
 
     private static void handleBlockBreak(final BlockEvent.BreakEvent event) {
@@ -1186,6 +1193,10 @@ public final class SupernaturalProgressionRuntime {
             || state.is(Blocks.CLAY);
     }
 
+    private static boolean isLooseEarth(final BlockState state) {
+        return state.is(BlockTags.DIRT) || state.is(BlockTags.SAND);
+    }
+
     private static void spreadWerewolfCurse(final LivingEntity target) {
         if (protectedByHunterArmor(target)) {
             return;
@@ -1287,6 +1298,7 @@ public final class SupernaturalProgressionRuntime {
 
     private static void sync(final ServerPlayer player) {
         ModNetwork.sendSupernaturalSnapshot(player, snapshot(player));
+        PlayerWolfVisualSync.refresh(player);
     }
 
     private static void show(final ServerPlayer player, final String key, final ChatFormatting color) {
