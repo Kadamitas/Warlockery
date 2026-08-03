@@ -27,7 +27,14 @@ public final class ModClientNetwork {
         );
         ClientPlayNetworking.registerGlobalReceiver(
             ModNetwork.SupernaturalSnapshotPayload.TYPE,
-            (payload, context) -> context.client().execute(() -> SupernaturalStatusOverlay.update(payload))
+            (payload, context) -> context.client().execute(() -> {
+                SupernaturalStatusOverlay.update(payload);
+                ClientSupernaturalState.update(payload);
+            })
+        );
+        ClientPlayNetworking.registerGlobalReceiver(
+            ModNetwork.PlayerWolfVisualPayload.TYPE,
+            (payload, context) -> context.client().execute(() -> PlayerWolfVisualState.update(payload))
         );
         initialized = true;
     }

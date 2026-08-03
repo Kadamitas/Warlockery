@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "Trzymaj Talizman Mowy Bestii, podaj zwierzęciu lubiane jedzenie i użyj na nim talizmanu. Zrozumiecie się, a owca lub inne łagodne zwierzę może wymienić dar za ofiarę. Talizman Srebrnego Języka rozmawia zamiast tego z demonami.",
   "manual.warlockery.biomes.preamble": "Każdy biom ma małego ducha. Ta księga nazywa krainy i uczy, jak ich wspomnienie prowadzi Ryt Zmieniających się Pór. Wybierz rozdział biomu, który ma przywołać twoja magia.",
   "manual.warlockery.conjuration.preamble": "Ta księga uczy przywoływać magiczne istoty i budzić związane talizmany. Każde stworzenie, lalka, posąg i tkacz snów ma krótką lekcję. Przeczytaj ją, zanim zaprosisz obcego ducha do domu.",
-  "manual.warlockery.circles.preamble": "Ta księga uczy magii kręgów. Narysuj pokazane pierścienie kredy, połóż dary i użyj złotego środka. Wybierz ryt, aby zobaczyć obraz, składniki, moc ołtarza i każdy brakujący krok."
+  "manual.warlockery.circles.preamble": "Ta księga uczy magii kręgów. Narysuj pokazane pierścienie kredy, połóż dary i użyj złotego środka. Wybierz ryt, aby zobaczyć obraz, składniki, moc ołtarza i każdy brakujący krok.",
+  "entity.warlockery.vampire.hobgoblin_variant": "Wampir hobgoblin",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Wilkołak hobgoblin",
+  "message.warlockery.villager.blood_drained": "Ten osadnik stracił zbyt wiele krwi, by handlować.",
+  "message.warlockery.village.assault_defended": "Osada pamięta twoją obronę."
 }

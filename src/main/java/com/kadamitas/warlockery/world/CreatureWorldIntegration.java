@@ -40,6 +40,7 @@ public final class CreatureWorldIntegration {
 
     public static void tick(final ServerLevel level) {
         GoblinRaidRuntime.tick(level);
+        VillageGuardRuntime.tick(level);
         if (level.players().isEmpty()) return;
         final long gameTime = level.getGameTime();
         final boolean overworld = level.dimension() == Level.OVERWORLD;
@@ -96,6 +97,9 @@ public final class CreatureWorldIntegration {
             return;
         }
         buildHut(level, origin);
+        if (WarlockeryConfig.settlementFortifications()) {
+            SettlementFortificationRuntime.fortifyHobgoblinSettlement(level, origin);
+        }
         sites.registerCamp(region);
         final int residents = HobgoblinCampRules.residents(level.getRandom().nextInt());
         for (int index = 0; index < residents; index++) {
@@ -158,16 +162,23 @@ public final class CreatureWorldIntegration {
             sites.markVillageRegionScanned(region);
             bell.ifPresent(sites::registerBell);
         }
-        if (bell.isEmpty() || VillageLegacyData.get(level).contains(bell.orElseThrow())) {
+        if (bell.isEmpty()) {
+            return;
+        }
+        final BlockPos villageCenter = bell.orElseThrow();
+        if (WarlockeryConfig.settlementFortifications()) {
+            SettlementFortificationRuntime.fortifyHumanVillage(level, villageCenter);
+        }
+        if (VillageLegacyData.get(level).contains(villageCenter)) {
             return;
         }
         final List<BlockPos> candidates = List.of(
-            bell.orElseThrow().offset(12, 0, 0),
-            bell.orElseThrow().offset(-12, 0, 0),
-            bell.orElseThrow().offset(0, 0, 12),
-            bell.orElseThrow().offset(0, 0, -12),
-            bell.orElseThrow().offset(16, 0, 8),
-            bell.orElseThrow().offset(-16, 0, -8)
+            villageCenter.offset(12, 0, 0),
+            villageCenter.offset(-12, 0, 0),
+            villageCenter.offset(0, 0, 12),
+            villageCenter.offset(0, 0, -12),
+            villageCenter.offset(16, 0, 8),
+            villageCenter.offset(-16, 0, -8)
         ).stream().map(pos -> surface(level, pos)).toList();
         final Optional<BlockPos> apothecary = candidates.stream()
             .filter(pos -> clearStructureFootprint(level, pos, 2, 4))
@@ -181,7 +192,7 @@ public final class CreatureWorldIntegration {
         }
         buildApothecary(level, apothecary.orElseThrow());
         buildTownKeep(level, keep.orElseThrow());
-        VillageLegacyData.get(level).mark(bell.orElseThrow());
+        VillageLegacyData.get(level).mark(villageCenter);
     }
 
     private static boolean clearStructureFootprint(

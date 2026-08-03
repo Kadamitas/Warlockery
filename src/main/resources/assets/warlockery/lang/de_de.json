@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "Halte einen Tierstimmen-Talisman, biete einem Tier sein Lieblingsfutter an und benutze den Talisman auf ihm. Nun versteht ihr einander und ein Schaf oder anderes friedliches Tier kann ein Geschenk tauschen. Der Silberzungen-Talisman spricht stattdessen mit Dämonen.",
   "manual.warlockery.biomes.preamble": "Jedes Biom hat einen eigenen kleinen Geist. Dieses Buch nennt die Orte und zeigt, wie ihre Erinnerung das Ritual der wechselnden Jahreszeiten führt. Wähle ein Biomkapitel für das Land, das deine Magie rufen soll.",
   "manual.warlockery.conjuration.preamble": "Dieses Buch zeigt, wie du magische Wesen rufst und gebundene Talismane weckst. Jedes Wesen, jede Puppe, Statue und jeder Traumweber hat eine kurze Lektion. Lies sie, bevor du einen fremden Geist heimholst.",
-  "manual.warlockery.circles.preamble": "Dieses Buch lehrt Kreismagie. Zeichne die gezeigten Kreidekreise, lege die Opfergaben ab und benutze die goldene Mitte. Wähle ein Ritual, um Bild, Zutaten, Altarkraft und jeden fehlenden Schritt zu sehen."
+  "manual.warlockery.circles.preamble": "Dieses Buch lehrt Kreismagie. Zeichne die gezeigten Kreidekreise, lege die Opfergaben ab und benutze die goldene Mitte. Wähle ein Ritual, um Bild, Zutaten, Altarkraft und jeden fehlenden Schritt zu sehen.",
+  "entity.warlockery.vampire.hobgoblin_variant": "Hobgoblin-Vampir",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Hobgoblin-Werwolf",
+  "message.warlockery.villager.blood_drained": "Dieser Dorfbewohner ist zu blutleer zum Handeln.",
+  "message.warlockery.village.assault_defended": "Die Siedlung erinnert sich an deine Verteidigung."
 }

@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.transformation;
 
 import com.kadamitas.warlockery.data.WarlockeryEntityData;
+import com.kadamitas.warlockery.fabric.event.BreakSpeedContext;
 import com.kadamitas.warlockery.item.BloodGobletItem;
 import com.kadamitas.warlockery.item.BloodGobletState;
 import com.kadamitas.warlockery.item.ManualItem;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 
 public final class SupernaturalProgressionGameTests {
@@ -283,6 +285,53 @@ public final class SupernaturalProgressionGameTests {
         helper.assertValueEqual(next.questTitle(), "quest.warlockery.werewolf.shepherds_reckoning",
             "next werewolf quest shown by the HUD");
         helper.assertValueEqual(next.questProgress(), "0 / 30", "next werewolf HUD progress");
+        helper.succeed();
+    }
+
+    public static void transformedWerewolvesDigDirtAndSandFaster(final GameTestHelper helper) {
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        SupernaturalAdvancement.beginWerewolf(player);
+        SupernaturalProgression.setLevel(player, SupernaturalProgression.Path.WEREWOLF, 3);
+        SupernaturalProgression.setWerewolfShape(player, WerewolfShape.WOLF);
+
+        final BreakSpeedContext dirt = new BreakSpeedContext(player, Blocks.DIRT.defaultBlockState(), 1.0F);
+        final BreakSpeedContext sand = new BreakSpeedContext(player, Blocks.SAND.defaultBlockState(), 1.0F);
+        final BreakSpeedContext stone = new BreakSpeedContext(player, Blocks.STONE.defaultBlockState(), 1.0F);
+        SupernaturalProgressionRuntime.handleBreakSpeed(dirt);
+        SupernaturalProgressionRuntime.handleBreakSpeed(sand);
+        SupernaturalProgressionRuntime.handleBreakSpeed(stone);
+
+        helper.assertValueEqual(dirt.getNewSpeed(), SupernaturalAbilityRules.WOLF_DIG_MIN_SPEED,
+            "wolf-form dirt digging speed");
+        helper.assertValueEqual(sand.getNewSpeed(), SupernaturalAbilityRules.WOLF_DIG_MIN_SPEED,
+            "wolf-form sand digging speed");
+        helper.assertValueEqual(stone.getNewSpeed(), 1.0F,
+            "wolf-form stone digging speed");
+
+        SupernaturalProgression.setWerewolfShape(player, WerewolfShape.WOLFMAN);
+        final BreakSpeedContext wolfmanDirt = new BreakSpeedContext(
+            player, Blocks.DIRT.defaultBlockState(), 1.0F
+        );
+        SupernaturalProgressionRuntime.handleBreakSpeed(wolfmanDirt);
+        helper.assertValueEqual(wolfmanDirt.getNewSpeed(), 1.0F,
+            "wolfman dirt digging speed");
+
+        player.setShiftKeyDown(true);
+        final BreakSpeedContext crouchingWolfmanSand = new BreakSpeedContext(
+            player, Blocks.SAND.defaultBlockState(), 1.0F
+        );
+        SupernaturalProgressionRuntime.handleBreakSpeed(crouchingWolfmanSand);
+        helper.assertValueEqual(crouchingWolfmanSand.getNewSpeed(), 1.0F,
+            "crouching wolfman sand digging speed");
+
+        SupernaturalProgression.setWerewolfShape(player, WerewolfShape.WOLF);
+        final BreakSpeedContext crouchingWolfDirt = new BreakSpeedContext(
+            player, Blocks.DIRT.defaultBlockState(), 1.0F
+        );
+        SupernaturalProgressionRuntime.handleBreakSpeed(crouchingWolfDirt);
+        helper.assertValueEqual(crouchingWolfDirt.getNewSpeed(), 30.0F,
+            "crouching four-legged wolf dirt digging speed");
+        player.setShiftKeyDown(false);
         helper.succeed();
     }
 

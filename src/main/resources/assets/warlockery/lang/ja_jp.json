@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "野獣の言葉のお守りを持ち、動物の好きな食べ物を差し出して、その動物に使います。お互いの言葉が分かり、羊などのやさしい動物が供物と贈り物を交換します。銀の舌のお守りは悪魔と話します。",
   "manual.warlockery.biomes.preamble": "どのバイオームにも小さな魂があります。この本は土地の名と、その記憶で季節移ろいの儀式を導く方法を教えます。呼びたい土地の章を選んでください。",
   "manual.warlockery.conjuration.preamble": "この本は魔法の者を呼び、結ばれたお守りを目覚めさせる方法を教えます。生き物、人形、像、夢織りには短い教えがあります。知らない魂を家へ呼ぶ前に読んでください。",
-  "manual.warlockery.circles.preamble": "この本は円の魔法を教えます。絵の通りにチョークの輪を描き、供物を置き、金の中心を使います。儀式を選ぶと、絵、材料、祭壇の力、足りない手順が見えます。"
+  "manual.warlockery.circles.preamble": "この本は円の魔法を教えます。絵の通りにチョークの輪を描き、供物を置き、金の中心を使います。儀式を選ぶと、絵、材料、祭壇の力、足りない手順が見えます。",
+  "entity.warlockery.vampire.hobgoblin_variant": "ホブゴブリンの吸血鬼",
+  "entity.warlockery.werewolf.hobgoblin_variant": "ホブゴブリンの人狼",
+  "message.warlockery.villager.blood_drained": "この村人は血を失いすぎて取引できない。",
+  "message.warlockery.village.assault_defended": "集落はあなたの守りを覚えている。"
 }

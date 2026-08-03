@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "拿著獸語護符，給動物喜歡的食物，再對牠使用護符。你們便能互相理解，綿羊或其他友善動物也許會用禮物交換供品。銀舌護符則能和惡魔交談。",
   "manual.warlockery.biomes.preamble": "每個生物群落都有小小的靈魂。這本書列出這些地方，並教你用它們的記憶引導季節轉移儀式。選擇你的魔法想召來的生物群落章節。",
   "manual.warlockery.conjuration.preamble": "這本書教你召來魔法生物，並喚醒綁定的護符。每種生物、娃娃、雕像和織夢物都有短短的課程。把陌生靈魂帶回家以前要先讀。",
-  "manual.warlockery.circles.preamble": "這本書教你圓環魔法。照圖畫出粉筆圓環、放下供品，再使用金色中心。選擇儀式後，就能看到圖案、材料、祭壇力量和每個缺少的步驟。"
+  "manual.warlockery.circles.preamble": "這本書教你圓環魔法。照圖畫出粉筆圓環、放下供品，再使用金色中心。選擇儀式後，就能看到圖案、材料、祭壇力量和每個缺少的步驟。",
+  "entity.warlockery.vampire.hobgoblin_variant": "霍布哥布林吸血鬼",
+  "entity.warlockery.werewolf.hobgoblin_variant": "霍布哥布林狼人",
+  "message.warlockery.villager.blood_drained": "這名村民失血過多，暫時無法交易。",
+  "message.warlockery.village.assault_defended": "聚落會記住你的守護。"
 }

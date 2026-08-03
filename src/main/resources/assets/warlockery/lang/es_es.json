@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "Sostén un Amuleto de Habla de Bestias, ofrece a un animal una comida que le guste y usa el amuleto sobre él. Así podréis entenderos y una oveja u otra bestia amistosa podrá cambiar un regalo por tu ofrenda. El Amuleto de Lengua de Plata habla con demonios.",
   "manual.warlockery.biomes.preamble": "Cada bioma tiene su pequeño espíritu. Este libro nombra esos lugares y enseña cómo su recuerdo guía el Rito de las Estaciones Cambiantes. Elige el capítulo del bioma que tu magia debe llamar.",
   "manual.warlockery.conjuration.preamble": "Este libro enseña a llamar seres mágicos y despertar amuletos atados. Cada criatura, muñeco, estatua y tejedor de sueños tiene una lección corta. Léela antes de invitar a casa a un espíritu extraño.",
-  "manual.warlockery.circles.preamble": "Este libro enseña magia de círculos. Dibuja los anillos de tiza mostrados, deja las ofrendas y usa el centro dorado. Elige un rito para ver su dibujo, ingredientes, poder de altar y cada paso que falta."
+  "manual.warlockery.circles.preamble": "Este libro enseña magia de círculos. Dibuja los anillos de tiza mostrados, deja las ofrendas y usa el centro dorado. Elige un rito para ver su dibujo, ingredientes, poder de altar y cada paso que falta.",
+  "entity.warlockery.vampire.hobgoblin_variant": "Vampiro hobgoblin",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Hombre lobo hobgoblin",
+  "message.warlockery.villager.blood_drained": "Este aldeano está demasiado desangrado para comerciar.",
+  "message.warlockery.village.assault_defended": "El asentamiento recuerda tu defensa."
 }

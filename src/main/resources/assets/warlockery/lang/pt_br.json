@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "Segure um Amuleto de Fala das Feras, ofereça ao animal uma comida de que ele gosta e use o amuleto nele. Vocês poderão se entender, e uma ovelha ou outro animal amigo poderá trocar um presente pela oferenda. O Amuleto da Língua de Prata fala com demônios.",
   "manual.warlockery.biomes.preamble": "Cada bioma tem seu pequeno espírito. Este livro dá nome aos lugares e ensina como sua lembrança guia o Rito das Estações Mutáveis. Escolha o capítulo do bioma que sua magia deve chamar.",
   "manual.warlockery.conjuration.preamble": "Este livro ensina a chamar seres mágicos e acordar amuletos ligados. Cada criatura, boneco, estátua e tecedor de sonhos tem uma lição curta. Leia antes de convidar um espírito estranho para casa.",
-  "manual.warlockery.circles.preamble": "Este livro ensina magia de círculos. Desenhe os anéis de giz mostrados, coloque as oferendas e use o centro dourado. Escolha um rito para ver seu desenho, ingredientes, poder do altar e cada passo que falta."
+  "manual.warlockery.circles.preamble": "Este livro ensina magia de círculos. Desenhe os anéis de giz mostrados, coloque as oferendas e use o centro dourado. Escolha um rito para ver seu desenho, ingredientes, poder do altar e cada passo que falta.",
+  "entity.warlockery.vampire.hobgoblin_variant": "Vampiro hobgoblin",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Lobisomem hobgoblin",
+  "message.warlockery.villager.blood_drained": "Este aldeão perdeu sangue demais para negociar.",
+  "message.warlockery.village.assault_defended": "O assentamento se lembra da sua defesa."
 }

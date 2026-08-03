@@ -25,7 +25,10 @@ public final class WarlockeryConfig {
         0.1D,
         true,
         1_200,
-        1.0D / 14.0D
+        1.0D / 14.0D,
+        true,
+        true,
+        1.0D
     );
 
     private static volatile Settings settings = DEFAULTS;
@@ -91,6 +94,18 @@ public final class WarlockeryConfig {
         return settings.silverHuntChance();
     }
 
+    public static boolean settlementFortifications() {
+        return settings.settlementFortifications();
+    }
+
+    public static boolean villageAssaults() {
+        return settings.villageAssaults();
+    }
+
+    public static double villageAssaultFrequency() {
+        return settings.villageAssaultFrequency();
+    }
+
     private static Settings decode(final JsonObject root) {
         if (root == null) {
             return DEFAULTS;
@@ -104,7 +119,16 @@ public final class WarlockeryConfig {
             probability(worldEvents, "hobgoblinEnclaveChance", DEFAULTS.hobgoblinEnclaveChance()),
             booleanValue(worldEvents, "enableSilverHunts", DEFAULTS.silverHunts()),
             rangedInt(worldEvents, "silverHuntAttemptIntervalTicks", DEFAULTS.silverHuntInterval(), 20),
-            probability(worldEvents, "silverHuntChance", DEFAULTS.silverHuntChance())
+            probability(worldEvents, "silverHuntChance", DEFAULTS.silverHuntChance()),
+            booleanValue(worldEvents, "enableSettlementFortifications", DEFAULTS.settlementFortifications()),
+            booleanValue(worldEvents, "enableVillageAssaults", DEFAULTS.villageAssaults()),
+            rangedDouble(
+                worldEvents,
+                "villageAssaultDelayMultiplier",
+                DEFAULTS.villageAssaultFrequency(),
+                0.25D,
+                16.0D
+            )
         );
     }
 
@@ -142,6 +166,24 @@ public final class WarlockeryConfig {
         }
     }
 
+    private static double rangedDouble(
+        final JsonObject object,
+        final String key,
+        final double fallback,
+        final double minimum,
+        final double maximum
+    ) {
+        if (!object.has(key) || !(object.get(key) instanceof JsonPrimitive primitive) || !primitive.isNumber()) {
+            return fallback;
+        }
+        try {
+            final double value = primitive.getAsDouble();
+            return Double.isFinite(value) ? Math.clamp(value, minimum, maximum) : fallback;
+        } catch (NumberFormatException exception) {
+            return fallback;
+        }
+    }
+
     private static void write(final Path path, final Settings value) throws IOException {
         final JsonObject worldEvents = new JsonObject();
         worldEvents.addProperty("armPillagersAgainstWerewolves", value.armPillagers());
@@ -152,6 +194,9 @@ public final class WarlockeryConfig {
         worldEvents.addProperty("enableSilverHunts", value.silverHunts());
         worldEvents.addProperty("silverHuntAttemptIntervalTicks", value.silverHuntInterval());
         worldEvents.addProperty("silverHuntChance", value.silverHuntChance());
+        worldEvents.addProperty("enableSettlementFortifications", value.settlementFortifications());
+        worldEvents.addProperty("enableVillageAssaults", value.villageAssaults());
+        worldEvents.addProperty("villageAssaultDelayMultiplier", value.villageAssaultFrequency());
 
         final JsonObject root = new JsonObject();
         root.add(WORLD_EVENTS, worldEvents);
@@ -166,7 +211,10 @@ public final class WarlockeryConfig {
         double hobgoblinEnclaveChance,
         boolean silverHunts,
         int silverHuntInterval,
-        double silverHuntChance
+        double silverHuntChance,
+        boolean settlementFortifications,
+        boolean villageAssaults,
+        double villageAssaultFrequency
     ) {
     }
 }

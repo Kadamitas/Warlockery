@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "Bir Canavar Konuşma Büyüsü yapın, bir hayvana sevdiği yemeği verin ve büyüyü o hayvan üzerinde kullanın. Cazibe birbirinizi anlamanızı sağlar, böylece bir koyun veya başka bir dost hayvan, teklifinize karşılık bir hediye verebilir. Gümüş Dil Büyüsü bunun yerine iblislerle konuşuyor.",
   "manual.warlockery.biomes.preamble": "Her biyomun kendine ait küçük bir ruhu vardır. Bu kitap bu yerlerin adlarını verir ve anılarının Mevsim Değiştirme Ayini'ne nasıl yol gösterdiğini öğretir. Sihrinizin hangi toprağı çağıracağını öğrenmek için bir biyom bölümü seçin. Sakin olun: dersleri sırayla izleyin, büyücülük kısa sürede anlaşılır hale gelir.",
   "manual.warlockery.conjuration.preamble": "Bu kitap büyülü varlıkları çağırmayı ve bağlı tılsımları uyandırmayı öğretir. Her yaratığın, bebeğin, heykelin ve düş dokumasının kısa bir dersi vardır. Yabancı bir ruhu evinize davet etmeden önce onun sayfasını okuyun. Sakin olun: dersleri sırayla izleyin, büyücülük kısa sürede anlaşılır hale gelir.",
-  "manual.warlockery.circles.preamble": "Bu kitap çember büyüsünü öğretir. Gösterilen tebeşir halkalarını çizin, adakları yerleştirin ve başlamak için altın merkezi kullanın. Çizimini, malzemelerini, sunak gücünü ve eksik her adımı görmek için bir ayin seçin. Sakin olun: dersleri sırayla izleyin, büyücülük kısa sürede anlaşılır hale gelir."
+  "manual.warlockery.circles.preamble": "Bu kitap çember büyüsünü öğretir. Gösterilen tebeşir halkalarını çizin, adakları yerleştirin ve başlamak için altın merkezi kullanın. Çizimini, malzemelerini, sunak gücünü ve eksik her adımı görmek için bir ayin seçin. Sakin olun: dersleri sırayla izleyin, büyücülük kısa sürede anlaşılır hale gelir.",
+  "entity.warlockery.vampire.hobgoblin_variant": "Hobgoblin Vampir",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Hobgoblin Kurt Adam",
+  "message.warlockery.villager.blood_drained": "Bu köylü ticaret yapamayacak kadar kan kaybetmiş.",
+  "message.warlockery.village.assault_defended": "Yerleşim savunmanı hatırlıyor."
 }

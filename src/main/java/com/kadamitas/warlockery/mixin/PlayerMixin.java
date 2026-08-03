@@ -15,10 +15,14 @@ abstract class PlayerMixin {
         final BlockState state,
         final CallbackInfoReturnable<Float> callback
     ) {
-        callback.setReturnValue(WarlockeryFabricEvents.dispatchBreakSpeed(
-            (Player) (Object) this,
-            state,
-            callback.getReturnValue()
-        ));
+        final Player player = (Player) (Object) this;
+        final float speed = player.level().isClientSide()
+            ? com.kadamitas.warlockery.client.ClientSupernaturalState.modifyBreakSpeed(
+                player,
+                state,
+                callback.getReturnValue()
+            )
+            : WarlockeryFabricEvents.dispatchBreakSpeed(player, state, callback.getReturnValue());
+        callback.setReturnValue(speed);
     }
 }

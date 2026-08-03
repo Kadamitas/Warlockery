@@ -45,6 +45,8 @@ import com.kadamitas.warlockery.ritual.hex.HexRuntime;
 import com.kadamitas.warlockery.ritual.hex.HexState;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
+import com.kadamitas.warlockery.transformation.PlayerWolfVisualSync;
+import com.kadamitas.warlockery.world.VillageAssaultRuntime;
 import com.kadamitas.warlockery.world.VillageGuardRuntime;
 import com.kadamitas.warlockery.world.WarlockVillagerFarming;
 import com.kadamitas.warlockery.world.CreatureWorldIntegration;
@@ -83,6 +85,7 @@ public final class WarlockeryFabricEvents {
             return;
         }
         initialized = true;
+        PlayerWolfVisualSync.registerEvents();
         WarlockeryFabricItemEvents.initialize();
         registerReloadListeners();
         ServerTickEvents.END_LEVEL_TICK.register(WarlockeryFabricEvents::tickLevel);
@@ -90,8 +93,12 @@ public final class WarlockeryFabricEvents {
         ServerPlayerEvents.COPY_FROM.register(WarlockeryFabricEvents::copyPlayerData);
         ServerPlayerEvents.JOIN.register(FlyingBroomItem::handleLogin);
         ServerPlayerEvents.LEAVE.register(FlyingBroomItem::handleLogout);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) ->
-            EquipmentSetEffects.handleEntityJoinLevel(entity, level, entity.tickCount > 0));
+        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+            EquipmentSetEffects.handleEntityJoinLevel(entity, level, entity.tickCount > 0);
+            if (VillageAssaultRuntime.handleEntityJoin(entity, level)) {
+                entity.discard();
+            }
+        });
         EntitySleepEvents.STOP_SLEEPING.register((entity, position) -> {
             if (entity instanceof ServerPlayer player) {
                 DreamWeaverRuntime.handleWake(player, position, player.getSleepTimer() < 100);
@@ -103,6 +110,9 @@ public final class WarlockeryFabricEvents {
                 return InteractionResult.PASS;
             }
             final ItemStack heldItem = player.getItemInHand(hand);
+            if (VillageAssaultRuntime.handleVillagerInteraction(serverPlayer, target)) {
+                return InteractionResult.FAIL;
+            }
             if (SupernaturalProgressionRuntime.handleInteract(serverPlayer, target, heldItem)
                 || VillageGuardRuntime.handleInteract(serverPlayer, target, heldItem)) {
                 return InteractionResult.SUCCESS;
@@ -165,6 +175,7 @@ public final class WarlockeryFabricEvents {
         BrewPersistentRuntime.handleDeath(entity);
         MagicPathRuntime.handleDeath(entity, source);
         SupernaturalProgressionRuntime.handleDeath(entity, source);
+        VillageAssaultRuntime.handleDeath(entity, source);
         SeerCovenRuntime.handleDeath(entity);
     }
 
@@ -214,6 +225,8 @@ public final class WarlockeryFabricEvents {
         MagicPathRuntime.handleDamage(context);
         SupernaturalState.handleDamage(context);
         SupernaturalProgressionRuntime.handleDamage(context);
+        VillageAssaultRuntime.handleDamage(context);
+        VillageGuardRuntime.handleSettlementAttack(context);
         CreatureCombat.handleDamage(context);
         EquipmentSetEffects.handleDamage(context);
         FancifulCharmRuntime.handleDamage(context);

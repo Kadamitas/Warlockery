@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "拿著兽语护符，给动物喜欢的食物，再对牠用护符。你们便能互相理解，绵羊或其他友善动物也许会用礼物交换供品。银舌护符则能和恶魔交谈。",
   "manual.warlockery.biomes.preamble": "每种生物群系都有一缕地灵。这本书会告诉你各片天地长啥样，也教你怎么把它们的记忆交给季候挪移仪式。想把哪片风土摇过来，就先翻它的章节。",
   "manual.warlockery.conjuration.preamble": "这本魔典专讲摇人、召灵和唤醒绑定物。生物、魔偶、雕像和织梦器都有自己的短课。先读明白再开门请客，不然来的东西可不一定讲武德。",
-  "manual.warlockery.circles.preamble": "这本魔典教你画粉笔法阵。照图铺好圆环，摆齐供物，再点金色阵心开仪式。选中仪式后会显示法阵图、材料、祭坛能量和还差啥，绿勾全亮再开，稳得很。"
+  "manual.warlockery.circles.preamble": "这本魔典教你画粉笔法阵。照图铺好圆环，摆齐供物，再点金色阵心开仪式。选中仪式后会显示法阵图、材料、祭坛能量和还差啥，绿勾全亮再开，稳得很。",
+  "entity.warlockery.vampire.hobgoblin_variant": "霍布哥布林吸血鬼",
+  "entity.warlockery.werewolf.hobgoblin_variant": "霍布哥布林狼人",
+  "message.warlockery.villager.blood_drained": "这名村民失血过多，暂时无法交易。",
+  "message.warlockery.village.assault_defended": "聚落会记住你的守护。"
 }

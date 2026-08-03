@@ -1105,7 +1105,7 @@
   "manual.warlockery.circles.werewolf_level_2.title": "Level 2: The Gilded Leash",
   "manual.warlockery.circles.werewolf_level_2": "Trial: offer three Gold Ingots together upon a Wolf Altar while the moon is full. Reward: the Moon Charm permits a willing change between human and wolf, and sheep killed in wolf shape yield the mutton demanded by the next trial.",
   "manual.warlockery.circles.werewolf_level_3.title": "Level 3: The Shepherd's Reckoning",
-  "manual.warlockery.circles.werewolf_level_3": "Trial: hunt sheep while in wolf shape, gather thirty Raw Mutton from those hunts, and offer all thirty upon the Wolf Altar. Reward: clawed hands tear through dirt, sand, and similar earth, sometimes uncovering old bones.",
+  "manual.warlockery.circles.werewolf_level_3": "Trial: hunt sheep while in your four-legged wolf shape only, gather thirty Raw Mutton from those hunts, and offer all thirty upon the Wolf Altar. Reward: only that four-legged wolf shape tears quickly through dirt, sand, and similar earth, sometimes uncovering old bones. Wolfman shape gains no digging boon.",
   "manual.warlockery.circles.werewolf_level_4.title": "Level 4: The Red Feast",
   "manual.warlockery.circles.werewolf_level_4": "Trial: place ten Tongues of Dog upon the Wolf Altar. Reward: Feast restores health, hunger, and saturation when the transformed beast feeds upon a fresh kill.",
   "manual.warlockery.circles.werewolf_level_5.title": "Level 5: Hunt the Huntsman",
@@ -2445,5 +2445,9 @@
   "manual.warlockery.conjuration.beast_speech": "Hold a Beast-Speech Charm, offer an animal a food it likes, and use the charm on that animal. The charm lets you understand one another, so a sheep or other friendly beast may trade a gift for your offering. The Silver Tongue Charm speaks to demons instead.",
   "manual.warlockery.biomes.preamble": "Every biome has its own little spirit. This book names those places and teaches how their memory guides the Rite of Shifting Seasons. Pick a biome chapter to learn which land your magic will call.",
   "manual.warlockery.conjuration.preamble": "This book teaches how to call magical beings and wake bound charms. Each creature, doll, statue, and dream weave has its own short lesson. Read its page before you invite a strange spirit home.",
-  "manual.warlockery.circles.preamble": "This book teaches circle magic. Draw the shown chalk rings, place the shown offerings, and use the golden center to begin. Pick a rite to see its picture, ingredients, altar power, and every missing step."
+  "manual.warlockery.circles.preamble": "This book teaches circle magic. Draw the shown chalk rings, place the shown offerings, and use the golden center to begin. Pick a rite to see its picture, ingredients, altar power, and every missing step.",
+  "entity.warlockery.vampire.hobgoblin_variant": "Hobgoblin Vampire",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Hobgoblin Werewolf",
+  "message.warlockery.villager.blood_drained": "This villager is too blood-drained to trade.",
+  "message.warlockery.village.assault_defended": "The settlement remembers your defense."
 }

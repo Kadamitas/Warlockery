@@ -12,6 +12,7 @@ import com.kadamitas.warlockery.registry.ModMenus;
 import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderingRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -59,6 +60,10 @@ public final class WarlockeryClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(minecraft -> {
             SupernaturalControls.tick(minecraft);
             BroomControls.tick(minecraft);
+        });
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, minecraft) -> {
+            ClientSupernaturalState.clear();
+            PlayerWolfVisualState.clear();
         });
         HudElementRegistry.attachElementBefore(
             VanillaHudElements.SLEEP,

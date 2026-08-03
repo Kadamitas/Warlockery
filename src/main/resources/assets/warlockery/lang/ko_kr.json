@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "야수 음성 부적을 쥐고 동물이 좋아하는 음식을 제공한 후 해당 동물에게 부적을 사용하십시오. 부적을 사용하면 서로를 이해할 수 있으므로 양이나 다른 친근한 짐승이 선물을 선물로 교환할 수 있습니다. 대신 은빛 혀 부적은 악마와 대화합니다.",
   "manual.warlockery.biomes.preamble": "모든 생물 군계에는 고유한 작은 영혼이 있습니다. 이 책은 그러한 장소의 이름을 지정하고 해당 장소의 기억이 계절 변화의 의식을 어떻게 안내하는지 알려줍니다. 당신의 마법이 어떤 땅을 부를지 알아보려면 생물 군계의 장을 선택하세요. 걱정 ㄴㄴ. 한 단계씩 하면 마녀 감성이 바로 찐 능력이 돼요.",
   "manual.warlockery.conjuration.preamble": "이 책은 마법의 존재를 부르는 방법과 묶인 매력을 깨우는 방법을 가르쳐줍니다. 각각의 생물, 인형, 조각상, 꿈의 직조에는 짧은 교훈이 있습니다. 이상한 영혼을 집으로 초대하기 전에 해당 페이지를 읽어보십시오. 걱정 ㄴㄴ. 한 단계씩 하면 마녀 감성이 바로 찐 능력이 돼요.",
-  "manual.warlockery.circles.preamble": "이 책은 원마법을 가르칩니다. 표시된 분필 고리를 그리고 표시된 제물을 놓은 다음 황금색 중앙을 사용하여 시작하십시오. 그림, 재료, 제단의 힘 및 누락된 모든 단계를 보려면 의식을 선택하세요. 걱정 ㄴㄴ. 한 단계씩 하면 마녀 감성이 바로 찐 능력이 돼요."
+  "manual.warlockery.circles.preamble": "이 책은 원마법을 가르칩니다. 표시된 분필 고리를 그리고 표시된 제물을 놓은 다음 황금색 중앙을 사용하여 시작하십시오. 그림, 재료, 제단의 힘 및 누락된 모든 단계를 보려면 의식을 선택하세요. 걱정 ㄴㄴ. 한 단계씩 하면 마녀 감성이 바로 찐 능력이 돼요.",
+  "entity.warlockery.vampire.hobgoblin_variant": "홉고블린 뱀파이어",
+  "entity.warlockery.werewolf.hobgoblin_variant": "홉고블린 늑대인간",
+  "message.warlockery.villager.blood_drained": "이 주민은 피를 너무 많이 잃어 거래할 수 없습니다.",
+  "message.warlockery.village.assault_defended": "정착지는 당신의 수비를 기억합니다."
 }

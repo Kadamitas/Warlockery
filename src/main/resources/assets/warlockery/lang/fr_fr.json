@@ -2422,5 +2422,9 @@
   "manual.warlockery.conjuration.beast_speech": "Tiens un Charme de Parole des Bêtes, offre à un animal une nourriture qu'il aime, puis utilise le charme sur lui. Vous pourrez vous comprendre et un mouton ou une autre bête amicale pourra échanger un cadeau. Le Charme de Langue d'Argent parle plutôt aux démons.",
   "manual.warlockery.biomes.preamble": "Chaque biome a son petit esprit. Ce livre nomme ces lieux et apprend comment leur souvenir guide le Rite des Saisons Changeantes. Choisis le chapitre du biome que ta magie doit appeler.",
   "manual.warlockery.conjuration.preamble": "Ce livre apprend à appeler des êtres magiques et à éveiller des charmes liés. Chaque créature, poupée, statue et tisseur de rêves a une courte leçon. Lis-la avant d'inviter un esprit étrange chez toi.",
-  "manual.warlockery.circles.preamble": "Ce livre enseigne la magie des cercles. Trace les anneaux de craie montrés, pose les offrandes et utilise le centre doré. Choisis un rite pour voir son dessin, ses ingrédients, sa puissance d'autel et chaque étape manquante."
+  "manual.warlockery.circles.preamble": "Ce livre enseigne la magie des cercles. Trace les anneaux de craie montrés, pose les offrandes et utilise le centre doré. Choisis un rite pour voir son dessin, ses ingrédients, sa puissance d'autel et chaque étape manquante.",
+  "entity.warlockery.vampire.hobgoblin_variant": "Vampire hobgobelin",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Loup-garou hobgobelin",
+  "message.warlockery.villager.blood_drained": "Ce villageois est trop exsangue pour commercer.",
+  "message.warlockery.village.assault_defended": "La colonie se souvient de votre défense."
 }
