@@ -14,6 +14,8 @@ import com.kadamitas.warlockery.ritual.WarlockeryGameTests;
 import com.kadamitas.warlockery.ritual.NamiRitualGameTests;
 import com.kadamitas.warlockery.ritual.SeerCovenGameTests;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionGameTests;
+import com.kadamitas.warlockery.world.SettlementFortificationGameTests;
+import com.kadamitas.warlockery.world.VillageAssaultGameTests;
 import com.kadamitas.warlockery.world.VillageGuardGameTests;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -90,6 +92,38 @@ public final class ModGameTests {
             () -> VillageGuardGameTests::goblinRaidWaveIsGroupedAndCoordinated);
         REGISTRY.register("hobgoblins_flee_human_villagers_and_keep_custom_professions",
             () -> VillageGuardGameTests::hobgoblinsFleeHumanVillagersAndKeepCustomProfessions);
+        REGISTRY.register("human_village_builds_a_closed_stone_defense",
+            () -> SettlementFortificationGameTests::humanVillageBuildsAClosedStoneDefense);
+        REGISTRY.register("hobgoblin_village_builds_a_closed_wood_defense",
+            () -> SettlementFortificationGameTests::hobgoblinVillageBuildsAClosedWoodDefense);
+        REGISTRY.register("varied_terrain_keeps_level_patrol_deck_and_supported_walls",
+            () -> SettlementFortificationGameTests::variedTerrainKeepsLevelPatrolDeckAndSupportedWalls);
+        REGISTRY.register("repeated_fortification_does_not_stack_or_duplicate_guards",
+            () -> SettlementFortificationGameTests::repeatedFortificationDoesNotStackOrDuplicateGuards);
+        REGISTRY.register("protected_village_blocks_survive_fortification",
+            () -> SettlementFortificationGameTests::protectedVillageBlocksSurviveFortification);
+        REGISTRY.register("infected_villager_transforms_and_restores_with_identity",
+            () -> VillageAssaultGameTests::infectedVillagerTransformsAndRestoresWithIdentity);
+        REGISTRY.register("both_settlements_receive_tagged_silver_guards",
+            () -> VillageAssaultGameTests::bothSettlementsReceiveTaggedSilverGuards);
+        REGISTRY.register("guards_retaliate_against_players_with_silver_bolts",
+            () -> VillageAssaultGameTests::guardsRetaliateAgainstPlayersWithSilverBolts);
+        REGISTRY.register("low_health_raiders_escape_as_bat_and_wolf",
+            () -> VillageAssaultGameTests::lowHealthRaidersEscapeAsBatAndWolf);
+        REGISTRY.register("approach_forms_cross_closed_fortification_and_reveal_inside",
+            () -> VillageAssaultGameTests::approachFormsCrossClosedFortificationAndRevealInside);
+        REGISTRY.register("blood_drained_trade_lock_uses_forge_interaction_event",
+            () -> VillageAssaultGameTests::bloodDrainedTradeLockUsesForgeInteractionEvent);
+        REGISTRY.register("only_raid_contributors_receive_settlement_rewards",
+            () -> VillageAssaultGameTests::onlyRaidContributorsReceiveSettlementRewards);
+        REGISTRY.register("hobgoblin_supernatural_variants_exist_only_as_raid_markers",
+            () -> VillageAssaultGameTests::hobgoblinSupernaturalVariantsExistOnlyAsRaidMarkers);
+        REGISTRY.register("compact_waves_preserve_counts_powers_and_settlement_variants",
+            () -> VillageAssaultGameTests::compactWavesPreserveCountsPowersAndSettlementVariants);
+        REGISTRY.register("objective_targeting_skips_completed_or_unavailable_residents",
+            () -> VillageAssaultGameTests::objectiveTargetingSkipsCompletedOrUnavailableResidents);
+        REGISTRY.register("assault_objectives_rewards_and_cleanup_remain_isolated",
+            () -> VillageAssaultGameTests::assaultObjectivesRewardsAndCleanupRemainIsolated);
         REGISTRY.register("werewolf_hunter_carries_silver_ammunition",
             () -> WarlockeryGameTests::werewolfHunterCarriesSilverAmmunition);
         REGISTRY.register("wolf_altar_final_trial_completes_once",
@@ -168,6 +202,8 @@ public final class ModGameTests {
             () -> SupernaturalProgressionGameTests::vampireCreationRejectsForeignGobletThenCompletesPath);
         REGISTRY.register("werewolf_altar_diagnoses_and_advances",
             () -> SupernaturalProgressionGameTests::werewolfAltarDiagnosesAndAdvances);
+        REGISTRY.register("transformed_werewolves_dig_dirt_and_sand_faster",
+            () -> SupernaturalProgressionGameTests::transformedWerewolvesDigDirtAndSandFaster);
         REGISTRY.register("spirit_world_entry_creates_state_body_and_diagnostic",
             () -> SpiritWorldGameTests::entryCreatesStateBodyAndDiagnostic);
         REGISTRY.register("spirit_world_carry_in_and_exports_restore_without_duplication",

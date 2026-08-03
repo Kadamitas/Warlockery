@@ -2126,7 +2126,14 @@
   "manual.warlockery.condition.full_moon": "満月",
   "manual.warlockery.condition.rain": "雨",
   "manual.warlockery.condition.thunderstorm": "雷雨",
+  "overlay.warlockery.resource.charges_short": "%s ×%s",
+  "overlay.warlockery.resource.cooldown_short": "%s · %s秒",
+  "overlay.warlockery.resource.unattuned": "未同調",
   "manual.warlockery.condition.dimension": "%sで行う",
   "manual.warlockery.condition.participants": "近くに術者が%s人",
-  "manual.warlockery.ritual.climate_change.guide": "まず、しゃがんで望む土地にバイオームの本を使い、その場所を覚えさせます。名前の付いた本を円のそばに置きます。本は消えません。強化なしでは円のあるチャンクだけが変わります。予見の石と5人の術者がそろうと、3かける3チャンクに強化されます。ネザースター1個ごとに輪が1つ増え、使える星は3個までです。通常の幅は1、3、5、7チャンク、強化時は3、5、7、9チャンクです。"
+  "manual.warlockery.ritual.climate_change.guide": "まず、しゃがんで望む土地にバイオームの本を使い、その場所を覚えさせます。名前の付いた本を円のそばに置きます。本は消えません。強化なしでは円のあるチャンクだけが変わります。予見の石と5人の術者がそろうと、3かける3チャンクに強化されます。ネザースター1個ごとに輪が1つ増え、使える星は3個までです。通常の幅は1、3、5、7チャンク、強化時は3、5、7、9チャンクです。",
+  "entity.warlockery.vampire.hobgoblin_variant": "ホブゴブリンの吸血鬼",
+  "entity.warlockery.werewolf.hobgoblin_variant": "ホブゴブリンの人狼",
+  "message.warlockery.villager.blood_drained": "この村人は血を失いすぎて取引できない。",
+  "message.warlockery.village.assault_defended": "集落はあなたの守りを覚えている。"
 }

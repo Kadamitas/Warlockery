@@ -1107,7 +1107,7 @@
   "manual.warlockery.circles.werewolf_level_2.title": "Level 2: The Gilded Leash",
   "manual.warlockery.circles.werewolf_level_2": "Trial: offer three Gold Ingots together upon a Wolf Altar while the moon is full. Reward: the Moon Charm permits a willing change between human and wolf, and sheep killed in wolf shape yield the mutton demanded by the next trial.",
   "manual.warlockery.circles.werewolf_level_3.title": "Level 3: The Shepherd's Reckoning",
-  "manual.warlockery.circles.werewolf_level_3": "Trial: hunt sheep while in wolf shape, gather thirty Raw Mutton from those hunts, and offer all thirty upon the Wolf Altar. Reward: clawed hands tear through dirt, sand, and similar earth, sometimes uncovering old bones.",
+  "manual.warlockery.circles.werewolf_level_3": "Trial: hunt sheep while in your four-legged wolf shape only, gather thirty Raw Mutton from those hunts, and offer all thirty upon the Wolf Altar. Reward: only that four-legged wolf shape tears quickly through dirt, sand, and similar earth, sometimes uncovering old bones. Wolfman shape gains no digging boon.",
   "manual.warlockery.circles.werewolf_level_4.title": "Level 4: The Red Feast",
   "manual.warlockery.circles.werewolf_level_4": "Trial: place ten Tongues of Dog upon the Wolf Altar. Reward: Feast restores health, hunger, and saturation when the transformed beast feeds upon a fresh kill.",
   "manual.warlockery.circles.werewolf_level_5.title": "Level 5: Hunt the Huntsman",
@@ -2126,7 +2126,14 @@
   "manual.warlockery.condition.full_moon": "Full moon",
   "manual.warlockery.condition.rain": "Rain",
   "manual.warlockery.condition.thunderstorm": "Thunderstorm",
+  "overlay.warlockery.resource.charges_short": "%s ×%s",
+  "overlay.warlockery.resource.cooldown_short": "%s · %ss",
+  "overlay.warlockery.resource.unattuned": "Unattuned",
   "manual.warlockery.condition.dimension": "In %s",
   "manual.warlockery.condition.participants": "%s practitioners nearby",
-  "manual.warlockery.ritual.climate_change.guide": "First, crouch and use a Book of Biomes on the land you want so the book remembers it. Place that named book near the circle; the rite keeps it. With no empowerment, the rite changes only the chunk holding the circle. A Seer Stone and five nearby practitioners together empower it to a 3 by 3 square. Each Nether Star adds one more ring of chunks. At most three stars are consumed, so the possible widths are 1, 3, 5, or 7 chunks normally and 3, 5, 7, or 9 when empowered."
+  "manual.warlockery.ritual.climate_change.guide": "First, crouch and use a Book of Biomes on the land you want so the book remembers it. Place that named book near the circle; the rite keeps it. With no empowerment, the rite changes only the chunk holding the circle. A Seer Stone and five nearby practitioners together empower it to a 3 by 3 square. Each Nether Star adds one more ring of chunks. At most three stars are consumed, so the possible widths are 1, 3, 5, or 7 chunks normally and 3, 5, 7, or 9 when empowered.",
+  "entity.warlockery.vampire.hobgoblin_variant": "Hobgoblin Vampire",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Hobgoblin Werewolf",
+  "message.warlockery.villager.blood_drained": "This villager is too blood-drained to trade.",
+  "message.warlockery.village.assault_defended": "The settlement remembers your defense."
 }

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:only_raid_contributors_receive_settlement_rewards",
+  "environment": "minecraft:default",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 100
+}

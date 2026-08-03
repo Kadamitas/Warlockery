@@ -2126,7 +2126,14 @@
   "manual.warlockery.condition.full_moon": "滿月",
   "manual.warlockery.condition.rain": "下雨",
   "manual.warlockery.condition.thunderstorm": "雷雨",
+  "overlay.warlockery.resource.charges_short": "%s ×%s",
+  "overlay.warlockery.resource.cooldown_short": "%s · %s秒",
+  "overlay.warlockery.resource.unattuned": "尚未調和",
   "manual.warlockery.condition.dimension": "位於%s",
   "manual.warlockery.condition.participants": "附近有 %s 名施術者",
-  "manual.warlockery.ritual.climate_change.guide": "先蹲下並在想要的土地上使用生態域之書，讓書記住那裡。把改過名字的書放在法陣旁，儀式不會消耗它。未強化時只改變法陣所在的區塊。預見之石與五名附近施術者同時存在時，範圍強化為3乘3區塊。每顆地獄之星再增加一圈，最多消耗三顆。因此普通寬度為1、3、5、7區塊，強化後為3、5、7、9區塊。"
+  "manual.warlockery.ritual.climate_change.guide": "先蹲下並在想要的土地上使用生態域之書，讓書記住那裡。把改過名字的書放在法陣旁，儀式不會消耗它。未強化時只改變法陣所在的區塊。預見之石與五名附近施術者同時存在時，範圍強化為3乘3區塊。每顆地獄之星再增加一圈，最多消耗三顆。因此普通寬度為1、3、5、7區塊，強化後為3、5、7、9區塊。",
+  "entity.warlockery.vampire.hobgoblin_variant": "霍布哥布林吸血鬼",
+  "entity.warlockery.werewolf.hobgoblin_variant": "霍布哥布林狼人",
+  "message.warlockery.villager.blood_drained": "這名村民失血過多，暫時無法交易。",
+  "message.warlockery.village.assault_defended": "聚落會記住你的守護。"
 }

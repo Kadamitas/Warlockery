@@ -24,7 +24,9 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 public final class SupernaturalProgressionGameTests {
     private SupernaturalProgressionGameTests() {
@@ -282,6 +284,59 @@ public final class SupernaturalProgressionGameTests {
         helper.assertValueEqual(next.questTitle(), "quest.warlockery.werewolf.shepherds_reckoning",
             "next werewolf quest shown by the HUD");
         helper.assertValueEqual(next.questProgress(), "0 / 30", "next werewolf HUD progress");
+        helper.succeed();
+    }
+
+    public static void transformedWerewolvesDigDirtAndSandFaster(final GameTestHelper helper) {
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        SupernaturalAdvancement.beginWerewolf(player);
+        SupernaturalProgression.setLevel(player, SupernaturalProgression.Path.WEREWOLF, 3);
+        SupernaturalProgression.setWerewolfShape(player, WerewolfShape.WOLF);
+
+        final PlayerEvent.BreakSpeed dirt = new PlayerEvent.BreakSpeed(
+            player, Blocks.DIRT.defaultBlockState(), 1.0F, helper.absolutePos(new BlockPos(0, 0, 0))
+        );
+        final PlayerEvent.BreakSpeed sand = new PlayerEvent.BreakSpeed(
+            player, Blocks.SAND.defaultBlockState(), 1.0F, helper.absolutePos(new BlockPos(1, 0, 0))
+        );
+        final PlayerEvent.BreakSpeed stone = new PlayerEvent.BreakSpeed(
+            player, Blocks.STONE.defaultBlockState(), 1.0F, helper.absolutePos(new BlockPos(2, 0, 0))
+        );
+        SupernaturalProgressionRuntime.handleBreakSpeed(dirt);
+        SupernaturalProgressionRuntime.handleBreakSpeed(sand);
+        SupernaturalProgressionRuntime.handleBreakSpeed(stone);
+
+        helper.assertValueEqual(dirt.getNewSpeed(), SupernaturalAbilityRules.WOLF_DIG_MIN_SPEED,
+            "wolf-form dirt digging speed");
+        helper.assertValueEqual(sand.getNewSpeed(), SupernaturalAbilityRules.WOLF_DIG_MIN_SPEED,
+            "wolf-form sand digging speed");
+        helper.assertValueEqual(stone.getNewSpeed(), 1.0F,
+            "wolf-form stone digging speed");
+
+        SupernaturalProgression.setWerewolfShape(player, WerewolfShape.WOLFMAN);
+        final PlayerEvent.BreakSpeed wolfmanDirt = new PlayerEvent.BreakSpeed(
+            player, Blocks.DIRT.defaultBlockState(), 1.0F, helper.absolutePos(new BlockPos(0, 0, 1))
+        );
+        SupernaturalProgressionRuntime.handleBreakSpeed(wolfmanDirt);
+        helper.assertValueEqual(wolfmanDirt.getNewSpeed(), 1.0F,
+            "wolfman dirt digging speed");
+
+        player.setShiftKeyDown(true);
+        final PlayerEvent.BreakSpeed crouchingWolfmanSand = new PlayerEvent.BreakSpeed(
+            player, Blocks.SAND.defaultBlockState(), 1.0F, helper.absolutePos(new BlockPos(1, 0, 1))
+        );
+        SupernaturalProgressionRuntime.handleBreakSpeed(crouchingWolfmanSand);
+        helper.assertValueEqual(crouchingWolfmanSand.getNewSpeed(), 1.0F,
+            "crouching wolfman sand digging speed");
+
+        SupernaturalProgression.setWerewolfShape(player, WerewolfShape.WOLF);
+        final PlayerEvent.BreakSpeed crouchingWolfDirt = new PlayerEvent.BreakSpeed(
+            player, Blocks.DIRT.defaultBlockState(), 1.0F, helper.absolutePos(new BlockPos(2, 0, 1))
+        );
+        SupernaturalProgressionRuntime.handleBreakSpeed(crouchingWolfDirt);
+        helper.assertValueEqual(crouchingWolfDirt.getNewSpeed(), 30.0F,
+            "crouching four-legged wolf dirt digging speed");
+        player.setShiftKeyDown(false);
         helper.succeed();
     }
 

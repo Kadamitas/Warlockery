@@ -121,6 +121,31 @@ final class SupernaturalAbilityRulesTest {
     }
 
     @Test
+    void transformedWerewolvesDigDirtAndSandQuicklyWithBareClaws() {
+        assertEquals(12.0F, SupernaturalAbilityRules.wolfDiggingSpeed(
+            1.0F, 3, WerewolfShape.WOLF, true, true, false, true
+        ));
+        assertEquals(30.0F, SupernaturalAbilityRules.wolfDiggingSpeed(
+            3.0F, 3, WerewolfShape.WOLF, true, true, true, true
+        ));
+        assertEquals(1.0F, SupernaturalAbilityRules.wolfDiggingSpeed(
+            1.0F, 2, WerewolfShape.WOLF, true, true, false, true
+        ));
+        assertEquals(1.0F, SupernaturalAbilityRules.wolfDiggingSpeed(
+            1.0F, 3, WerewolfShape.HUMAN, true, true, true, true
+        ));
+        assertEquals(1.0F, SupernaturalAbilityRules.wolfDiggingSpeed(
+            1.0F, 3, WerewolfShape.WOLFMAN, true, true, true, true
+        ));
+        assertEquals(1.0F, SupernaturalAbilityRules.wolfDiggingSpeed(
+            1.0F, 3, WerewolfShape.WOLF, false, true, true, true
+        ));
+        assertEquals(1.0F, SupernaturalAbilityRules.wolfDiggingSpeed(
+            1.0F, 3, WerewolfShape.WOLF, true, false, false, true
+        ));
+    }
+
+    @Test
     void spreadCurseRequiresLevelTenNearFatalContactAndUnprotectedPrey() {
         assertTrue(SupernaturalAbilityRules.canSpreadWerewolfCurse(
             10,

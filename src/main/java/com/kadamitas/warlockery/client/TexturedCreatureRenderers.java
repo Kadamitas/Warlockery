@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.GoblinLifecycleRules;
 import com.kadamitas.warlockery.entity.NamiEntity;
@@ -120,7 +121,13 @@ final class TexturedCreatureRenderers {
         @Override
         public void extractRenderState(final Mob entity, final ArcaneState state, final float partialTicks) {
             super.extractRenderState(entity, state, partialTicks);
-            state.tint = entity instanceof EntEntity ent ? ent.variant().tint() : -1;
+            state.hobgoblinAssaultVariant = entity instanceof ArcaneMob arcane
+                && arcane.isHobgoblinAssaultVariant();
+            state.tint = entity instanceof EntEntity ent
+                ? ent.variant().tint()
+                : state.hobgoblinAssaultVariant
+                    ? 0xFF76964F
+                    : -1;
         }
 
         @Override
@@ -130,6 +137,9 @@ final class TexturedCreatureRenderers {
 
         @Override
         protected void scale(final ArcaneState state, final PoseStack poseStack) {
+            if (state.hobgoblinAssaultVariant) {
+                poseStack.scale(0.68F, 0.68F, 0.68F);
+            }
             if (hasBabyModel && state.isBaby) {
                 poseStack.scale(
                     GoblinLifecycleRules.BABY_RENDER_SCALE,
@@ -142,11 +152,15 @@ final class TexturedCreatureRenderers {
         @Override
         protected float getShadowRadius(final ArcaneState state) {
             final float radius = super.getShadowRadius(state);
-            return hasBabyModel && state.isBaby ? radius * GoblinLifecycleRules.BABY_RENDER_SCALE : radius;
+            final float variantRadius = state.hobgoblinAssaultVariant ? radius * 0.68F : radius;
+            return hasBabyModel && state.isBaby
+                ? variantRadius * GoblinLifecycleRules.BABY_RENDER_SCALE
+                : variantRadius;
         }
     }
 
     static final class ArcaneState extends LivingEntityRenderState {
         private int tint = -1;
+        private boolean hobgoblinAssaultVariant;
     }
 }

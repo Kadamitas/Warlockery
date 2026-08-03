@@ -13,6 +13,9 @@ public final class WarlockeryConfig {
     private static final ModConfigSpec.BooleanValue SILVER_HUNTS;
     private static final ModConfigSpec.IntValue SILVER_HUNT_INTERVAL;
     private static final ModConfigSpec.DoubleValue SILVER_HUNT_CHANCE;
+    private static final ModConfigSpec.BooleanValue SETTLEMENT_FORTIFICATIONS;
+    private static final ModConfigSpec.BooleanValue VILLAGE_ASSAULTS;
+    private static final ModConfigSpec.DoubleValue VILLAGE_ASSAULT_FREQUENCY;
 
     static {
         final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -41,6 +44,15 @@ public final class WarlockeryConfig {
         SILVER_HUNT_CHANCE = builder
             .comment("Chance from 0.0 to 1.0 for each eligible full-moon silver hunt attempt.")
             .defineInRange("silverHuntChance", 1.0D / 14.0D, 0.0D, 1.0D);
+        SETTLEMENT_FORTIFICATIONS = builder
+            .comment("Allows villages and hobgoblin settlements to construct walls, gates, patrol stairs, and guards.")
+            .define("enableSettlementFortifications", true);
+        VILLAGE_ASSAULTS = builder
+            .comment("Allows goblin, vampire, and werewolf assaults against defended settlements.")
+            .define("enableVillageAssaults", true);
+        VILLAGE_ASSAULT_FREQUENCY = builder
+            .comment("Scales the randomized delay between settlement assaults. Lower values make assaults more frequent.")
+            .defineInRange("villageAssaultDelayMultiplier", 1.0D, 0.25D, 16.0D);
         builder.pop();
         SPEC = builder.build();
     }
@@ -78,5 +90,17 @@ public final class WarlockeryConfig {
 
     public static double silverHuntChance() {
         return SILVER_HUNT_CHANCE.get();
+    }
+
+    public static boolean settlementFortifications() {
+        return SETTLEMENT_FORTIFICATIONS.get();
+    }
+
+    public static boolean villageAssaults() {
+        return VILLAGE_ASSAULTS.get();
+    }
+
+    public static double villageAssaultFrequency() {
+        return VILLAGE_ASSAULT_FREQUENCY.get();
     }
 }

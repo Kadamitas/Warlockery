@@ -2127,5 +2127,9 @@
   "overlay.warlockery.resource.mana_path": "%s 마나",
   "overlay.warlockery.resource.charges_short": "%s ×%s",
   "overlay.warlockery.resource.cooldown_short": "%s · %s",
-  "overlay.warlockery.resource.unattuned": "조율되지 않음"
+  "overlay.warlockery.resource.unattuned": "조율되지 않음",
+  "entity.warlockery.vampire.hobgoblin_variant": "홉고블린 뱀파이어",
+  "entity.warlockery.werewolf.hobgoblin_variant": "홉고블린 늑대인간",
+  "message.warlockery.villager.blood_drained": "이 주민은 피를 너무 많이 잃어 거래할 수 없습니다.",
+  "message.warlockery.village.assault_defended": "정착지는 당신의 수비를 기억합니다."
 }

@@ -1,3 +1,14 @@
+Warlockery 1.3.0
+================
+
+- Fortified human and hobgoblin settlements with enclosed walls, multiple gates, patrol decks, stairs, and dedicated guards.
+- Added configurable goblin, vampire, and werewolf assaults with escalating waves, distinct objectives, settlement defenses, and useful victory rewards.
+- Gave vampire raiders blood-draining priorities, temporary villager trade disruption, progression powers, and bat-form escapes at low health.
+- Gave werewolf raiders pack-building priorities, reversible full-moon villager infection, progression powers, and wolf-form escapes without allowing player infection.
+- Added hobgoblin supernatural raiders, fortified hobgoblin settlements, silver-equipped guards, and defenses suited to their villages.
+- Limited fast dirt and sand digging to the four-legged wolf form, leaving wolfman mining unchanged.
+- Replaced the transformed player with a third-person wolf model that carries the selected held item sideways in its mouth and synchronizes correctly in multiplayer.
+
 Warlockery 1.2.2
 ================
 

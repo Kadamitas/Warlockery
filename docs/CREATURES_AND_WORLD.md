@@ -6,7 +6,7 @@ Warlockery registers 47 living creature types. Every type has a spawn egg, trans
 
 - Ents appear very rarely across forests, jungles, taigas, savannas, swamps, cherry groves, and pale gardens. Their persisted Oak, Birch, Spruce, Jungle, Dark Oak, Acacia, Mangrove, Cherry, or Pale Oak variant has a visible foliage tint and a bounded biome-themed health, damage, speed, and armor profile.
 - Goblins occur in small forest, swamp, and plains groups. They raid ordinary villagers when they encounter them.
-- Hobgoblins are friendly travelling traders. A rare server event can gather a temporary hobgoblin enclave around a loaded village bell without turning them hostile to its residents.
+- Hobgoblins are friendly travelling traders. A rare server event can found a separate wilderness settlement where they receive professions, trade, and live away from human villages.
 - Spirits and mandrakes have intentionally low Overworld spawn weights. Hellhounds are restricted to Nether biomes.
 - Bosses, demons, imps, and dangerous one-off entities are mainly ritual or spawn-egg content so ordinary nights are not flooded by the roster.
 
@@ -20,6 +20,21 @@ Hobgoblins use Minecraft's villager brain, allowing travel, beds, trading, exper
 | Blast furnace | Smith | Raw Goblinite and Goblinite tools |
 | Brewing stand | Shaman | Redstone, magical fumes, and attuned stones |
 | Cartography table/default | Prospector | Raw Silver, emeralds, and Goblinite nuggets |
+
+## Defended settlements and assaults
+
+Human villages can raise adaptive stone walls around their village work sites. Hobgoblin settlements use a smaller oak wall. Both defenses have four two-block-wide entrances, an elevated two-block-wide patrol walk, interior stairs, and persistent guards. Construction avoids beds, doors, workstations, inventories, and other block entities. If the terrain or protected buildings make a safe wall impossible, the settlement is left unchanged.
+
+Settlement guards patrol the wall, descend to threats, fire Silver Bolts, and treat their melee attacks as silver damage. They protect residents from monsters and goblin raiders. A survival player who attacks a resident or guard also becomes a guard target. Creative and spectator players do not trigger retaliation.
+
+Goblin, vampire, and werewolf assaults use three escalating waves. Only players who damage a marked raider count as defenders for the settlement reward.
+
+- Goblins attack human villagers and fight until their wave is defeated.
+- Vampires arrive at night in bat form, reveal themselves inside the defenses, and seek fresh blood. Feeding can never kill a villager. A drained resident becomes weak and cannot trade for 72,000 ticks, equal to three Minecraft days. The vampires retreat once they have fed from four different residents.
+- Werewolves attack on full-moon nights. They approach in wolf form and leave after three different residents are killed or brought into the pack. NPC werewolves can infect ordinary villagers but never players. An infected villager changes into a werewolf on later full-moon nights and returns to the same villager identity, profession, experience, trades, inventory, gossip, and blood-drained state after daylight if it survives.
+- Vampire and werewolf assaults against hobgoblin settlements use smaller hobgoblin supernatural variants that exist only as members of those assaults.
+
+When attackers complete their objective and escape, defenders receive no victory reward. Clearing every wave grants contributing players village favor, temporary absorption, and a reward boon themed to the defeated attackers. Surviving guards are healed when the defense succeeds.
 
 ## Werewolf hunts and crossbows
 

@@ -2126,7 +2126,14 @@
   "manual.warlockery.condition.full_moon": "Pleine lune",
   "manual.warlockery.condition.rain": "Pluie",
   "manual.warlockery.condition.thunderstorm": "Orage",
+  "overlay.warlockery.resource.charges_short": "%s ×%s",
+  "overlay.warlockery.resource.cooldown_short": "%s · %ss",
+  "overlay.warlockery.resource.unattuned": "Non harmonisé",
   "manual.warlockery.condition.dimension": "Dans %s",
   "manual.warlockery.condition.participants": "%s praticiens à proximité",
-  "manual.warlockery.ritual.climate_change.guide": "Accroupis-toi d’abord et utilise un Livre des biomes sur la terre voulue afin qu’il la mémorise. Pose ce livre nommé près du cercle; le rite le conserve. Sans puissance supplémentaire, seul le chunk du cercle change. Une Pierre de voyant et cinq praticiens réunis l’amplifient à 3 par 3 chunks. Chaque Étoile du Nether ajoute un anneau. Trois étoiles au plus sont consommées. Les largeurs possibles sont donc 1, 3, 5 ou 7 chunks normalement, et 3, 5, 7 ou 9 une fois amplifié."
+  "manual.warlockery.ritual.climate_change.guide": "Accroupis-toi d’abord et utilise un Livre des biomes sur la terre voulue afin qu’il la mémorise. Pose ce livre nommé près du cercle; le rite le conserve. Sans puissance supplémentaire, seul le chunk du cercle change. Une Pierre de voyant et cinq praticiens réunis l’amplifient à 3 par 3 chunks. Chaque Étoile du Nether ajoute un anneau. Trois étoiles au plus sont consommées. Les largeurs possibles sont donc 1, 3, 5 ou 7 chunks normalement, et 3, 5, 7 ou 9 une fois amplifié.",
+  "entity.warlockery.vampire.hobgoblin_variant": "Vampire hobgobelin",
+  "entity.warlockery.werewolf.hobgoblin_variant": "Loup-garou hobgobelin",
+  "message.warlockery.villager.blood_drained": "Ce villageois est trop exsangue pour commercer.",
+  "message.warlockery.village.assault_defended": "La colonie se souvient de votre défense."
 }

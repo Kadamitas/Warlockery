@@ -47,6 +47,7 @@ import com.kadamitas.warlockery.entity.CreatureCombat;
 import com.kadamitas.warlockery.world.CreatureWorldIntegration;
 import com.kadamitas.warlockery.world.WarlockVillagerFarming;
 import com.kadamitas.warlockery.world.VillageGuardRuntime;
+import com.kadamitas.warlockery.world.VillageAssaultRuntime;
 import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.Identifier;
@@ -104,6 +105,7 @@ public final class Warlockery {
         MagicPathRuntime.registerEvents();
         SupernaturalProgressionRuntime.registerEvents();
         VillageGuardRuntime.registerEvents();
+        VillageAssaultRuntime.registerEvents();
         com.kadamitas.warlockery.entity.EntRuntime.registerEvents();
         NeoForge.EVENT_BUS.addListener(VoidBrambleOwnershipData::handleBreak);
         NeoForge.EVENT_BUS.addListener((AddServerReloadListenersEvent event) -> {
@@ -149,7 +151,7 @@ public final class Warlockery {
         NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> HexState.copyAfterClone(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> FlyingBroomItem.handleLogin(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> FlyingBroomItem.handleLogout(event));
-        LOGGER.info("Loading Warlockery 1.2 for Minecraft 26.2 with NeoForge");
+        LOGGER.info("Loading Warlockery 1.3.0 for Minecraft 26.2 with NeoForge");
     }
 
 }

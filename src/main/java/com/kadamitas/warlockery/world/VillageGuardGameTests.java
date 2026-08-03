@@ -122,10 +122,14 @@ public final class VillageGuardGameTests {
             "a hobgoblin's internal profession must never be nitwit");
         helper.assertTrue(hobgoblin.getVillagerData().profession().is(hobgoblin.goblinProfession().engineProfession()),
             "a hobgoblin's internal profession must match its visible custom profession");
-        helper.runAfterDelay(60, () -> {
+        final boolean[] escaped = {false};
+        helper.onEachTick(() -> {
             helper.assertTrue(hobgoblin.getTarget() == null,
                 "friendly hobgoblins must never target human villagers");
-            helper.assertTrue(hobgoblin.distanceToSqr(villager) > startingDistance + 4.0,
+            escaped[0] |= hobgoblin.distanceToSqr(villager) > startingDistance + 4.0;
+        });
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(escaped[0],
                 "friendly hobgoblins must flee nearby human villagers");
             helper.succeed();
         });

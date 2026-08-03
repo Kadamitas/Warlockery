@@ -10,23 +10,31 @@ import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModMenus;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(value = Warlockery.MOD_ID, dist = Dist.CLIENT)
 public final class WarlockeryClient {
+    private static WolfFormAvatarRenderer wolfFormAvatarRenderer;
+
     public WarlockeryClient(final IEventBus modBus) {
         modBus.addListener(WarlockeryClient::registerRenderers);
+        modBus.addListener(WarlockeryClient::addPlayerLayers);
         modBus.addListener(WarlockeryClient::registerKeyMappings);
         modBus.addListener(WarlockeryClient::registerBlockColors);
         modBus.addListener(WarlockeryClient::registerMenuScreens);
@@ -34,6 +42,9 @@ public final class WarlockeryClient {
         modBus.addListener(WarlockeryFluidClient::registerModels);
         modBus.addListener(ModNetwork::registerClientPayloadHandlers);
         NeoForge.EVENT_BUS.addListener(WarlockeryClient::clientTick);
+        NeoForge.EVENT_BUS.addListener((RenderPlayerEvent.Pre<?> event) -> renderWolfAvatar(event));
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> clientLogout(event));
+        ClientSupernaturalState.register();
     }
 
     public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
@@ -41,7 +52,11 @@ public final class WarlockeryClient {
         ModNetwork.setClientScreenHandler(payload ->
             RitualSelectionScreen.openOrUpdate(payload.center(), payload.options()));
         ModNetwork.setClientDollHandler(DollStatusOverlay::activate);
-        ModNetwork.setClientSupernaturalHandler(SupernaturalStatusOverlay::update);
+        ModNetwork.setClientSupernaturalHandler(payload -> {
+            SupernaturalStatusOverlay.update(payload);
+            ClientSupernaturalState.update(payload);
+        });
+        ModNetwork.setClientPlayerWolfVisualHandler(PlayerWolfVisualState::update);
         event.registerBlockEntityRenderer(ModBlockEntities.MAGIC_MACHINE.get(), MachineOverlayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.WOLF_TRAP.get(), WolfTrapOverlayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ALTAR.get(), AltarOverlayRenderer::new);
@@ -62,6 +77,34 @@ public final class WarlockeryClient {
                 CreatureModelProfile.forEntity(id, visual)
             );
         });
+    }
+
+    public static void addPlayerLayers(final EntityRenderersEvent.AddLayers event) {
+        wolfFormAvatarRenderer = new WolfFormAvatarRenderer(event.getContext());
+    }
+
+    private static void renderWolfAvatar(final RenderPlayerEvent.Pre<?> event) {
+        final Minecraft minecraft = Minecraft.getInstance();
+        if (wolfFormAvatarRenderer == null
+            || minecraft.level == null
+            || !(minecraft.level.getEntity(event.getRenderState().id) instanceof AbstractClientPlayer player)
+            || !PlayerWolfVisualState.isWolf(player.getUUID())) {
+            return;
+        }
+        final CameraRenderState cameraState = new CameraRenderState();
+        minecraft.gameRenderer.mainCamera().extractRenderState(cameraState, event.getPartialTick());
+        wolfFormAvatarRenderer.submitAvatar(
+            player,
+            event.getRenderState(),
+            event.getPoseStack(),
+            event.getSubmitNodeCollector(),
+            cameraState
+        );
+        event.setCanceled(true);
+    }
+
+    private static void clientLogout(final ClientPlayerNetworkEvent.LoggingOut event) {
+        PlayerWolfVisualState.clear();
     }
 
     public static void registerKeyMappings(final RegisterKeyMappingsEvent event) {
