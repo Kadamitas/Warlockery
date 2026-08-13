@@ -69,13 +69,24 @@ jobs:
           set -euo pipefail
           version="${RELEASE_TAG#v}"
           mkdir -p artifacts
+          release_json="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq ".[] | select(.tag_name == \"${RELEASE_TAG}\")")"
+          test -n "$release_json" || { echo "Release not found: $RELEASE_TAG"; exit 1; }
 
           download_file() {
             local file="$1"
-            gh release download "$RELEASE_TAG" \
-              --repo "$GITHUB_REPOSITORY" \
-              --dir artifacts \
-              --pattern "$file"
+            if ! gh release download "$RELEASE_TAG" \
+                --repo "$GITHUB_REPOSITORY" \
+                --dir artifacts \
+                --pattern "$file"; then
+              local asset_api_url
+              asset_api_url="$(jq --raw-output --arg file "$file" \
+                '.assets[] | select(.name == $file) | .url' <<< "$release_json")"
+              test -n "$asset_api_url" || { echo "Release asset not found: $file"; exit 1; }
+              gh api "$asset_api_url" \
+                --header "Accept: application/octet-stream" > "artifacts/$file"
+            fi
             test -s "artifacts/$file" || { echo "Missing release asset: $file"; exit 1; }
           }
 
@@ -89,10 +100,7 @@ jobs:
             download_file "warlockery-fabric-${version}.jar"
           fi
 
-          gh release view "$RELEASE_TAG" \
-            --repo "$GITHUB_REPOSITORY" \
-            --json body \
-            --jq .body > artifacts/changelog.md
+          jq --raw-output .body <<< "$release_json" > artifacts/changelog.md
           test -s artifacts/changelog.md
 
       - name: Publish loader files
