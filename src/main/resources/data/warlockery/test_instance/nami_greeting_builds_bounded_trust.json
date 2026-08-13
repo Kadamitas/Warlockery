@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:nami_greeting_builds_bounded_trust",
+  "environment": "minecraft:default",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 260
+}

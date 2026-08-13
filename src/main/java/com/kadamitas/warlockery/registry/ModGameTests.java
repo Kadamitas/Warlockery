@@ -8,6 +8,7 @@ import com.kadamitas.warlockery.entity.TacticalCombatGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
 import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
+import com.kadamitas.warlockery.entity.NamiLifeGameTests;
 import com.kadamitas.warlockery.item.CircleTalismanGameTests;
 import com.kadamitas.warlockery.item.BroomFlightGameTests;
 import com.kadamitas.warlockery.item.BroomMotionGameTests;
@@ -249,6 +250,12 @@ public final class ModGameTests {
             () -> SpouseAmbientGameTests::spouseRejectsOccupiedFurnaceWithoutTakingMeat);
         REGISTRY.register("spouse_kiss_persists_cooldown",
             () -> SpouseAmbientGameTests::spouseKissPersistsCooldown);
+        REGISTRY.register("nami_daily_routine_returns_home",
+            () -> NamiLifeGameTests::dailyRoutineReturnsHome);
+        REGISTRY.register("nami_greeting_builds_bounded_trust",
+            () -> NamiLifeGameTests::greetingBuildsBoundedTrust);
+        REGISTRY.register("nami_ward_protects_spouse_and_releases_stale_threat",
+            () -> NamiLifeGameTests::wardProtectsSpouseAndReleasesStaleThreat);
     }
 
     private ModGameTests() {
