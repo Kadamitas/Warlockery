@@ -211,7 +211,7 @@ final class CrossModCatalogContractTest {
             }
         }
         final String documentation = read(Path.of("docs/CROSS_MOD_COMPATIBILITY.md"));
-        assertTrue(documentation.contains("Forge 65.1.0 has no universal mana capability"));
+        assertTrue(documentation.contains("Forge 65.1.1 has no universal mana capability"));
         assertTrue(documentation.contains("Warlockery altar power is not Forge Energy"));
     }
 

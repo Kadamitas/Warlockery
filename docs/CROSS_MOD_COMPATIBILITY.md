@@ -1,6 +1,8 @@
 # Cross-mod compatibility
 
-Warlockery targets Forge 65.1.0 for Minecraft 26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and Forge capabilities.
+Warlockery 1.4.0 targets Minecraft 26.2 and Java 25. The Forge build targets Forge 65.1.1; the matching cross-loader releases target NeoForge 26.2.0.59 and Fabric Loader 0.19.3 with Fabric API 0.157.0+26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and Forge capabilities.
+
+The `1.4.0-LlaGuiT0-26.2.0.45` supporter build is NeoForge-only for LlaGuiT0's modpack. Its NeoForge dependency is intentionally exact: `[26.2.0.45-beta,26.2.0.46-beta)`. It does not imply Forge or Fabric artifacts.
 
 ## Tag strategy
 
@@ -42,7 +44,7 @@ The `ritual` and `warlockery_machine` reload listeners accept valid definitions 
 
 Every complete manual remains a normal registered item whose use action opens the shared searchable library. Book-collection mods that store an item and later invoke that real item, including Akashic Tome and Eccentric Tome style systems, therefore retain the Warlockery screen without a hard dependency or special API adapter.
 
-Complete manuals are published in `warlockery:guide_books` and `minecraft:bookshelf_books`. The torn page stays in the broader `warlockery:manuals` tag but is intentionally excluded from the complete guide list. Forge 65.1.0 has no canonical `c:books` contract, so Warlockery does not invent one.
+Complete manuals are published in `warlockery:guide_books` and `minecraft:bookshelf_books`. The torn page stays in the broader `warlockery:manuals` tag but is intentionally excluded from the complete guide list. Forge 65.1.1 has no canonical `c:books` contract, so Warlockery does not invent one.
 
 Magical damage and brew gas participation use the private extension tags `warlockery:magical_damage` and `warlockery:brew_gases`. Other mods can add their damage types or gas blocks through a data pack without relying on invented global `c:` conventions.
 
@@ -50,7 +52,7 @@ Magical damage and brew gas participation use the private extension tags `warloc
 
 Silver, holy, stake, splitting, and anti-magic bolts are `ArrowItem` instances in `minecraft:arrows` and are fired by Minecraft's vanilla crossbow. Throwing Rocks extend vanilla `SnowballItem`. Fixed brews extend `SplashPotionItem`.
 
-The fixed Brew of Combustion supplies 2,400 burn ticks through `Item.getBurnTime(ItemStack, RecipeType)`, which is Forge 65.1.0's item fuel hook. The inactive `brew.fuel` registry placeholder is not advertised as fuel.
+The fixed Brew of Combustion supplies 2,400 burn ticks through `Item.getBurnTime(ItemStack, RecipeType)`, which is Forge 65.1.1's item fuel hook. The inactive `brew.fuel` registry placeholder is not advertised as fuel.
 
 ## Machine capabilities
 
@@ -58,7 +60,7 @@ All nine machine block variants expose sided `ForgeCapabilities.ITEM_HANDLER` vi
 
 The Silver Vat recognizes adjacent furnace recipes whose inputs use `c:ores/gold` and whose outputs use `c:ingots/gold`. Each completed smelt adds a Silver Deposit to the vat's ordinary output inventory, so a hopper or compatible item pipe can extract it from below.
 
-Forge 65.1.0 has no universal mana capability. Its built-in capability set provides energy, fluid handlers, fluid container handlers, and item handlers. Warlockery altar power is not Forge Energy and is not labeled as another mod's mana. Optional mana support requires a soft adapter for each external mana API.
+Forge 65.1.1 has no universal mana capability. Its built-in capability set provides energy, fluid handlers, fluid container handlers, and item handlers. Warlockery altar power is not Forge Energy and is not labeled as another mod's mana. Optional mana support requires a soft adapter for each external mana API.
 
 ## Advanced mutation extension points
 

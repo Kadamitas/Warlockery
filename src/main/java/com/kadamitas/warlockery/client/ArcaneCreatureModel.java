@@ -1,19 +1,22 @@
 package com.kadamitas.warlockery.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.kadamitas.warlockery.client.CreatureModelProfile.Variant;
 import com.kadamitas.warlockery.entity.CreatureVisualProfile.Archetype;
 import java.util.List;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 
-final class ArcaneCreatureModel extends EntityModel<LivingEntityRenderState> {
+final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.ArcaneState>
+    implements ArmedModel<TexturedCreatureRenderers.ArcaneState> {
     private static final List<String> PART_NAMES = List.of(
         "head", "body", "right_arm", "left_arm", "right_front_leg", "left_front_leg",
         "right_hind_leg", "left_hind_leg", "right_middle_front_leg", "left_middle_front_leg",
@@ -175,7 +178,7 @@ final class ArcaneCreatureModel extends EntityModel<LivingEntityRenderState> {
     }
 
     @Override
-    public void setupAnim(final LivingEntityRenderState state) {
+    public void setupAnim(final TexturedCreatureRenderers.ArcaneState state) {
         super.setupAnim(state);
         head.yRot += state.yRot * Mth.DEG_TO_RAD;
         head.xRot += state.xRot * Mth.DEG_TO_RAD;
@@ -199,6 +202,15 @@ final class ArcaneCreatureModel extends EntityModel<LivingEntityRenderState> {
                 animateWings(state.ageInTicks, stride * 0.6F);
             }
         }
+    }
+
+    @Override
+    public void translateToHand(
+        final TexturedCreatureRenderers.ArcaneState state,
+        final HumanoidArm arm,
+        final PoseStack poseStack
+    ) {
+        (arm == HumanoidArm.LEFT ? leftArm : rightArm).translateAndRotate(poseStack);
     }
 
     private void animateBiped(final float rightSwing, final float leftSwing, final float age) {

@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#c:player_workstations/crafting_tables",
+    "#c:player_workstations/furnaces",
+    "minecraft:lectern",
+    "minecraft:enchanting_table",
+    "warlockery:altar",
+    "warlockery:distilleryidle",
+    "warlockery:distilleryburning"
+  ]
+}

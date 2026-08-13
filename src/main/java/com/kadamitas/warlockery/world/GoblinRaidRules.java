@@ -8,8 +8,8 @@ public final class GoblinRaidRules {
     public static final int INTERMISSION_TICKS = 200;
     public static final int RAID_DURATION_TICKS = 12_000;
     public static final int SPAWN_RADIUS = 36;
-    public static final int MINIMUM_DELAY_TICKS = 24_000;
-    public static final int MAXIMUM_DELAY_TICKS = 72_000;
+    public static final int MINIMUM_DELAY_TICKS = 72_000;
+    public static final int MAXIMUM_DELAY_TICKS = 216_000;
 
     private GoblinRaidRules() {
     }

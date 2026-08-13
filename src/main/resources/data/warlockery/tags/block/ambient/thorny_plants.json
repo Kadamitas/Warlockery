@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:rose_bush",
+    "minecraft:sweet_berry_bush",
+    "warlockery:bramble",
+    "warlockery:voidbramble"
+  ]
+}

@@ -40,7 +40,7 @@ The compact left-side panel lists bound dolls and remaining charges. A green pul
 
 ## Vampire path
 
-Bring an unmarried Nami into the Blood Audience on a full-moon night. The ritual browser lists the three chalk types, altar power, and four offerings. The rite awakens Naamah in Nami's flesh. Defeat Naamah to obtain Matriarch's Blood, then offer that blood to Naamah to begin vampire progression. Using the blood by itself does nothing, and a mortal cannot bypass this initiation by drinking an ordinary full Glass Goblet. Existing vampires can drink a full goblet for health and reserve. Rite of Hexbreaking: Vampirism reverses the form when its sympathetic target and circle requirements are complete.
+Bring an unmarried Nami into the Blood Audience on a full-moon night. A Nami who marries takes a new name and is permanently protected from this transformation. The ritual browser lists the three chalk types, altar power, and four offerings. The rite awakens Naamah in an unmarried Nami's flesh, and Naamah can never marry. Defeat Naamah to obtain Matriarch's Blood, then offer that blood to Naamah to begin vampire progression. Using the blood by itself does nothing, and a mortal cannot bypass this initiation by drinking an ordinary full Glass Goblet. Existing vampires can drink a full goblet for health and reserve. Rite of Hexbreaking: Vampirism reverses the form when its sympathetic target and circle requirements are complete.
 
 ## Werewolf path and capture
 

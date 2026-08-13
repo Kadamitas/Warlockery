@@ -45,10 +45,15 @@ public final class NamiEntity extends PathfinderMob {
     @Override
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
+        if (HazardEscapeRuntime.tick(this, level)) {
+            return;
+        }
         spouse(level).ifPresent(player -> {
             CreatureBehaviorState.bind(this, player.getUUID());
-            follow(player);
             defend(level, player);
+            if (!SpouseAmbientRuntime.tick(this, level, player)) {
+                follow(player);
+            }
         });
     }
 
@@ -75,6 +80,9 @@ public final class NamiEntity extends PathfinderMob {
     }
 
     public void divorce() {
+        if (level() instanceof ServerLevel level) {
+            spouse(level).ifPresent(player -> SpouseAmbientRuntime.abort(this, level, player));
+        }
         CreatureBehaviorState.unbind(this);
         setCustomName(Component.translatable("entity.warlockery.nami"));
         setTarget(null);

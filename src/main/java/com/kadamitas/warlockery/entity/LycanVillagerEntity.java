@@ -6,6 +6,7 @@ import com.kadamitas.warlockery.transformation.SupernaturalState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 public final class LycanVillagerEntity extends Villager implements ArcaneCreature {
     public LycanVillagerEntity(final EntityType<? extends Villager> type, final Level level) {
@@ -48,6 +50,22 @@ public final class LycanVillagerEntity extends Villager implements ArcaneCreatur
     @Override
     public CreatureKind creatureKind() {
         return CreatureKind.LYCAN_VILLAGER;
+    }
+
+    @Override
+    protected void customServerAiStep(final ServerLevel level) {
+        super.customServerAiStep(level);
+        TacticalCombatRuntime.tick(this, level, CreatureKind.LYCAN_VILLAGER);
+        AmbientActivityRuntime.tick(this, level, CreatureKind.LYCAN_VILLAGER);
+    }
+
+    @Override
+    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
+        final boolean hurt = super.hurtServer(level, source, amount);
+        if (hurt) {
+            TacticalCombatRuntime.rememberIncomingThreat(this, level, source);
+        }
+        return hurt;
     }
 
     @Override

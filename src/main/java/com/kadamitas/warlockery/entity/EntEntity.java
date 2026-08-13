@@ -68,13 +68,23 @@ public final class EntEntity extends IronGolem implements ArcaneCreature {
         if (EntRules.shouldFertilizeGround(tickCount, getId())) {
             fertilizeGround(level);
         }
+        TacticalCombatRuntime.tick(this, level, CreatureKind.ENT);
+        AmbientActivityRuntime.tick(this, level, CreatureKind.ENT);
     }
 
     @Override
     public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
         final boolean axeAttack = source.getWeaponItem() != null && source.getWeaponItem().is(ItemTags.AXES);
         final boolean nonPlayerMobAttack = source.getEntity() instanceof Mob && !(source.getEntity() instanceof Player);
-        return super.hurtServer(level, source, EntRules.incomingDamage(amount, axeAttack, nonPlayerMobAttack));
+        final boolean hurt = super.hurtServer(
+            level,
+            source,
+            EntRules.incomingDamage(amount, axeAttack, nonPlayerMobAttack)
+        );
+        if (hurt) {
+            TacticalCombatRuntime.rememberIncomingThreat(this, level, source);
+        }
+        return hurt;
     }
 
     @Override
