@@ -45,7 +45,7 @@ public final class VillageGuardRuntime {
 
     public static void registerEvents() {
         NeoForge.EVENT_BUS.addListener(
-            (PlayerInteractEvent.EntityInteractSpecific event) -> handleInteract(event)
+            (PlayerInteractEvent.EntityInteract event) -> handleInteract(event)
         );
         NeoForge.EVENT_BUS.addListener(
             (LivingDamageEvent.Pre event) -> handleSettlementAttack(event)
@@ -81,7 +81,7 @@ public final class VillageGuardRuntime {
             && entity.entityTags().contains(SettlementFortificationRuntime.HOBGOBLIN_GUARD_TAG);
     }
 
-    private static boolean handleInteract(final PlayerInteractEvent.EntityInteractSpecific event) {
+    private static boolean handleInteract(final PlayerInteractEvent.EntityInteract event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
             || !(event.getTarget() instanceof Villager villager)
             || !isCommissionableTarget(villager)) {

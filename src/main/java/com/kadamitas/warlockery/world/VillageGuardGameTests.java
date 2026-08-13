@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.world;
 
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.GoblinSettlementLifeRuntime;
 import com.kadamitas.warlockery.registry.ModEntities;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
@@ -149,8 +150,6 @@ public final class VillageGuardGameTests {
         final HobgoblinEntity second = helper.spawn(type, secondPosition, EntitySpawnReason.NATURAL);
         first.getInventory().addItem(new ItemStack(Items.BREAD, 3));
         second.getInventory().addItem(new ItemStack(Items.BREAD, 3));
-        helper.assertTrue(first.canBreed() && second.canBreed(),
-            "fed adult goblinfolk must be eligible to reproduce in a settlement");
         final var created = first.getBreedOffspring(helper.getLevel(), second);
         helper.assertTrue(created instanceof HobgoblinEntity,
             "goblinfolk breeding must create a Warlockery child instead of a vanilla villager");

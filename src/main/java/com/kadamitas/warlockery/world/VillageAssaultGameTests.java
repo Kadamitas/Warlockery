@@ -298,7 +298,13 @@ public final class VillageAssaultGameTests {
             if (revealed.size() != 2) {
                 return;
             }
-            helper.assertTrue(revealed.stream().allMatch(entity -> horizontalDistanceSqr(entity, center) <= 1.0D),
+            helper.assertTrue(revealed.stream().allMatch(entity -> horizontalDistanceSqr(
+                BlockPos.of(entity.getPersistentData().getLongOr(
+                    VillageAssaultRuntime.APPROACH_REVEAL_POSITION,
+                    BlockPos.ZERO.asLong()
+                )),
+                center
+            ) <= 1.0D),
                 "both disguised raiders must cross the wall and reveal inside its compact perimeter");
             helper.assertTrue(revealed.stream().map(entity -> entity.getPersistentData()
                 .getString(VillageAssaultRuntime.ASSAULT_KIND).orElse("")).collect(java.util.stream.Collectors.toSet())
@@ -328,7 +334,7 @@ public final class VillageAssaultGameTests {
         final Villager villager = helper.spawn(EntityTypes.VILLAGER, new BlockPos(1, 1, 1));
         final long gameTime = helper.getLevel().getGameTime();
         villager.getPersistentData().putLong(VillageAssaultRuntime.BLOOD_DRAINED_UNTIL, gameTime + 40L);
-        final PlayerInteractEvent.EntityInteractSpecific locked = new PlayerInteractEvent.EntityInteractSpecific(
+        final PlayerInteractEvent.EntityInteract locked = new PlayerInteractEvent.EntityInteract(
             player,
             InteractionHand.MAIN_HAND,
             villager,
@@ -343,7 +349,7 @@ public final class VillageAssaultGameTests {
             "a locked villager must not gain a customer or open a merchant menu");
 
         villager.getPersistentData().putLong(VillageAssaultRuntime.BLOOD_DRAINED_UNTIL, gameTime);
-        final PlayerInteractEvent.EntityInteractSpecific expired = new PlayerInteractEvent.EntityInteractSpecific(
+        final PlayerInteractEvent.EntityInteract expired = new PlayerInteractEvent.EntityInteract(
             player,
             InteractionHand.MAIN_HAND,
             villager,
@@ -774,6 +780,12 @@ public final class VillageAssaultGameTests {
     private static double horizontalDistanceSqr(final Entity entity, final BlockPos position) {
         final double x = entity.getX() - (position.getX() + 0.5D);
         final double z = entity.getZ() - (position.getZ() + 0.5D);
+        return x * x + z * z;
+    }
+
+    private static double horizontalDistanceSqr(final BlockPos first, final BlockPos second) {
+        final double x = first.getX() - second.getX();
+        final double z = first.getZ() - second.getZ();
         return x * x + z * z;
     }
 }

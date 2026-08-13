@@ -13,8 +13,8 @@ public final class VillageAssaultRules {
     public static final int INTERMISSION_TICKS = 200;
     public static final int ASSAULT_DURATION_TICKS = 12_000;
     public static final int SPAWN_RADIUS = 42;
-    public static final int MINIMUM_DELAY_TICKS = 24_000;
-    public static final int MAXIMUM_DELAY_TICKS = 72_000;
+    public static final int MINIMUM_DELAY_TICKS = 72_000;
+    public static final int MAXIMUM_DELAY_TICKS = 216_000;
     public static final float ESCAPE_HEALTH_FRACTION = 0.25F;
     public static final int ESCAPE_LIFETIME_TICKS = 240;
 

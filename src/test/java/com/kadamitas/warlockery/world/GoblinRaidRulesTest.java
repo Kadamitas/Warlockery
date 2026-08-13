@@ -19,7 +19,9 @@ final class GoblinRaidRulesTest {
     }
 
     @Test
-    void randomizedRaidDelayAlwaysStaysInsideItsBounds() {
+    void raidAttemptsUseTheRarerOneToThreeHourWindow() {
+        assertEquals(72_000L, GoblinRaidRules.MINIMUM_DELAY_TICKS);
+        assertEquals(216_000L, GoblinRaidRules.MAXIMUM_DELAY_TICKS);
         for (final long roll : new long[]{Long.MIN_VALUE, -1L, 0L, 1L, Long.MAX_VALUE}) {
             final long delay = GoblinRaidRules.nextDelay(roll);
             assertTrue(delay >= GoblinRaidRules.MINIMUM_DELAY_TICKS);

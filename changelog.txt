@@ -1,3 +1,17 @@
+Warlockery 1.4.0
+================
+
+- Updated Forge to 65.1.1, NeoForge to 26.2.0.59, Fabric Loader to 0.19.3, Fabric API to 0.157.0+26.2, and Fabric Loom to 1.17.19.
+- Added the NeoForge-only `1.4.0-LlaGuiT0-26.2.0.45` supporter build for LlaGuiT0's modpack, with the exact NeoForge range `[26.2.0.45-beta,26.2.0.46-beta)`.
+- Made goblin, vampire, and werewolf assaults substantially rarer, with randomized one-to-three-hour attempt delays at default settings.
+- Added mob-specific tactical combat doctrines with cover seeking, flanking, retreat thresholds, guarded positions, aerial approaches, and blocked-route disengagement.
+- Added short combat memory for player-attributed spells, projectiles, guns, explosives, and other non-environmental damage so modded attacks trigger tactical responses too.
+- Added hazard-aware pathing that prioritizes safe ground around fire, lava, cactus, drowning water, and other damaging terrain while preserving familiar and species-specific immunities.
+- Added ambient and social ecology for every Warlockery mob, including species-appropriate idle activities and interactions.
+- Added goblin and hobgoblin children, housing, huts, and bounded tunnels for fuller settlement life.
+- Added spouse kisses and practical cooking behavior.
+- Expanded common-tag compatibility, automated tests, and Forge, NeoForge, and Fabric release parity.
+
 Warlockery 1.3.0
 ================
 
@@ -12,16 +26,18 @@ Warlockery 1.3.0
 Warlockery 1.2.2
 ================
 
-- Added complete Simplified Chinese, Russian, Korean, and Turkish translations for items, interfaces, messages, manuals, and ritual guidance.
-- Gave the new manual translations a playful witchy voice while keeping instructions, ingredients, controls, and failure messages easy to understand.
+- Added complete Simplified Chinese, Russian, Korean, and Turkish translations.
+- Reviewed brew names and instructions so magical brews are not described as beer, coffee, or tea.
+- Added localization checks for complete keys, preserved placeholders, intended locale files, and readable manuals.
 
 Warlockery 1.2.1
 ================
 
-- Rewrote manual preambles and articles for clearer guidance, added useful pictograms, and organized biome lessons by the kind of land they describe.
-- Restored Torn Page progression so Observations of an Immortal reveals its vampire lessons one page at a time.
-- Bound observed biomes directly into the Book of Biomes and expanded the climate rite from its target chunk into empowered rings, with up to three Nether Stars extending its reach.
-- Expanded animal, demon, goblin, and hobgoblin trades with weighted modern loot and rarer high-value rewards.
+- Rewrote manual introductions and articles with clearer instructions, organized lessons, and useful pictograms.
+- Restored Torn Page progression so Observations of an Immortal reveals its lessons in order.
+- Made the Book of Biomes remember a bound biome and use it as the target for the climate-changing rite.
+- Scaled the climate rite from one chunk to additional chunk rings with empowerment and up to three Nether Stars.
+- Expanded animal, demon, goblin, and hobgoblin trades with broader modern loot and balanced rare rewards.
 
 Warlockery 1.2.0
 ================
@@ -29,7 +45,7 @@ Warlockery 1.2.0
 - Added coordinated goblin raids on villages, goblin children, and clearer separation between hostile goblins and peaceful travelling hobgoblins.
 - Improved hobgoblin life in the world with village avoidance, fear of human villagers, reliable professions, stable trading, and goblin-inspired sounds and presentation.
 - Rebalanced goblinite trading and processing so its high-tier equipment takes substantially more emeralds and dust to obtain.
-- Reworked Nami and Naamah as distinct characters with new skins, identities, progression roles, interactions, and marriage behavior.
+- Reworked Nami and Naamah as distinct characters with new skins, identities, progression roles, and interactions, with marriage reserved for Nami.
 - Rebuilt broom riding around responsive mounted controls, strong forward acceleration, deliberate base turning weight, graceful descent, and improved torque from the Brew of Soaring.
 - Expanded the in-game manuals with organized subchapters, clearer navigation, ritual diagrams, ingredient guidance, progression-aware entries, and broader coverage of plants, brews, biomes, devices, and supernatural paths.
 - Expanded vampire and werewolf progression, ritual coverage, village interactions, creature behavior, equipment, dolls, brews, and compatibility with modern Minecraft systems.
@@ -52,12 +68,12 @@ Warlockery 1.1.0
 Warlockery 1.0.0
 ================
 
-- First stable NeoForge release for NeoForge 26.2.0.37-beta, Minecraft 26.2, and Java 25.
+- First stable public release for Forge 65.1.0, Minecraft 26.2, and Java 25.
 - Includes 101 data-driven rituals with interactive chalk-circle selection and requirement displays.
 - Includes fixed and custom brewing, ritual machines, altar power, dolls, hexes, vampires, and werewolves.
 - Includes 47 creature types, goblin village integration, biome-aware Ents, and silver-equipped Werewolf Hunters.
-- Includes NeoForge automation capabilities, common material tags, searchable in-game manuals, and original pixel art.
-- Adds optional JEI recipe-viewer integration for the NeoForge build of JEI 30.15.0 or newer.
+- Includes Forge automation capabilities, common material tags, searchable in-game manuals, and original pixel art.
+- Adds optional JEI recipe-viewer integration when a compatible Forge JEI build is installed.
 - Adds English, French, Spanish, Brazilian Portuguese, German, Polish, Japanese, and Traditional Chinese for Taiwan.
 - Supports texture, model, and sound replacement through standard Minecraft resource packs.
-- Adds server configuration for rare world events and NeoForge update-check metadata.
+- Adds server configuration for rare world events and Forge update-check metadata.

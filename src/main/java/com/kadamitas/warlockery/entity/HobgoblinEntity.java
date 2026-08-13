@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -40,6 +41,9 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
@@ -60,6 +64,10 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jspecify.annotations.Nullable;
 
 public class HobgoblinEntity extends Villager implements ArcaneCreature {
+    private static final TagKey<net.minecraft.world.item.Item> NATURAL_LOGS = TagKey.create(
+        Registries.ITEM,
+        Identifier.fromNamespaceAndPath("c", "natural_logs")
+    );
     private final CreatureKind kind;
     private final CreatureBehavior behavior;
     private GoblinProfession goblinProfession = GoblinProfession.PROSPECTOR;
@@ -67,6 +75,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
     private @Nullable BlockPos raidCenter;
     private int raidWave;
     private boolean raidLeader;
+    private long nextFlowerGiftTime;
 
     public HobgoblinEntity(final EntityType<? extends Villager> type, final Level level, final CreatureKind kind) {
         super(type, level);
@@ -178,7 +187,11 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
             getNavigation().stop();
             setTarget(null);
         }
+        acquireLocalRaidTarget(level);
         behavior.tick(this, level);
+        TacticalCombatRuntime.tick(this, level, kind);
+        GoblinSettlementLifeRuntime.tick(this, level);
+        AmbientActivityRuntime.tick(this, level, kind);
         if (kind == CreatureKind.GOBLIN) {
             GoblinRaidRuntime.coordinate(this, level);
         }
@@ -269,8 +282,16 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
     }
 
     @Override
+    public boolean canBreed() {
+        return super.canBreed()
+            && level() instanceof ServerLevel level
+            && GoblinSettlementLifeRuntime.hasAvailableHomeForChild(this, level);
+    }
+
+    @Override
     public @Nullable Villager getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-        if (!(partner instanceof HobgoblinEntity other) || !GoblinLifecycleRules.canReproduce(kind, other.kind)) {
+        if (!(partner instanceof HobgoblinEntity other)
+            || !GoblinLifecycleRules.canReproduce(kind, other.kind)) {
             return null;
         }
         final Entity offspring = getType().create(level, EntitySpawnReason.BREEDING);
@@ -322,13 +343,20 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
 
     @Override
     public boolean wantsToPickUp(final ServerLevel level, final ItemStack stack) {
-        return CreatureBehaviorState.owner(this).isPresent()
+        return GoblinSettlementLifeRules.participates(kind, isVillageRaider(), isPatronBoss())
+            && (stack.is(ItemTags.DIRT)
+                || stack.is(ItemTags.LOGS)
+                || stack.is(NATURAL_LOGS))
+            || CreatureBehaviorState.owner(this).isPresent()
             && stack.is(CreatureBehaviorTags.Items.HOBGOBLIN_COLLECTIBLES)
             || super.wantsToPickUp(level, stack);
     }
 
     @Override
     public boolean canAttack(final LivingEntity target) {
+        if (isBaby()) {
+            return false;
+        }
         if (GoblinLifecycleRules.fleesHumanVillagers(kind)
             && GoblinHostilityRules.isHumanVillager(target.getType())) {
             return false;
@@ -394,6 +422,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
     public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
         final boolean hurt = super.hurtServer(level, source, amount);
         if (hurt) {
+            TacticalCombatRuntime.rememberIncomingThreat(this, level, source);
             behavior.afterHurt(this, level, source, amount);
         }
         return hurt;
@@ -568,6 +597,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
         super.addAdditionalSaveData(output);
         output.putString("WarlockeryGoblinProfession", goblinProfession.id);
         output.putInt("WarlockeryProspectingCooldown", prospectingCooldown);
+        output.putLong("WarlockeryNextFlowerGift", nextFlowerGiftTime);
         if (raidCenter != null) {
             output.putLong("WarlockeryGoblinRaidCenter", raidCenter.asLong());
             output.putInt("WarlockeryGoblinRaidWave", raidWave);
@@ -580,6 +610,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
         super.readAdditionalSaveData(input);
         goblinProfession = GoblinProfession.byId(input.getStringOr("WarlockeryGoblinProfession", "prospector"));
         prospectingCooldown = input.getIntOr("WarlockeryProspectingCooldown", 0);
+        nextFlowerGiftTime = Math.max(0L, input.getLongOr("WarlockeryNextFlowerGift", 0L));
         final long encodedCenter = input.getLongOr("WarlockeryGoblinRaidCenter", Long.MIN_VALUE);
         raidCenter = encodedCenter == Long.MIN_VALUE ? null : BlockPos.of(encodedCenter);
         raidWave = input.getIntOr("WarlockeryGoblinRaidWave", 0);
@@ -610,6 +641,14 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
         return kind == CreatureKind.GOBLIN ? ModSounds.GOBLIN : ModSounds.HOBGOBLIN;
     }
 
+    long nextFlowerGiftTime() {
+        return nextFlowerGiftTime;
+    }
+
+    void recordFlowerGift(final long nextGiftTime) {
+        nextFlowerGiftTime = Math.max(nextFlowerGiftTime, nextGiftTime);
+    }
+
     private boolean fleeHumanVillager(final ServerLevel level) {
         if (!GoblinLifecycleRules.fleesHumanVillagers(kind) || isTrading()) {
             return false;
@@ -635,6 +674,24 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
             }
         }
         return true;
+    }
+
+    private void acquireLocalRaidTarget(final ServerLevel level) {
+        if (kind != CreatureKind.GOBLIN
+            || isBaby()
+            || isTrading()
+            || getTarget() != null) {
+            return;
+        }
+        level.getEntitiesOfClass(
+                Villager.class,
+                getBoundingBox().inflate(16.0, 6.0, 16.0),
+                villager -> villager.isAlive()
+                    && GoblinHostilityRules.canTarget(kind, villager.getType())
+                    && behavior.canAttack(this, villager)
+            ).stream()
+            .min(Comparator.comparingDouble(this::distanceToSqr))
+            .ifPresent(this::setTarget);
     }
 
     public enum GoblinProfession {

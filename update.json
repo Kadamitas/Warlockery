@@ -1,16 +1,17 @@
 {
   "homepage": "https://github.com/Kadamitas/Warlockery/releases",
   "promos": {
-    "26.2-latest": "1.3.0",
-    "26.2-recommended": "1.3.0"
+    "26.2-latest": "1.4.0",
+    "26.2-recommended": "1.4.0"
   },
   "26.2": {
     "1.0.0-alpha.1": "Initial public alpha.",
-    "1.0.0": "First NeoForge release with rituals, brewing, supernatural progression, creatures, diagnostics, optional recipe-viewer integration, translations, and resource-pack overrides.",
+    "1.0.0": "First stable release with rituals, brewing, supernatural progression, creatures, diagnostics, optional recipe-viewer integration, translations, and resource-pack overrides.",
     "1.1.0": "Updated 3D models and textures, manuals, item presentation, brews, dolls, ritual feedback, creatures, and stability.",
     "1.2.0": "Adds goblin raids and improved goblin ecology, redesigned Nami and Naamah, responsive mounted broom flight, expanded supernatural manuals and progression, and broad ritual, machine, model, texture, and stability improvements.",
-    "1.2.1": "Clarifies manuals with preambles and pictograms, restores Torn Page progression, binds biomes into the Book of Biomes for scalable climate rites, and expands animal, demon, and goblin trades.",
-    "1.2.2": "Adds complete Simplified Chinese, Russian, Korean, and Turkish translations with clear terminology and playful witchy flavor.",
-    "1.3.0": "Fortifies villages, adds vampire and werewolf assaults with distinct objectives and transformations, expands hobgoblin defenses, and improves player wolf form."
+    "1.2.1": "Clarifies every manual with illustrated guidance, restores Torn Page progression, binds biome knowledge for scalable climate rites, and expands creature and goblin trades.",
+    "1.2.2": "Adds Simplified Chinese, Russian, Korean, and Turkish localization with reviewed magical-brew terminology.",
+    "1.3.0": "Fortifies villages, adds vampire and werewolf assaults with distinct objectives and transformations, expands hobgoblin defenses, and improves player wolf form.",
+    "1.4.0": "Makes village assaults rarer, adds mob-specific combat and hazard navigation, expands ecology and settlement life, improves spouse interactions and common-tag compatibility, and aligns tested Forge, NeoForge, and Fabric releases."
   }
 }

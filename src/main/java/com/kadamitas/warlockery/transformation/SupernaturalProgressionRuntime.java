@@ -92,7 +92,7 @@ public final class SupernaturalProgressionRuntime {
         NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> handleDamage(event));
         NeoForge.EVENT_BUS.addListener((LivingIncomingDamageEvent event) -> handleHurt(event));
         NeoForge.EVENT_BUS.addListener((LivingDeathEvent event) -> handleDeath(event));
-        NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.EntityInteractSpecific event) -> handleInteract(event));
+        NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.EntityInteract event) -> handleInteract(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.BreakSpeed event) -> handleBreakSpeed(event));
         NeoForge.EVENT_BUS.addListener((BreakBlockEvent event) -> handleBlockBreak(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> copyAfterClone(event));
@@ -506,7 +506,7 @@ public final class SupernaturalProgressionRuntime {
         }
     }
 
-    private static void handleInteract(final PlayerInteractEvent.EntityInteractSpecific event) {
+    private static void handleInteract(final PlayerInteractEvent.EntityInteract event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
             || !(event.getTarget() instanceof LivingEntity target)
             || !event.getItemStack().isEmpty()) {
