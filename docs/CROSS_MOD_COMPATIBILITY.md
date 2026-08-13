@@ -1,6 +1,6 @@
 # Cross-mod compatibility
 
-Warlockery targets NeoForge 26.2.0.37-beta for Minecraft 26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and NeoForge capabilities.
+This supporter compatibility build targets NeoForge 26.2.0.45-beta for Minecraft 26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and NeoForge capabilities.
 
 ## Tag strategy
 

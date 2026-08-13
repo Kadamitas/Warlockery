@@ -119,7 +119,7 @@ abstract class GenerateEmptyGameTestStructure extends DefaultTask {
     }
 }
 
-version = '1.3.0'
+version = '13.1.0-LlaGuiT0-26.2.0.45'
 group = 'com.kadamitas.warlockery'
 
 base {
@@ -164,7 +164,7 @@ sourceSets.test.compileClasspath += sourceSets.main.output + sourceSets.main.com
 sourceSets.test.runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
 
 neoForge {
-    version = '26.2.0.37-beta'
+    version = '26.2.0.45-beta'
 
     runs {
         configureEach {

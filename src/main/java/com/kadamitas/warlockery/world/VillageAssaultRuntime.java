@@ -69,7 +69,7 @@ public final class VillageAssaultRuntime {
         NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> handleDamage(event));
         NeoForge.EVENT_BUS.addListener((LivingDeathEvent event) -> handleDeath(event));
         NeoForge.EVENT_BUS.addListener(
-            (PlayerInteractEvent.EntityInteractSpecific event) -> handleVillagerInteraction(event)
+            (PlayerInteractEvent.EntityInteract event) -> handleVillagerInteraction(event)
         );
         NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) -> handleEntityJoin(event));
     }
@@ -953,7 +953,7 @@ public final class VillageAssaultRuntime {
         recordWerewolfObjective(level, raider, victim);
     }
 
-    static boolean handleVillagerInteraction(final PlayerInteractEvent.EntityInteractSpecific event) {
+    static boolean handleVillagerInteraction(final PlayerInteractEvent.EntityInteract event) {
         if (!(event.getTarget() instanceof Villager villager)
             || !(event.getEntity() instanceof ServerPlayer player)) {
             return false;

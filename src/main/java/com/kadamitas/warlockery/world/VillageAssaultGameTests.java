@@ -328,7 +328,7 @@ public final class VillageAssaultGameTests {
         final Villager villager = helper.spawn(EntityTypes.VILLAGER, new BlockPos(1, 1, 1));
         final long gameTime = helper.getLevel().getGameTime();
         villager.getPersistentData().putLong(VillageAssaultRuntime.BLOOD_DRAINED_UNTIL, gameTime + 40L);
-        final PlayerInteractEvent.EntityInteractSpecific locked = new PlayerInteractEvent.EntityInteractSpecific(
+        final PlayerInteractEvent.EntityInteract locked = new PlayerInteractEvent.EntityInteract(
             player,
             InteractionHand.MAIN_HAND,
             villager,
@@ -343,7 +343,7 @@ public final class VillageAssaultGameTests {
             "a locked villager must not gain a customer or open a merchant menu");
 
         villager.getPersistentData().putLong(VillageAssaultRuntime.BLOOD_DRAINED_UNTIL, gameTime);
-        final PlayerInteractEvent.EntityInteractSpecific expired = new PlayerInteractEvent.EntityInteractSpecific(
+        final PlayerInteractEvent.EntityInteract expired = new PlayerInteractEvent.EntityInteract(
             player,
             InteractionHand.MAIN_HAND,
             villager,

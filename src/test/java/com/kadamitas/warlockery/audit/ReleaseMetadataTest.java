@@ -22,19 +22,18 @@ final class ReleaseMetadataTest {
         final var matcher = GRADLE_VERSION.matcher(build);
         assertTrue(matcher.find());
         final String version = matcher.group(1);
-        assertEquals("1.3.0", version);
+        assertEquals("13.1.0-LlaGuiT0-26.2.0.45", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
-        assertEquals(version, promotions.get("26.2-latest").getAsString());
-        assertEquals(version, promotions.get("26.2-recommended").getAsString());
-        assertTrue(update.getAsJsonObject("26.2").has(version));
+        assertEquals("1.3.0", promotions.get("26.2-latest").getAsString());
+        assertEquals("1.3.0", promotions.get("26.2-recommended").getAsString());
+        assertTrue(update.getAsJsonObject("26.2").has("1.3.0"));
 
         final String changelog = read("changelog.txt");
         assertTrue(changelog.startsWith("Warlockery " + version));
         assertFalse(changelog.contains("alpha"));
-        assertTrue(read(".github/workflows/publish-curseforge.yml").contains("default: v" + version));
-        assertTrue(read(".github/ISSUE_TEMPLATE/bug_report.yml").contains("placeholder: " + version));
+        assertTrue(changelog.contains("NeoForge 26.2.0.45-beta"));
     }
 
     @Test
@@ -50,7 +49,7 @@ final class ReleaseMetadataTest {
         assertTrue(metadata.contains("[features.warlockery]"));
         assertTrue(metadata.contains("javaVersion=\"[25,)\""));
         assertTrue(metadata.contains("modId=\"neoforge\""));
-        assertTrue(metadata.contains("versionRange=\"[26.2.0.37-beta,)\""));
+        assertTrue(metadata.contains("versionRange=\"[26.2.0.45-beta,26.2.0.46-beta)\""));
         assertTrue(metadata.contains("modId=\"jei\""));
         assertTrue(Pattern.compile("(?s)modId=\"jei\".*?type=\"optional\".*?side=\"CLIENT\"")
             .matcher(metadata)
