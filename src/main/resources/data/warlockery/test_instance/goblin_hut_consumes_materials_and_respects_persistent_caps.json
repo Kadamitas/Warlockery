@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:goblin_hut_consumes_materials_and_respects_persistent_caps",
+  "environment": "minecraft:default",
+  "structure": "fabric-gametest-api-v1:empty",
+  "max_ticks": 100
+}
+
+

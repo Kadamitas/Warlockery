@@ -18,7 +18,7 @@ Clone the repository and import its `build.gradle` as a Gradle project. Configur
 Run a compile before opening a development client:
 
 ```powershell
-.\gradlew.bat --no-daemon classes testClasses
+.\gradlew.bat classes testClasses --parallel --max-workers=24
 ```
 
 On Linux or macOS, use `./gradlew` in place of `.\gradlew.bat`.
@@ -28,7 +28,7 @@ On Linux or macOS, use `./gradlew` in place of `.\gradlew.bat`.
 Create a clean development build with:
 
 ```powershell
-.\gradlew.bat --no-daemon clean build
+.\gradlew.bat clean build --parallel --max-workers=24
 ```
 
 The distributable JAR is written to `build/libs`. The `build` directory is generated and should not be committed.
@@ -36,7 +36,7 @@ The distributable JAR is written to `build/libs`. The `build` directory is gener
 Create a versioned publishing bundle with:
 
 ```powershell
-.\gradlew.bat --no-daemon releaseBundle
+.\gradlew.bat releaseBundle --parallel --max-workers=24
 ```
 
 The task writes the binary JAR, source JAR, license, changelog, and SHA-256 checksum files to `release/<version>`. Upload the binary JAR without the `-sources` suffix to a mod hosting site.
@@ -46,9 +46,9 @@ The task writes the binary JAR, source JAR, license, changelog, and SHA-256 chec
 Fabric Loom provides the development launch tasks:
 
 ```powershell
-.\gradlew.bat --no-daemon runClient
-.\gradlew.bat --no-daemon runServer
-.\gradlew.bat --no-daemon runGametest
+.\gradlew.bat runClient --parallel --max-workers=24
+.\gradlew.bat runServer --parallel --max-workers=24
+.\gradlew.bat runGametest --parallel --max-workers=24
 ```
 
 Client, server, and GameTest instances use the `run` directory. Handwritten resources live in `src/main/resources`.
@@ -89,7 +89,7 @@ English in `assets/warlockery/lang/en_us.json` is the source language. French, S
 Use `Component.translatable` for player-facing Java text. Data-driven rituals store `title_key` and `description_key` values rather than embedded English sentences. Keep every locale's key set identical to `en_us.json`, save files as UTF-8, preserve formatting placeholders such as `%s`, and choose vocabulary by gameplay meaning. Run the localization integrity test after changing any locale:
 
 ```powershell
-.\gradlew.bat --no-daemon test --tests com.kadamitas.warlockery.localization.LocalizationIntegrityTest
+.\gradlew.bat test --tests com.kadamitas.warlockery.localization.LocalizationIntegrityTest --parallel --max-workers=24
 ```
 
 ## Networking and client code
@@ -159,7 +159,7 @@ Copy only the assets being replaced and keep their paths and file names identica
 Run all JUnit tests with:
 
 ```powershell
-.\gradlew.bat --no-daemon test
+.\gradlew.bat test --parallel --max-workers=24
 ```
 
 HTML reports are written to `build/reports/tests/test`. Machine-readable results are written to `build/test-results/test`.
@@ -167,7 +167,7 @@ HTML reports are written to `build/reports/tests/test`. Machine-readable results
 Run Fabric GameTests after changing world interactions, entities, item use, transfer storage, networking, rituals, or machines:
 
 ```powershell
-.\gradlew.bat --no-daemon runGametest
+.\gradlew.bat runGametest --parallel --max-workers=24
 ```
 
 Keep small rules and serialization tests in JUnit. Use GameTests when the behavior needs a real level, registry access, ticking, entities, inventories, or block entities.

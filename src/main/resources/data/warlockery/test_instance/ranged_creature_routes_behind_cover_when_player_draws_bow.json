@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:ranged_creature_routes_behind_cover_when_player_draws_bow",
+  "environment": "minecraft:default",
+  "structure": "fabric-gametest-api-v1:empty",
+  "max_ticks": 100
+}
+
+

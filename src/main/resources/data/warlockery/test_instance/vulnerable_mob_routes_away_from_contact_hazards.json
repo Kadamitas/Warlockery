@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:vulnerable_mob_routes_away_from_contact_hazards",
+  "environment": "minecraft:default",
+  "structure": "fabric-gametest-api-v1:empty",
+  "max_ticks": 100
+}
+
+

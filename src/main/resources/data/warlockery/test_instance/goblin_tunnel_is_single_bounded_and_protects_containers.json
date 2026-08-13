@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:goblin_tunnel_is_single_bounded_and_protects_containers",
+  "environment": "minecraft:default",
+  "structure": "fabric-gametest-api-v1:empty",
+  "max_ticks": 100
+}
+
+

@@ -10,6 +10,8 @@ import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.Items;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.Level;
 
 public final class WerewolfHunterEntity extends Pillager implements ArcaneCreature {
@@ -28,6 +30,22 @@ public final class WerewolfHunterEntity extends Pillager implements ArcaneCreatu
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, WerewolfEntity.class, true));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, ArcaneMob.class, 10, true, false,
             (mob, level) -> mob instanceof ArcaneMob arcaneMob && arcaneMob.creatureKind().isVampiric()));
+    }
+
+    @Override
+    protected void customServerAiStep(final ServerLevel level) {
+        super.customServerAiStep(level);
+        TacticalCombatRuntime.tick(this, level, CreatureKind.WEREWOLF_HUNTER);
+        AmbientActivityRuntime.tick(this, level, CreatureKind.WEREWOLF_HUNTER);
+    }
+
+    @Override
+    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
+        final boolean hurt = super.hurtServer(level, source, amount);
+        if (hurt) {
+            TacticalCombatRuntime.rememberIncomingThreat(this, level, source);
+        }
+        return hurt;
     }
 
     @Override

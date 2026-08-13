@@ -186,6 +186,8 @@ final class VillageAssaultRulesTest {
 
     @Test
     void randomizedDelayAlwaysRemainsBounded() {
+        assertEquals(72_000L, VillageAssaultRules.MINIMUM_DELAY_TICKS);
+        assertEquals(216_000L, VillageAssaultRules.MAXIMUM_DELAY_TICKS);
         for (final long roll : new long[]{Long.MIN_VALUE, -1L, 0L, 1L, Long.MAX_VALUE}) {
             final long delay = VillageAssaultRules.nextDelay(roll);
             assertTrue(delay >= VillageAssaultRules.MINIMUM_DELAY_TICKS);

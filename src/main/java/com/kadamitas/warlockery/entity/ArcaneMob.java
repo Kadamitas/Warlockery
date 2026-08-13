@@ -77,6 +77,8 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         behavior.tick(this, level);
+        TacticalCombatRuntime.tick(this, level, kind);
+        AmbientActivityRuntime.tick(this, level, kind);
     }
 
     @Override
@@ -109,15 +111,21 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
 
     @Override
     public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
-        if (FamiliarBondRules.isClassicFamiliar(kind)
-            && FamiliarBondRules.ignoresEnvironmentalDamage(source)) {
+        if (isEnvironmentallyImmuneFamiliar()
+            && (FamiliarBondRules.ignoresEnvironmentalDamage(source)
+                || source.getEntity() == null && source.getDirectEntity() == null)) {
             return false;
         }
         final boolean hurt = super.hurtServer(level, source, amount);
         if (hurt) {
+            TacticalCombatRuntime.rememberIncomingThreat(this, level, source);
             behavior.afterHurt(this, level, source, amount);
         }
         return hurt;
+    }
+
+    private boolean isEnvironmentallyImmuneFamiliar() {
+        return FamiliarBondRules.isClassicFamiliar(kind) || kind == CreatureKind.FAMILIAR;
     }
 
     @Override

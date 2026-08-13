@@ -1,3 +1,23 @@
+Warlockery 1.4.0
+================
+
+- Updated Forge to 65.1.1, NeoForge to 26.2.0.59, Fabric Loader to 0.19.3, Fabric API to 0.157.0+26.2, and Fabric Loom to 1.17.19.
+- Added the NeoForge-only `1.4.0-LlaGuiT0-26.2.0.45` supporter build for LlaGuiT0's modpack, with the exact NeoForge range `[26.2.0.45-beta,26.2.0.46-beta)`.
+- Made goblin, vampire, and werewolf assaults substantially rarer, with randomized one-to-three-hour attempt delays at default settings.
+- Added mob-specific tactical combat doctrines with cover seeking, flanking, retreat thresholds, guarded positions, aerial approaches, and blocked-route disengagement.
+- Added short combat memory for player-attributed spells, projectiles, guns, explosives, and other non-environmental damage so modded attacks trigger tactical responses too.
+- Added hazard-aware pathing that prioritizes safe ground around fire, lava, cactus, drowning water, and other damaging terrain while preserving familiar and species-specific immunities.
+- Added ambient and social ecology for every Warlockery mob, including species-appropriate idle activities and interactions.
+- Added goblin and hobgoblin children, housing, huts, and bounded tunnels for fuller settlement life.
+- Added spouse kisses and practical cooking behavior.
+- Expanded common-tag compatibility, automated tests, and Forge, NeoForge, and Fabric release parity.
+
+Warlockery 1.3.1
+================
+
+- Updated Forge to 65.1.1, NeoForge to 26.2.0.59, Fabric Loader to 0.19.3, Fabric API to 0.157.0+26.2, and Fabric Loom to 1.17.19.
+- Added a tested NeoForge 26.2.0.45-beta supporter compatibility build for LlaGuiT0's modpack.
+
 Warlockery 1.3.0
 ================
 
@@ -31,7 +51,7 @@ Warlockery 1.2.0
 - Added coordinated goblin raids on villages, goblin children, and clearer separation between hostile goblins and peaceful travelling hobgoblins.
 - Improved hobgoblin life in the world with village avoidance, fear of human villagers, reliable professions, stable trading, and goblin-inspired sounds and presentation.
 - Rebalanced goblinite trading and processing so its high-tier equipment takes substantially more emeralds and dust to obtain.
-- Reworked Nami and Naamah as distinct characters with new skins, identities, progression roles, interactions, and marriage behavior.
+- Reworked Nami and Naamah as distinct characters with new skins, identities, progression roles, and interactions, with marriage reserved for Nami.
 - Rebuilt broom riding around responsive mounted controls, strong forward acceleration, deliberate base turning weight, graceful descent, and improved torque from the Brew of Soaring.
 - Expanded the in-game manuals with organized subchapters, clearer navigation, ritual diagrams, ingredient guidance, progression-aware entries, and broader coverage of plants, brews, biomes, devices, and supernatural paths.
 - Expanded vampire and werewolf progression, ritual coverage, village interactions, creature behavior, equipment, dolls, brews, and compatibility with modern Minecraft systems.

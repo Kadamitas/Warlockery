@@ -14,7 +14,9 @@ import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
@@ -97,6 +99,7 @@ final class TexturedCreatureRenderers {
                 Mth.clamp(profile.visual().width() * 0.45F, 0.2F, 0.85F)
             );
             texture = texture(profile.entityId());
+            addLayer(new ItemInHandLayer<>(this));
             hasBabyModel = profile.variant() == CreatureModelProfile.Variant.GOBLIN
                 || profile.variant() == CreatureModelProfile.Variant.HOBGOBLIN;
         }
@@ -114,6 +117,9 @@ final class TexturedCreatureRenderers {
         @Override
         public void extractRenderState(final Mob entity, final ArcaneState state, final float partialTicks) {
             super.extractRenderState(entity, state, partialTicks);
+            ArmedEntityRenderState.extractArmedEntityRenderState(
+                entity, state, this.itemModelResolver, partialTicks
+            );
             state.hobgoblinAssaultVariant = entity instanceof ArcaneMob arcane
                 && arcane.isHobgoblinAssaultVariant();
             state.tint = entity instanceof EntEntity ent
@@ -152,7 +158,7 @@ final class TexturedCreatureRenderers {
         }
     }
 
-    static final class ArcaneState extends LivingEntityRenderState {
+    static final class ArcaneState extends ArmedEntityRenderState {
         private int tint = -1;
         private boolean hobgoblinAssaultVariant;
     }

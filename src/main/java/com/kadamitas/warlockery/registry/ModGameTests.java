@@ -3,6 +3,10 @@ package com.kadamitas.warlockery.registry;
 import com.kadamitas.warlockery.brew.CauldronChalkCircleGameTests;
 import com.kadamitas.warlockery.brew.SolidifyingBrewGameTests;
 import com.kadamitas.warlockery.dream.SpiritWorldGameTests;
+import com.kadamitas.warlockery.entity.TacticalCombatGameTests;
+import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
+import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
+import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
 import com.kadamitas.warlockery.item.CircleTalismanGameTests;
 import com.kadamitas.warlockery.item.BroomFlightGameTests;
 import com.kadamitas.warlockery.item.BroomMotionGameTests;
@@ -16,6 +20,7 @@ import com.kadamitas.warlockery.transformation.SupernaturalProgressionGameTests;
 import com.kadamitas.warlockery.world.SettlementFortificationGameTests;
 import com.kadamitas.warlockery.world.VillageAssaultGameTests;
 import com.kadamitas.warlockery.world.VillageGuardGameTests;
+import com.kadamitas.warlockery.world.GoblinSettlementLifeGameTests;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -89,10 +94,28 @@ public final class ModGameTests {
             () -> VillageGuardGameTests::goblinTradingRetainsItsCustomer);
         REGISTRY.register("goblin_families_produce_matching_babies",
             () -> VillageGuardGameTests::goblinFamiliesProduceMatchingBabies);
+        REGISTRY.register("goblin_hut_consumes_materials_and_respects_persistent_caps",
+            () -> GoblinSettlementLifeGameTests::goblinHutConsumesMaterialsAndRespectsPersistentCaps);
+        REGISTRY.register("goblin_children_gather_dance_and_gift_flowers",
+            () -> GoblinSettlementLifeGameTests::goblinChildrenGatherDanceAndGiftFlowers);
+        REGISTRY.register("goblin_tunnel_is_single_bounded_and_protects_containers",
+            () -> GoblinSettlementLifeGameTests::goblinTunnelIsSingleBoundedAndProtectsContainers);
         REGISTRY.register("goblin_raid_wave_is_grouped_and_coordinated",
             () -> VillageGuardGameTests::goblinRaidWaveIsGroupedAndCoordinated);
         REGISTRY.register("hobgoblins_flee_human_villagers_and_keep_custom_professions",
             () -> VillageGuardGameTests::hobgoblinsFleeHumanVillagersAndKeepCustomProfessions);
+        REGISTRY.register("ranged_creature_routes_behind_cover_when_player_draws_bow",
+            () -> TacticalCombatGameTests::rangedCreatureRoutesBehindCoverWhenPlayerDrawsBow);
+        REGISTRY.register("melee_creature_disengages_from_unreachable_attack_slit",
+            () -> TacticalCombatGameTests::meleeCreatureDisengagesFromUnreachableAttackSlit);
+        REGISTRY.register("vulnerable_mob_routes_away_from_contact_hazards",
+            () -> HazardEscapeGameTests::vulnerableMobRoutesAwayFromContactHazards);
+        REGISTRY.register("drowning_mob_routes_from_water_to_dry_ground",
+            () -> HazardEscapeGameTests::drowningMobRoutesFromWaterToDryGround);
+        REGISTRY.register("demon_builds_one_temporary_snow_hearth",
+            () -> AmbientActivityGameTests::demonBuildsOneTemporarySnowHearth);
+        REGISTRY.register("ent_plants_one_loose_sapling_without_duplicating_it",
+            () -> AmbientActivityGameTests::entPlantsOneLooseSaplingWithoutDuplicatingIt);
         REGISTRY.register("human_village_builds_a_closed_stone_defense",
             () -> SettlementFortificationGameTests::humanVillageBuildsAClosedStoneDefense);
         REGISTRY.register("hobgoblin_village_builds_a_closed_wood_defense",
@@ -221,6 +244,12 @@ public final class ModGameTests {
             () -> SpiritWorldGameTests::spiritWorldInhibitsEveryCircleRitual);
         REGISTRY.register("demonic_nightmare_flag_persists_in_session",
             () -> SpiritWorldGameTests::demonicNightmareFlagPersistsInSession);
+        REGISTRY.register("spouse_cooks_one_meat_and_delivers_one_meal",
+            () -> SpouseAmbientGameTests::spouseCooksOneMeatAndDeliversOneMeal);
+        REGISTRY.register("spouse_rejects_occupied_furnace_without_taking_meat",
+            () -> SpouseAmbientGameTests::spouseRejectsOccupiedFurnaceWithoutTakingMeat);
+        REGISTRY.register("spouse_kiss_persists_cooldown",
+            () -> SpouseAmbientGameTests::spouseKissPersistsCooldown);
     }
 
     private ModGameTests() {

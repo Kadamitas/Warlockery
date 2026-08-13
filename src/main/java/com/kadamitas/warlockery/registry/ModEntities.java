@@ -91,7 +91,9 @@ public final class ModEntities {
     );
     private static final Set<CreatureKind> FIRE_IMMUNE_GROUND_KINDS = Set.of(
         CreatureKind.DEMON,
-        CreatureKind.HELLHOUND
+        CreatureKind.HELLHOUND,
+        CreatureKind.EMBERHORN_ARCHFIEND,
+        CreatureKind.ABYSSAL_REGENT
     );
     private static final Map<CreatureKind, ContentFactory<EntityRegistration, EntityType<?>>> SPECIAL_ARCANE_FACTORIES = Map.of(
         CreatureKind.WEREWOLF, ModEntities::createWerewolf,
