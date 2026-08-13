@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:blood_thrall_binds_intercepts_and_wavers",
+  "environment": "warlockery:vampire_court_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 200
+}

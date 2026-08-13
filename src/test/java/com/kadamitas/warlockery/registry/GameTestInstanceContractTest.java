@@ -29,6 +29,10 @@ final class GameTestInstanceContractTest {
     private static final Path INSTANCES = Path.of(
         "src", "main", "resources", "data", "warlockery", "test_instance"
     );
+    private static final Path VAMPIRE_COURT_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "vampire_court_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -49,6 +53,14 @@ final class GameTestInstanceContractTest {
         "spouse_rejects_occupied_furnace_without_taking_meat",
         "spouse_kiss_persists_cooldown"
     );
+    private static final Set<String> ISOLATED_VAMPIRE_COURT = Set.of(
+        "vampire_court_day_shelter_and_night_hunt",
+        "vampire_court_feeding_and_reports_remain_distinct",
+        "blood_thrall_binds_intercepts_and_wavers",
+        "vampire_court_assault_composition_preserves_contracts",
+        "vampire_court_identity_targets_and_failures_are_bounded",
+        "vampire_court_population_caps_hold"
+    );
 
     @Test
     void everyGameTestRegistrationHasOneMatchingEmptyTemplateFixture() {
@@ -67,11 +79,27 @@ final class GameTestInstanceContractTest {
         registrations.forEach(this::assertFixtureAndMethod);
     }
 
+    @Test
+    void onlyTheExactVampireCourtFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(VAMPIRE_COURT_ENVIRONMENT),
+            "the isolated Vampire Court environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(VAMPIRE_COURT_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated Vampire Court environment must not mutate shared world state");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
         assertEquals("warlockery:" + registration.id(), fixture.get("function").getAsString(), registration.id());
-        assertEquals("minecraft:default", fixture.get("environment").getAsString(), registration.id());
+        assertEquals(
+            ISOLATED_VAMPIRE_COURT.contains(registration.id())
+                ? "warlockery:vampire_court_isolated"
+                : "minecraft:default",
+            fixture.get("environment").getAsString(),
+            registration.id()
+        );
         assertEquals("forge:empty3x3x3", fixture.get("structure").getAsString(), registration.id());
         assertTrue(fixture.get("max_ticks").getAsInt() > 0, registration.id());
 

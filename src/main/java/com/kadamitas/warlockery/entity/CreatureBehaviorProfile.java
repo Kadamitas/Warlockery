@@ -108,6 +108,8 @@ public record CreatureBehaviorProfile(
             Feature.ALLOWLIST_GUARD, Feature.WANDER_TOGGLE),
         profile("vampire", CreatureKind.VAMPIRE, AuditStatus.MODERN_EQUIVALENT, null, 20,
             Feature.BLOOD_DRAIN, Feature.SUNLIGHT_WEAKNESS),
+        profile("blood_thrall", CreatureKind.BLOOD_THRALL, AuditStatus.MODERN_EQUIVALENT, null, 20,
+            Feature.SUNLIGHT_WEAKNESS, Feature.COURT_SUBORDINATE),
         profile("werewolf_hunter", CreatureKind.WEREWOLF_HUNTER, AuditStatus.MODERN_EQUIVALENT, null, 20,
             Feature.SILVER_HUNTING, Feature.PILLAGER_INTEGRATION),
         profile("werewolf", CreatureKind.WEREWOLF, AuditStatus.MODERN_EQUIVALENT, null, 20,
@@ -211,6 +213,7 @@ public record CreatureBehaviorProfile(
         PILLAGER_INTEGRATION,
         WEREWOLF_INTEGRATION,
         SILVER_WEAKNESS,
-        PILLAGER_RIVALRY
+        PILLAGER_RIVALRY,
+        COURT_SUBORDINATE
     }
 }

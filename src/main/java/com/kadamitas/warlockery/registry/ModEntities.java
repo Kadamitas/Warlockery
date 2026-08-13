@@ -14,6 +14,7 @@ import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
+import com.kadamitas.warlockery.entity.VampireCourtEntity;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
 import com.kadamitas.warlockery.entity.WingedArcaneMob;
@@ -99,7 +100,9 @@ public final class ModEntities {
         CreatureKind.IMP, ModEntities::createImp,
         CreatureKind.STORM_SIMIAN, ModEntities::createStormSimian,
         CreatureKind.LYCAN_VILLAGER, ModEntities::createLycanVillager,
-        CreatureKind.NAAMAH, ModEntities::createNaamah
+        CreatureKind.NAAMAH, ModEntities::createNaamah,
+        CreatureKind.VAMPIRE, ModEntities::createVampireCourt,
+        CreatureKind.BLOOD_THRALL, ModEntities::createVampireCourt
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -234,6 +237,16 @@ public final class ModEntities {
             .build(REGISTRY.key(registration.id()));
     }
 
+    private static EntityType<?> createVampireCourt(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<VampireCourtEntity> type, net.minecraft.world.level.Level level) ->
+                new VampireCourtEntity(type, level, registration.kind()),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
     private static EntityType<?> createGround(final EntityRegistration registration) {
         final boolean passive = PASSIVE_GROUND_KINDS.contains(registration.kind());
         final var builder = EntityType.Builder.of(
@@ -313,7 +326,12 @@ public final class ModEntities {
             case "hedge_crone", "demon" -> attributes.add(Attributes.MAX_HEALTH, 60).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.ARMOR, 6);
             case "werewolf", "feral_lycan", "lycan_villager" ->
                 attributes.add(Attributes.MAX_HEALTH, 42).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.MOVEMENT_SPEED, 0.32);
-            case "vampire", "blood_thrall", "hellhound", "bramble_colossus" ->
+            case "vampire", "blood_thrall" -> attributes
+                .add(Attributes.MAX_HEALTH, 36)
+                .add(Attributes.ATTACK_DAMAGE, 7)
+                .add(Attributes.MOVEMENT_SPEED, 0.3)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "hellhound", "bramble_colossus" ->
                 attributes.add(Attributes.MAX_HEALTH, 36).add(Attributes.ATTACK_DAMAGE, 7).add(Attributes.MOVEMENT_SPEED, 0.3);
             default -> attributes;
         };

@@ -5,6 +5,7 @@ import com.kadamitas.warlockery.brew.CauldronChalkCircleGameTests;
 import com.kadamitas.warlockery.brew.SolidifyingBrewGameTests;
 import com.kadamitas.warlockery.dream.SpiritWorldGameTests;
 import com.kadamitas.warlockery.entity.TacticalCombatGameTests;
+import com.kadamitas.warlockery.entity.VampireCourtGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
 import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
@@ -265,6 +266,18 @@ public final class ModGameTests {
             () -> NaamahCourtGameTests::sunlightWaterAndSingularLifecycle);
         REGISTRY.register("naamah_court_releases_invalid_targets",
             () -> NaamahCourtGameTests::courtReleasesInvalidTargets);
+        REGISTRY.register("vampire_court_day_shelter_and_night_hunt",
+            () -> VampireCourtGameTests::dayShelterAndNightHunt);
+        REGISTRY.register("vampire_court_feeding_and_reports_remain_distinct",
+            () -> VampireCourtGameTests::feedingAndReportsRemainDistinct);
+        REGISTRY.register("blood_thrall_binds_intercepts_and_wavers",
+            () -> VampireCourtGameTests::bloodThrallBindsInterceptsAndWavers);
+        REGISTRY.register("vampire_court_assault_composition_preserves_contracts",
+            () -> VampireCourtGameTests::assaultCompositionPreservesContracts);
+        REGISTRY.register("vampire_court_identity_targets_and_failures_are_bounded",
+            () -> VampireCourtGameTests::identityTargetsAndFailuresAreBounded);
+        REGISTRY.register("vampire_court_population_caps_hold",
+            () -> VampireCourtGameTests::populationCapsHold);
     }
 
     private ModGameTests() {

@@ -101,7 +101,7 @@ public final class CreatureBehaviorRuntime {
             case POLTERGEIST -> tickPoltergeist(creature, level);
             case EMBERHORN_ARCHFIEND -> tickCauldronAura(creature, level);
             case FAMILIAR -> tickOreGuidance(creature, level);
-            case VAMPIRE, NAAMAH -> tickSunlightWeakness(creature, level);
+            case VAMPIRE, BLOOD_THRALL, NAAMAH -> tickSunlightWeakness(creature, level);
             default -> {
             }
         }

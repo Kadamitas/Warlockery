@@ -64,14 +64,15 @@ final class CreatureBehaviorParityTest {
         mob("toad", CreatureKind.TOAD, Feature.AMPHIBIOUS_AURA),
         mob("bramble_colossus", CreatureKind.BRAMBLE_COLOSSUS, Feature.HEART_EMPOWERMENT),
         mob("vampire", CreatureKind.VAMPIRE, Feature.BLOOD_DRAIN),
+        mob("blood_thrall", CreatureKind.BLOOD_THRALL, Feature.COURT_SUBORDINATE),
         mob("werewolf_hunter", CreatureKind.WEREWOLF_HUNTER, Feature.SILVER_HUNTING),
         mob("werewolf", CreatureKind.WEREWOLF, Feature.WEREWOLF_INTEGRATION)
     );
 
     @Test
     void everyAuditedMobHasAProfile() {
-        assertEquals(35, CASES.size());
-        assertEquals(35, CreatureBehaviorProfile.audited().size());
+        assertEquals(36, CASES.size());
+        assertEquals(36, CreatureBehaviorProfile.audited().size());
         assertEquals(
             CASES.stream().map(MobCase::kind).collect(java.util.stream.Collectors.toUnmodifiableSet()),
             CreatureBehaviorProfile.audited().stream()
@@ -133,6 +134,10 @@ final class CreatureBehaviorParityTest {
         final CreatureBehaviorProfile profile = profile(testCase);
         assertTrue(profile.has(testCase.requiredFeature()), testCase.requiredFeature().name());
         assertTrue(profile.features().size() >= 2);
+        if (testCase.kind() == CreatureKind.BLOOD_THRALL) {
+            assertTrue(profile.has(Feature.SUNLIGHT_WEAKNESS));
+            assertFalse(profile.has(Feature.BLOOD_DRAIN));
+        }
         switch (testCase.requiredFeature()) {
             case DUST_EMPOWERMENT, HEART_EMPOWERMENT ->
                 assertEquals(1, CreatureBehaviorRules.empoweredLevel(0, 1));

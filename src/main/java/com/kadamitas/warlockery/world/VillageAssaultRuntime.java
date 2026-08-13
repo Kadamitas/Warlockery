@@ -4,6 +4,9 @@ import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.VampireCourtEntity;
+import com.kadamitas.warlockery.entity.VampireCourtRules;
+import com.kadamitas.warlockery.entity.VampireCourtRuntime;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.transformation.VampireProgressionRules;
 import com.kadamitas.warlockery.transformation.WerewolfProgressionRules;
@@ -70,6 +73,29 @@ public final class VillageAssaultRuntime {
         LivingDeathEvent.BUS.addListener(VillageAssaultRuntime::handleDeath);
         PlayerInteractEvent.EntityInteractSpecific.BUS.addListener(VillageAssaultRuntime::handleVillagerInteraction);
         EntityJoinLevelEvent.BUS.addListener(VillageAssaultRuntime::handleEntityJoin);
+    }
+
+    public static boolean isAssignedVampireObjective(
+        final VampireCourtEntity member,
+        final LivingEntity target
+    ) {
+        if (!(target instanceof Villager villager) || !(member.level() instanceof ServerLevel level)
+            || target.level() != level || member.courtState().targetExpiresAt() <= level.getGameTime()
+            || !VampireCourtRules.mayAttackAssaultObjective(
+                member.creatureKind(), member.courtState().assaultRole(),
+                member.getPersistentData().getBooleanOr(ASSAULT_LEADER, false),
+                member.courtState().targetId().filter(target.getUUID()::equals).isPresent()
+            )) {
+            return false;
+        }
+        return matchingAssault(VillageAssaultData.get(level), member, AssaultKind.VAMPIRE)
+            .filter(state -> !state.raidersRetreating())
+            .filter(state -> eligibleObjectiveResident(state, villager))
+            .filter(state -> VillageAssaultRules.isFreshObjectiveTarget(
+                state.kind(), villager.getStringUUID(), Set.copyOf(state.objectiveVictims()),
+                isBloodDrained(villager, level.getGameTime()),
+                WerewolfVillagerInfectionRuntime.isInfected(villager)
+            )).isPresent();
     }
 
     public static void tick(final ServerLevel level) {
@@ -145,6 +171,9 @@ public final class VillageAssaultRuntime {
         }
         if (raider instanceof HobgoblinEntity goblin && kind == AssaultKind.GOBLIN) {
             goblin.joinVillageRaid(center, wave, leader);
+        }
+        if (kind == AssaultKind.VAMPIRE && raider instanceof VampireCourtEntity courtMember) {
+            if (leader) VampireCourtRuntime.markAssaultLeader(courtMember);
         }
         if (hobgoblinVariant) {
             raider.setCustomName(Component.translatable(kind == AssaultKind.VAMPIRE
@@ -306,7 +335,7 @@ public final class VillageAssaultRuntime {
         final SettlementKind settlement,
         final boolean leader
     ) {
-        final Mob raider = spawnRaider(level, position, kind);
+        final Mob raider = spawnRaider(level, position, kind, leader);
         if (raider == null) {
             return null;
         }
@@ -364,6 +393,12 @@ public final class VillageAssaultRuntime {
         return Optional.of(escaped);
     }
 
+    public static void beginMemberRetreat(final ServerLevel level, final Mob raider) {
+        if (isAssaultRaider(raider) && transformForEscape(level, raider, true).isEmpty()) {
+            navigateAway(raider, BlockPos.of(raider.getPersistentData().getLongOr(ASSAULT_CENTER, 0L)));
+        }
+    }
+
     static Optional<Mob> transformApproachForm(
         final ServerLevel level,
         final Mob approach,
@@ -386,7 +421,8 @@ public final class VillageAssaultRuntime {
         if (kind == AssaultKind.GOBLIN) {
             return Optional.empty();
         }
-        final Mob revealed = spawnRaider(level, approach.blockPosition(), kind);
+        final boolean leader = approach.getPersistentData().getBooleanOr(ASSAULT_LEADER, false);
+        final Mob revealed = spawnRaider(level, approach.blockPosition(), kind, leader);
         if (revealed == null) {
             return Optional.empty();
         }
@@ -405,12 +441,15 @@ public final class VillageAssaultRuntime {
             kind,
             state.settlement(),
             isHobgoblinVariant(approach),
-            approach.getPersistentData().getBooleanOr(ASSAULT_LEADER, false)
+            leader
         );
         revealed.getPersistentData().putLong(APPROACH_REVEAL_POSITION, approach.blockPosition().asLong());
         applyNpcPowers(revealed, kind, wave);
         replaceRaidMember(level, approach, revealed);
         approach.discard();
+        if (kind == AssaultKind.VAMPIRE) {
+            reconcileVampireCourt(level, state.center(), wave);
+        }
         if (approach instanceof Wolf) {
             closeApproachGatesIfUnused(level, state, approach);
         }
@@ -423,14 +462,32 @@ public final class VillageAssaultRuntime {
         final Villager victim,
         final float proposedDamage
     ) {
+        if (!(vampire instanceof VampireCourtEntity court)
+            || !isAssignedVampireObjective(court, victim)
+                && !assignVampireObjective(level, court, victim)) {
+            return new FeedResult(0.0F, false, bloodDrainedUntil(victim), false);
+        }
+        return feedOnAssignedVillager(level, court, victim, proposedDamage);
+    }
+
+    private static FeedResult feedOnAssignedVillager(
+        final ServerLevel level,
+        final VampireCourtEntity vampire,
+        final Villager victim,
+        final float proposedDamage
+    ) {
+        if (!isAssignedVampireObjective(vampire, victim)) {
+            return new FeedResult(0.0F, false, bloodDrainedUntil(victim), false);
+        }
         final float damage = VillageAssaultRules.nonlethalFeedingDamage(victim.getHealth(), proposedDamage);
         if (damage <= 0.0F) {
             return new FeedResult(0.0F, false, bloodDrainedUntil(victim), false);
         }
         final VillageAssaultData data = VillageAssaultData.get(level);
-        final Optional<AssaultState> active = matchingAssault(data, vampire, AssaultKind.VAMPIRE);
+        final Optional<AssaultState> active = matchingAssault(data, vampire, AssaultKind.VAMPIRE)
+            .filter(state -> !state.raidersRetreating());
         if (active.isEmpty() || !eligibleObjectiveResident(active.orElseThrow(), victim)) {
-            return new FeedResult(damage, false, bloodDrainedUntil(victim), false);
+            return new FeedResult(0.0F, false, bloodDrainedUntil(victim), false);
         }
         final AssaultState before = active.orElseThrow();
         final AssaultState recorded = before.recordObjectiveVictim(victim.getStringUUID());
@@ -442,6 +499,9 @@ public final class VillageAssaultRuntime {
         victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 600, 1));
         victim.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 600, 0));
         vampire.heal(6.0F);
+        if (vampire instanceof VampireCourtEntity leader) {
+            VampireCourtRuntime.afterAssaultFeed(leader, level.getGameTime());
+        }
         final AssaultState updated = recorded.objectiveSatisfied()
             ? recorded.beginRaiderRetreat(level.getGameTime())
             : recorded;
@@ -736,9 +796,23 @@ public final class VillageAssaultRuntime {
         final ServerLevel level,
         final AssaultState state
     ) {
+        if (state.kind() == AssaultKind.VAMPIRE && raider instanceof VampireCourtEntity courtMember) {
+            reconcileVampireCourt(level, state.center(), state.wave());
+            if (courtMember.courtState().intent() == VampireCourtRules.Intent.SEEK_SHELTER) {
+                return;
+            }
+            if (!mayUseVampireObjective(
+                raider.getPersistentData().getBooleanOr(ASSAULT_LEADER, false),
+                courtMember.creatureKind() == ArcaneCreature.CreatureKind.VAMPIRE
+            )) {
+                if (raider.getTarget() instanceof Villager) raider.setTarget(null);
+                return;
+            }
+        }
         final Optional<Villager> victim = selectObjectiveResident(level, raider, state);
         if (victim.isPresent()) {
-            raider.setTarget(victim.orElseThrow());
+            final Villager assigned = victim.orElseThrow();
+            assignVampireObjective(level, raider, assigned);
             return;
         }
         if (raider.getTarget() instanceof Villager) {
@@ -754,11 +828,38 @@ public final class VillageAssaultRuntime {
         }
     }
 
+    public static boolean assignVampireObjective(
+        final ServerLevel level,
+        final Mob raider,
+        final Villager objective
+    ) {
+        final Optional<AssaultState> active = matchingAssault(
+            VillageAssaultData.get(level), raider, AssaultKind.VAMPIRE
+        );
+        if (!(raider instanceof VampireCourtEntity courtMember)
+            || active.isEmpty() || !eligibleObjectiveResident(active.orElseThrow(), objective)
+            || !mayUseVampireObjective(
+                raider.getPersistentData().getBooleanOr(ASSAULT_LEADER, false),
+                courtMember.creatureKind() == ArcaneCreature.CreatureKind.VAMPIRE
+            )) {
+            return false;
+        }
+        VampireCourtRuntime.acceptAssaultObjective(courtMember, objective, level.getGameTime());
+        return true;
+    }
+
     static Optional<Villager> selectObjectiveResident(
         final ServerLevel level,
         final Mob raider,
         final AssaultState state
     ) {
+        if (state.kind() == AssaultKind.VAMPIRE && isAssaultRaider(raider) && !mayUseVampireObjective(
+            raider.getPersistentData().getBooleanOr(ASSAULT_LEADER, false),
+            raider instanceof VampireCourtEntity court
+                && court.creatureKind() == ArcaneCreature.CreatureKind.VAMPIRE
+        )) {
+            return Optional.empty();
+        }
         return switch (state.settlement()) {
             case HUMAN -> level.getEntitiesOfClass(
                 Villager.class,
@@ -800,6 +901,18 @@ public final class VillageAssaultRuntime {
         final var profile = VillageAssaultRules.npcPowers(kind, wave);
         if (kind == AssaultKind.VAMPIRE) {
             final Set<VampireProgressionRules.Ability> powers = profile.vampireAbilities();
+            final boolean leader = raider.getPersistentData().getBooleanOr(ASSAULT_LEADER, false)
+                && raider instanceof VampireCourtEntity court
+                && court.creatureKind() == ArcaneCreature.CreatureKind.VAMPIRE;
+            if (!leader) {
+                if (powers.contains(VampireProgressionRules.Ability.SPEED)) {
+                    raider.addEffect(new MobEffectInstance(MobEffects.SPEED, 60, 1, false, false));
+                }
+                if (powers.contains(VampireProgressionRules.Ability.SUPERNATURAL_RESILIENCE)) {
+                    raider.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 60, 0, false, false));
+                }
+                return;
+            }
             if (powers.contains(VampireProgressionRules.Ability.POISON_AND_DISEASE_IMMUNITY)) {
                 raider.removeEffect(MobEffects.POISON);
                 raider.removeEffect(MobEffects.NAUSEA);
@@ -902,7 +1015,9 @@ public final class VillageAssaultRuntime {
         }
         final AssaultKind kind = assaultKind(raider).orElse(AssaultKind.GOBLIN);
         if (kind == AssaultKind.VAMPIRE) {
-            event.setAmount(feedOnVillager(level, raider, victim, event.getAmount()).damage());
+            event.setAmount(raider instanceof VampireCourtEntity court
+                ? feedOnAssignedVillager(level, court, victim, event.getAmount()).damage()
+                : 0.0F);
         } else if (kind == AssaultKind.WEREWOLF
             && victim.getType() == EntityTypes.VILLAGER
             && level.getRandom().nextInt(8) == 0) {
@@ -919,6 +1034,9 @@ public final class VillageAssaultRuntime {
             VillageAssaultRules.WAVE_COUNT);
         final var profile = VillageAssaultRules.npcPowers(kind, wave);
         if (kind == AssaultKind.VAMPIRE
+            && raider.getPersistentData().getBooleanOr(ASSAULT_LEADER, false)
+            && raider instanceof VampireCourtEntity court
+            && court.creatureKind() == ArcaneCreature.CreatureKind.VAMPIRE
             && profile.vampireAbilities().contains(VampireProgressionRules.Ability.KNOCKBACK)) {
             final Vec3 push = event.getEntity().position().subtract(raider.position()).multiply(1.0, 0.0, 1.0);
             if (push.lengthSqr() > 1.0E-4) {
@@ -1073,16 +1191,47 @@ public final class VillageAssaultRuntime {
     private static Mob spawnRaider(
         final ServerLevel level,
         final BlockPos position,
-        final AssaultKind kind
+        final AssaultKind kind,
+        final boolean leader
     ) {
         final Entity entity = switch (kind) {
             case GOBLIN -> ModEntities.GOBLIN.get().spawn(level, position, EntitySpawnReason.PATROL);
-            case VAMPIRE -> ModEntities.ALL.get("vampire").get().spawn(
+            case VAMPIRE -> ModEntities.ALL.get(vampireRaiderId(leader)).get().spawn(
                 level, position, EntitySpawnReason.PATROL
             );
             case WEREWOLF -> ModEntities.WEREWOLF.get().spawn(level, position, EntitySpawnReason.PATROL);
         };
         return entity instanceof Mob mob ? mob : null;
+    }
+
+    static String vampireRaiderId(final boolean leader) {
+        return leader ? "vampire" : "blood_thrall";
+    }
+
+    static boolean mayUseVampireObjective(final boolean leaderMarker, final boolean fullVampire) {
+        return leaderMarker && fullVampire;
+    }
+
+    private static void reconcileVampireCourt(
+        final ServerLevel level,
+        final BlockPos center,
+        final int wave
+    ) {
+        final List<VampireCourtEntity> members = activeRaiders(level, center).stream()
+            .filter(VampireCourtEntity.class::isInstance)
+            .map(VampireCourtEntity.class::cast)
+            .filter(member -> member.getPersistentData().getIntOr(ASSAULT_WAVE, -1) == wave)
+            .limit(com.kadamitas.warlockery.entity.VampireCourtRules.MAX_COURT_MEMBERS)
+            .toList();
+        final Optional<VampireCourtEntity> leader = members.stream()
+            .filter(member -> member.creatureKind() == ArcaneCreature.CreatureKind.VAMPIRE)
+            .filter(member -> member.getPersistentData().getBooleanOr(ASSAULT_LEADER, false))
+            .findFirst();
+        if (leader.isEmpty()) return;
+        VampireCourtRuntime.markAssaultLeader(leader.orElseThrow());
+        members.stream()
+            .filter(member -> member.creatureKind() == ArcaneCreature.CreatureKind.BLOOD_THRALL)
+            .forEach(member -> VampireCourtRuntime.bindAssaultMember(member, leader.orElseThrow()));
     }
 
     private static Optional<AssaultKind> assaultKind(final Entity entity) {
