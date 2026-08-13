@@ -9,6 +9,7 @@ import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
 import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
 import com.kadamitas.warlockery.entity.NamiLifeGameTests;
+import com.kadamitas.warlockery.entity.NaamahCourtGameTests;
 import com.kadamitas.warlockery.item.CircleTalismanGameTests;
 import com.kadamitas.warlockery.item.BroomFlightGameTests;
 import com.kadamitas.warlockery.item.BroomMotionGameTests;
@@ -256,6 +257,14 @@ public final class ModGameTests {
             () -> NamiLifeGameTests::greetingBuildsBoundedTrust);
         REGISTRY.register("nami_ward_protects_spouse_and_releases_stale_threat",
             () -> NamiLifeGameTests::wardProtectsSpouseAndReleasesStaleThreat);
+        REGISTRY.register("naamah_court_phases_latch_and_recover",
+            () -> NaamahCourtGameTests::courtPhasesLatchAndRecover);
+        REGISTRY.register("naamah_trial_defeat_concludes_audience",
+            () -> NaamahCourtGameTests::trialDefeatConcludesAudience);
+        REGISTRY.register("naamah_sunlight_water_and_singular_lifecycle",
+            () -> NaamahCourtGameTests::sunlightWaterAndSingularLifecycle);
+        REGISTRY.register("naamah_court_releases_invalid_targets",
+            () -> NaamahCourtGameTests::courtReleasesInvalidTargets);
     }
 
     private ModGameTests() {

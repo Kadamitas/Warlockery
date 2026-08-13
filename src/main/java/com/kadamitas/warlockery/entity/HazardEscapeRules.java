@@ -14,7 +14,7 @@ public final class HazardEscapeRules {
     }
 
     public static boolean isFireResistant(final CreatureKind kind) {
-        return kind == CreatureKind.NAAMAH || kind.isDemonic();
+        return kind.isDemonic();
     }
 
     public static boolean shouldEscape(final CreatureKind kind, final Hazard hazard) {

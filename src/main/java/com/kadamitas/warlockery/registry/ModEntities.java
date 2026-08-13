@@ -230,7 +230,6 @@ public final class ModEntities {
     private static EntityType<?> createNaamah(final EntityRegistration registration) {
         return EntityType.Builder.of(NaamahEntity::new, MobCategory.MONSTER)
             .sized(registration.width(), registration.height())
-            .fireImmune()
             .notInPeaceful()
             .build(REGISTRY.key(registration.id()));
     }
@@ -307,8 +306,10 @@ public final class ModEntities {
                 .add(Attributes.MAX_HEALTH, AbyssalRegentRules.MAX_HEALTH)
                 .add(Attributes.ATTACK_DAMAGE, AbyssalRegentRules.ATTACK_DAMAGE)
                 .add(Attributes.ARMOR, AbyssalRegentRules.ARMOR);
-            case "thorned_pursuer", "emberhorn_archfiend", "naamah" ->
+            case "thorned_pursuer", "emberhorn_archfiend" ->
                 attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11).add(Attributes.ARMOR, 8);
+            case "naamah" -> attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11)
+                .add(Attributes.ARMOR, 8).add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
             case "hedge_crone", "demon" -> attributes.add(Attributes.MAX_HEALTH, 60).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.ARMOR, 6);
             case "werewolf", "feral_lycan", "lycan_villager" ->
                 attributes.add(Attributes.MAX_HEALTH, 42).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.MOVEMENT_SPEED, 0.32);

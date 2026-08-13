@@ -77,6 +77,13 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         behavior.tick(this, level);
+        tickSpecializedActivity(level);
+    }
+
+    /**
+     * Narrow specialization seam for mobs whose runtime replaces the generic tactical and ambient layers.
+     */
+    protected void tickSpecializedActivity(final ServerLevel level) {
         TacticalCombatRuntime.tick(this, level, kind);
         AmbientActivityRuntime.tick(this, level, kind);
     }
