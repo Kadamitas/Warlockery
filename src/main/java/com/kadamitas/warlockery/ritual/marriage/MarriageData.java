@@ -143,7 +143,7 @@ public final class MarriageData extends SavedData {
         }
 
         public boolean isNami() {
-            return "nami".equals(partnerType) || "naamah".equals(partnerType);
+            return "nami".equals(partnerType);
         }
     }
 }

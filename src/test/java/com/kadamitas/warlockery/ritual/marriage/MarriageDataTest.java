@@ -33,6 +33,19 @@ final class MarriageDataTest {
     }
 
     @Test
+    void onlyNamiBondsAreRecognizedAsDemonMarriages() {
+        final UUID player = UUID.randomUUID();
+        final UUID partner = UUID.randomUUID();
+
+        assertTrue(new MarriageData.Bond(
+            player.toString(), partner.toString(), "nami", "Mara"
+        ).isNami());
+        assertFalse(new MarriageData.Bond(
+            player.toString(), partner.toString(), "naamah", "Mara"
+        ).isNami());
+    }
+
+    @Test
     void oneSpouseLimitAndDivorceAreEnforced() {
         final MarriageData marriages = new MarriageData();
         final UUID first = UUID.randomUUID();

@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:spouse_rejects_occupied_furnace_without_taking_meat",
+  "environment": "minecraft:default",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 100
+}
+
+

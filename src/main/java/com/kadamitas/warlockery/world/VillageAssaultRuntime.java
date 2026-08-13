@@ -59,6 +59,7 @@ public final class VillageAssaultRuntime {
     private static final String ESCAPED_FORM = "WarlockeryAssaultEscapeForm";
     private static final String ESCAPE_EXPIRES = "WarlockeryAssaultEscapeExpires";
     private static final String APPROACH_FORM = "WarlockeryAssaultApproachForm";
+    static final String APPROACH_REVEAL_POSITION = "WarlockeryAssaultApproachRevealPosition";
     private static final double ASSAULT_SEARCH_RADIUS = 192.0;
     private static final double TARGET_SEARCH_RADIUS = 64.0;
 
@@ -376,14 +377,12 @@ public final class VillageAssaultRuntime {
             || !isAssaultRaider(approach)) {
             return Optional.empty();
         }
-        final int approachRadius = SettlementFortificationRuntime.approachRadius(
-            level,
-            state.center(),
-            fortificationKind(state.settlement())
-        );
-        final int revealRadius = Math.max(1, approachRadius - 2);
-        if (!forced && horizontalDistanceSqr(approach, state.center())
-            > (double) revealRadius * revealRadius) {
+        final int revealRadius = 1;
+        final BlockPos revealPosition = approach.blockPosition();
+        final long revealX = revealPosition.getX() - state.center().getX();
+        final long revealZ = revealPosition.getZ() - state.center().getZ();
+        final long revealDistance = revealX * revealX + revealZ * revealZ;
+        if (!forced && revealDistance > (double) revealRadius * revealRadius) {
             return Optional.empty();
         }
         final AssaultKind kind = assaultKind(approach).orElse(AssaultKind.GOBLIN);
@@ -411,6 +410,7 @@ public final class VillageAssaultRuntime {
             isHobgoblinVariant(approach),
             approach.getPersistentData().getBooleanOr(ASSAULT_LEADER, false)
         );
+        revealed.getPersistentData().putLong(APPROACH_REVEAL_POSITION, approach.blockPosition().asLong());
         applyNpcPowers(revealed, kind, wave);
         replaceRaidMember(level, approach, revealed);
         approach.discard();
@@ -657,9 +657,12 @@ public final class VillageAssaultRuntime {
         );
         if (approach instanceof Bat bat) {
             bat.setResting(false);
-            final Vec3 direction = flightTarget.subtract(bat.position());
+            final Vec3 stagedTarget = bat.getY() < flightY - 0.25
+                ? new Vec3(bat.getX(), flightY, bat.getZ())
+                : flightTarget;
+            final Vec3 direction = stagedTarget.subtract(bat.position());
             if (direction.lengthSqr() > 1.0E-4) {
-                bat.setDeltaMovement(direction.normalize().scale(0.42));
+                bat.setDeltaMovement(direction.scale(Math.min(0.42 / direction.length(), 1.0)));
             }
             return;
         }
@@ -676,6 +679,13 @@ public final class VillageAssaultRuntime {
             groundTarget.getZ() + 0.5,
             1.25
         );
+        final Vec3 groundDirection = Vec3.atBottomCenterOf(groundTarget)
+            .subtract(approach.position())
+            .multiply(1.0, 0.0, 1.0);
+        if (groundDirection.lengthSqr() > 1.0E-4) {
+            final Vec3 steering = groundDirection.normalize().scale(0.16);
+            approach.setDeltaMovement(steering.x, approach.getDeltaMovement().y, steering.z);
+        }
     }
 
     private static void tickEscapeForm(

@@ -1,6 +1,8 @@
 # Cross-mod compatibility
 
-This supporter compatibility build targets NeoForge 26.2.0.45-beta for Minecraft 26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and NeoForge capabilities.
+Warlockery `1.4.0-LlaGuiT0-26.2.0.45` targets Minecraft 26.2, Java 25, and NeoForge 26.2.0.45-beta exactly. Matching Warlockery 1.4.0 releases target Forge 65.1.1, NeoForge 26.2.0.59, and Fabric Loader 0.19.3 with Fabric API 0.157.0+26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and NeoForge capabilities.
+
+The `1.4.0-LlaGuiT0-26.2.0.45` supporter build is NeoForge-only for LlaGuiT0's modpack. Its NeoForge dependency is intentionally exact: `[26.2.0.45-beta,26.2.0.46-beta)`. It does not imply Forge or Fabric artifacts.
 
 ## Tag strategy
 

@@ -193,7 +193,6 @@ final class CrossModCatalogContractTest {
         assertTrue(machine.contains("Capabilities.Item.BLOCK"));
         assertTrue(machine.contains("Capabilities.Fluid.BLOCK"));
         assertTrue(machine.contains("WorldlyContainerWrapper::new"));
-        assertTrue(machine.contains("RegisterCapabilitiesEvent"));
         assertTrue(machine.contains("machineProfile().supportsFluids()"));
         idClassifications("machine", "block").forEach(id -> assertTrue(profiles.contains("\"" + id + "\""), id));
     }

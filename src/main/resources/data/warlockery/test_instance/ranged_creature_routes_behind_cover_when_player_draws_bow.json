@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:ranged_creature_routes_behind_cover_when_player_draws_bow",
+  "environment": "minecraft:default",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 100
+}
+

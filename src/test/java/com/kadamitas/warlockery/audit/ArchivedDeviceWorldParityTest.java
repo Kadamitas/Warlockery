@@ -145,7 +145,7 @@ final class ArchivedDeviceWorldParityTest {
         entry("Lycanthropy", WerewolfProgressionRules.class, "complete levelled trials and powers"),
         entry("Vampire", SupernaturalProgressionRuntime.class, "blood reserve, sunlight weakness, feeding, and powers"),
         entry("Vampirism", VampireProgressionRules.class, "complete torn-page-gated levelled progression"),
-        entry("Lilith", NaamahEntity.class, "renamed Naamah initiation, combat, marriage, and respawn"),
+        entry("Lilith", NaamahEntity.class, "renamed Naamah initiation, combat, trial, and vampire progression"),
         entry("Village Guards", VillageGuardRuntime.class, "village defense and hunter integration"),
         entry("Winged Monkeys", CreatureBehaviorRuntime.class, "renamed Storm Simians with flying companion behavior"),
         entry("Reflection", CreatureBehaviorRuntime.class, "copied equipment, attributes, effects, and phased combat"),

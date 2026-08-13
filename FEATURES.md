@@ -82,8 +82,8 @@ A hollow 3 by 3 ring of eight Ritual Chalk marks acts as a Listening Ring. Leave
 - **Rite of Infusion: Light**: Infuses those in the circle with radiant sight.
 - **Rite of Infusion: Sky**: Infuses those in the circle with the grace of flight.
 - **Rite of Manifestation**: Temporarily manifests spirit walkers as visible, mobile ghosts.
-- **Rite of Handfasting**: Binds two players or a player and Naamah with golden chalk, two rings, and offerings that grant shared proximity benefits.
-- **Rite of Severance**: Ends the caster's current marriage and releases a demon spouse from her vow.
+- **Rite of Handfasting**: Binds two players or a player and an unmarried Nami with golden chalk, two rings, and offerings that grant shared proximity benefits.
+- **Rite of Severance**: Ends the caster's current marriage and releases a Nami spouse from her vow.
 - **Rite of Nature's Power**: Restores life and strength across a barren area.
 - **Rite of Necromancy: Necromantic Stone**: Creates a Necromantic Stone under the night sky.
 - **Rite of Broken Earth**: Tears open the earth around the ritual focus.
@@ -212,8 +212,8 @@ Right-clicking air binds an eligible protection, mending, or guard doll to the u
 - **Werewolf initiation**: Complete Hex of the Wolf on a bound mortal during its listed moon and coven conditions.
 - **Wolf Altar progression**: Complete full-moon Wolf Altar trials with the required head and offering; reaching level ten awards the Horn of the Hunt.
 - **Werewolf cure**: Bind a sympathetic imprint to the werewolf and complete Rite of Hexbreaking: Lycanthropy.
-- **Marriage**: Stand with another unmarried player or Naamah inside the prepared golden circle and complete the Rite of Handfasting.
-- **Naamah marriage**: A married Naamah claims one of fifteen world-unique demon names, follows her spouse, casts harmless-to-terrain combat magic, and returns to the spouse's bed at one health when defeated.
+- **Marriage**: Stand with another unmarried player or an unmarried Nami inside the prepared golden circle and complete the Rite of Handfasting.
+- **Nami marriage**: A married Nami claims one of fifteen world-unique names, follows her spouse, casts harmless-to-terrain combat magic, and returns to the spouse's bed at one health when defeated. Naamah can never marry.
 - **Divorce**: Offer a wedding ring, shears, and Foul Fume to the Rite of Severance to clear the only active marriage bond.
 - **Hexing link**: Bind a Hexing Doll to a target, sneak-use it to select an action, then use it to apply that action while the target is available.
 - **Sympathetic targeting**: Use a Sympathetic Vial on a creature, then place the bound vial where a ritual asks for an imprint.

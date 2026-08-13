@@ -93,6 +93,8 @@ public abstract class WingedArcaneMob extends Monster implements ArcaneCreature,
         super.customServerAiStep(level);
         behavior.tick(this, level);
         customWingedAiStep(level);
+        TacticalCombatRuntime.tick(this, level, kind);
+        AmbientActivityRuntime.tick(this, level, kind);
     }
 
     protected void customWingedAiStep(final ServerLevel level) {
@@ -122,6 +124,7 @@ public abstract class WingedArcaneMob extends Monster implements ArcaneCreature,
     public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
         final boolean hurt = super.hurtServer(level, source, amount);
         if (hurt) {
+            TacticalCombatRuntime.rememberIncomingThreat(this, level, source);
             behavior.afterHurt(this, level, source, amount);
         }
         return hurt;
