@@ -241,6 +241,27 @@ public final class VillageAssaultGameTests {
             return state.getBlock() instanceof FenceGateBlock && !state.getValue(FenceGateBlock.OPEN);
         }), "approach fixture must start with every fortification gate closed");
 
+        // Barrier shell so the live bat and wolf approach forms cannot wander out of the
+        // ticking area and batch neighbors cannot wander into the reveal region. The shell
+        // sits at horizontal radius 3, outside the radius-1 fort and the center +/-2
+        // terrain snapshot, so gate and terrain assertions are untouched.
+        final int shellRadius = 3;
+        final int shellTop = layout.deckY() + 5;
+        for (int dx = -shellRadius; dx <= shellRadius; dx++) {
+            for (int dz = -shellRadius; dz <= shellRadius; dz++) {
+                final boolean edge = Math.abs(dx) == shellRadius || Math.abs(dz) == shellRadius;
+                for (int y = center.getY(); y <= shellTop; y++) {
+                    if (edge || y == shellTop) {
+                        level.setBlock(
+                            new BlockPos(center.getX() + dx, y, center.getZ() + dz),
+                            Blocks.BARRIER.defaultBlockState(),
+                            3
+                        );
+                    }
+                }
+            }
+        }
+
         final Map<BlockPos, BlockState> terrainBefore = snapshotBlocks(
             helper,
             center.offset(-2, -1, -2),
@@ -266,6 +287,10 @@ public final class VillageAssaultGameTests {
         );
         helper.assertTrue(bat instanceof Bat && wolf instanceof Wolf,
             "vampire and werewolf assaults must begin as bat and wolf approach forms");
+        // Start the bat at cruising height so it does not spend dozens of ticks climbing
+        // while vanilla Bat AI wanders it into walls or the revealed werewolf's reach.
+        // The horizontal wall crossing under test is unchanged.
+        bat.snapTo(bat.getX(), layout.deckY() + 3.0, bat.getZ(), bat.getYRot(), bat.getXRot());
         final long gameTime = level.getGameTime();
         final AssaultState state = new AssaultState(
             center,
