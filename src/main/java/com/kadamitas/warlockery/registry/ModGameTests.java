@@ -8,6 +8,7 @@ import com.kadamitas.warlockery.entity.TacticalCombatGameTests;
 import com.kadamitas.warlockery.entity.VampireCourtGameTests;
 import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
+import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
 import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
@@ -311,6 +312,26 @@ public final class ModGameTests {
             () -> LycanPackGameTests::lycanActionsCancelAcrossFailureSaveAndReload);
         REGISTRY.register("lycan_population_work_stays_within_declared_caps",
             () -> LycanPackGameTests::lycanPopulationWorkStaysWithinDeclaredCaps);
+        REGISTRY.register("hunter_identity_loadout_and_raid_containment",
+            () -> WerewolfHunterGameTests::hunterIdentityLoadoutAndRaidContainment);
+        REGISTRY.register("hunter_warrant_matrix_and_evidence_expiry",
+            () -> WerewolfHunterGameTests::hunterWarrantMatrixAndEvidenceExpiry);
+        REGISTRY.register("hunter_warns_tracks_and_returns_to_anchor",
+            () -> WerewolfHunterGameTests::hunterWarnsTracksAndReturnsToAnchor);
+        REGISTRY.register("hunter_crossbow_consumes_finite_silver_ammunition",
+            () -> WerewolfHunterGameTests::hunterCrossbowConsumesFiniteSilverAmmunition);
+        REGISTRY.register("hunter_protected_crossfire_cancels_shot",
+            () -> WerewolfHunterGameTests::hunterProtectedCrossfireCancelsShot);
+        REGISTRY.register("hunter_retreat_search_and_hazard_preemption_are_bounded",
+            () -> WerewolfHunterGameTests::hunterRetreatSearchAndHazardPreemptionAreBounded);
+        REGISTRY.register("hunter_resupply_caps_without_duplication",
+            () -> WerewolfHunterGameTests::hunterResupplyCapsWithoutDuplication);
+        REGISTRY.register("silver_hunt_transaction_deduplicates_and_rolls_back",
+            () -> WerewolfHunterGameTests::silverHuntTransactionDeduplicatesAndRollsBack);
+        REGISTRY.register("hunter_reload_reconciles_semantic_state_only",
+            () -> WerewolfHunterGameTests::hunterReloadReconcilesSemanticStateOnly);
+        REGISTRY.register("hunter_route_failures_back_off_and_release",
+            () -> WerewolfHunterGameTests::hunterRouteFailuresBackOffAndRelease);
     }
 
     private ModGameTests() {

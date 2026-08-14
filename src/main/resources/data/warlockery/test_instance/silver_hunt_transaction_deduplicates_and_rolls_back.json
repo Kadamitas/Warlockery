@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:silver_hunt_transaction_deduplicates_and_rolls_back",
+  "environment": "warlockery:werewolf_hunter_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

@@ -41,6 +41,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "lycan_pack_isolated.json"
     );
+    private static final Path WEREWOLF_HUNTER_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "werewolf_hunter_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -96,6 +100,18 @@ final class GameTestInstanceContractTest {
         "lycan_actions_cancel_across_failure_save_and_reload",
         "lycan_population_work_stays_within_declared_caps"
     );
+    private static final Set<String> ISOLATED_WEREWOLF_HUNTER = Set.of(
+        "hunter_identity_loadout_and_raid_containment",
+        "hunter_warrant_matrix_and_evidence_expiry",
+        "hunter_warns_tracks_and_returns_to_anchor",
+        "hunter_crossbow_consumes_finite_silver_ammunition",
+        "hunter_protected_crossfire_cancels_shot",
+        "hunter_retreat_search_and_hazard_preemption_are_bounded",
+        "hunter_resupply_caps_without_duplication",
+        "silver_hunt_transaction_deduplicates_and_rolls_back",
+        "hunter_reload_reconciles_semantic_state_only",
+        "hunter_route_failures_back_off_and_release"
+    );
 
     @Test
     void everyGameTestRegistrationHasOneMatchingEmptyTemplateFixture() {
@@ -149,6 +165,22 @@ final class GameTestInstanceContractTest {
             "all eight exact F04 Lycan Pack GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactWerewolfHunterFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(WEREWOLF_HUNTER_ENVIRONMENT),
+            "the isolated F06 Werewolf Hunter environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(WEREWOLF_HUNTER_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F06 Werewolf Hunter environment must not mutate shared world state");
+        assertEquals(10, ISOLATED_WEREWOLF_HUNTER.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_WEREWOLF_HUNTER),
+            "all ten exact F06 Werewolf Hunter GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -160,7 +192,9 @@ final class GameTestInstanceContractTest {
                     ? "warlockery:lycan_villager_isolated"
                     : ISOLATED_LYCAN_PACK.contains(registration.id())
                         ? "warlockery:lycan_pack_isolated"
-                        : "minecraft:default",
+                        : ISOLATED_WEREWOLF_HUNTER.contains(registration.id())
+                            ? "warlockery:werewolf_hunter_isolated"
+                            : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

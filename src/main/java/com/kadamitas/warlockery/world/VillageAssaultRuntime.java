@@ -210,10 +210,12 @@ public final class VillageAssaultRuntime {
         if (VillageGuardRuntime.isSettlementGuard(entity)) {
             return true;
         }
-        return entity instanceof ArcaneCreature creature
-            && (creature.creatureKind() == ArcaneCreature.CreatureKind.WEREWOLF_HUNTER
-                || creature.creatureKind() == ArcaneCreature.CreatureKind.FORGEWARDEN
-                || creature.creatureKind() == ArcaneCreature.CreatureKind.STONEBROKER);
+        return entity instanceof ArcaneCreature creature && guardKindQualifies(creature.creatureKind());
+    }
+
+    public static boolean guardKindQualifies(final ArcaneCreature.CreatureKind kind) {
+        return kind == ArcaneCreature.CreatureKind.FORGEWARDEN
+            || kind == ArcaneCreature.CreatureKind.STONEBROKER;
     }
 
     public static boolean isBloodDrained(final Villager villager, final long gameTime) {

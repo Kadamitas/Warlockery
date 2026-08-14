@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:hunter_warns_tracks_and_returns_to_anchor",
+  "environment": "warlockery:werewolf_hunter_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

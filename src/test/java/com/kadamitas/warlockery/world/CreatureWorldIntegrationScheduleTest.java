@@ -41,6 +41,22 @@ final class CreatureWorldIntegrationScheduleTest {
     }
 
     @Test
+    void silverHuntTransactionReportsStayBoundedToTwoParticipants() {
+        assertEquals(2, com.kadamitas.warlockery.entity.WerewolfHunterRules.HUNT_PARTICIPANT_CONSTRUCTIONS,
+            "one hunter plus one Werewolf quarry, never an ordinary Pillager companion");
+        final CreatureWorldIntegration.SilverHuntReport rejected =
+            new CreatureWorldIntegration.SilverHuntReport(false, java.util.Optional.empty(), false, 0);
+        assertFalse(rejected.reserved());
+        assertFalse(rejected.committed());
+        assertEquals(0, rejected.constructedParticipants());
+        final CreatureWorldIntegration.SilverHuntReport committed =
+            new CreatureWorldIntegration.SilverHuntReport(true, java.util.Optional.of(new UUID(1L, 1L)), true, 2);
+        assertTrue(committed.reserved() && committed.committed());
+        assertEquals(com.kadamitas.warlockery.entity.WerewolfHunterRules.HUNT_PARTICIPANT_CONSTRUCTIONS,
+            committed.constructedParticipants());
+    }
+
+    @Test
     void retentionAndTargetTiesResolveByUnsignedUuidOrder() {
         final List<ArmingCandidate> tied = List.of(
             new ArmingCandidate(new UUID(0L, 9L), 4.0D),

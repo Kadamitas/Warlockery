@@ -392,16 +392,78 @@ public final class CreatureWorldIntegration {
 
     private static void spawnSilverHunt(final ServerLevel level, final ServerPlayer player) {
         final BlockPos origin = surface(level, player.blockPosition().offset(20 + level.getRandom().nextInt(12), 0, level.getRandom().nextInt(25) - 12));
-        final WerewolfEntity werewolf = ModEntities.WEREWOLF.get().spawn(level, origin, EntitySpawnReason.EVENT);
-        final WerewolfHunterEntity hunter = ModEntities.WEREWOLF_HUNTER.get().spawn(level, surface(level, origin.offset(9, 0, 2)), EntitySpawnReason.PATROL);
-        final Pillager pillager = EntityTypes.PILLAGER.spawn(level, surface(level, origin.offset(11, 0, -2)), EntitySpawnReason.PATROL);
-        if (werewolf == null || hunter == null) return;
-        hunter.setTarget(werewolf);
-        werewolf.setTarget(hunter);
-        if (pillager != null) {
-            equipSilver(pillager);
-            pillager.setTarget(werewolf);
+        runSilverHuntTransaction(level, origin, false);
+    }
+
+    public static SilverHuntReport runSilverHuntTransaction(
+        final ServerLevel level,
+        final BlockPos origin,
+        final boolean injectConstructionFailure
+    ) {
+        final long now = level.getGameTime();
+        final SilverHuntData hunts = SilverHuntData.get(level);
+        hunts.reconcile(now);
+        final Optional<UUID> reserved = hunts.reserve(origin, now);
+        if (reserved.isEmpty()) {
+            return new SilverHuntReport(false, Optional.empty(), false, 0);
         }
+        final UUID huntId = reserved.orElseThrow();
+        final int[] spawnReadBudget = {com.kadamitas.warlockery.entity.WerewolfHunterRules.MAX_SPAWN_BLOCK_READS};
+        final Optional<BlockPos> quarrySite = findHuntSpawnSite(level, origin, spawnReadBudget);
+        final Optional<BlockPos> hunterSite = findHuntSpawnSite(level, origin.offset(9, 0, 2), spawnReadBudget);
+        if (quarrySite.isEmpty() || hunterSite.isEmpty()) {
+            hunts.discard(huntId);
+            return new SilverHuntReport(true, Optional.of(huntId), false, 0);
+        }
+        final WerewolfEntity quarry = ModEntities.WEREWOLF.get()
+            .spawn(level, quarrySite.orElseThrow(), EntitySpawnReason.EVENT);
+        final WerewolfHunterEntity hunter = injectConstructionFailure
+            ? null
+            : ModEntities.WEREWOLF_HUNTER.get().spawn(
+                level, hunterSite.orElseThrow(), EntitySpawnReason.EVENT
+            );
+        final int constructed = (quarry == null ? 0 : 1) + (hunter == null ? 0 : 1);
+        if (quarry == null || hunter == null) {
+            if (quarry != null) quarry.discard();
+            if (hunter != null) hunter.discard();
+            hunts.discard(huntId);
+            return new SilverHuntReport(true, Optional.of(huntId), false, constructed);
+        }
+        com.kadamitas.warlockery.entity.WerewolfHunterRuntime.assignHuntEvent(
+            hunter, huntId, quarry.getUUID(), origin, now
+        );
+        hunts.activate(huntId, hunter.getUUID(), quarry.getUUID());
+        return new SilverHuntReport(true, Optional.of(huntId), true, constructed);
+    }
+
+    static Optional<BlockPos> findHuntSpawnSite(
+        final ServerLevel level,
+        final BlockPos around,
+        final int[] readBudget
+    ) {
+        for (final BlockPos candidate : List.of(
+            around, around.offset(2, 0, 0), around.offset(-2, 0, 0),
+            around.offset(0, 0, 2), around.offset(0, 0, -2)
+        )) {
+            if (readBudget[0] < 3) return Optional.empty();
+            if (!level.hasChunkAt(candidate)) continue;
+            readBudget[0] -= 3;
+            final BlockPos site = surface(level, candidate);
+            if (level.getBlockState(site.below()).blocksMotion()
+                && level.getBlockState(site).getCollisionShape(level, site).isEmpty()
+                && level.getBlockState(site.above()).getCollisionShape(level, site.above()).isEmpty()) {
+                return Optional.of(site);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public record SilverHuntReport(
+        boolean reserved,
+        Optional<UUID> huntId,
+        boolean committed,
+        int constructedParticipants
+    ) {
     }
 
     public static ArmingReport armNearbyPillagers(final ServerLevel level, final ServerPlayer player) {
@@ -431,6 +493,7 @@ public final class CreatureWorldIntegration {
         });
         final List<Pillager> retainedPillagers = rawPillagers.stream()
             .filter(LivingEntity::isAlive)
+            .filter(candidate -> !(candidate instanceof WerewolfHunterEntity))
             .sorted(Comparator.<Pillager>comparingDouble(player::distanceToSqr)
                 .thenComparing(Pillager::getUUID, LycanPackRules.unsignedUuidOrder()))
             .limit(MAX_RETAINED_ARMING)
