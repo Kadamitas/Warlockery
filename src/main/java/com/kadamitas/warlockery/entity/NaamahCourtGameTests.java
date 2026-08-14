@@ -649,9 +649,18 @@ public final class NaamahCourtGameTests {
                     final NaamahEntity resting = (NaamahEntity) helper.spawn(
                         ModEntities.ALL.get("naamah").get(), new BlockPos(3, 1, 3), EntitySpawnReason.EVENT
                     );
+                    resting.setNoAi(true);
                     for (int x = 2; x <= 4; x++) {
                         for (int z = 2; z <= 4; z++) {
                             helper.setBlock(new BlockPos(x, 4, z), Blocks.STONE);
+                        }
+                    }
+                    for (int x = 1; x <= 5; x++) {
+                        for (int z = 1; z <= 5; z++) {
+                            if (x != 1 && x != 5 && z != 1 && z != 5) continue;
+                            for (int y = 1; y <= 3; y++) {
+                                helper.setBlock(new BlockPos(x, y, z), Blocks.STONE);
+                            }
                         }
                     }
                     final BlockPos restRoof = helper.absolutePos(new BlockPos(3, 4, 3));
@@ -666,9 +675,10 @@ public final class NaamahCourtGameTests {
                         resting.setDeltaMovement(0.0D, 0.0D, 0.0D);
                         resting.getNavigation().stop();
                         resting.setTarget(null);
-                        resting.setCourtState(resting.courtState()
+                        resting.setCourtState(NaamahCourtState.empty()
                             .withAnchor(helper.getLevel().dimension().identifier().toString(), resting.blockPosition())
                             .withSchedule(restNow + 100L, restNow + 100L, restNow + 100L, restNow, restNow));
+                        resting.setNoAi(false);
                         final var restPosition = resting.position();
                         resting.clearFire();
                         helper.assertFalse(helper.getLevel().canSeeSky(resting.blockPosition()),
