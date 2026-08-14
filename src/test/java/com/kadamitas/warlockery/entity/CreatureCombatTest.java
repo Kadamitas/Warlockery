@@ -40,6 +40,28 @@ final class CreatureCombatTest {
     }
 
     @Test
+    void typedAntiWerewolfDamageBypassesOnlyGenericResistanceWithoutSilverDoubling() {
+        assertEquals(10.0F, CreatureCombat.adjustedDamage(
+            CreatureKind.WEREWOLF, 10.0F, false, false, false, false, true, true
+        ));
+        assertEquals(10.0F, CreatureCombat.adjustedDamage(
+            CreatureKind.LYCAN_VILLAGER, 10.0F, false, false, false, false, true, true
+        ));
+        assertEquals(20.0F, CreatureCombat.adjustedDamage(
+            CreatureKind.WEREWOLF, 10.0F, true, false, false, false, true, true
+        ), "silver keeps its own doubling even when the typed source is also present");
+        assertEquals(1.5F, CreatureCombat.adjustedDamage(
+            CreatureKind.VAMPIRE, 10.0F, false, false, false, false, false, true
+        ), "the typed source must not weaken non-werewolf supernatural targets");
+        assertEquals(10.0F, CreatureCombat.adjustedDamage(
+            CreatureKind.DEMON, 10.0F, false, false, false, false, false, true
+        ), "non-supernatural kinds keep their ordinary full damage with or without the typed source");
+        assertEquals(1.5F, CreatureCombat.adjustedDamage(
+            CreatureKind.WEREWOLF, 10.0F, false, false, false, false, true, false
+        ), "without the typed source ordinary magic keeps the generic reduction");
+    }
+
+    @Test
     void poisonAndWitherPersistThroughNullification() {
         assertTrue(CreatureCombat.persistsThroughNullification(net.minecraft.world.effect.MobEffects.POISON));
         assertTrue(CreatureCombat.persistsThroughNullification(net.minecraft.world.effect.MobEffects.WITHER));

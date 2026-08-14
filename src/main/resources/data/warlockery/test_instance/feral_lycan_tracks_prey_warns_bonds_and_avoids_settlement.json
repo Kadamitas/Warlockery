@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:feral_lycan_tracks_prey_warns_bonds_and_avoids_settlement",
+  "environment": "warlockery:lycan_pack_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

@@ -4,9 +4,11 @@ import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.LycanPackRuntime;
 import com.kadamitas.warlockery.entity.VampireCourtEntity;
 import com.kadamitas.warlockery.entity.VampireCourtRules;
 import com.kadamitas.warlockery.entity.VampireCourtRuntime;
+import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.transformation.VampireProgressionRules;
 import com.kadamitas.warlockery.transformation.WerewolfProgressionRules;
@@ -810,6 +812,14 @@ public final class VillageAssaultRuntime {
             }
         }
         final Optional<Villager> victim = selectObjectiveResident(level, raider, state);
+        if (state.kind() == AssaultKind.WEREWOLF
+            && raider instanceof WerewolfEntity werewolf
+            && LycanPackRuntime.exactWerewolf(werewolf)) {
+            LycanPackRuntime.coordinateAssaultPressure(
+                level, werewolf, victim.orElse(null), state.center()
+            );
+            return;
+        }
         if (victim.isPresent()) {
             final Villager assigned = victim.orElseThrow();
             assignVampireObjective(level, raider, assigned);

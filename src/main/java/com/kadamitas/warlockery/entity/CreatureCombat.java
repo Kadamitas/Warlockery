@@ -50,7 +50,8 @@ public final class CreatureCombat {
                 wooden,
                 holy,
                 creature instanceof SpiritMob,
-                isWerewolfTarget(event.getEntity())
+                isWerewolfTarget(event.getEntity()),
+                LycanDamageTypes.isHarmWerewolves(event.getSource())
             ));
             applyPairedPatronProtection(event, creature.creatureKind());
         } else if (silver && isWerewolfTarget(event.getEntity())) {
@@ -90,22 +91,25 @@ public final class CreatureCombat {
         final boolean holy,
         final boolean spirit
     ) {
-        return adjustedDamage(kind, baseDamage, silver, wooden, holy, spirit, isWerewolfKind(kind));
+        return adjustedDamage(kind, baseDamage, silver, wooden, holy, spirit, isWerewolfKind(kind), false);
     }
 
-    private static float adjustedDamage(
+    public static float adjustedDamage(
         final ArcaneCreature.CreatureKind kind,
         final float baseDamage,
         final boolean silver,
         final boolean wooden,
         final boolean holy,
         final boolean spirit,
-        final boolean werewolfTarget
+        final boolean werewolfTarget,
+        final boolean antiWerewolfTyped
     ) {
         final boolean silverWeakness = silver && werewolfTarget;
         final boolean woodenWeakness = wooden && kind.isWoodenVulnerable();
         final boolean consecratedWeakness = holy && (kind.isUndead() || kind.isDemonic() || spirit);
-        float damage = kind.isSupernatural() && !silverWeakness && !woodenWeakness && !consecratedWeakness
+        final boolean typedBypass = antiWerewolfTyped && werewolfTarget;
+        float damage = kind.isSupernatural()
+            && !silverWeakness && !woodenWeakness && !consecratedWeakness && !typedBypass
             ? Math.max(0.25F, baseDamage * 0.15F)
             : baseDamage;
         if (silverWeakness) damage *= 2.0F;

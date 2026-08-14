@@ -7,6 +7,7 @@ import com.kadamitas.warlockery.dream.SpiritWorldGameTests;
 import com.kadamitas.warlockery.entity.TacticalCombatGameTests;
 import com.kadamitas.warlockery.entity.VampireCourtGameTests;
 import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
+import com.kadamitas.warlockery.entity.LycanPackGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
 import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
@@ -294,6 +295,22 @@ public final class ModGameTests {
         REGISTRY.register("lycan_reload_discards_transient_combat_claims", () -> LycanVillagerGameTests::reloadDiscardsTransientCombatClaims);
         REGISTRY.register("lycan_hazard_wins_end_of_tick_movement", () -> LycanVillagerGameTests::hazardWinsEndOfTickMovement);
         REGISTRY.register("lycan_replacement_paths_do_not_transfer_sentinel_state", () -> LycanVillagerGameTests::replacementPathsDoNotTransferSentinelState);
+        REGISTRY.register("lycan_variants_keep_identity_and_drop_zombie_lifecycle",
+            () -> LycanPackGameTests::lycanVariantsKeepIdentityAndDropZombieLifecycle);
+        REGISTRY.register("werewolf_hunt_assigns_roles_and_replaces_coordinator",
+            () -> LycanPackGameTests::werewolfHuntAssignsRolesAndReplacesCoordinator);
+        REGISTRY.register("feral_lycan_tracks_prey_warns_bonds_and_avoids_settlement",
+            () -> LycanPackGameTests::feralLycanTracksPreyWarnsBondsAndAvoidsSettlement);
+        REGISTRY.register("lycan_schedules_hazards_and_silver_counters_remain_distinct",
+            () -> LycanPackGameTests::lycanSchedulesHazardsAndSilverCountersRemainDistinct);
+        REGISTRY.register("lycan_family_targets_respect_kin_players_and_other_families",
+            () -> LycanPackGameTests::lycanFamilyTargetsRespectKinPlayersAndOtherFamilies);
+        REGISTRY.register("werewolf_trap_hunt_assault_and_infection_contracts_remain_exact",
+            () -> LycanPackGameTests::werewolfTrapHuntAssaultAndInfectionContractsRemainExact);
+        REGISTRY.register("lycan_actions_cancel_across_failure_save_and_reload",
+            () -> LycanPackGameTests::lycanActionsCancelAcrossFailureSaveAndReload);
+        REGISTRY.register("lycan_population_work_stays_within_declared_caps",
+            () -> LycanPackGameTests::lycanPopulationWorkStaysWithinDeclaredCaps);
     }
 
     private ModGameTests() {

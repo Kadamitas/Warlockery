@@ -139,7 +139,7 @@ public final class BrewRuntime {
             case REMOVE_BENEFICIAL -> removeEffects(context, true);
             case REMOVE_HARMFUL -> removeEffects(context, false);
             case REMOVE_NAUSEA -> removeNausea(context);
-            case HARM_WEREWOLVES -> harmTarget(context, Target.WEREWOLF, 10.0F);
+            case HARM_WEREWOLVES -> harmWerewolves(context);
             case WEAKEN_VAMPIRES -> weakenVampires(context);
             case HARM_DEMONS -> harmTarget(context, Target.DEMON, 12.0F);
             case SUMMON_BATS -> summonBats(context);
@@ -498,6 +498,20 @@ public final class BrewRuntime {
                 ? context.level().damageSources().indirectMagic(context.directSource(), context.owner())
                 : context.level().damageSources().magic(),
             baseDamage * context.potency()
+        ));
+        return ImpactResult.entities(entities.size());
+    }
+
+    private static ImpactResult harmWerewolves(final ImpactContext context) {
+        final List<LivingEntity> entities = living(context).stream()
+            .filter(entity -> BrewTargeting.matches(entity, Target.WEREWOLF))
+            .toList();
+        entities.forEach(entity -> entity.hurtServer(
+            context.level(),
+            com.kadamitas.warlockery.entity.LycanDamageTypes.harmWerewolvesSource(
+                context.level(), context.directSource(), context.owner()
+            ),
+            10.0F * context.potency()
         ));
         return ImpactResult.entities(entities.size());
     }

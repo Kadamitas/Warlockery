@@ -37,6 +37,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "lycan_villager_isolated.json"
     );
+    private static final Path LYCAN_PACK_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "lycan_pack_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -82,6 +86,16 @@ final class GameTestInstanceContractTest {
         "lycan_hazard_wins_end_of_tick_movement",
         "lycan_replacement_paths_do_not_transfer_sentinel_state"
     );
+    private static final Set<String> ISOLATED_LYCAN_PACK = Set.of(
+        "lycan_variants_keep_identity_and_drop_zombie_lifecycle",
+        "werewolf_hunt_assigns_roles_and_replaces_coordinator",
+        "feral_lycan_tracks_prey_warns_bonds_and_avoids_settlement",
+        "lycan_schedules_hazards_and_silver_counters_remain_distinct",
+        "lycan_family_targets_respect_kin_players_and_other_families",
+        "werewolf_trap_hunt_assault_and_infection_contracts_remain_exact",
+        "lycan_actions_cancel_across_failure_save_and_reload",
+        "lycan_population_work_stays_within_declared_caps"
+    );
 
     @Test
     void everyGameTestRegistrationHasOneMatchingEmptyTemplateFixture() {
@@ -119,6 +133,22 @@ final class GameTestInstanceContractTest {
         assertEquals(15, ISOLATED_LYCAN_VILLAGER.size());
     }
 
+    @Test
+    void onlyTheExactLycanPackFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(LYCAN_PACK_ENVIRONMENT),
+            "the isolated F04 Lycan Pack environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(LYCAN_PACK_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F04 Lycan Pack environment must not mutate shared world state");
+        assertEquals(8, ISOLATED_LYCAN_PACK.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_LYCAN_PACK),
+            "all eight exact F04 Lycan Pack GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -128,7 +158,9 @@ final class GameTestInstanceContractTest {
                 ? "warlockery:vampire_court_isolated"
                 : ISOLATED_LYCAN_VILLAGER.contains(registration.id())
                     ? "warlockery:lycan_villager_isolated"
-                    : "minecraft:default",
+                    : ISOLATED_LYCAN_PACK.contains(registration.id())
+                        ? "warlockery:lycan_pack_isolated"
+                        : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

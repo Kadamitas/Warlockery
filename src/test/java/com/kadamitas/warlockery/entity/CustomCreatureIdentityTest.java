@@ -31,6 +31,22 @@ final class CustomCreatureIdentityTest {
     }
 
     @Test
+    void feralLycanIsADedicatedSubclassOfTheExtensibleWerewolfClass() {
+        assertEquals(WerewolfEntity.class, FeralLycanEntity.class.getSuperclass());
+        assertEquals(ArcaneMob.class, WerewolfEntity.class.getSuperclass());
+        assertFalse(java.lang.reflect.Modifier.isFinal(WerewolfEntity.class.getModifiers()),
+            "WerewolfEntity is extensible only for the dedicated Feral subclass");
+        assertTrue(java.lang.reflect.Modifier.isFinal(FeralLycanEntity.class.getModifiers()));
+    }
+
+    @Test
+    void lycanVariantsDeclareDistinctSemanticIdentities() {
+        assertEquals(LycanPackRules.Variant.values().length, 2);
+        assertTrue(WerewolfEntity.class.isAssignableFrom(FeralLycanEntity.class),
+            "class-based hunter and Pillager systems keep recognizing the Feral by inheritance");
+    }
+
+    @Test
     void lycanVillagersTradeOnlyWithWerewolfPlayers() {
         assertTrue(LycanVillagerEntity.canTrade(SupernaturalForm.WEREWOLF));
         assertFalse(LycanVillagerEntity.canTrade(SupernaturalForm.NONE));

@@ -16,6 +16,7 @@ import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
 import com.kadamitas.warlockery.entity.VampireCourtEntity;
+import com.kadamitas.warlockery.entity.FeralLycanEntity;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
 import com.kadamitas.warlockery.entity.WingedArcaneMob;
@@ -211,8 +212,12 @@ public final class ModEntities {
     }
 
     private static EntityType<?> createWerewolf(final EntityRegistration registration) {
-        return EntityType.Builder.of(WerewolfEntity::new, MobCategory.MONSTER)
-            .sized(registration.width(), registration.height())
+        final boolean feral = "feral_lycan".equals(registration.id());
+        final EntityType.EntityFactory<WerewolfEntity> factory = feral
+            ? FeralLycanEntity::new
+            : WerewolfEntity::new;
+        return EntityType.Builder.of(factory, MobCategory.MONSTER)
+            .sized(feral ? 0.95F : registration.width(), feral ? 1.25F : registration.height())
             .notInPeaceful()
             .build(REGISTRY.key(registration.id()));
     }
@@ -331,8 +336,11 @@ public final class ModEntities {
             case "naamah" -> attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11)
                 .add(Attributes.ARMOR, 8).add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
             case "hedge_crone", "demon" -> attributes.add(Attributes.MAX_HEALTH, 60).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.ARMOR, 6);
-            case "werewolf", "feral_lycan" ->
-                attributes.add(Attributes.MAX_HEALTH, 42).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.MOVEMENT_SPEED, 0.32);
+            case "werewolf", "feral_lycan" -> attributes
+                .add(Attributes.MAX_HEALTH, 42)
+                .add(Attributes.ATTACK_DAMAGE, 9)
+                .add(Attributes.MOVEMENT_SPEED, 0.32)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
             case "vampire", "blood_thrall" -> attributes
                 .add(Attributes.MAX_HEALTH, 36)
                 .add(Attributes.ATTACK_DAMAGE, 7)

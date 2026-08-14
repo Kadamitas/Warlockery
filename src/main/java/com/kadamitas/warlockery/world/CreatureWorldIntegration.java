@@ -3,16 +3,22 @@ package com.kadamitas.warlockery.world;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.LycanPackRules;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModVillagers;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,6 +41,9 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 
 public final class CreatureWorldIntegration {
+    public static final int MAX_RAW_ARMING_VISITS = LycanPackRules.MAX_RAW_ARMING_VISITS;
+    public static final int MAX_RETAINED_ARMING = LycanPackRules.MAX_RETAINED_ARMING;
+
     private CreatureWorldIntegration() {
     }
 
@@ -395,15 +404,78 @@ public final class CreatureWorldIntegration {
         }
     }
 
-    private static void armNearbyPillagers(final ServerLevel level, final ServerPlayer player) {
-        final List<WerewolfEntity> werewolves = level.getEntitiesOfClass(WerewolfEntity.class,
-            new AABB(player.blockPosition()).inflate(48));
-        if (werewolves.isEmpty()) return;
-        level.getEntitiesOfClass(Pillager.class, new AABB(player.blockPosition()).inflate(48)).forEach(pillager -> {
-            final WerewolfEntity target = werewolves.stream().min(Comparator.comparingDouble(pillager::distanceToSqr)).orElseThrow();
+    public static ArmingReport armNearbyPillagers(final ServerLevel level, final ServerPlayer player) {
+        final AABB bounds = new AABB(player.blockPosition()).inflate(48);
+        final List<WerewolfEntity> rawLycans = new ArrayList<>();
+        level.getEntities().get(EntityTypeTest.forClass(WerewolfEntity.class), bounds, candidate -> {
+            rawLycans.add(candidate);
+            return rawLycans.size() >= MAX_RAW_ARMING_VISITS
+                ? AbortableIterationConsumer.Continuation.ABORT
+                : AbortableIterationConsumer.Continuation.CONTINUE;
+        });
+        final List<WerewolfEntity> retainedLycans = rawLycans.stream()
+            .filter(LivingEntity::isAlive)
+            .sorted(Comparator.<WerewolfEntity>comparingDouble(player::distanceToSqr)
+                .thenComparing(WerewolfEntity::getUUID, LycanPackRules.unsignedUuidOrder()))
+            .limit(MAX_RETAINED_ARMING)
+            .toList();
+        if (retainedLycans.isEmpty()) {
+            return new ArmingReport(rawLycans.size(), 0, 0, 0, 0);
+        }
+        final List<Pillager> rawPillagers = new ArrayList<>();
+        level.getEntities().get(EntityTypeTest.forClass(Pillager.class), bounds, candidate -> {
+            rawPillagers.add(candidate);
+            return rawPillagers.size() >= MAX_RAW_ARMING_VISITS
+                ? AbortableIterationConsumer.Continuation.ABORT
+                : AbortableIterationConsumer.Continuation.CONTINUE;
+        });
+        final List<Pillager> retainedPillagers = rawPillagers.stream()
+            .filter(LivingEntity::isAlive)
+            .sorted(Comparator.<Pillager>comparingDouble(player::distanceToSqr)
+                .thenComparing(Pillager::getUUID, LycanPackRules.unsignedUuidOrder()))
+            .limit(MAX_RETAINED_ARMING)
+            .toList();
+        int armed = 0;
+        for (final Pillager pillager : retainedPillagers) {
+            final WerewolfEntity target = retainedLycans.stream()
+                .min(Comparator.<WerewolfEntity>comparingDouble(pillager::distanceToSqr)
+                    .thenComparing(WerewolfEntity::getUUID, LycanPackRules.unsignedUuidOrder()))
+                .orElseThrow();
             equipSilver(pillager);
             pillager.setTarget(target);
-        });
+            armed++;
+        }
+        return new ArmingReport(
+            rawLycans.size(), retainedLycans.size(), rawPillagers.size(), retainedPillagers.size(), armed
+        );
+    }
+
+    public static List<ArmingCandidate> retainNearestToAnchor(final List<ArmingCandidate> visited) {
+        return visited.stream()
+            .limit(MAX_RAW_ARMING_VISITS)
+            .sorted(Comparator.comparingDouble(ArmingCandidate::distanceSqr)
+                .thenComparing(ArmingCandidate::id, LycanPackRules.unsignedUuidOrder()))
+            .limit(MAX_RETAINED_ARMING)
+            .toList();
+    }
+
+    public static Optional<UUID> nearestRetainedLycan(final List<ArmingCandidate> retained) {
+        return retained.stream()
+            .min(Comparator.comparingDouble(ArmingCandidate::distanceSqr)
+                .thenComparing(ArmingCandidate::id, LycanPackRules.unsignedUuidOrder()))
+            .map(ArmingCandidate::id);
+    }
+
+    public record ArmingCandidate(UUID id, double distanceSqr) {
+    }
+
+    public record ArmingReport(
+        int rawLycanVisits,
+        int retainedLycans,
+        int rawPillagerVisits,
+        int retainedPillagers,
+        int armedPillagers
+    ) {
     }
 
     private static void equipSilver(final Pillager pillager) {
