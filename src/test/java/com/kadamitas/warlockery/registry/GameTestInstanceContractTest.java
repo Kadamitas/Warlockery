@@ -33,6 +33,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "vampire_court_isolated.json"
     );
+    private static final Path LYCAN_VILLAGER_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "lycan_villager_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -60,6 +64,23 @@ final class GameTestInstanceContractTest {
         "vampire_court_assault_composition_preserves_contracts",
         "vampire_court_identity_targets_and_failures_are_bounded",
         "vampire_court_population_caps_hold"
+    );
+    private static final Set<String> ISOLATED_LYCAN_VILLAGER = Set.of(
+        "lycan_brain_routine_resumes_after_watch",
+        "lycan_signature_offers_survive_profession_and_reload",
+        "lycan_signature_offers_reconcile_without_duplicates",
+        "lycan_trade_success_awards_familiarity_once",
+        "lycan_familiarity_caps_and_evicts_deterministically",
+        "lycan_full_moon_watch_is_bounded",
+        "lycan_bonded_resident_attack_warns_then_defends",
+        "lycan_unbonded_attack_does_not_trigger_protection",
+        "lycan_direct_attacker_uses_attribute_melee_damage",
+        "lycan_low_health_withdraws_and_releases_target",
+        "lycan_blocked_route_backs_off_after_three_failures",
+        "lycan_destroyed_poi_cancels_override",
+        "lycan_reload_discards_transient_combat_claims",
+        "lycan_hazard_wins_end_of_tick_movement",
+        "lycan_replacement_paths_do_not_transfer_sentinel_state"
     );
 
     @Test
@@ -89,6 +110,15 @@ final class GameTestInstanceContractTest {
             "the isolated Vampire Court environment must not mutate shared world state");
     }
 
+    @Test
+    void onlyTheExactLycanVillagerFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(LYCAN_VILLAGER_ENVIRONMENT));
+        final JsonObject environment = JsonParser.parseString(read(LYCAN_VILLAGER_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty());
+        assertEquals(15, ISOLATED_LYCAN_VILLAGER.size());
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -96,7 +126,9 @@ final class GameTestInstanceContractTest {
         assertEquals(
             ISOLATED_VAMPIRE_COURT.contains(registration.id())
                 ? "warlockery:vampire_court_isolated"
-                : "minecraft:default",
+                : ISOLATED_LYCAN_VILLAGER.contains(registration.id())
+                    ? "warlockery:lycan_villager_isolated"
+                    : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

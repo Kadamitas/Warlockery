@@ -8,6 +8,7 @@ import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.GoblinBossRules;
 import com.kadamitas.warlockery.entity.LycanVillagerEntity;
+import com.kadamitas.warlockery.entity.LycanVillagerRules;
 import com.kadamitas.warlockery.entity.NamiEntity;
 import com.kadamitas.warlockery.entity.NaamahEntity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
@@ -109,7 +110,7 @@ public final class ModEntities {
         .map(Map.Entry::getKey)
         .collect(java.util.stream.Collectors.toUnmodifiableSet());
     private static final Set<String> WINGED_ATTRIBUTE_IDS = Set.of("imp", "storm_simian");
-    private static final Set<String> VILLAGER_ATTRIBUTE_IDS = Set.of("hobgoblin", "lycan_villager", "nami");
+    private static final Set<String> VILLAGER_ATTRIBUTE_IDS = Set.of("hobgoblin", "nami");
     private static final Set<String> NATURAL_SPAWN_IDS = Set.of(
         "ent",
         "goblin",
@@ -127,6 +128,12 @@ public final class ModEntities {
         AttributeFactoryRule.exact("goblin", _ -> Villager.createAttributes()
             .add(Attributes.ATTACK_DAMAGE, 3.0)
             .add(Attributes.FOLLOW_RANGE, 24.0)
+            .build()),
+        AttributeFactoryRule.exact("lycan_villager", _ -> Villager.createAttributes()
+            .add(Attributes.MAX_HEALTH, LycanVillagerRules.MAX_HEALTH)
+            .add(Attributes.MOVEMENT_SPEED, LycanVillagerRules.MOVEMENT_SPEED)
+            .add(Attributes.FOLLOW_RANGE, LycanVillagerRules.FOLLOW_RANGE)
+            .add(Attributes.ATTACK_DAMAGE, LycanVillagerRules.ATTACK_DAMAGE)
             .build()),
         new AttributeFactoryRule(VILLAGER_ATTRIBUTE_IDS::contains, _ -> Villager.createAttributes().build()),
         AttributeFactoryRule.exact("werewolf_hunter", _ -> Pillager.createAttributes().build()),
@@ -324,7 +331,7 @@ public final class ModEntities {
             case "naamah" -> attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11)
                 .add(Attributes.ARMOR, 8).add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
             case "hedge_crone", "demon" -> attributes.add(Attributes.MAX_HEALTH, 60).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.ARMOR, 6);
-            case "werewolf", "feral_lycan", "lycan_villager" ->
+            case "werewolf", "feral_lycan" ->
                 attributes.add(Attributes.MAX_HEALTH, 42).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.MOVEMENT_SPEED, 0.32);
             case "vampire", "blood_thrall" -> attributes
                 .add(Attributes.MAX_HEALTH, 36)

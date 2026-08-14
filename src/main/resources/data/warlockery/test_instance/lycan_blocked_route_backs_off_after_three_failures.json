@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:lycan_blocked_route_backs_off_after_three_failures",
+  "environment": "warlockery:lycan_villager_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 200
+}

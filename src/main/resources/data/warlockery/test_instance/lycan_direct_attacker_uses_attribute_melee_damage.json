@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:lycan_direct_attacker_uses_attribute_melee_damage",
+  "environment": "warlockery:lycan_villager_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 200
+}

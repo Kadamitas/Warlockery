@@ -6,6 +6,7 @@ import com.kadamitas.warlockery.brew.SolidifyingBrewGameTests;
 import com.kadamitas.warlockery.dream.SpiritWorldGameTests;
 import com.kadamitas.warlockery.entity.TacticalCombatGameTests;
 import com.kadamitas.warlockery.entity.VampireCourtGameTests;
+import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
 import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
@@ -278,6 +279,21 @@ public final class ModGameTests {
             () -> VampireCourtGameTests::identityTargetsAndFailuresAreBounded);
         REGISTRY.register("vampire_court_population_caps_hold",
             () -> VampireCourtGameTests::populationCapsHold);
+        REGISTRY.register("lycan_brain_routine_resumes_after_watch", () -> LycanVillagerGameTests::brainRoutineResumesAfterWatch);
+        REGISTRY.register("lycan_signature_offers_survive_profession_and_reload", () -> LycanVillagerGameTests::signatureOffersSurviveProfessionAndReload);
+        REGISTRY.register("lycan_signature_offers_reconcile_without_duplicates", () -> LycanVillagerGameTests::signatureOffersReconcileWithoutDuplicates);
+        REGISTRY.register("lycan_trade_success_awards_familiarity_once", () -> LycanVillagerGameTests::tradeSuccessAwardsFamiliarityOnce);
+        REGISTRY.register("lycan_familiarity_caps_and_evicts_deterministically", () -> LycanVillagerGameTests::familiarityCapsAndEvictsDeterministically);
+        REGISTRY.register("lycan_full_moon_watch_is_bounded", () -> LycanVillagerGameTests::fullMoonWatchIsBounded);
+        REGISTRY.register("lycan_bonded_resident_attack_warns_then_defends", () -> LycanVillagerGameTests::bondedResidentAttackWarnsThenDefends);
+        REGISTRY.register("lycan_unbonded_attack_does_not_trigger_protection", () -> LycanVillagerGameTests::unbondedAttackDoesNotTriggerProtection);
+        REGISTRY.register("lycan_direct_attacker_uses_attribute_melee_damage", () -> LycanVillagerGameTests::directAttackerUsesAttributeMeleeDamage);
+        REGISTRY.register("lycan_low_health_withdraws_and_releases_target", () -> LycanVillagerGameTests::lowHealthWithdrawsAndReleasesTarget);
+        REGISTRY.register("lycan_blocked_route_backs_off_after_three_failures", () -> LycanVillagerGameTests::blockedRouteBacksOffAfterThreeFailures);
+        REGISTRY.register("lycan_destroyed_poi_cancels_override", () -> LycanVillagerGameTests::destroyedPoiCancelsOverride);
+        REGISTRY.register("lycan_reload_discards_transient_combat_claims", () -> LycanVillagerGameTests::reloadDiscardsTransientCombatClaims);
+        REGISTRY.register("lycan_hazard_wins_end_of_tick_movement", () -> LycanVillagerGameTests::hazardWinsEndOfTickMovement);
+        REGISTRY.register("lycan_replacement_paths_do_not_transfer_sentinel_state", () -> LycanVillagerGameTests::replacementPathsDoNotTransferSentinelState);
     }
 
     private ModGameTests() {
