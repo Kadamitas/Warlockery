@@ -53,6 +53,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "imp_isolated.json"
     );
+    private static final Path ELDRITCH_WATCHER_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "eldritch_watcher_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -145,6 +149,12 @@ final class GameTestInstanceContractTest {
         "imp_infernal_orders_authority_conflicts_and_leader_loss_are_safe",
         "imp_state_migration_corruption_and_expiry_are_bounded",
         "imp_population_cadence_and_operation_budgets_hold"
+    );
+    private static final Set<String> ISOLATED_ELDRITCH_WATCHER = Set.of(
+        "eldritch_watcher_vigil_observes_and_escalates_on_reciprocal_gaze",
+        "eldritch_watcher_revelation_is_bound_visible_and_attributed",
+        "eldritch_watcher_binding_warning_lure_and_return_remain_local",
+        "eldritch_watcher_save_reload_focus_hazard_and_work_are_bounded"
     );
 
     @Test
@@ -247,6 +257,22 @@ final class GameTestInstanceContractTest {
             "all twelve exact F08 Imp GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactEldritchWatcherFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(ELDRITCH_WATCHER_ENVIRONMENT),
+            "the isolated F14 Eldritch Watcher environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(ELDRITCH_WATCHER_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F14 Eldritch Watcher environment must not mutate shared world state");
+        assertEquals(4, ISOLATED_ELDRITCH_WATCHER.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_ELDRITCH_WATCHER),
+            "all four exact F14 Eldritch Watcher GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -264,7 +290,9 @@ final class GameTestInstanceContractTest {
                                 ? "warlockery:infernal_hierarchy_isolated"
                                 : ISOLATED_IMP.contains(registration.id())
                                     ? "warlockery:imp_isolated"
-                                    : "minecraft:default",
+                                    : ISOLATED_ELDRITCH_WATCHER.contains(registration.id())
+                                        ? "warlockery:eldritch_watcher_isolated"
+                                        : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

@@ -75,13 +75,26 @@ class AmbientActivityRulesTest {
         final Set<CreatureKind> delegated = Set.of(
             CreatureKind.GOBLIN,
             CreatureKind.HOBGOBLIN,
-            CreatureKind.NAAMAH
+            CreatureKind.NAAMAH,
+            CreatureKind.ELDRITCH_WATCHER
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
             .filter(kind -> AmbientActivityProfile.forKind(kind).isEmpty())
             .collect(java.util.stream.Collectors.toSet());
         assertEquals(Set.of(), missing);
+    }
+
+    @Test
+    void eldritchWatcherDelegatesArcaneStudyToItsDedicatedRuntime() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.ELDRITCH_WATCHER).isEmpty(),
+            "the dedicated Watcher runtime owns its focus-inspection schedule");
+        final AmbientActivityProfile arcaneStudy = AmbientActivityProfile.forType(ActivityType.ARCANE_STUDY);
+        assertEquals(Set.of(CreatureKind.CIRCLE_MAGE, CreatureKind.HEDGE_CRONE), arcaneStudy.kinds());
+        assertEquals(400, arcaneStudy.checkIntervalTicks());
+        assertEquals(10, arcaneStudy.chanceDenominator());
+        assertEquals(4_800, arcaneStudy.cooldownTicks());
+        assertEquals(0, arcaneStudy.localChangeCap());
     }
 
     @Test

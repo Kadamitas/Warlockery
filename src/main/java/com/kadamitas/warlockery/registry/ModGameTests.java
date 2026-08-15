@@ -9,6 +9,7 @@ import com.kadamitas.warlockery.entity.VampireCourtGameTests;
 import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
 import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
+import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.InfernalHierarchyGameTests;
 import com.kadamitas.warlockery.entity.ImpGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
@@ -378,6 +379,14 @@ public final class ModGameTests {
             () -> ImpGameTests::impStateMigrationCorruptionAndExpiryAreBounded);
         REGISTRY.register("imp_population_cadence_and_operation_budgets_hold",
             () -> ImpGameTests::impPopulationCadenceAndOperationBudgetsHold);
+        REGISTRY.register("eldritch_watcher_vigil_observes_and_escalates_on_reciprocal_gaze",
+            () -> EldritchWatcherGameTests::vigilObservesAndEscalatesOnReciprocalGaze);
+        REGISTRY.register("eldritch_watcher_revelation_is_bound_visible_and_attributed",
+            () -> EldritchWatcherGameTests::revelationIsBoundVisibleAndAttributed);
+        REGISTRY.register("eldritch_watcher_binding_warning_lure_and_return_remain_local",
+            () -> EldritchWatcherGameTests::bindingWarningLureAndReturnRemainLocal);
+        REGISTRY.register("eldritch_watcher_save_reload_focus_hazard_and_work_are_bounded",
+            () -> EldritchWatcherGameTests::saveReloadFocusHazardAndWorkAreBounded);
     }
 
     private ModGameTests() {

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:eldritch_watcher_binding_warning_lure_and_return_remain_local",
+  "environment": "warlockery:eldritch_watcher_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

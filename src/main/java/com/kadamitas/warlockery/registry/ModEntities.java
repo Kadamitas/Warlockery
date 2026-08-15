@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.registry;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.entity.AbyssalRegentRules;
+import com.kadamitas.warlockery.entity.EldritchWatcherEntity;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
@@ -99,6 +100,7 @@ public final class ModEntities {
         CreatureKind.ABYSSAL_REGENT
     );
     private static final Map<CreatureKind, ContentFactory<EntityRegistration, EntityType<?>>> SPECIAL_ARCANE_FACTORIES = Map.ofEntries(
+        Map.entry(CreatureKind.ELDRITCH_WATCHER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createEldritchWatcher),
         Map.entry(CreatureKind.WEREWOLF, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createWerewolf),
         Map.entry(CreatureKind.IMP, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createImp),
         Map.entry(CreatureKind.STORM_SIMIAN, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createStormSimian),
@@ -257,6 +259,16 @@ public final class ModEntities {
         return EntityType.Builder.of(
             (EntityType<VampireCourtEntity> type, net.minecraft.world.level.Level level) ->
                 new VampireCourtEntity(type, level, registration.kind()),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createEldritchWatcher(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<EldritchWatcherEntity> type, net.minecraft.world.level.Level level) ->
+                new EldritchWatcherEntity(type, level),
             MobCategory.MONSTER
         ).sized(registration.width(), registration.height())
             .notInPeaceful()

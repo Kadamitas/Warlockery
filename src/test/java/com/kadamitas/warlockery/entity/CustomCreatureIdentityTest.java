@@ -56,6 +56,18 @@ final class CustomCreatureIdentityTest {
     }
 
     @Test
+    void eldritchWatcherIsADedicatedVexFlightSubclassWithFixedIdentity() {
+        assertEquals(Vex.class, EldritchWatcherEntity.class.getSuperclass(),
+            "the dedicated Watcher deliberately keeps the Vex phasing flight chassis");
+        assertTrue(ArcaneCreature.class.isAssignableFrom(EldritchWatcherEntity.class));
+        assertTrue(java.lang.reflect.Modifier.isFinal(EldritchWatcherEntity.class.getModifiers()));
+        final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.ELDRITCH_WATCHER);
+        assertEquals(0.8F, visual.width());
+        assertEquals(1.1F, visual.height());
+        assertEquals(Archetype.SPIRIT, visual.archetype());
+    }
+
+    @Test
     void lycanVillagersTradeOnlyWithWerewolfPlayers() {
         assertTrue(LycanVillagerEntity.canTrade(SupernaturalForm.WEREWOLF));
         assertFalse(LycanVillagerEntity.canTrade(SupernaturalForm.NONE));
