@@ -45,6 +45,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "werewolf_hunter_isolated.json"
     );
+    private static final Path INFERNAL_HIERARCHY_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "infernal_hierarchy_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -111,6 +115,18 @@ final class GameTestInstanceContractTest {
         "silver_hunt_transaction_deduplicates_and_rolls_back",
         "hunter_reload_reconciles_semantic_state_only",
         "hunter_route_failures_back_off_and_release"
+    );
+    private static final Set<String> ISOLATED_INFERNAL_HIERARCHY = Set.of(
+        "infernal_ranks_normalize_without_identity_drift",
+        "demon_conflicting_owners_preserve_direct_pact",
+        "demon_truce_morale_retreat_and_return_are_bounded",
+        "archfiend_anchor_squad_and_ember_front_are_bounded",
+        "regent_court_orders_phase_and_reinforcements_cleanup",
+        "infernal_leader_loss_and_unloaded_authority_cancel_execution",
+        "infernal_save_reload_truncates_and_migrates_state",
+        "infernal_collision_border_and_chunk_edge_fail_safely",
+        "infernal_acquisition_paths_preserve_targets_and_contracts",
+        "infernal_population_caps_and_scan_budgets_hold"
     );
 
     @Test
@@ -181,6 +197,22 @@ final class GameTestInstanceContractTest {
             "all ten exact F06 Werewolf Hunter GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactInfernalHierarchyFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(INFERNAL_HIERARCHY_ENVIRONMENT),
+            "the isolated F07 Infernal Hierarchy environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(INFERNAL_HIERARCHY_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F07 Infernal Hierarchy environment must not mutate shared world state");
+        assertEquals(10, ISOLATED_INFERNAL_HIERARCHY.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_INFERNAL_HIERARCHY),
+            "all ten exact F07 Infernal Hierarchy GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -194,7 +226,9 @@ final class GameTestInstanceContractTest {
                         ? "warlockery:lycan_pack_isolated"
                         : ISOLATED_WEREWOLF_HUNTER.contains(registration.id())
                             ? "warlockery:werewolf_hunter_isolated"
-                            : "minecraft:default",
+                            : ISOLATED_INFERNAL_HIERARCHY.contains(registration.id())
+                                ? "warlockery:infernal_hierarchy_isolated"
+                                : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

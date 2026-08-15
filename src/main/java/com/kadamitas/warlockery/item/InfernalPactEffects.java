@@ -24,12 +24,17 @@ public final class InfernalPactEffects {
             Mob.class,
             new AABB(owner.blockPosition()).inflate(32),
             mob -> mob.typeHolder().is(WarlockeryTags.EntityTypes.DEMONS)
-                && owner.getStringUUID().equals(mob.getPersistentData().getStringOr(OWNER_KEY, ""))
+                && com.kadamitas.warlockery.entity.InfernalHierarchyRules.commandAccepted(
+                    owner.getUUID(),
+                    com.kadamitas.warlockery.entity.InfernalHierarchyRuntime.directPactOwner(mob),
+                    com.kadamitas.warlockery.entity.InfernalHierarchyRuntime.animusOwner(mob)
+                )
         ).forEach(demon -> {
             if (demon.getTarget() == owner) {
                 demon.setTarget(null);
             }
-            if (commandedTarget != null && commandedTarget != owner && commandedTarget.isAlive()) {
+            if (commandedTarget != null && commandedTarget != owner && commandedTarget.isAlive()
+                && demon.canAttack(commandedTarget)) {
                 demon.setTarget(commandedTarget);
             }
         });

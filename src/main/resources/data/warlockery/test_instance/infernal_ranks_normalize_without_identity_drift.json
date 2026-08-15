@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:infernal_ranks_normalize_without_identity_drift",
+  "environment": "warlockery:infernal_hierarchy_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

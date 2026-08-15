@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:infernal_collision_border_and_chunk_edge_fail_safely",
+  "environment": "warlockery:infernal_hierarchy_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

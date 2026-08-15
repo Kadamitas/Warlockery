@@ -9,6 +9,7 @@ import com.kadamitas.warlockery.entity.VampireCourtGameTests;
 import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
 import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
+import com.kadamitas.warlockery.entity.InfernalHierarchyGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
 import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
@@ -332,6 +333,26 @@ public final class ModGameTests {
             () -> WerewolfHunterGameTests::hunterReloadReconcilesSemanticStateOnly);
         REGISTRY.register("hunter_route_failures_back_off_and_release",
             () -> WerewolfHunterGameTests::hunterRouteFailuresBackOffAndRelease);
+        REGISTRY.register("infernal_ranks_normalize_without_identity_drift",
+            () -> InfernalHierarchyGameTests::infernalRanksNormalizeWithoutIdentityDrift);
+        REGISTRY.register("demon_conflicting_owners_preserve_direct_pact",
+            () -> InfernalHierarchyGameTests::demonConflictingOwnersPreserveDirectPact);
+        REGISTRY.register("demon_truce_morale_retreat_and_return_are_bounded",
+            () -> InfernalHierarchyGameTests::demonTruceMoraleRetreatAndReturnAreBounded);
+        REGISTRY.register("archfiend_anchor_squad_and_ember_front_are_bounded",
+            () -> InfernalHierarchyGameTests::archfiendAnchorSquadAndEmberFrontAreBounded);
+        REGISTRY.register("regent_court_orders_phase_and_reinforcements_cleanup",
+            () -> InfernalHierarchyGameTests::regentCourtOrdersPhaseAndReinforcementsCleanup);
+        REGISTRY.register("infernal_leader_loss_and_unloaded_authority_cancel_execution",
+            () -> InfernalHierarchyGameTests::infernalLeaderLossAndUnloadedAuthorityCancelExecution);
+        REGISTRY.register("infernal_save_reload_truncates_and_migrates_state",
+            () -> InfernalHierarchyGameTests::infernalSaveReloadTruncatesAndMigratesState);
+        REGISTRY.register("infernal_collision_border_and_chunk_edge_fail_safely",
+            () -> InfernalHierarchyGameTests::infernalCollisionBorderAndChunkEdgeFailSafely);
+        REGISTRY.register("infernal_acquisition_paths_preserve_targets_and_contracts",
+            () -> InfernalHierarchyGameTests::infernalAcquisitionPathsPreserveTargetsAndContracts);
+        REGISTRY.register("infernal_population_caps_and_scan_budgets_hold",
+            () -> InfernalHierarchyGameTests::infernalPopulationCapsAndScanBudgetsHold);
     }
 
     private ModGameTests() {

@@ -13,6 +13,7 @@ import com.kadamitas.warlockery.entity.NamiEntity;
 import com.kadamitas.warlockery.entity.NaamahEntity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.ArcaneMob;
+import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
 import com.kadamitas.warlockery.entity.VampireCourtEntity;
@@ -97,14 +98,17 @@ public final class ModEntities {
         CreatureKind.EMBERHORN_ARCHFIEND,
         CreatureKind.ABYSSAL_REGENT
     );
-    private static final Map<CreatureKind, ContentFactory<EntityRegistration, EntityType<?>>> SPECIAL_ARCANE_FACTORIES = Map.of(
-        CreatureKind.WEREWOLF, ModEntities::createWerewolf,
-        CreatureKind.IMP, ModEntities::createImp,
-        CreatureKind.STORM_SIMIAN, ModEntities::createStormSimian,
-        CreatureKind.LYCAN_VILLAGER, ModEntities::createLycanVillager,
-        CreatureKind.NAAMAH, ModEntities::createNaamah,
-        CreatureKind.VAMPIRE, ModEntities::createVampireCourt,
-        CreatureKind.BLOOD_THRALL, ModEntities::createVampireCourt
+    private static final Map<CreatureKind, ContentFactory<EntityRegistration, EntityType<?>>> SPECIAL_ARCANE_FACTORIES = Map.ofEntries(
+        Map.entry(CreatureKind.WEREWOLF, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createWerewolf),
+        Map.entry(CreatureKind.IMP, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createImp),
+        Map.entry(CreatureKind.STORM_SIMIAN, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createStormSimian),
+        Map.entry(CreatureKind.LYCAN_VILLAGER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLycanVillager),
+        Map.entry(CreatureKind.NAAMAH, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createNaamah),
+        Map.entry(CreatureKind.VAMPIRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createVampireCourt),
+        Map.entry(CreatureKind.BLOOD_THRALL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createVampireCourt),
+        Map.entry(CreatureKind.DEMON, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
+        Map.entry(CreatureKind.EMBERHORN_ARCHFIEND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
+        Map.entry(CreatureKind.ABYSSAL_REGENT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -259,6 +263,17 @@ public final class ModEntities {
             .build(REGISTRY.key(registration.id()));
     }
 
+    private static EntityType<?> createInfernal(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<InfernalHierarchyEntity> type, net.minecraft.world.level.Level level) ->
+                new InfernalHierarchyEntity(type, level, registration.kind()),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .fireImmune()
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
     private static EntityType<?> createGround(final EntityRegistration registration) {
         final boolean passive = PASSIVE_GROUND_KINDS.contains(registration.kind());
         final var builder = EntityType.Builder.of(
@@ -330,12 +345,21 @@ public final class ModEntities {
             case "abyssal_regent" -> attributes
                 .add(Attributes.MAX_HEALTH, AbyssalRegentRules.MAX_HEALTH)
                 .add(Attributes.ATTACK_DAMAGE, AbyssalRegentRules.ATTACK_DAMAGE)
-                .add(Attributes.ARMOR, AbyssalRegentRules.ARMOR);
-            case "thorned_pursuer", "emberhorn_archfiend" ->
+                .add(Attributes.ARMOR, AbyssalRegentRules.ARMOR)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "thorned_pursuer" ->
                 attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11).add(Attributes.ARMOR, 8);
+            case "emberhorn_archfiend" -> attributes.add(Attributes.MAX_HEALTH, 100)
+                .add(Attributes.ATTACK_DAMAGE, 11)
+                .add(Attributes.ARMOR, 8)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
             case "naamah" -> attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11)
                 .add(Attributes.ARMOR, 8).add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
-            case "hedge_crone", "demon" -> attributes.add(Attributes.MAX_HEALTH, 60).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.ARMOR, 6);
+            case "hedge_crone" -> attributes.add(Attributes.MAX_HEALTH, 60).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.ARMOR, 6);
+            case "demon" -> attributes.add(Attributes.MAX_HEALTH, 60)
+                .add(Attributes.ATTACK_DAMAGE, 9)
+                .add(Attributes.ARMOR, 6)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
             case "werewolf", "feral_lycan" -> attributes
                 .add(Attributes.MAX_HEALTH, 42)
                 .add(Attributes.ATTACK_DAMAGE, 9)

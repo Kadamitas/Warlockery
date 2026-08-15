@@ -54,7 +54,6 @@ import net.minecraft.world.phys.Vec3;
 
 public final class CreatureBehaviorRuntime {
     private static final ThreadLocal<Boolean> APPLYING_THORNS = ThreadLocal.withInitial(() -> false);
-    private static final String ABYSSAL_TORMENT_PHASE = "WarlockeryAbyssalTormentPhase";
     private static final String HELLHOUND_CURE = "WarlockeryHellhoundCure";
     private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(
         EquipmentSlot.HEAD,
@@ -91,7 +90,7 @@ public final class CreatureBehaviorRuntime {
             case DEATH -> creature.heal(1.0F);
             case FORGEWARDEN -> tickGoblinAura(creature, level, true);
             case THORNED_PURSUER -> tickThornedPursuer(creature, level);
-            case ABYSSAL_REGENT -> tickAbyssalRegent(creature, level);
+            case ABYSSAL_REGENT -> InfernalHierarchyRuntime.tickAbyssalTorment(creature, level);
             case SPECTRE -> pulseFear(creature);
             case MANDRAKE -> pulseScreech(creature);
             case DREAMROOT, BRAMBLE_COLOSSUS -> tickRootedDrain(creature, level);
@@ -99,7 +98,7 @@ public final class CreatureBehaviorRuntime {
             case STONEBROKER -> tickStonebroker(creature, level);
             case LOUSE -> tickLouse(creature, level);
             case POLTERGEIST -> tickPoltergeist(creature, level);
-            case EMBERHORN_ARCHFIEND -> tickCauldronAura(creature, level);
+            case EMBERHORN_ARCHFIEND -> InfernalHierarchyRuntime.tickCauldronAura(creature, level);
             case FAMILIAR -> tickOreGuidance(creature, level);
             case VAMPIRE, BLOOD_THRALL, NAAMAH -> tickSunlightWeakness(creature, level);
             default -> {
@@ -169,6 +168,9 @@ public final class CreatureBehaviorRuntime {
         )) {
             return false;
         }
+        if (creature instanceof InfernalHierarchyEntity hierarchy) {
+            return InfernalHierarchyRuntime.restraintAllows(hierarchy, target);
+        }
         return !profile.has(Feature.PASSIVE_UNTIL_HURT) || creature.getLastHurtByMob() == target;
     }
 
@@ -200,8 +202,12 @@ public final class CreatureBehaviorRuntime {
         if (profile.has(Feature.TORMENT_BANISHMENT)) {
             final double x = living.getX() + level.getRandom().nextIntBetweenInclusive(-8, 8);
             final double z = living.getZ() + level.getRandom().nextIntBetweenInclusive(-8, 8);
-            living.randomTeleport(x, living.getY(), z, true);
-            living.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 160, 0));
+            // The Darkness rider applies only after the displacement actually succeeded. randomTeleport
+            // validates the destination footprint itself and returns false while leaving the victim at
+            // the original position, so a rejected displacement adds no rider at all.
+            if (living.randomTeleport(x, living.getY(), z, true)) {
+                living.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 160, 0));
+            }
         }
         if (profile.has(Feature.ROOTED_DRAIN)) {
             living.addEffect(new MobEffectInstance(MobEffects.POISON, 100, 0));
@@ -1000,26 +1006,6 @@ public final class CreatureBehaviorRuntime {
         });
     }
 
-    private static void tickCauldronAura(final Mob creature, final ServerLevel level) {
-        final int cauldrons = (int) BlockPos.betweenClosedStream(
-                creature.blockPosition().offset(-8, -3, -8),
-                creature.blockPosition().offset(8, 3, 8)
-            )
-            .filter(position -> level.getBlockState(position).is(CreatureBehaviorTags.Blocks.MAGICAL_CAULDRONS))
-            .limit(4)
-            .count();
-        final int bonus = CreatureBehaviorRules.cauldronRangeBonus(cauldrons);
-        if (bonus == 0) {
-            return;
-        }
-        level.getEntitiesOfClass(Player.class, creature.getBoundingBox().inflate(8.0 + bonus)).forEach(player -> {
-            player.addEffect(new MobEffectInstance(MobEffects.LUCK, 140, Math.min(1, cauldrons - 1)));
-            if (Math.floorMod(creature.tickCount + player.getId(), 400) == 0) {
-                player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
-            }
-        });
-    }
-
     private static void tickOreGuidance(final Mob creature, final ServerLevel level) {
         final Optional<Identifier> sample = CreatureBehaviorState.sampleBlock(creature);
         if (sample.isEmpty()) {
@@ -1084,26 +1070,6 @@ public final class CreatureBehaviorRuntime {
         )) {
             creature.igniteForSeconds(3.0F);
         }
-    }
-
-    private static void tickAbyssalRegent(final Mob creature, final ServerLevel level) {
-        pulseFear(creature);
-        final boolean phaseTriggered = creature.getPersistentData().getBooleanOr(ABYSSAL_TORMENT_PHASE, false);
-        if (!AbyssalRegentRules.beginsTormentPhase(creature.getHealth(), phaseTriggered)) {
-            return;
-        }
-        creature.getPersistentData().putBoolean(ABYSSAL_TORMENT_PHASE, true);
-        creature.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 240, 1, true, true));
-        creature.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 240, 1, true, true));
-        level.getEntitiesOfClass(
-            Player.class,
-            creature.getBoundingBox().inflate(24.0D),
-            Player::isAlive
-        ).forEach(player -> {
-            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 240, 2));
-            player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 240, 0));
-            player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 240, 1));
-        });
     }
 
     private static void increaseAttributes(
