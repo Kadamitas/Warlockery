@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:imp_infernal_orders_authority_conflicts_and_leader_loss_are_safe",
+  "environment": "warlockery:imp_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 200
+}

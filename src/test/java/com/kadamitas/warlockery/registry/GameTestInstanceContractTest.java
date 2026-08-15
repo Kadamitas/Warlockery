@@ -49,6 +49,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "infernal_hierarchy_isolated.json"
     );
+    private static final Path IMP_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "imp_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -127,6 +131,20 @@ final class GameTestInstanceContractTest {
         "infernal_collision_border_and_chunk_edge_fail_safely",
         "infernal_acquisition_paths_preserve_targets_and_contracts",
         "infernal_population_caps_and_scan_budgets_hold"
+    );
+    private static final Set<String> ISOLATED_IMP = Set.of(
+        "imp_contract_binding_favor_and_spells_remain_exact",
+        "imp_familiar_bind_recall_and_owner_conflict_remain_exact",
+        "imp_follow_watch_and_scout_return_are_bounded",
+        "imp_scout_interrupt_reload_and_report_once",
+        "imp_curiosity_inspects_without_storage_mutation",
+        "imp_perch_collision_border_and_chunk_edge_fail_safely",
+        "imp_ranged_lane_windup_and_retreat_are_bounded",
+        "imp_projectile_allies_griefing_and_protected_blocks_are_safe",
+        "imp_bound_environmental_immunity_does_not_transfer_damage",
+        "imp_infernal_orders_authority_conflicts_and_leader_loss_are_safe",
+        "imp_state_migration_corruption_and_expiry_are_bounded",
+        "imp_population_cadence_and_operation_budgets_hold"
     );
 
     @Test
@@ -213,6 +231,22 @@ final class GameTestInstanceContractTest {
             "all ten exact F07 Infernal Hierarchy GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactImpFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(IMP_ENVIRONMENT),
+            "the isolated F08 Imp environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(IMP_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F08 Imp environment must not mutate shared world state");
+        assertEquals(12, ISOLATED_IMP.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_IMP),
+            "all twelve exact F08 Imp GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -228,7 +262,9 @@ final class GameTestInstanceContractTest {
                             ? "warlockery:werewolf_hunter_isolated"
                             : ISOLATED_INFERNAL_HIERARCHY.contains(registration.id())
                                 ? "warlockery:infernal_hierarchy_isolated"
-                                : "minecraft:default",
+                                : ISOLATED_IMP.contains(registration.id())
+                                    ? "warlockery:imp_isolated"
+                                    : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

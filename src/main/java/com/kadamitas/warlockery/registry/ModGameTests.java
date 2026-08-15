@@ -10,6 +10,7 @@ import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
 import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
 import com.kadamitas.warlockery.entity.InfernalHierarchyGameTests;
+import com.kadamitas.warlockery.entity.ImpGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
 import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
@@ -353,6 +354,30 @@ public final class ModGameTests {
             () -> InfernalHierarchyGameTests::infernalAcquisitionPathsPreserveTargetsAndContracts);
         REGISTRY.register("infernal_population_caps_and_scan_budgets_hold",
             () -> InfernalHierarchyGameTests::infernalPopulationCapsAndScanBudgetsHold);
+        REGISTRY.register("imp_contract_binding_favor_and_spells_remain_exact",
+            () -> ImpGameTests::impContractBindingFavorAndSpellsRemainExact);
+        REGISTRY.register("imp_familiar_bind_recall_and_owner_conflict_remain_exact",
+            () -> ImpGameTests::impFamiliarBindRecallAndOwnerConflictRemainExact);
+        REGISTRY.register("imp_follow_watch_and_scout_return_are_bounded",
+            () -> ImpGameTests::impFollowWatchAndScoutReturnAreBounded);
+        REGISTRY.register("imp_scout_interrupt_reload_and_report_once",
+            () -> ImpGameTests::impScoutInterruptReloadAndReportOnce);
+        REGISTRY.register("imp_curiosity_inspects_without_storage_mutation",
+            () -> ImpGameTests::impCuriosityInspectsWithoutStorageMutation);
+        REGISTRY.register("imp_perch_collision_border_and_chunk_edge_fail_safely",
+            () -> ImpGameTests::impPerchCollisionBorderAndChunkEdgeFailSafely);
+        REGISTRY.register("imp_ranged_lane_windup_and_retreat_are_bounded",
+            () -> ImpGameTests::impRangedLaneWindupAndRetreatAreBounded);
+        REGISTRY.register("imp_projectile_allies_griefing_and_protected_blocks_are_safe",
+            () -> ImpGameTests::impProjectileAlliesGriefingAndProtectedBlocksAreSafe);
+        REGISTRY.register("imp_bound_environmental_immunity_does_not_transfer_damage",
+            () -> ImpGameTests::impBoundEnvironmentalImmunityDoesNotTransferDamage);
+        REGISTRY.register("imp_infernal_orders_authority_conflicts_and_leader_loss_are_safe",
+            () -> ImpGameTests::impInfernalOrdersAuthorityConflictsAndLeaderLossAreSafe);
+        REGISTRY.register("imp_state_migration_corruption_and_expiry_are_bounded",
+            () -> ImpGameTests::impStateMigrationCorruptionAndExpiryAreBounded);
+        REGISTRY.register("imp_population_cadence_and_operation_budgets_hold",
+            () -> ImpGameTests::impPopulationCadenceAndOperationBudgetsHold);
     }
 
     private ModGameTests() {
