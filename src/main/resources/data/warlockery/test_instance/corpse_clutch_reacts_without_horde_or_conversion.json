@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:corpse_clutch_reacts_without_horde_or_conversion",
+  "environment": "warlockery:corpse_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

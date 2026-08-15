@@ -76,7 +76,8 @@ class AmbientActivityRulesTest {
             CreatureKind.GOBLIN,
             CreatureKind.HOBGOBLIN,
             CreatureKind.NAAMAH,
-            CreatureKind.ELDRITCH_WATCHER
+            CreatureKind.ELDRITCH_WATCHER,
+            CreatureKind.CORPSE
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
@@ -95,6 +96,19 @@ class AmbientActivityRulesTest {
         assertEquals(10, arcaneStudy.chanceDenominator());
         assertEquals(4_800, arcaneStudy.cooldownTicks());
         assertEquals(0, arcaneStudy.localChangeCap());
+    }
+
+    @Test
+    void corpseIsDelegatedToItsDedicatedRuntimeWhileLouseKeepsExactGraveScavenge() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.CORPSE).isEmpty(),
+            "the Corpse no longer shares the ambient scavenge profile");
+        final AmbientActivityProfile scavenge =
+            AmbientActivityProfile.forType(ActivityType.GRAVE_SCAVENGE);
+        assertEquals(Set.of(CreatureKind.LOUSE), scavenge.kinds());
+        assertEquals(300, scavenge.checkIntervalTicks());
+        assertEquals(12, scavenge.chanceDenominator());
+        assertEquals(4_800, scavenge.cooldownTicks());
+        assertEquals(1, scavenge.localChangeCap());
     }
 
     @Test

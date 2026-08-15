@@ -10,6 +10,7 @@ import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
 import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
+import com.kadamitas.warlockery.entity.CorpseGameTests;
 import com.kadamitas.warlockery.entity.InfernalHierarchyGameTests;
 import com.kadamitas.warlockery.entity.ImpGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
@@ -387,6 +388,18 @@ public final class ModGameTests {
             () -> EldritchWatcherGameTests::bindingWarningLureAndReturnRemainLocal);
         REGISTRY.register("eldritch_watcher_save_reload_focus_hazard_and_work_are_bounded",
             () -> EldritchWatcherGameTests::saveReloadFocusHazardAndWorkAreBounded);
+        REGISTRY.register("corpse_raise_dead_identity_owner_and_acquisition_are_preserved",
+            () -> CorpseGameTests::corpseRaiseDeadIdentityOwnerAndAcquisitionArePreserved);
+        REGISTRY.register("corpse_scavenges_feeds_and_enters_dormancy_safely",
+            () -> CorpseGameTests::corpseScavengesFeedsAndEntersDormancySafely);
+        REGISTRY.register("corpse_clutch_reacts_without_horde_or_conversion",
+            () -> CorpseGameTests::corpseClutchReactsWithoutHordeOrConversion);
+        REGISTRY.register("corpse_dual_owner_grave_command_and_loyalty_are_deterministic",
+            () -> CorpseGameTests::corpseDualOwnerGraveCommandAndLoyaltyAreDeterministic);
+        REGISTRY.register("corpse_relationships_and_zombie_lifecycle_are_replaced",
+            () -> CorpseGameTests::corpseRelationshipsAndZombieLifecycleAreReplaced);
+        REGISTRY.register("corpse_save_reload_hazards_and_work_are_bounded",
+            () -> CorpseGameTests::corpseSaveReloadHazardsAndWorkAreBounded);
     }
 
     private ModGameTests() {

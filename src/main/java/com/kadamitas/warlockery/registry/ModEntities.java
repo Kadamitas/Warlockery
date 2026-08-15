@@ -14,6 +14,7 @@ import com.kadamitas.warlockery.entity.NamiEntity;
 import com.kadamitas.warlockery.entity.NaamahEntity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.ArcaneMob;
+import com.kadamitas.warlockery.entity.CorpseEntity;
 import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
@@ -108,6 +109,7 @@ public final class ModEntities {
         Map.entry(CreatureKind.NAAMAH, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createNaamah),
         Map.entry(CreatureKind.VAMPIRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createVampireCourt),
         Map.entry(CreatureKind.BLOOD_THRALL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createVampireCourt),
+        Map.entry(CreatureKind.CORPSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createCorpse),
         Map.entry(CreatureKind.DEMON, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
         Map.entry(CreatureKind.EMBERHORN_ARCHFIEND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
         Map.entry(CreatureKind.ABYSSAL_REGENT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal)
@@ -129,6 +131,7 @@ public final class ModEntities {
     );
     private static final Set<String> PASSIVE_SPAWN_IDS = Set.of("ent", "goblin", "hobgoblin", "spirit");
     private static final List<AttributeFactoryRule> ATTRIBUTE_FACTORY_RULES = List.of(
+        AttributeFactoryRule.exact("corpse", _ -> CorpseEntity.createAttributes().build()),
         AttributeFactoryRule.exact("ent", _ -> IronGolem.createAttributes().build()),
         AttributeFactoryRule.exact("forgewarden", _ -> patronAttributes(CreatureKind.FORGEWARDEN)),
         AttributeFactoryRule.exact("stonebroker", _ -> patronAttributes(CreatureKind.STONEBROKER)),
@@ -259,6 +262,16 @@ public final class ModEntities {
         return EntityType.Builder.of(
             (EntityType<VampireCourtEntity> type, net.minecraft.world.level.Level level) ->
                 new VampireCourtEntity(type, level, registration.kind()),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createCorpse(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<CorpseEntity> type, net.minecraft.world.level.Level level) ->
+                new CorpseEntity(type, level),
             MobCategory.MONSTER
         ).sized(registration.width(), registration.height())
             .notInPeaceful()

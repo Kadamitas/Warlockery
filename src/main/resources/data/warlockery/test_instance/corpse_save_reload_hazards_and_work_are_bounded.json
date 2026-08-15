@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:corpse_save_reload_hazards_and_work_are_bounded",
+  "environment": "warlockery:corpse_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

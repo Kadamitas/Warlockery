@@ -68,6 +68,24 @@ final class CustomCreatureIdentityTest {
     }
 
     @Test
+    void corpseIsADedicatedNonZombieNonArcaneMobMonsterWithExactBases() {
+        assertEquals(net.minecraft.world.entity.monster.Monster.class, CorpseEntity.class.getSuperclass());
+        assertTrue(java.lang.reflect.Modifier.isFinal(CorpseEntity.class.getModifiers()));
+        assertFalse(net.minecraft.world.entity.monster.zombie.Zombie.class.isAssignableFrom(CorpseEntity.class));
+        assertFalse(ArcaneMob.class.isAssignableFrom(CorpseEntity.class));
+        assertTrue(ArcaneCreature.class.isAssignableFrom(CorpseEntity.class));
+        assertEquals(20.0D, CorpseEntity.BASE_MAX_HEALTH);
+        assertEquals(35.0D, CorpseEntity.BASE_FOLLOW_RANGE);
+        assertEquals(0.23D, CorpseEntity.BASE_MOVEMENT_SPEED);
+        assertEquals(3.0D, CorpseEntity.BASE_ATTACK_DAMAGE);
+        assertEquals(2.0D, CorpseEntity.BASE_ARMOR);
+        assertEquals(0.0D, CorpseEntity.BASE_REINFORCEMENT_CHANCE);
+        assertEquals(0.6F, CreatureVisualProfile.forKind(CreatureKind.CORPSE).width());
+        assertEquals(1.95F, CreatureVisualProfile.forKind(CreatureKind.CORPSE).height());
+        assertTrue(CreatureKind.CORPSE.isUndead(), "Smite and Holy classification remains");
+    }
+
+    @Test
     void lycanVillagersTradeOnlyWithWerewolfPlayers() {
         assertTrue(LycanVillagerEntity.canTrade(SupernaturalForm.WEREWOLF));
         assertFalse(LycanVillagerEntity.canTrade(SupernaturalForm.NONE));

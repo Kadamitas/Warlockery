@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:corpse_dual_owner_grave_command_and_loyalty_are_deterministic",
+  "environment": "warlockery:corpse_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

@@ -57,6 +57,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "eldritch_watcher_isolated.json"
     );
+    private static final Path CORPSE_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "corpse_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -155,6 +159,14 @@ final class GameTestInstanceContractTest {
         "eldritch_watcher_revelation_is_bound_visible_and_attributed",
         "eldritch_watcher_binding_warning_lure_and_return_remain_local",
         "eldritch_watcher_save_reload_focus_hazard_and_work_are_bounded"
+    );
+    private static final Set<String> ISOLATED_CORPSE = Set.of(
+        "corpse_raise_dead_identity_owner_and_acquisition_are_preserved",
+        "corpse_scavenges_feeds_and_enters_dormancy_safely",
+        "corpse_clutch_reacts_without_horde_or_conversion",
+        "corpse_dual_owner_grave_command_and_loyalty_are_deterministic",
+        "corpse_relationships_and_zombie_lifecycle_are_replaced",
+        "corpse_save_reload_hazards_and_work_are_bounded"
     );
 
     @Test
@@ -273,6 +285,22 @@ final class GameTestInstanceContractTest {
             "all four exact F14 Eldritch Watcher GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactCorpseFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(CORPSE_ENVIRONMENT),
+            "the isolated F17 Corpse environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(CORPSE_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F17 Corpse environment must not mutate shared world state");
+        assertEquals(6, ISOLATED_CORPSE.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_CORPSE),
+            "all six exact F17 Corpse GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -292,7 +320,9 @@ final class GameTestInstanceContractTest {
                                     ? "warlockery:imp_isolated"
                                     : ISOLATED_ELDRITCH_WATCHER.contains(registration.id())
                                         ? "warlockery:eldritch_watcher_isolated"
-                                        : "minecraft:default",
+                                        : ISOLATED_CORPSE.contains(registration.id())
+                                            ? "warlockery:corpse_isolated"
+                                            : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );
