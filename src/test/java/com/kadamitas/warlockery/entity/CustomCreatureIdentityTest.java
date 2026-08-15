@@ -8,10 +8,19 @@ import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.CreatureBehaviorProfile.Feature;
 import com.kadamitas.warlockery.entity.CreatureVisualProfile.Archetype;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
 import net.minecraft.world.entity.monster.Vex;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 final class CustomCreatureIdentityTest {
+    @BeforeAll
+    static void bootstrapRegistries() {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+    }
+
     @Test
     void impAndStormSimianArePurposeBuiltMobsRatherThanVexCopies() {
         assertEquals(WingedArcaneMob.class, ImpEntity.class.getSuperclass());
