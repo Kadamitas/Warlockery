@@ -73,6 +73,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "banshee_isolated.json"
     );
+    private static final Path DEATH_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "death_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -206,6 +210,14 @@ final class GameTestInstanceContractTest {
         "banshee_recoils_from_attack_without_a_sonic_weapon",
         "banshee_save_reload_and_acquisition_contracts_are_preserved",
         "banshee_flight_hazard_feedback_and_work_are_bounded"
+    );
+    private static final Set<String> ISOLATED_DEATH = Set.of(
+        "death_appointment_telegraphs_and_reaps_once",
+        "death_complete_disguise_releases_appointment",
+        "death_blocked_route_releases_after_three_failures",
+        "death_reap_respects_vanilla_protection_and_attribution",
+        "death_reload_does_not_replay_reap",
+        "death_hazard_and_other_families_remain_isolated"
     );
 
     @Test
@@ -388,6 +400,22 @@ final class GameTestInstanceContractTest {
             "all five exact F16 Banshee GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactDeathFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(DEATH_ENVIRONMENT),
+            "the isolated F18 Death environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(DEATH_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F18 Death environment must not mutate shared world state");
+        assertEquals(6, ISOLATED_DEATH.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_DEATH),
+            "all six exact F18 Death GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -415,7 +443,9 @@ final class GameTestInstanceContractTest {
                                                     ? "warlockery:hex_bat_isolated"
                                                     : ISOLATED_BANSHEE.contains(registration.id())
                                                         ? "warlockery:banshee_isolated"
-                                                        : "minecraft:default",
+                                                        : ISOLATED_DEATH.contains(registration.id())
+                                                            ? "warlockery:death_isolated"
+                                                            : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

@@ -12,6 +12,7 @@ import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
 import com.kadamitas.warlockery.entity.BansheeGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
+import com.kadamitas.warlockery.entity.DeathGameTests;
 import com.kadamitas.warlockery.entity.InfernalHierarchyGameTests;
 import com.kadamitas.warlockery.entity.HellhoundLifeGameTests;
 import com.kadamitas.warlockery.entity.ImpGameTests;
@@ -445,6 +446,18 @@ public final class ModGameTests {
             () -> BansheeGameTests::bansheeSaveReloadAndAcquisitionContractsArePreserved);
         REGISTRY.register("banshee_flight_hazard_feedback_and_work_are_bounded",
             () -> BansheeGameTests::bansheeFlightHazardFeedbackAndWorkAreBounded);
+        REGISTRY.register("death_appointment_telegraphs_and_reaps_once",
+            () -> DeathGameTests::deathAppointmentTelegraphsAndReapsOnce);
+        REGISTRY.register("death_complete_disguise_releases_appointment",
+            () -> DeathGameTests::deathCompleteDisguiseReleasesAppointment);
+        REGISTRY.register("death_blocked_route_releases_after_three_failures",
+            () -> DeathGameTests::deathBlockedRouteReleasesAfterThreeFailures);
+        REGISTRY.register("death_reap_respects_vanilla_protection_and_attribution",
+            () -> DeathGameTests::deathReapRespectsVanillaProtectionAndAttribution);
+        REGISTRY.register("death_reload_does_not_replay_reap",
+            () -> DeathGameTests::deathReloadDoesNotReplayReap);
+        REGISTRY.register("death_hazard_and_other_families_remain_isolated",
+            () -> DeathGameTests::deathHazardAndOtherFamiliesRemainIsolated);
     }
 
     private ModGameTests() {

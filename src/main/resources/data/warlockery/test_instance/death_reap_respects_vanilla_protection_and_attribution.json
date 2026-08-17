@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:death_reap_respects_vanilla_protection_and_attribution",
+  "environment": "warlockery:death_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:death_hazard_and_other_families_remain_isolated",
+  "environment": "warlockery:death_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

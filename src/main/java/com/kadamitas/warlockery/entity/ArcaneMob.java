@@ -8,7 +8,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
@@ -101,13 +100,9 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
 
     @Override
     public boolean doHurtTarget(final ServerLevel level, final Entity target) {
-        final float pairedBonus = behavior.attackDamageBonus(this, level);
-        final float deathBonus = kind == CreatureKind.DEATH && target instanceof LivingEntity living
-            ? Math.max(0.0F, DeathCombatRules.meleeDamage(living.getMaxHealth()) - (float) getAttributeValue(Attributes.ATTACK_DAMAGE))
-            : 0.0F;
         final boolean hurt = PrimaryAttackModifier.withDamageBonus(
             this,
-            pairedBonus + deathBonus,
+            behavior.attackDamageBonus(this, level),
             () -> super.doHurtTarget(level, target)
         );
         if (hurt) {

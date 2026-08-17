@@ -106,7 +106,10 @@ class AmbientActivityRulesTest {
             CreatureKind.CORPSE,
             // F15: the dedicated HexBatRuntime owns roost/sortie behavior.
             CreatureKind.HEX_BAT,
-            CreatureKind.BANSHEE
+            CreatureKind.BANSHEE,
+            // F18: the dedicated DeathRuntime owns every Death schedule; Death never communes
+            // with soul lanterns.
+            CreatureKind.DEATH
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))

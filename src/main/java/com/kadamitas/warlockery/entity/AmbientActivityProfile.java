@@ -30,7 +30,7 @@ public record AmbientActivityProfile(
         profile(ActivityType.GRAVE_SCAVENGE, Set.of(CreatureKind.LOUSE), 300, 12, 4_800, 1),
         profile(ActivityType.DAYLIGHT_SHELTER, Set.of(CreatureKind.VAMPIRE, CreatureKind.BLOOD_THRALL), 100, 3, 1_200, 0),
         profile(ActivityType.SOUL_LANTERN_VIGIL, Set.of(CreatureKind.LOST_SOUL, CreatureKind.SPIRIT,
-            CreatureKind.SPECTRE, CreatureKind.ECHO_SHADE, CreatureKind.UMBRAL_SIGIL, CreatureKind.DEATH),
+            CreatureKind.SPECTRE, CreatureKind.ECHO_SHADE, CreatureKind.UMBRAL_SIGIL),
             400, 10, 4_800, 0),
         profile(ActivityType.HAY_REST, Set.of(CreatureKind.PALE_STEED, CreatureKind.NIGHTMARE), 400, 12, 6_000, 0),
         profile(ActivityType.VILLAGE_WATCH, Set.of(CreatureKind.IRONBOUND_SENTINEL,

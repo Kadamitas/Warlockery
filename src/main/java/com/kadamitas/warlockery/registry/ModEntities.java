@@ -19,6 +19,7 @@ import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.HellhoundEntity;
 import com.kadamitas.warlockery.entity.CorpseEntity;
+import com.kadamitas.warlockery.entity.DeathEntity;
 import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
@@ -119,7 +120,8 @@ public final class ModEntities {
         Map.entry(CreatureKind.ABYSSAL_REGENT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
         Map.entry(CreatureKind.HELLHOUND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHellhound),
         Map.entry(CreatureKind.HEX_BAT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHexBat),
-        Map.entry(CreatureKind.BANSHEE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createBanshee)
+        Map.entry(CreatureKind.BANSHEE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createBanshee),
+        Map.entry(CreatureKind.DEATH, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createDeath)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -139,6 +141,7 @@ public final class ModEntities {
     private static final Set<String> PASSIVE_SPAWN_IDS = Set.of("ent", "goblin", "hobgoblin", "spirit");
     private static final List<AttributeFactoryRule> ATTRIBUTE_FACTORY_RULES = List.of(
         AttributeFactoryRule.exact("corpse", _ -> CorpseEntity.createAttributes().build()),
+        AttributeFactoryRule.exact("death", _ -> DeathEntity.createAttributes().build()),
         AttributeFactoryRule.exact("ent", _ -> IronGolem.createAttributes().build()),
         AttributeFactoryRule.exact("forgewarden", _ -> patronAttributes(CreatureKind.FORGEWARDEN)),
         AttributeFactoryRule.exact("stonebroker", _ -> patronAttributes(CreatureKind.STONEBROKER)),
@@ -308,6 +311,16 @@ public final class ModEntities {
             .build(REGISTRY.key(registration.id()));
     }
 
+    private static EntityType<?> createDeath(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<DeathEntity> type, net.minecraft.world.level.Level level) ->
+                new DeathEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
     private static EntityType<?> createEldritchWatcher(final EntityRegistration registration) {
         return EntityType.Builder.of(
             (EntityType<EldritchWatcherEntity> type, net.minecraft.world.level.Level level) ->
@@ -401,10 +414,6 @@ public final class ModEntities {
     private static net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder groundAttributes(final String id) {
         final var attributes = Zombie.createAttributes();
         return switch (id) {
-            case "death" -> attributes
-                .add(Attributes.MAX_HEALTH, com.kadamitas.warlockery.entity.DeathCombatRules.MAX_HEALTH)
-                .add(Attributes.ATTACK_DAMAGE, 14)
-                .add(Attributes.ARMOR, 12);
             case "abyssal_regent" -> attributes
                 .add(Attributes.MAX_HEALTH, AbyssalRegentRules.MAX_HEALTH)
                 .add(Attributes.ATTACK_DAMAGE, AbyssalRegentRules.ATTACK_DAMAGE)
