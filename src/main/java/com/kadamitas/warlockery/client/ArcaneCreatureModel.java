@@ -205,6 +205,9 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
             }
         }
         applyHexBatPose(hexBatPose(variant, state.hexBatRoosting, state.hexBatSwooping));
+        if (state.bansheeActivity != null) {
+            applyBansheePresentation(state);
+        }
     }
 
     /**
@@ -240,6 +243,50 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
         head.xRot += pose.headXRot();
         rightWing.zRot = -pose.wingFoldZRot();
         leftWing.zRot = pose.wingFoldZRot();
+    }
+
+    static final float BANSHEE_APPROACH_LEAN = 0.35F;
+    static final float BANSHEE_WARNING_ARM_DRAW = 0.55F;
+    static final float BANSHEE_WARNING_PULSE_FLARE = 0.4F;
+    static final float BANSHEE_LAMENT_HEAD_DROP = 0.5F;
+    static final float BANSHEE_LAMENT_SHOULDER_DROP = 0.18F;
+    static final float BANSHEE_RECOIL_COMPRESSION = 0.3F;
+    static final float BANSHEE_RECOIL_WING_BEAT = 0.45F;
+
+    /**
+     * Pose-only Banshee presentation driven exclusively by the synchronized activity byte and
+     * pulse sequence. No geometry, UV, texture, or non-Banshee pose changes.
+     */
+    private void applyBansheePresentation(final TexturedCreatureRenderers.ArcaneState state) {
+        switch (state.bansheeActivity) {
+            case APPROACH -> {
+                body.xRot += BANSHEE_APPROACH_LEAN;
+                head.xRot -= BANSHEE_APPROACH_LEAN * 0.5F;
+            }
+            case WARNING -> {
+                final float open = (state.bansheePulseSequence & 1) == 1
+                    ? BANSHEE_WARNING_PULSE_FLARE
+                    : 0.0F;
+                rightArm.zRot += BANSHEE_WARNING_ARM_DRAW - open;
+                leftArm.zRot -= BANSHEE_WARNING_ARM_DRAW - open;
+                head.xRot -= 0.2F;
+            }
+            case LAMENT -> {
+                head.xRot += BANSHEE_LAMENT_HEAD_DROP;
+                body.xRot += BANSHEE_LAMENT_SHOULDER_DROP;
+                rightWing.zRot *= 0.5F;
+                leftWing.zRot *= 0.5F;
+            }
+            case RECOIL -> {
+                body.xRot += BANSHEE_RECOIL_COMPRESSION;
+                head.xRot += BANSHEE_RECOIL_COMPRESSION * 0.5F;
+                final float beat = Mth.sin(state.ageInTicks * 1.3F) * BANSHEE_RECOIL_WING_BEAT;
+                rightWing.zRot -= beat;
+                leftWing.zRot += beat;
+            }
+            case VIGIL, RECOVERY -> {
+            }
+        }
     }
 
     @Override

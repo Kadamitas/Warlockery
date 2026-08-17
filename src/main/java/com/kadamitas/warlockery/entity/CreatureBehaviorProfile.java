@@ -24,7 +24,7 @@ public record CreatureBehaviorProfile(
             Feature.POTION_VOLLEY, Feature.THORN_RETALIATION),
         profile("banshee", CreatureKind.BANSHEE, AuditStatus.COMPLETE,
             CreatureBehaviorTags.Items.BANSHEE_EMPOWERMENT, 120,
-            Feature.DUST_EMPOWERMENT, Feature.SCREECH, Feature.PHASED),
+            Feature.DUST_EMPOWERMENT),
         profile("pale_steed", CreatureKind.PALE_STEED, AuditStatus.MODERN_EQUIVALENT,
             CreatureBehaviorTags.Items.PALE_STEED_BONDING, 20,
             Feature.RIDEABLE_BOND, Feature.OWNER_AURA),

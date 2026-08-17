@@ -38,6 +38,19 @@ class AmbientActivityRulesTest {
     }
 
     @Test
+    void hauntedBellBelongsOnlyToThePoltergeistWithExactScheduling() {
+        final AmbientActivityProfile hauntedBell = AmbientActivityProfile.forType(ActivityType.HAUNTED_BELL);
+        assertEquals(Set.of(CreatureKind.POLTERGEIST), hauntedBell.kinds(),
+            "the Banshee no longer receives the haunted-bell routine; the Poltergeist keeps it");
+        assertEquals(400, hauntedBell.checkIntervalTicks());
+        assertEquals(14, hauntedBell.chanceDenominator());
+        assertEquals(6_000, hauntedBell.cooldownTicks());
+        assertEquals(0, hauntedBell.localChangeCap());
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.BANSHEE).isEmpty(),
+            "Banshee ambient presentation is owned by its dedicated vigil runtime");
+    }
+
+    @Test
     void profilesAreRareCappedAndCooldownProtected() {
         AmbientActivityProfile.all().forEach(profile -> {
             assertTrue(profile.checkIntervalTicks() >= 100);
@@ -92,7 +105,8 @@ class AmbientActivityRulesTest {
             CreatureKind.ELDRITCH_WATCHER,
             CreatureKind.CORPSE,
             // F15: the dedicated HexBatRuntime owns roost/sortie behavior.
-            CreatureKind.HEX_BAT
+            CreatureKind.HEX_BAT,
+            CreatureKind.BANSHEE
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))

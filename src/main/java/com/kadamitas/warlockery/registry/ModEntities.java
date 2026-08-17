@@ -4,6 +4,7 @@ import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.entity.AbyssalRegentRules;
 import com.kadamitas.warlockery.entity.EldritchWatcherEntity;
 import com.kadamitas.warlockery.entity.EntEntity;
+import com.kadamitas.warlockery.entity.BansheeEntity;
 import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.entity.HexBatEntity;
 import com.kadamitas.warlockery.entity.HexBatRules;
@@ -117,7 +118,8 @@ public final class ModEntities {
         Map.entry(CreatureKind.EMBERHORN_ARCHFIEND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
         Map.entry(CreatureKind.ABYSSAL_REGENT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
         Map.entry(CreatureKind.HELLHOUND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHellhound),
-        Map.entry(CreatureKind.HEX_BAT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHexBat)
+        Map.entry(CreatureKind.HEX_BAT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHexBat),
+        Map.entry(CreatureKind.BANSHEE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createBanshee)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -156,6 +158,9 @@ public final class ModEntities {
             WingedArcaneMob.createAttributes(kindFor(id)).build()),
         AttributeFactoryRule.exact("hex_bat", _ -> Vex.createAttributes()
             .add(Attributes.FLYING_SPEED, HexBatRules.FLYING_SPEED)
+            .build()),
+        AttributeFactoryRule.exact("banshee", _ -> Vex.createAttributes()
+            .add(Attributes.FLYING_SPEED, com.kadamitas.warlockery.entity.BansheeRules.FLYING_SPEED)
             .build()),
         new AttributeFactoryRule(SPIRIT_IDS::contains, _ -> Vex.createAttributes().build())
     );
@@ -277,6 +282,16 @@ public final class ModEntities {
         return EntityType.Builder.of(
             (EntityType<VampireCourtEntity> type, net.minecraft.world.level.Level level) ->
                 new VampireCourtEntity(type, level, registration.kind()),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createBanshee(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<BansheeEntity> type, net.minecraft.world.level.Level level) ->
+                new BansheeEntity(type, level),
             MobCategory.MONSTER
         ).sized(registration.width(), registration.height())
             .notInPeaceful()

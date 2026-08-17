@@ -133,7 +133,14 @@ final class CreatureBehaviorParityTest {
     private static void success(final MobCase testCase) {
         final CreatureBehaviorProfile profile = profile(testCase);
         assertTrue(profile.has(testCase.requiredFeature()), testCase.requiredFeature().name());
-        assertTrue(profile.features().size() >= 2);
+        if (testCase.kind() == CreatureKind.BANSHEE) {
+            assertEquals(Set.of(Feature.DUST_EMPOWERMENT), profile.features(),
+                "the Banshee profile is compatibility metadata only: its mob-specific behavior "
+                    + "lives in the dedicated BansheeRuntime, and no generic SCREECH or PHASED "
+                    + "claim may return");
+        } else {
+            assertTrue(profile.features().size() >= 2);
+        }
         if (testCase.kind() == CreatureKind.BLOOD_THRALL) {
             assertTrue(profile.has(Feature.SUNLIGHT_WEAKNESS));
             assertFalse(profile.has(Feature.BLOOD_DRAIN));

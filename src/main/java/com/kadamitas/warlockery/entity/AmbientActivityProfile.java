@@ -23,7 +23,7 @@ public record AmbientActivityProfile(
             CreatureKind.FORGEWARDEN), 240, 10, 3_600, 0),
         profile(ActivityType.NIGHT_PERCH, Set.of(CreatureKind.OWL), 300, 8, 3_600, 0),
         profile(ActivityType.POND_REST, Set.of(CreatureKind.TOAD), 300, 8, 3_600, 0),
-        profile(ActivityType.HAUNTED_BELL, Set.of(CreatureKind.POLTERGEIST, CreatureKind.BANSHEE), 400, 14, 6_000, 0),
+        profile(ActivityType.HAUNTED_BELL, Set.of(CreatureKind.POLTERGEIST), 400, 14, 6_000, 0),
         profile(ActivityType.STORM_ROD, Set.of(CreatureKind.STORM_SIMIAN), 300, 8, 3_600, 0),
         profile(ActivityType.ARCANE_STUDY, Set.of(CreatureKind.CIRCLE_MAGE, CreatureKind.HEDGE_CRONE),
             400, 10, 4_800, 0),

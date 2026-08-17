@@ -9,6 +9,7 @@ import com.kadamitas.warlockery.entity.VampireCourtGameTests;
 import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
 import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
+import com.kadamitas.warlockery.entity.BansheeGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
 import com.kadamitas.warlockery.entity.InfernalHierarchyGameTests;
@@ -434,6 +435,16 @@ public final class ModGameTests {
             () -> HexBatGameTests::murderousFlockProtectsCasterAndCallsLocally);
         REGISTRY.register("hex_bat_save_reload_hazard_and_work_are_bounded",
             () -> HexBatGameTests::hexBatSaveReloadHazardAndWorkAreBounded);
+        REGISTRY.register("banshee_warns_at_risk_player_without_causing_harm",
+            () -> BansheeGameTests::bansheeWarnsAtRiskPlayerWithoutCausingHarm);
+        REGISTRY.register("banshee_laments_only_an_observed_death_and_returns_to_vigil",
+            () -> BansheeGameTests::bansheeLamentsOnlyAnObservedDeathAndReturnsToVigil);
+        REGISTRY.register("banshee_recoils_from_attack_without_a_sonic_weapon",
+            () -> BansheeGameTests::bansheeRecoilsFromAttackWithoutASonicWeapon);
+        REGISTRY.register("banshee_save_reload_and_acquisition_contracts_are_preserved",
+            () -> BansheeGameTests::bansheeSaveReloadAndAcquisitionContractsArePreserved);
+        REGISTRY.register("banshee_flight_hazard_feedback_and_work_are_bounded",
+            () -> BansheeGameTests::bansheeFlightHazardFeedbackAndWorkAreBounded);
     }
 
     private ModGameTests() {

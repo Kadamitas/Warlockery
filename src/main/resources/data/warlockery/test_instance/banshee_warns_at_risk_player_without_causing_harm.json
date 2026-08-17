@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:banshee_warns_at_risk_player_without_causing_harm",
+  "environment": "warlockery:banshee_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

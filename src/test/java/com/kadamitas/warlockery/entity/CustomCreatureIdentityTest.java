@@ -56,6 +56,23 @@ final class CustomCreatureIdentityTest {
     }
 
     @Test
+    void bansheeIsADedicatedNonEnemyPathfinderRatherThanAVexCopy() {
+        assertEquals(net.minecraft.world.entity.PathfinderMob.class, BansheeEntity.class.getSuperclass());
+        assertTrue(java.lang.reflect.Modifier.isFinal(BansheeEntity.class.getModifiers()));
+        assertTrue(ArcaneCreature.class.isAssignableFrom(BansheeEntity.class));
+        assertFalse(Vex.class.isAssignableFrom(BansheeEntity.class));
+        assertFalse(net.minecraft.world.entity.monster.zombie.Zombie.class.isAssignableFrom(BansheeEntity.class));
+        assertFalse(SpiritMob.class.isAssignableFrom(BansheeEntity.class));
+        assertFalse(WingedArcaneMob.class.isAssignableFrom(BansheeEntity.class));
+        assertFalse(net.minecraft.world.entity.monster.Enemy.class.isAssignableFrom(BansheeEntity.class),
+            "the Banshee must not implement Enemy: no sleep prevention and no golem auto-targeting");
+        assertFalse(net.minecraft.world.entity.monster.Monster.class.isAssignableFrom(BansheeEntity.class));
+        assertEquals(Archetype.SPIRIT, CreatureVisualProfile.forKind(CreatureKind.BANSHEE).archetype());
+        assertEquals(0.65F, CreatureVisualProfile.forKind(CreatureKind.BANSHEE).width());
+        assertEquals(1.8F, CreatureVisualProfile.forKind(CreatureKind.BANSHEE).height());
+    }
+
+    @Test
     void feralLycanIsADedicatedSubclassOfTheExtensibleWerewolfClass() {
         assertEquals(WerewolfEntity.class, FeralLycanEntity.class.getSuperclass());
         assertEquals(ArcaneMob.class, WerewolfEntity.class.getSuperclass());

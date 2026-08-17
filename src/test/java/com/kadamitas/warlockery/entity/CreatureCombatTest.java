@@ -103,6 +103,23 @@ final class CreatureCombatTest {
     }
 
     @Test
+    void bansheeDamageResultsAreUnchangedAfterLeavingSpiritMob() {
+        assertEquals(10.0F, CreatureCombat.adjustedDamage(CreatureKind.BANSHEE, 10.0F, false, false, false, false),
+            "ordinary damage stays exact for the dedicated non-SpiritMob Banshee");
+        assertEquals(15.0F, CreatureCombat.adjustedDamage(CreatureKind.BANSHEE, 10.0F, false, false, true, false),
+            "consecrated damage keeps its exact bonus through CreatureKind.BANSHEE.isUndead()");
+        assertEquals(
+            CreatureCombat.adjustedDamage(CreatureKind.BANSHEE, 10.0F, false, false, true, true),
+            CreatureCombat.adjustedDamage(CreatureKind.BANSHEE, 10.0F, false, false, true, false),
+            "the spirit-class flag no longer changes any Banshee result");
+        assertEquals(15.0F, CreatureCombat.adjustedDamage(CreatureKind.BANSHEE, 10.0F, true, false, true, false),
+            "silver does not double against the Banshee; only the consecrated bonus applies"
+        );
+        assertTrue(CreatureKind.BANSHEE.isUndead());
+        assertFalse(CreatureKind.BANSHEE.isSupernatural());
+    }
+
+    @Test
     void poisonAndWitherPersistThroughNullification() {
         assertTrue(CreatureCombat.persistsThroughNullification(net.minecraft.world.effect.MobEffects.POISON));
         assertTrue(CreatureCombat.persistsThroughNullification(net.minecraft.world.effect.MobEffects.WITHER));

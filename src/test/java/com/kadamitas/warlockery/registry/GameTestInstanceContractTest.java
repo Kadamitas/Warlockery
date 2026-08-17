@@ -69,6 +69,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "hex_bat_isolated.json"
     );
+    private static final Path BANSHEE_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "banshee_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -195,6 +199,13 @@ final class GameTestInstanceContractTest {
         "hex_bat_swoop_marks_and_releases_target_safely",
         "murderous_flock_protects_caster_and_calls_locally",
         "hex_bat_save_reload_hazard_and_work_are_bounded"
+    );
+    private static final Set<String> ISOLATED_BANSHEE = Set.of(
+        "banshee_warns_at_risk_player_without_causing_harm",
+        "banshee_laments_only_an_observed_death_and_returns_to_vigil",
+        "banshee_recoils_from_attack_without_a_sonic_weapon",
+        "banshee_save_reload_and_acquisition_contracts_are_preserved",
+        "banshee_flight_hazard_feedback_and_work_are_bounded"
     );
 
     @Test
@@ -361,6 +372,22 @@ final class GameTestInstanceContractTest {
             "all four exact F15 Hex Bat GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactBansheeFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(BANSHEE_ENVIRONMENT),
+            "the isolated F16 Banshee environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(BANSHEE_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F16 Banshee environment must not mutate shared world state");
+        assertEquals(5, ISOLATED_BANSHEE.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_BANSHEE),
+            "all five exact F16 Banshee GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -386,7 +413,9 @@ final class GameTestInstanceContractTest {
                                                 ? "warlockery:hellhound_isolated"
                                                 : ISOLATED_HEX_BAT.contains(registration.id())
                                                     ? "warlockery:hex_bat_isolated"
-                                                    : "minecraft:default",
+                                                    : ISOLATED_BANSHEE.contains(registration.id())
+                                                        ? "warlockery:banshee_isolated"
+                                                        : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

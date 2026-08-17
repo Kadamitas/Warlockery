@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.entity.BansheeEntity;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.GoblinLifecycleRules;
@@ -127,6 +128,13 @@ final class TexturedCreatureRenderers {
             ArmedEntityRenderState.extractArmedEntityRenderState(
                 entity, state, this.itemModelResolver, partialTicks
             );
+            if (entity instanceof BansheeEntity banshee) {
+                state.bansheeActivity = banshee.presentationActivity();
+                state.bansheePulseSequence = banshee.presentationPulseSequence();
+            } else {
+                state.bansheeActivity = null;
+                state.bansheePulseSequence = 0;
+            }
             state.hobgoblinAssaultVariant = entity instanceof ArcaneMob arcane
                 && arcane.isHobgoblinAssaultVariant();
             state.tint = entity instanceof EntEntity ent
@@ -174,5 +182,7 @@ final class TexturedCreatureRenderers {
         private boolean hobgoblinAssaultVariant;
         boolean hexBatRoosting;
         boolean hexBatSwooping;
+        com.kadamitas.warlockery.entity.BansheeRules.Mode bansheeActivity;
+        int bansheePulseSequence;
     }
 }

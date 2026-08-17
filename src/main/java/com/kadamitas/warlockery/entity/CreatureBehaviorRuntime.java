@@ -85,7 +85,6 @@ public final class CreatureBehaviorRuntime {
         }
         switch (profile.kind()) {
             case HEDGE_CRONE -> tickHedgeCrone(creature);
-            case BANSHEE -> pulseEffects(creature, 10.0, MobEffects.WEAKNESS, MobEffects.MINING_FATIGUE);
             case DEATH -> creature.heal(1.0F);
             case FORGEWARDEN -> tickGoblinAura(creature, level, true);
             case THORNED_PURSUER -> tickThornedPursuer(creature, level);
