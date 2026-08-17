@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.GoblinTradeCatalog;
-import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.GoblinProfession;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.LongStream;
@@ -93,7 +93,7 @@ final class CreatureTradeCatalogTest {
     @Test
     void rareTreasureIsAddedOnlyOnceAtTheFinalTradeLevel() {
         final long seed = 73_991L;
-        final HobgoblinEntity.GoblinProfession profession = HobgoblinEntity.GoblinProfession.MINER;
+        final GoblinProfession profession = GoblinProfession.MINER;
 
         assertTrue(GoblinTradeCatalog.offersForLevel(CreatureKind.HOBGOBLIN, profession, seed, 1)
             .stream().noneMatch(GoblinTradeCatalog.treasureOffers()::contains));
@@ -145,7 +145,7 @@ final class CreatureTradeCatalogTest {
     @Test
     void merchantOfferSpecificationQuotesItsExactCostAndReward() {
         final GoblinTradeCatalog.OfferSpec coalOffer = GoblinTradeCatalog.coreOffers(
-            HobgoblinEntity.GoblinProfession.MINER
+            GoblinProfession.MINER
         ).stream().filter(offer -> offer.cost().id().equals("minecraft:coal")).findFirst().orElseThrow();
 
         assertEquals("minecraft:coal", coalOffer.cost().id());

@@ -39,6 +39,7 @@ import com.kadamitas.warlockery.world.SettlementFortificationGameTests;
 import com.kadamitas.warlockery.world.VillageAssaultGameTests;
 import com.kadamitas.warlockery.world.VillageGuardGameTests;
 import com.kadamitas.warlockery.world.GoblinSettlementLifeGameTests;
+import com.kadamitas.warlockery.world.GoblinEnclaveGameTests;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -136,6 +137,16 @@ public final class ModGameTests {
             () -> GoblinSettlementLifeGameTests::goblinChildrenGatherDanceAndGiftFlowers);
         REGISTRY.register("goblin_tunnel_is_single_bounded_and_protects_containers",
             () -> GoblinSettlementLifeGameTests::goblinTunnelIsSingleBoundedAndProtectsContainers);
+        REGISTRY.register("goblin_enclave_identity_schedule_and_migration",
+            () -> GoblinEnclaveGameTests::goblinEnclaveIdentityScheduleAndMigration);
+        REGISTRY.register("goblin_enclave_family_children_and_relations",
+            () -> GoblinEnclaveGameTests::goblinEnclaveFamilyChildrenAndRelations);
+        REGISTRY.register("goblin_enclave_work_transactions_and_caps",
+            () -> GoblinEnclaveGameTests::goblinEnclaveWorkTransactionsAndCaps);
+        REGISTRY.register("goblin_enclave_combat_assault_and_cleanup",
+            () -> GoblinEnclaveGameTests::goblinEnclaveCombatAssaultAndCleanup);
+        REGISTRY.register("goblin_enclave_hazard_navigation_and_population_bounds",
+            () -> GoblinEnclaveGameTests::goblinEnclaveHazardNavigationAndPopulationBounds);
         REGISTRY.register("goblin_raid_wave_is_grouped_and_coordinated",
             () -> VillageGuardGameTests::goblinRaidWaveIsGroupedAndCoordinated);
         REGISTRY.register("hobgoblins_flee_human_villagers_and_keep_custom_professions",

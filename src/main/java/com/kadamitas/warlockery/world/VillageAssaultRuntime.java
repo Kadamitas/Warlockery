@@ -3,6 +3,7 @@ package com.kadamitas.warlockery.world;
 import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.entity.ArcaneMob;
+import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.LycanPackRuntime;
 import com.kadamitas.warlockery.entity.VampireCourtEntity;
@@ -173,6 +174,10 @@ public final class VillageAssaultRuntime {
         }
         if (raider instanceof HobgoblinEntity goblin && kind == AssaultKind.GOBLIN) {
             goblin.joinVillageRaid(center, wave, leader);
+        }
+        // Body-level execution only: every strategic contract above this line is unchanged.
+        if (raider instanceof GoblinEntity exactGoblin && kind == AssaultKind.GOBLIN) {
+            exactGoblin.joinVillageAssault(center, wave, leader);
         }
         if (kind == AssaultKind.VAMPIRE && raider instanceof VampireCourtEntity courtMember) {
             if (leader) VampireCourtRuntime.markAssaultLeader(courtMember);
@@ -1330,6 +1335,11 @@ public final class VillageAssaultRuntime {
         }
         if (entity instanceof HobgoblinEntity goblin) {
             goblin.leaveVillageRaid();
+        }
+        // Releases target, combat role, enclave claims, and the derived persistence reason so a
+        // timed-out or unloaded survivor can never stay permanently persistent.
+        if (entity instanceof GoblinEntity exactGoblin) {
+            exactGoblin.leaveVillageAssault();
         }
     }
 

@@ -9,6 +9,7 @@ import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.entity.HexBatEntity;
 import com.kadamitas.warlockery.entity.HexBatRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.GoblinBossRules;
 import com.kadamitas.warlockery.entity.LostSoulEntity;
@@ -198,7 +199,14 @@ public final class ModEntities {
                 .sized(visual.width(), visual.height()).notInPeaceful().build(REGISTRY.key("werewolf_hunter"));
         });
     public static final RegistryObject<EntityType<HobgoblinEntity>> HOBGOBLIN = hobgoblin("hobgoblin", CreatureKind.HOBGOBLIN);
-    public static final RegistryObject<EntityType<HobgoblinEntity>> GOBLIN = hobgoblin("goblin", CreatureKind.GOBLIN);
+    public static final RegistryObject<EntityType<GoblinEntity>> GOBLIN = register("goblin",
+        () -> {
+            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.GOBLIN);
+            return EntityType.Builder.of(GoblinEntity::new, MobCategory.MONSTER)
+                .sized(visual.width(), visual.height())
+                .notInPeaceful()
+                .build(REGISTRY.key("goblin"));
+        });
     public static final RegistryObject<EntityType<HobgoblinEntity>> STONEBROKER = hobgoblin("stonebroker", CreatureKind.STONEBROKER);
     public static final RegistryObject<EntityType<HobgoblinEntity>> FORGEWARDEN = hobgoblin("forgewarden", CreatureKind.FORGEWARDEN);
     public static final RegistryObject<EntityType<NamiEntity>> NAMI = register("nami",
@@ -493,7 +501,16 @@ public final class ModEntities {
             HobgoblinEntity::checkNaturalSpawnRules,
             SpawnPlacementRegisterEvent.Operation.REPLACE
         );
-        NATURAL_SPAWN_IDS.stream().filter(id -> !"hobgoblin".equals(id)).forEach(id -> {
+        event.register(
+            GOBLIN.get(),
+            SpawnPlacementTypes.ON_GROUND,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            GoblinEntity::checkNaturalSpawnRules,
+            SpawnPlacementRegisterEvent.Operation.REPLACE
+        );
+        NATURAL_SPAWN_IDS.stream()
+            .filter(id -> !"hobgoblin".equals(id) && !"goblin".equals(id))
+            .forEach(id -> {
             final EntityType type = ALL.get(id).get();
             event.register(type, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 PASSIVE_SPAWN_IDS.contains(id)

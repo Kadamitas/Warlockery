@@ -116,7 +116,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
 
     public void assignProfessionFromVillage() {
         this.goblinProfession = Arrays.stream(GoblinProfession.values())
-            .filter(role -> this.level().getBlockStates(this.getBoundingBox().inflate(10)).anyMatch(state -> state.is(role.workstation)))
+            .filter(role -> this.level().getBlockStates(this.getBoundingBox().inflate(10)).anyMatch(state -> state.is(role.workstation())))
             .min(Comparator.comparingInt(Enum::ordinal))
             .orElseGet(() -> GoblinProfession.values()[random.nextInt(GoblinProfession.values().length)]);
         refreshDisplayName();
@@ -574,7 +574,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
     @Override
     protected void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        output.putString("WarlockeryGoblinProfession", goblinProfession.id);
+        output.putString("WarlockeryGoblinProfession", goblinProfession.id());
         output.putInt("WarlockeryProspectingCooldown", prospectingCooldown);
         output.putLong("WarlockeryNextFlowerGift", nextFlowerGiftTime);
         if (raidCenter != null) {
@@ -612,7 +612,7 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
 
     private void refreshDisplayName() {
         final String species = kind == CreatureKind.GOBLIN ? "goblin" : "hobgoblin";
-        setCustomName(Component.translatable("entity.warlockery." + species + ".profession." + goblinProfession.id));
+        setCustomName(Component.translatable("entity.warlockery." + species + ".profession." + goblinProfession.id()));
         setCustomNameVisible(true);
     }
 
@@ -671,34 +671,5 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
             ).stream()
             .min(Comparator.comparingDouble(this::distanceToSqr))
             .ifPresent(this::setTarget);
-    }
-
-    public enum GoblinProfession {
-        MINER("miner", Blocks.STONECUTTER, VillagerProfession.MASON),
-        SMITH("smith", Blocks.BLAST_FURNACE, VillagerProfession.ARMORER),
-        SHAMAN("shaman", Blocks.BREWING_STAND, VillagerProfession.CLERIC),
-        PROSPECTOR("prospector", Blocks.CARTOGRAPHY_TABLE, VillagerProfession.CARTOGRAPHER);
-
-        private final String id;
-        private final net.minecraft.world.level.block.Block workstation;
-        private final ResourceKey<VillagerProfession> engineProfession;
-
-        GoblinProfession(
-            final String id,
-            final net.minecraft.world.level.block.Block workstation,
-            final ResourceKey<VillagerProfession> engineProfession
-        ) {
-            this.id = id;
-            this.workstation = workstation;
-            this.engineProfession = engineProfession;
-        }
-
-        public ResourceKey<VillagerProfession> engineProfession() {
-            return engineProfession;
-        }
-
-        static GoblinProfession byId(final String id) {
-            return Arrays.stream(values()).filter(value -> value.id.equals(id)).findFirst().orElse(PROSPECTOR);
-        }
     }
 }

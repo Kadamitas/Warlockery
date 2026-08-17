@@ -125,11 +125,30 @@ public final class GoblinSettlementLifeGameTests {
     public static void goblinTunnelIsSingleBoundedAndProtectsContainers(final GameTestHelper helper) {
         BlockPos.betweenClosedStream(new BlockPos(-2, 0, -2), new BlockPos(12, 4, 4))
             .forEach(position -> helper.setBlock(position, Blocks.STONE));
+        // The exact Goblin is no longer a HobgoblinEntity, so this legacy fixture keeps its real
+        // subject - the shared settlement tunnel runtime - on the Hobgoblin body it is written
+        // against. The block-entity rejection is now asserted FIRST, against a virgin settlement
+        // record, so it can only be attributed to the protected block: with both miners sharing
+        // one settlement key, asserting it last would let the single-tunnel rule mask it.
+        final BlockPos protectedEntrance = helper.absolutePos(new BlockPos(2, 2, 0));
+        helper.getLevel().setBlockAndUpdate(protectedEntrance.east(2), Blocks.CHEST.defaultBlockState());
+        final HobgoblinEntity blocked = helper.spawn(
+            ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 0), EntitySpawnReason.EVENT
+        );
+        blocked.setNoAi(true);
+        helper.assertTrue(!GoblinSettlementLifeRuntime.tryExcavateTunnelAt(
+            blocked, helper.getLevel(), protectedEntrance, net.minecraft.core.Direction.EAST
+        ), "tunnels must never destroy block entities");
+        helper.assertTrue(helper.getLevel().getBlockState(protectedEntrance.east(2)).is(Blocks.CHEST),
+            "a rejected tunnel must leave protected terrain unchanged");
+
         final HobgoblinEntity miner = helper.spawn(
-            ModEntities.GOBLIN.get(), new BlockPos(0, 1, 1), EntitySpawnReason.EVENT
+            ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 1), EntitySpawnReason.EVENT
         );
         miner.setNoAi(true);
         final BlockPos first = helper.absolutePos(new BlockPos(2, 2, 1));
+        // This also proves the rejected attempt above reserved nothing: the two miners share one
+        // settlement key, so a leaked reservation would make this first real tunnel fail.
         helper.assertTrue(GoblinSettlementLifeRuntime.tryExcavateTunnelAt(
             miner, helper.getLevel(), first, net.minecraft.core.Direction.EAST
         ), "the first complete tunnel plan must excavate");
@@ -141,17 +160,6 @@ public final class GoblinSettlementLifeGameTests {
         helper.assertTrue(!GoblinSettlementLifeRuntime.tryExcavateTunnelAt(
             miner, helper.getLevel(), helper.absolutePos(new BlockPos(2, 2, 3)), net.minecraft.core.Direction.EAST
         ), "persistent settlement data must reject a second tunnel");
-        final BlockPos protectedEntrance = helper.absolutePos(new BlockPos(2, 2, 0));
-        helper.getLevel().setBlockAndUpdate(protectedEntrance.east(2), Blocks.CHEST.defaultBlockState());
-        final HobgoblinEntity otherSpecies = helper.spawn(
-            ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 0), EntitySpawnReason.EVENT
-        );
-        otherSpecies.setNoAi(true);
-        helper.assertTrue(!GoblinSettlementLifeRuntime.tryExcavateTunnelAt(
-            otherSpecies, helper.getLevel(), protectedEntrance, net.minecraft.core.Direction.EAST
-        ), "tunnels must never destroy block entities");
-        helper.assertTrue(helper.getLevel().getBlockState(protectedEntrance.east(2)).is(Blocks.CHEST),
-            "a rejected tunnel must leave protected terrain unchanged");
         helper.succeed();
     }
 

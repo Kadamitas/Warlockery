@@ -73,6 +73,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "banshee_isolated.json"
     );
+    private static final Path GOBLIN_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "goblin_isolated.json"
+    );
     private static final Path DEATH_ENVIRONMENT = Path.of(
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "death_isolated.json"
@@ -214,6 +218,13 @@ final class GameTestInstanceContractTest {
         "banshee_recoils_from_attack_without_a_sonic_weapon",
         "banshee_save_reload_and_acquisition_contracts_are_preserved",
         "banshee_flight_hazard_feedback_and_work_are_bounded"
+    );
+    private static final Set<String> ISOLATED_GOBLIN_ENCLAVE = Set.of(
+        "goblin_enclave_identity_schedule_and_migration",
+        "goblin_enclave_family_children_and_relations",
+        "goblin_enclave_work_transactions_and_caps",
+        "goblin_enclave_combat_assault_and_cleanup",
+        "goblin_enclave_hazard_navigation_and_population_bounds"
     );
     private static final Set<String> ISOLATED_DEATH = Set.of(
         "death_appointment_telegraphs_and_reaps_once",
@@ -413,6 +424,22 @@ final class GameTestInstanceContractTest {
     }
 
     @Test
+    void onlyTheExactGoblinEnclaveFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(GOBLIN_ENVIRONMENT),
+            "the isolated F10 Goblin environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(GOBLIN_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F10 Goblin environment must not mutate shared world state");
+        assertEquals(5, ISOLATED_GOBLIN_ENCLAVE.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_GOBLIN_ENCLAVE),
+            "all five exact F10 Goblin GameTests must be registered");
+    }
+
+    @Test
     void onlyTheExactDeathFixturesUseTheRegisteredNoOpEnvironment() {
         assertTrue(Files.exists(DEATH_ENVIRONMENT),
             "the isolated F18 Death environment resource must exist");
@@ -476,7 +503,9 @@ final class GameTestInstanceContractTest {
                                                             ? "warlockery:death_isolated"
                                                             : ISOLATED_LOST_SOUL_SPIRIT.contains(registration.id())
                                                                 ? "warlockery:lost_soul_spirit_isolated"
-                                                                : "minecraft:default",
+                                                                : ISOLATED_GOBLIN_ENCLAVE.contains(registration.id())
+                                                                    ? "warlockery:goblin_isolated"
+                                                                    : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

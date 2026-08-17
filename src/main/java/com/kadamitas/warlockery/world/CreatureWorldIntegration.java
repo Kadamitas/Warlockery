@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.world;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.config.WarlockeryConfig;
+import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.LycanPackRules;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
@@ -97,9 +98,15 @@ public final class CreatureWorldIntegration {
         if (sites.containsCamp(region)) {
             return;
         }
+        // The exact Goblin is its own body now, so a Hobgoblin-only scan would silently stop
+        // counting wild Goblins and under-report the density this founding guard depends on.
+        final AABB residentBounds = new AABB(origin).inflate(64, 24, 64);
         final boolean residentsNearby = !level.getEntitiesOfClass(
             HobgoblinEntity.class,
-            new AABB(origin).inflate(64, 24, 64)
+            residentBounds
+        ).isEmpty() || !level.getEntitiesOfClass(
+            GoblinEntity.class,
+            residentBounds
         ).isEmpty();
         final boolean clear = clearHutFootprint(level, origin);
         if (!HobgoblinCampRules.canFound(level.isVillage(origin), residentsNearby, clear, distance)) {

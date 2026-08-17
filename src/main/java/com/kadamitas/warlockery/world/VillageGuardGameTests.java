@@ -1,5 +1,7 @@
 package com.kadamitas.warlockery.world;
 
+import com.kadamitas.warlockery.entity.ArcaneCreature;
+import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.GoblinSettlementLifeRuntime;
 import com.kadamitas.warlockery.registry.ModEntities;
@@ -19,6 +21,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.phys.AABB;
@@ -50,7 +53,7 @@ public final class VillageGuardGameTests {
     public static void goblinTradingRetainsItsCustomer(final GameTestHelper helper) {
         helper.setBlock(new BlockPos(1, 0, 1), Blocks.STONE);
         final ServerPlayer player = connectedSurvivalPlayer(helper);
-        final HobgoblinEntity goblin = helper.spawn(
+        final GoblinEntity goblin = helper.spawn(
             ModEntities.GOBLIN.get(), new BlockPos(1, 1, 1), EntitySpawnReason.NATURAL
         );
 
@@ -64,7 +67,7 @@ public final class VillageGuardGameTests {
         final HobgoblinEntity hobgoblinChild = createBaby(
             helper, ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 0), new BlockPos(1, 1, 0), new BlockPos(2, 1, 0)
         );
-        final HobgoblinEntity goblinChild = createBaby(
+        final GoblinEntity goblinChild = createBaby(
             helper, ModEntities.GOBLIN.get(), new BlockPos(0, 1, 2), new BlockPos(1, 1, 2), new BlockPos(2, 1, 2)
         );
         helper.assertTrue(hobgoblinChild.isBaby(), "hobgoblin offspring must use the synchronized baby state");
@@ -87,24 +90,42 @@ public final class VillageGuardGameTests {
         villager.setNoAi(true);
 
         final int spawned = GoblinRaidRuntime.spawnWave(helper.getLevel(), center, 1, 4);
+        // A goblin raid wave is built from the dedicated F10 body now, so its assault membership,
+        // not the legacy Hobgoblin raid marker, is what groups it.
         final var raiders = helper.getLevel().getEntitiesOfClass(
-            HobgoblinEntity.class,
+            GoblinEntity.class,
             new AABB(center).inflate(16.0),
-            HobgoblinEntity::isVillageRaider
+            GoblinEntity::isAssaultMember
         );
-        raiders.forEach(goblin -> GoblinRaidRuntime.coordinate(goblin, helper.getLevel()));
 
         helper.assertValueEqual(spawned, GoblinRaidRules.waveSize(1), "first goblin raid wave size");
         helper.assertValueEqual(raiders.size(), GoblinRaidRules.waveSize(1), "tracked goblin raid group size");
-        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.raidCenter().filter(center::equals).isPresent()),
+        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.assaultCenter().filter(center::equals).isPresent()),
             "every wave member must share the village raid center");
-        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.raidWave() == 1),
+        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.assaultWave() == 1),
             "every wave member must retain its wave number");
-        helper.assertValueEqual(raiders.stream().filter(HobgoblinEntity::isRaidLeader).count(), 1L,
+        helper.assertValueEqual(raiders.stream().filter(GoblinEntity::isAssaultLeader).count(), 1L,
             "a goblin raid wave must have exactly one leader");
-        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.getTarget() == villager),
-            "the raid group must coordinate on the same human villager target");
-        helper.succeed();
+
+        // Targeting belongs to GoblinEnclaveRuntime and is observed under live AI rather than by
+        // calling a coordinator by hand, which is a stronger check than the legacy fixture made.
+        // Each body seeds its decision (<=20 ticks) and perception (<=40 ticks) cadences from a
+        // stable UUID offset inside its own first tick, so the wave has acquired by tick 60 at the
+        // latest. The objective is kept topped up because the subject here is shared acquisition,
+        // not lethality: three raiders would otherwise kill the villager inside that window and
+        // the targets would clear before the assertion ran. Both callbacks are registered from the
+        // test body, never from inside one another.
+        final boolean[] coordinated = {false};
+        helper.onEachTick(() -> {
+            villager.setHealth(villager.getMaxHealth());
+            coordinated[0] |= !raiders.isEmpty()
+                && raiders.stream().allMatch(goblin -> goblin.getTarget() == villager);
+        });
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(coordinated[0],
+                "the raid group must coordinate on the same human villager target");
+            helper.succeed();
+        });
     }
 
     public static void hobgoblinsFleeHumanVillagersAndKeepCustomProfessions(final GameTestHelper helper) {
@@ -136,9 +157,10 @@ public final class VillageGuardGameTests {
         });
     }
 
-    private static HobgoblinEntity createBaby(
+    @SuppressWarnings("unchecked")
+    private static <T extends AbstractVillager & ArcaneCreature> T createBaby(
         final GameTestHelper helper,
-        final EntityType<HobgoblinEntity> type,
+        final EntityType<T> type,
         final BlockPos firstPosition,
         final BlockPos secondPosition,
         final BlockPos childPosition
@@ -146,14 +168,14 @@ public final class VillageGuardGameTests {
         helper.setBlock(firstPosition.below(), Blocks.STONE);
         helper.setBlock(secondPosition.below(), Blocks.STONE);
         helper.setBlock(childPosition.below(), Blocks.STONE);
-        final HobgoblinEntity first = helper.spawn(type, firstPosition, EntitySpawnReason.NATURAL);
-        final HobgoblinEntity second = helper.spawn(type, secondPosition, EntitySpawnReason.NATURAL);
+        final T first = helper.spawn(type, firstPosition, EntitySpawnReason.NATURAL);
+        final T second = helper.spawn(type, secondPosition, EntitySpawnReason.NATURAL);
         first.getInventory().addItem(new ItemStack(Items.BREAD, 3));
         second.getInventory().addItem(new ItemStack(Items.BREAD, 3));
         final var created = first.getBreedOffspring(helper.getLevel(), second);
-        helper.assertTrue(created instanceof HobgoblinEntity,
-            "goblinfolk breeding must create a Warlockery child instead of a vanilla villager");
-        final HobgoblinEntity child = (HobgoblinEntity) created;
+        helper.assertTrue(created != null && created.getType() == type,
+            "goblinfolk breeding must create a Warlockery child of its own exact species");
+        final T child = (T) created;
         child.setAge(-24_000);
         final BlockPos absolute = helper.absolutePos(childPosition);
         child.snapTo(absolute.getX() + 0.5D, absolute.getY(), absolute.getZ() + 0.5D, 0.0F, 0.0F);
@@ -166,7 +188,7 @@ public final class VillageGuardGameTests {
     private static void finishPersistentTradeTest(
         final GameTestHelper helper,
         final ServerPlayer player,
-        final HobgoblinEntity trader,
+        final AbstractVillager trader,
         final String species
     ) {
         helper.assertTrue(trader.isAlive() && !trader.isRemoved(), species + " trader must remain alive");

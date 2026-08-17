@@ -13,6 +13,7 @@ import com.kadamitas.warlockery.brew.custom.CustomBrewDelivery;
 import com.kadamitas.warlockery.brew.custom.CustomBrewFormula;
 import com.kadamitas.warlockery.brew.custom.CustomBrewRuntime;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
+import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.GoblinHostilityRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
@@ -415,14 +416,16 @@ public final class WarlockeryGameTests {
     public static void goblinsRaidVillagersWhileHobgoblinsRemainFriendly(final GameTestHelper helper) {
         BlockPos.betweenClosedStream(new BlockPos(0, 0, 0), new BlockPos(2, 0, 2))
             .forEach(position -> helper.setBlock(position, Blocks.STONE));
-        final HobgoblinEntity goblin = helper.spawn(
+        final GoblinEntity goblin = helper.spawn(
             ModEntities.GOBLIN.get(), new BlockPos(0, 1, 0), EntitySpawnReason.NATURAL
         );
         final Villager villager = helper.spawn(EntityTypes.VILLAGER, new BlockPos(2, 1, 0));
         final HobgoblinEntity hobgoblin = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 2), EntitySpawnReason.NATURAL
         );
-        helper.runAfterDelay(10, () -> {
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(goblin.creatureKind() == ArcaneCreature.CreatureKind.GOBLIN,
+                "the dedicated goblin body must report the exact goblin kind");
             helper.assertTrue(GoblinHostilityRules.canTarget(goblin.creatureKind(), villager.getType()),
                 "goblins must classify villagers as raid targets");
             helper.assertTrue(!GoblinHostilityRules.canTarget(hobgoblin.creatureKind(), villager.getType()),

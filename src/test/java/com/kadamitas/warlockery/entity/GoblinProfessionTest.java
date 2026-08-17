@@ -19,12 +19,12 @@ final class GoblinProfessionTest {
 
     @Test
     void customProfessionsUseMatchingNonNitwitEngineProfessions() {
-        assertEquals(4, HobgoblinEntity.GoblinProfession.values().length);
-        assertFalse(Arrays.stream(HobgoblinEntity.GoblinProfession.values())
-            .map(HobgoblinEntity.GoblinProfession::engineProfession)
+        assertEquals(4, GoblinProfession.values().length);
+        assertFalse(Arrays.stream(GoblinProfession.values())
+            .map(GoblinProfession::engineProfession)
             .anyMatch(VillagerProfession.NITWIT::equals));
-        assertEquals(4L, Arrays.stream(HobgoblinEntity.GoblinProfession.values())
-            .map(HobgoblinEntity.GoblinProfession::engineProfession)
+        assertEquals(4L, Arrays.stream(GoblinProfession.values())
+            .map(GoblinProfession::engineProfession)
             .distinct()
             .count());
     }

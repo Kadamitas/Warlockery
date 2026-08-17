@@ -18,21 +18,21 @@ import net.minecraft.world.level.ItemLike;
 public final class GoblinTradeCatalog {
     private static final long TREASURE_SALT = 0x6a09e667f3bcc909L;
     private static final long LEVEL_SALT = 0xbb67ae8584caa73bL;
-    private static final Map<HobgoblinEntity.GoblinProfession, List<OfferSpec>> CORE = Map.of(
-        HobgoblinEntity.GoblinProfession.MINER, List.of(
+    private static final Map<GoblinProfession, List<OfferSpec>> CORE = Map.of(
+        GoblinProfession.MINER, List.of(
             offer(vanilla("coal", Items.COAL), 12, vanilla("emerald", Items.EMERALD), 1, 16, 2, 0.05F),
             offer(vanilla("emerald", Items.EMERALD), 8, mod("raw_delvealloy"), 1, 8, 8, 0.12F),
             offer(mod("ingredient_delvealloydust"), 8, vanilla("emerald", Items.EMERALD), 1, 12, 10, 0.08F)
         ),
-        HobgoblinEntity.GoblinProfession.SMITH, List.of(
+        GoblinProfession.SMITH, List.of(
             offer(mod("raw_delvealloy"), 4, vanilla("emerald", Items.EMERALD), 1, 12, 5, 0.08F),
             offer(vanilla("emerald", Items.EMERALD), 32, mod("delvealloypickaxe"), 1, 2, 20, 0.2F)
         ),
-        HobgoblinEntity.GoblinProfession.SHAMAN, List.of(
+        GoblinProfession.SHAMAN, List.of(
             offer(vanilla("redstone", Items.REDSTONE), 8, mod("ingredient_whiff_of_magic"), 1, 12, 8, 0.08F),
             offer(vanilla("emerald", Items.EMERALD), 6, mod("ingredient_attuned_stone"), 1, 8, 12, 0.12F)
         ),
-        HobgoblinEntity.GoblinProfession.PROSPECTOR, List.of(
+        GoblinProfession.PROSPECTOR, List.of(
             offer(mod("raw_silver"), 5, vanilla("emerald", Items.EMERALD), 1, 12, 5, 0.08F),
             offer(mod("ingredient_delvealloydust"), 18, mod("ingredient_delvealloynugget"), 1, 12, 12, 0.12F),
             offer(vanilla("emerald", Items.EMERALD), 12, mod("ingredient_delvealloynugget"), 1, 12, 8, 0.12F)
@@ -70,7 +70,7 @@ public final class GoblinTradeCatalog {
 
     public static List<MerchantOffer> createOffers(
         final CreatureKind kind,
-        final HobgoblinEntity.GoblinProfession profession,
+        final GoblinProfession profession,
         final long seed,
         final int level
     ) {
@@ -81,7 +81,7 @@ public final class GoblinTradeCatalog {
 
     public static List<OfferSpec> offersForLevel(
         final CreatureKind kind,
-        final HobgoblinEntity.GoblinProfession profession,
+        final GoblinProfession profession,
         final long seed,
         final int level
     ) {
@@ -93,7 +93,7 @@ public final class GoblinTradeCatalog {
         };
     }
 
-    public static List<OfferSpec> coreOffers(final HobgoblinEntity.GoblinProfession profession) {
+    public static List<OfferSpec> coreOffers(final GoblinProfession profession) {
         return CORE.getOrDefault(profession, List.of());
     }
 

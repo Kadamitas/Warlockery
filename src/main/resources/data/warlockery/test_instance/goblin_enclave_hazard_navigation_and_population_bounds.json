@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:goblin_enclave_hazard_navigation_and_population_bounds",
+  "environment": "warlockery:goblin_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

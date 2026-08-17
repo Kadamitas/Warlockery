@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.world;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
+import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.world.SettlementFortificationRules.LayoutPlan;
@@ -197,6 +198,11 @@ public final class VillageGuardRuntime {
     }
 
     private static boolean isThreat(final LivingEntity candidate) {
+        // The dedicated F10 body is the exact Goblin; a human settlement guard treats every one of
+        // them as hostile, marked assault member or not, exactly as it did in 1.4.
+        if (candidate instanceof GoblinEntity) {
+            return true;
+        }
         if (candidate instanceof HobgoblinEntity goblin) {
             return goblin.creatureKind() == CreatureKind.GOBLIN || goblin.isVillageRaider();
         }

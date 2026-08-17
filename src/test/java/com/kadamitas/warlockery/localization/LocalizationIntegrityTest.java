@@ -298,7 +298,7 @@ final class LocalizationIntegrityTest {
     }
 
     private static Set<String> goblinProfessionIds() {
-        final String source = read(JAVA.resolve("com/kadamitas/warlockery/entity/HobgoblinEntity.java"));
+        final String source = read(JAVA.resolve("com/kadamitas/warlockery/entity/GoblinProfession.java"));
         final Pattern pattern = Pattern.compile("[A-Z_]+\\(\"([a-z_]+)\", Blocks\\.");
         final Set<String> ids = pattern.matcher(source).results()
             .map(result -> result.group(1))
