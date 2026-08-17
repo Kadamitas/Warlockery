@@ -48,15 +48,6 @@ public final class RitualSessionData extends SavedData {
         final BlockPos center,
         final Identifier ritual,
         final UUID caster,
-        final int castingTime
-    ) {
-        return start(center, ritual, caster, castingTime, 0);
-    }
-
-    public boolean start(
-        final BlockPos center,
-        final Identifier ritual,
-        final UUID caster,
         final int castingTime,
         final int variant
     ) {
@@ -83,7 +74,13 @@ public final class RitualSessionData extends SavedData {
         for (Session session : sessions) {
             final Identifier ritualId = Identifier.tryParse(session.ritual());
             final BlockPos center = BlockPos.of(session.center());
-            if (ritualId == null || !RitualManager.INSTANCE.isSessionValid(level, center, ritualId, session.variant())) {
+            final var caster = DataParsing.uuid(session.caster()).map(level::getPlayerByUUID).orElse(null);
+            if (ritualId == null) {
+                Warlockery.LOGGER.error("Cancelling ritual session with unreadable ritual id {}", session.ritual());
+                notifyCancelled(level, session, center);
+                continue;
+            }
+            if (!RitualManager.INSTANCE.isSessionValid(level, center, ritualId, session.variant(), caster)) {
                 notifyCancelled(level, session, center);
                 continue;
             }
@@ -91,7 +88,6 @@ public final class RitualSessionData extends SavedData {
             final int elapsed = session.elapsed() + 1;
             emitProgressEffects(level, center, elapsed, session.castingTime());
             if (elapsed >= session.castingTime()) {
-                final var caster = DataParsing.uuid(session.caster()).map(level::getPlayerByUUID).orElse(null);
                 RitualManager.INSTANCE.complete(level, center, caster, ritualId, session.variant());
             } else {
                 next.add(new Session(
@@ -100,9 +96,11 @@ public final class RitualSessionData extends SavedData {
             }
         }
 
-        sessions.clear();
-        sessions.addAll(next);
-        setDirty();
+        if (!next.equals(sessions)) {
+            sessions.clear();
+            sessions.addAll(next);
+            setDirty();
+        }
     }
 
     private static void emitProgressEffects(

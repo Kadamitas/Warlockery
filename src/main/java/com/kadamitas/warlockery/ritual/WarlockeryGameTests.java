@@ -114,9 +114,13 @@ public final class WarlockeryGameTests {
     }
 
     public static void ritualCatalogLoads(final GameTestHelper helper) {
-        helper.assertValueEqual(RitualManager.INSTANCE.ids().size(), 108, "loaded ritual count");
+        final List<Identifier> loaded = RitualManager.INSTANCE.ids();
         helper.assertTrue(
-            RitualManager.INSTANCE.ids().contains(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "sanctity")),
+            loaded.size() >= com.kadamitas.warlockery.compat.jei.PackagedJeiCatalog.rituals().size(),
+            "every packaged rite must survive load-time validation"
+        );
+        helper.assertTrue(
+            loaded.contains(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "sanctity")),
             "the built-in ritual catalog must remain loaded"
         );
         helper.succeed();
@@ -126,8 +130,8 @@ public final class WarlockeryGameTests {
         final RitualSessionData sessions = RitualSessionData.get(helper.getLevel());
         final BlockPos center = helper.absolutePos(new BlockPos(1, 1, 1));
         final Identifier ritual = Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "sanctity");
-        helper.assertTrue(sessions.start(center, ritual, UUID.randomUUID(), 40), "first ritual session should start");
-        helper.assertFalse(sessions.start(center, ritual, UUID.randomUUID(), 40), "duplicate ritual session must be rejected");
+        helper.assertTrue(sessions.start(center, ritual, UUID.randomUUID(), 40, 0), "first ritual session should start");
+        helper.assertFalse(sessions.start(center, ritual, UUID.randomUUID(), 40, 0), "duplicate ritual session must be rejected");
         helper.assertTrue(sessions.isActive(center), "session should remain active");
         helper.succeed();
     }
@@ -157,7 +161,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), helper.absolutePos(relativeCenter), null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "sanctity")
-        );
+        , 0);
         helper.assertTrue(
             RitualWardData.get(helper.getLevel()).contains(
                 RitualWardType.SANCTITY,
@@ -175,7 +179,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "summon_imp")
-        );
+        , 0);
         final boolean spawned = !helper.getLevel().getEntitiesOfClass(
             ImpEntity.class, new AABB(center).inflate(8.0)
         ).isEmpty();
@@ -260,7 +264,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, player,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "fertility")
-        );
+        , 0);
 
         helper.assertTrue(helper.getBlockState(cropRelative).getValue(CropBlock.AGE) > 0,
             "fertility must grow tagged crops");
@@ -284,7 +288,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "natures_power")
-        );
+        , 0);
 
         helper.assertBlockPresent(Blocks.GRASS_BLOCK, soilRelative);
         helper.assertBlockPresent(Blocks.SHORT_GRASS, vegetationRelative);
@@ -301,7 +305,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), helper.absolutePos(relativeCenter), null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "part_earth")
-        );
+        , 0);
 
         helper.assertBlockNotPresent(Blocks.STONE, north);
         helper.assertBlockPresent(Blocks.STONE, south);
@@ -330,7 +334,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "volcano")
-        );
+        , 0);
 
         helper.assertTrue(sources.stream().anyMatch(pos -> helper.getLevel().getFluidState(pos).isEmpty()),
             "Earth's Wrath must draw from underground fluid");
@@ -347,7 +351,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "storm")
-        );
+        , 0);
 
         helper.assertTrue(helper.getLevel().getWeatherData().isThundering(), "Sky's Wrath must start thunder");
         helper.assertTrue(!helper.getLevel().getEntitiesOfClass(
@@ -366,7 +370,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "hell_on_earth")
-        );
+        , 0);
 
         helper.assertTrue(!helper.getLevel().getEntities(
             (Entity) null,
@@ -387,7 +391,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "forestation")
-        );
+        , 0);
 
         helper.assertTrue(BlockPos.betweenClosedStream(center.offset(-12, -1, -12), center.offset(12, 16, 12))
             .anyMatch(pos -> {
@@ -884,7 +888,7 @@ public final class WarlockeryGameTests {
 
     public static void hexBehaviorAppliesAndRemovesItsEffect(final GameTestHelper helper) {
         final Zombie target = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
-        final HexBehavior behavior = HexBehaviors.forTarget("misfortune");
+        final HexBehavior behavior = HexBehaviors.require("misfortune");
         behavior.apply(target, 200);
         helper.assertTrue(target.hasEffect(MobEffects.UNLUCK), "misfortune must apply vanilla Unluck");
         behavior.remove(target);

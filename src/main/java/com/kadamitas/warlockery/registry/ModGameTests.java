@@ -28,6 +28,8 @@ import com.kadamitas.warlockery.item.BroomFlightGameTests;
 import com.kadamitas.warlockery.item.BroomMotionGameTests;
 import com.kadamitas.warlockery.item.SpiritLocatorGameTests;
 import com.kadamitas.warlockery.item.VeilWaystoneGameTests;
+import com.kadamitas.warlockery.ritual.HexMetalRitualGameTests;
+import com.kadamitas.warlockery.ritual.RitualOutcomeGameTests;
 import com.kadamitas.warlockery.ritual.WarlockeryGameTests;
 import com.kadamitas.warlockery.ritual.BiomeRitualGameTests;
 import com.kadamitas.warlockery.ritual.NamiRitualGameTests;
@@ -48,6 +50,26 @@ public final class ModGameTests {
 
     static {
         REGISTRY.register("ritual_catalog_loads", () -> WarlockeryGameTests::ritualCatalogLoads);
+        REGISTRY.register("ritual_heat_metal_target_reaches_persistent_hex",
+            () -> HexMetalRitualGameTests::heatMetalRitualTargetReachesThePersistentHex);
+        REGISTRY.register("ritual_heat_metal_burns_metal_wearer",
+            () -> HexMetalRitualGameTests::heatMetalBurnsAWearerOfTaggedMetal);
+        REGISTRY.register("ritual_heat_metal_spares_metalless_victim",
+            () -> HexMetalRitualGameTests::heatMetalSparesAVictimCarryingNoMetal);
+        REGISTRY.register("ritual_heat_metal_cure_clears_hex",
+            () -> HexMetalRitualGameTests::heatMetalCureRitualClearsTheHex);
+        REGISTRY.register("ritual_every_hex_target_resolves",
+            () -> HexMetalRitualGameTests::everyDatapackHexTargetResolvesInALiveRegistry);
+        REGISTRY.register("ritual_heat_metal_pair_is_loaded",
+            () -> HexMetalRitualGameTests::heatMetalRitualIsLoadedAndPairedWithItsCure);
+        REGISTRY.register("ritual_hex_reaches_victims_in_radius",
+            () -> RitualOutcomeGameTests::aHexOnlyReachesVictimsInsideTheDeclaredRadius);
+        REGISTRY.register("ritual_unresolvable_binding_falls_back_to_radius",
+            () -> RitualOutcomeGameTests::aBoundTargetInAnotherDimensionIsNotReachedByAHex);
+        REGISTRY.register("ritual_noop_binding_fabricates_nothing",
+            () -> RitualOutcomeGameTests::aRitualWithNothingToActOnReportsNoEffect);
+        REGISTRY.register("ritual_every_loaded_ritual_passes_validation",
+            () -> RitualOutcomeGameTests::everyLoadedRitualPassesTargetValidation);
         REGISTRY.register("biome_book_capture_persists_and_names",
             () -> BiomeRitualGameTests::biomeBookCapturePersistsAndNames);
         REGISTRY.register("climate_shift_uses_bound_book_target",

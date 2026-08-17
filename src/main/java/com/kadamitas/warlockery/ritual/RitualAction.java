@@ -7,7 +7,6 @@ import java.util.Optional;
 public enum RitualAction implements StringIdentified {
     EFFECT("effect", Outcome.EFFECT),
     STORM("storm", Outcome.WEATHER),
-    CLEAR_WEATHER("clear_weather", Outcome.WEATHER),
     FERTILITY("fertility", Outcome.GROWTH),
     FORESTATION("forestation", Outcome.GROWTH),
     NATURES_POWER("natures_power", Outcome.GROWTH),
@@ -24,7 +23,6 @@ public enum RitualAction implements StringIdentified {
     SUMMON_HUNTSMAN("summon_huntsman", Outcome.ENTITY_SUMMON),
     SUMMON_ITEM("summon_item", Outcome.ITEM_SUMMON),
     RAISE_COLUMN("raise_column", Outcome.TERRAIN),
-    CRATER("crater", Outcome.TERRAIN),
     BROKEN_EARTH("broken_earth", Outcome.TERRAIN),
     EARTHS_WRATH("earths_wrath", Outcome.TERRAIN),
     SKYS_WRATH("skys_wrath", Outcome.WEATHER_AND_EFFECT),

@@ -50,6 +50,7 @@ public record ManualProfile(
         copy_waystone
         copy_waystone_portable
         corrupt_doll
+        cure_heat_metal
         cure_insanity
         cure_misfortune
         cure_nightmare

@@ -31,10 +31,19 @@ final class PackagedJeiCatalogTest {
         assertTrue(recipes.stream().allMatch(recipe -> !recipe.recipe().outputs().isEmpty()));
     }
 
+
+    private static long packagedRitualFileCount() throws java.io.IOException {
+        try (var paths = java.nio.file.Files.list(
+            java.nio.file.Path.of("src/main/resources/data/warlockery/ritual")
+        )) {
+            return paths.filter(path -> path.toString().endsWith(".json")).count();
+        }
+    }
+
     @Test
-    void packagedCatalogDecodesEveryCircleRite() {
+    void packagedCatalogDecodesEveryCircleRite() throws java.io.IOException {
         final var rituals = PackagedJeiCatalog.rituals();
-        assertEquals(108, rituals.size());
+        assertEquals(packagedRitualFileCount(), rituals.size());
         assertEquals(rituals.size(), rituals.stream().map(ritual -> ritual.id()).distinct().count());
         assertTrue(rituals.stream().allMatch(ritual -> !ritual.definition().title().isBlank()));
         assertTrue(rituals.stream().allMatch(ritual -> !ritual.definition().description().isBlank()));
