@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:poltergeist_missing_or_picked_prop_finishes_safely",
+  "environment": "warlockery:poltergeist_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

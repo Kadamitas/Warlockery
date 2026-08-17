@@ -19,6 +19,7 @@ import com.kadamitas.warlockery.entity.LycanVillagerEntity;
 import com.kadamitas.warlockery.entity.LycanVillagerRules;
 import com.kadamitas.warlockery.entity.NamiEntity;
 import com.kadamitas.warlockery.entity.NaamahEntity;
+import com.kadamitas.warlockery.entity.PoltergeistEntity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.HellhoundEntity;
@@ -130,7 +131,8 @@ public final class ModEntities {
         Map.entry(CreatureKind.LOST_SOUL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLostSoul),
         Map.entry(CreatureKind.SPIRIT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLocalSpirit),
         Map.entry(CreatureKind.HEDGE_CRONE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHedgeCrone),
-        Map.entry(CreatureKind.CIRCLE_MAGE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createCircleMage)
+        Map.entry(CreatureKind.CIRCLE_MAGE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createCircleMage),
+        Map.entry(CreatureKind.POLTERGEIST, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createPoltergeist)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -333,6 +335,16 @@ public final class ModEntities {
                 new SpiritEntity(type, level),
             MobCategory.CREATURE
         ).sized(registration.width(), registration.height())
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createPoltergeist(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<PoltergeistEntity> type, net.minecraft.world.level.Level level) ->
+                new PoltergeistEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
             .build(REGISTRY.key(registration.id()));
     }
 

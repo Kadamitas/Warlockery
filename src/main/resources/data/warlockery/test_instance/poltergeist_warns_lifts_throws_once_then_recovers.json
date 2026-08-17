@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:poltergeist_warns_lifts_throws_once_then_recovers",
+  "environment": "warlockery:poltergeist_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

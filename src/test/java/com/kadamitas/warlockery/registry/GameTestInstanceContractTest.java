@@ -89,6 +89,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "coven_practitioners_isolated.json"
     );
+    private static final Path POLTERGEIST_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "poltergeist_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -253,6 +257,14 @@ final class GameTestInstanceContractTest {
         "circle_mage_recruits_follows_and_regenerates_owner",
         "circle_mages_study_and_defend_as_a_bounded_conclave",
         "circle_mage_save_reload_seer_and_work_are_bounded"
+    );
+    private static final Set<String> ISOLATED_POLTERGEIST = Set.of(
+        "poltergeist_warns_lifts_throws_once_then_recovers",
+        "poltergeist_missing_or_picked_prop_finishes_safely",
+        "poltergeist_throw_preserves_item_stack_and_pickup",
+        "poltergeist_dense_candidates_stay_capped_and_stable",
+        "poltergeist_hazard_and_three_route_failures_cancel",
+        "poltergeist_reload_does_not_replay_and_families_stay_isolated"
     );
 
     @Test
@@ -501,6 +513,23 @@ final class GameTestInstanceContractTest {
             "all six exact F13 Coven Practitioner GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactPoltergeistFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(POLTERGEIST_ENVIRONMENT),
+            "the isolated F20 Poltergeist environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(POLTERGEIST_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F20 environment must not mutate shared world state");
+        assertEquals(6, ISOLATED_POLTERGEIST.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_POLTERGEIST),
+            "all six exact F20 Poltergeist GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -536,7 +565,9 @@ final class GameTestInstanceContractTest {
                                                                     ? "warlockery:goblin_isolated"
                                                                     : ISOLATED_COVEN_PRACTITIONERS.contains(registration.id())
                                                                         ? "warlockery:coven_practitioners_isolated"
-                                                                        : "minecraft:default",
+                                                                        : ISOLATED_POLTERGEIST.contains(registration.id())
+                                                                            ? "warlockery:poltergeist_isolated"
+                                                                            : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

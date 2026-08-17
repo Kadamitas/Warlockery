@@ -12,6 +12,7 @@ import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
 import com.kadamitas.warlockery.entity.BansheeGameTests;
 import com.kadamitas.warlockery.entity.CovenPractitionerGameTests;
 import com.kadamitas.warlockery.entity.LostSoulSpiritGameTests;
+import com.kadamitas.warlockery.entity.PoltergeistGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
 import com.kadamitas.warlockery.entity.DeathGameTests;
@@ -517,6 +518,18 @@ public final class ModGameTests {
             () -> CovenPractitionerGameTests::circleMagesStudyAndDefendAsABoundedConclave);
         REGISTRY.register("circle_mage_save_reload_seer_and_work_are_bounded",
             () -> CovenPractitionerGameTests::circleMageSaveReloadSeerAndWorkAreBounded);
+        REGISTRY.register("poltergeist_warns_lifts_throws_once_then_recovers",
+            () -> PoltergeistGameTests::poltergeistWarnsLiftsThrowsOnceThenRecovers);
+        REGISTRY.register("poltergeist_missing_or_picked_prop_finishes_safely",
+            () -> PoltergeistGameTests::poltergeistMissingOrPickedPropFinishesSafely);
+        REGISTRY.register("poltergeist_throw_preserves_item_stack_and_pickup",
+            () -> PoltergeistGameTests::poltergeistThrowPreservesItemStackAndPickup);
+        REGISTRY.register("poltergeist_dense_candidates_stay_capped_and_stable",
+            () -> PoltergeistGameTests::poltergeistDenseCandidatesStayCappedAndStable);
+        REGISTRY.register("poltergeist_hazard_and_three_route_failures_cancel",
+            () -> PoltergeistGameTests::poltergeistHazardAndThreeRouteFailuresCancel);
+        REGISTRY.register("poltergeist_reload_does_not_replay_and_families_stay_isolated",
+            () -> PoltergeistGameTests::poltergeistReloadDoesNotReplayAndFamiliesStayIsolated);
     }
 
     private ModGameTests() {
