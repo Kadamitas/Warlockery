@@ -11,6 +11,7 @@ import com.kadamitas.warlockery.entity.HexBatRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.GoblinBossRules;
+import com.kadamitas.warlockery.entity.LostSoulEntity;
 import com.kadamitas.warlockery.entity.LycanVillagerEntity;
 import com.kadamitas.warlockery.entity.LycanVillagerRules;
 import com.kadamitas.warlockery.entity.NamiEntity;
@@ -21,6 +22,7 @@ import com.kadamitas.warlockery.entity.HellhoundEntity;
 import com.kadamitas.warlockery.entity.CorpseEntity;
 import com.kadamitas.warlockery.entity.DeathEntity;
 import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
+import com.kadamitas.warlockery.entity.SpiritEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
 import com.kadamitas.warlockery.entity.VampireCourtEntity;
@@ -121,7 +123,9 @@ public final class ModEntities {
         Map.entry(CreatureKind.HELLHOUND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHellhound),
         Map.entry(CreatureKind.HEX_BAT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHexBat),
         Map.entry(CreatureKind.BANSHEE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createBanshee),
-        Map.entry(CreatureKind.DEATH, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createDeath)
+        Map.entry(CreatureKind.DEATH, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createDeath),
+        Map.entry(CreatureKind.LOST_SOUL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLostSoul),
+        Map.entry(CreatureKind.SPIRIT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLocalSpirit)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -298,6 +302,25 @@ public final class ModEntities {
             MobCategory.MONSTER
         ).sized(registration.width(), registration.height())
             .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createLostSoul(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<LostSoulEntity> type, net.minecraft.world.level.Level level) ->
+                new LostSoulEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createLocalSpirit(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<SpiritEntity> type, net.minecraft.world.level.Level level) ->
+                new SpiritEntity(type, level),
+            MobCategory.CREATURE
+        ).sized(registration.width(), registration.height())
             .build(REGISTRY.key(registration.id()));
     }
 

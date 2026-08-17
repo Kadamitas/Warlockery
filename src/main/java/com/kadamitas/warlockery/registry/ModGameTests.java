@@ -10,6 +10,7 @@ import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
 import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
 import com.kadamitas.warlockery.entity.BansheeGameTests;
+import com.kadamitas.warlockery.entity.LostSoulSpiritGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
 import com.kadamitas.warlockery.entity.DeathGameTests;
@@ -458,6 +459,18 @@ public final class ModGameTests {
             () -> DeathGameTests::deathReloadDoesNotReplayReap);
         REGISTRY.register("death_hazard_and_other_families_remain_isolated",
             () -> DeathGameTests::deathHazardAndOtherFamiliesRemainIsolated);
+        REGISTRY.register("lost_soul_petitions_then_settles_at_memorial",
+            () -> LostSoulSpiritGameTests::lostSoulPetitionsThenSettlesAtMemorial);
+        REGISTRY.register("lost_soul_binding_cancels_petition_without_combat",
+            () -> LostSoulSpiritGameTests::lostSoulBindingCancelsPetitionWithoutCombat);
+        REGISTRY.register("spirit_wary_binding_transition_is_finite",
+            () -> LostSoulSpiritGameTests::spiritWaryBindingTransitionIsFinite);
+        REGISTRY.register("spirit_defends_once_with_attribution_then_recovers",
+            () -> LostSoulSpiritGameTests::spiritDefendsOnceWithAttributionThenRecovers);
+        REGISTRY.register("spectral_reload_hazard_and_family_isolation",
+            () -> LostSoulSpiritGameTests::spectralReloadHazardAndFamilyIsolation);
+        REGISTRY.register("spectral_owner_race_and_route_failure_cleanup",
+            () -> LostSoulSpiritGameTests::spectralOwnerRaceAndRouteFailureCleanup);
     }
 
     private ModGameTests() {

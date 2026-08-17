@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:spectral_owner_race_and_route_failure_cleanup",
+  "environment": "warlockery:lost_soul_spirit_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 200
+}

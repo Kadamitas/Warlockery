@@ -109,7 +109,11 @@ class AmbientActivityRulesTest {
             CreatureKind.BANSHEE,
             // F18: the dedicated DeathRuntime owns every Death schedule; Death never communes
             // with soul lanterns.
-            CreatureKind.DEATH
+            CreatureKind.DEATH,
+            // F19: the dedicated LostSoulRuntime and SpiritRuntime own memorial
+            // petition and soul-light attendance respectively.
+            CreatureKind.LOST_SOUL,
+            CreatureKind.SPIRIT
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))

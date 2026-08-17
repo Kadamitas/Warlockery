@@ -77,6 +77,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "death_isolated.json"
     );
+    private static final Path LOST_SOUL_SPIRIT_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "lost_soul_spirit_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -218,6 +222,14 @@ final class GameTestInstanceContractTest {
         "death_reap_respects_vanilla_protection_and_attribution",
         "death_reload_does_not_replay_reap",
         "death_hazard_and_other_families_remain_isolated"
+    );
+    private static final Set<String> ISOLATED_LOST_SOUL_SPIRIT = Set.of(
+        "lost_soul_petitions_then_settles_at_memorial",
+        "lost_soul_binding_cancels_petition_without_combat",
+        "spirit_wary_binding_transition_is_finite",
+        "spirit_defends_once_with_attribution_then_recovers",
+        "spectral_reload_hazard_and_family_isolation",
+        "spectral_owner_race_and_route_failure_cleanup"
     );
 
     @Test
@@ -416,6 +428,23 @@ final class GameTestInstanceContractTest {
             "all six exact F18 Death GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactLostSoulAndSpiritFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(LOST_SOUL_SPIRIT_ENVIRONMENT),
+            "the isolated F19 Lost Soul and Spirit environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(LOST_SOUL_SPIRIT_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F19 environment must not mutate shared world state");
+        assertEquals(6, ISOLATED_LOST_SOUL_SPIRIT.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_LOST_SOUL_SPIRIT),
+            "all six exact F19 Lost Soul and Spirit GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -445,7 +474,9 @@ final class GameTestInstanceContractTest {
                                                         ? "warlockery:banshee_isolated"
                                                         : ISOLATED_DEATH.contains(registration.id())
                                                             ? "warlockery:death_isolated"
-                                                            : "minecraft:default",
+                                                            : ISOLATED_LOST_SOUL_SPIRIT.contains(registration.id())
+                                                                ? "warlockery:lost_soul_spirit_isolated"
+                                                                : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

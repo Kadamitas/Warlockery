@@ -8,7 +8,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Vex;
-import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import java.util.Set;
@@ -22,22 +21,7 @@ public class SpiritMob extends Vex implements ArcaneCreature {
         super(type, level);
         this.kind = kind;
         this.behavior = CreatureBehaviorFactory.create(kind);
-        if (kind == CreatureKind.SPIRIT) {
-            this.targetSelector.removeAllGoals(goal -> true);
-            this.goalSelector.addGoal(1, new AvoidEntityGoal<>(
-                this,
-                Player.class,
-                player -> SpiritTemperamentRules.shouldFlee(
-                    CreatureBehaviorState.owner(this).isPresent(),
-                    player.isAlive(),
-                    this.distanceToSqr(player)
-                ),
-                12.0F,
-                1.2,
-                1.5,
-                player -> true
-            ));
-        } else if (Set.of(CreatureKind.HEX_BAT, CreatureKind.BANSHEE, CreatureKind.UMBRAL_SIGIL,
+        if (Set.of(CreatureKind.HEX_BAT, CreatureKind.BANSHEE, CreatureKind.UMBRAL_SIGIL,
             CreatureKind.POLTERGEIST, CreatureKind.SPECTRE, CreatureKind.IMP).contains(kind)) {
             this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
         }
@@ -64,14 +48,6 @@ public class SpiritMob extends Vex implements ArcaneCreature {
 
     @Override
     public boolean canAttack(final LivingEntity target) {
-        if (kind == CreatureKind.SPIRIT) {
-            final Player owner = CreatureBehaviorState.owner(this)
-                .map(this.level()::getPlayerByUUID)
-                .orElse(null);
-            return SpiritTemperamentRules.canAttack(owner != null, owner != null && owner.getLastHurtByMob() == target)
-                && behavior.canAttack(this, target)
-                && super.canAttack(target);
-        }
         return behavior.canAttack(this, target) && super.canAttack(target);
     }
 
