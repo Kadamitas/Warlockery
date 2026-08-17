@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:hellhound_fire_water_contact_and_conversion_contracts_hold",
+  "environment": "warlockery:hellhound_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

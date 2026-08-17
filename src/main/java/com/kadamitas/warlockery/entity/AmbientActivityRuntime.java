@@ -382,6 +382,23 @@ public final class AmbientActivityRuntime {
         creature.getPersistentData().remove(HEARTH_EXPIRES);
     }
 
+    /**
+     * Narrow exact-owner release used by Hellhound cure, death, and discard migration cleanup.
+     * It removes only a campfire that is still owned by this exact creature under the existing
+     * claim contract and then clears the claim state; no other block or family is touched.
+     */
+    static void releaseExactOwnedLegacyHearth(final Mob creature, final ServerLevel level) {
+        final long encoded = creature.getPersistentData().getLongOr(HEARTH_POSITION, Long.MIN_VALUE);
+        if (encoded != Long.MIN_VALUE) {
+            final BlockPos position = BlockPos.of(encoded);
+            activeHearth(creature, level).ifPresent(owned -> level.removeBlock(owned, false));
+            AmbientActivityHearthData.get(level).release(position, creature.getUUID());
+        }
+        ACTIVE_HEARTHS.remove(creature);
+        creature.getPersistentData().remove(HEARTH_POSITION);
+        creature.getPersistentData().remove(HEARTH_EXPIRES);
+    }
+
     static String cooldownKey(final ActivityType type) {
         return COOLDOWN_PREFIX + type.name();
     }

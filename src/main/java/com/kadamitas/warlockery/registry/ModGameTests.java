@@ -12,6 +12,7 @@ import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
 import com.kadamitas.warlockery.entity.InfernalHierarchyGameTests;
+import com.kadamitas.warlockery.entity.HellhoundLifeGameTests;
 import com.kadamitas.warlockery.entity.ImpGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
@@ -400,6 +401,30 @@ public final class ModGameTests {
             () -> CorpseGameTests::corpseRelationshipsAndZombieLifecycleAreReplaced);
         REGISTRY.register("corpse_save_reload_hazards_and_work_are_bounded",
             () -> CorpseGameTests::corpseSaveReloadHazardsAndWorkAreBounded);
+        REGISTRY.register("hellhound_acquisition_and_zombie_variants_are_contained",
+            () -> HellhoundLifeGameTests::acquisitionAndZombieVariantsAreContained);
+        REGISTRY.register("hellhound_natural_group_pack_identity_excludes_outsiders",
+            () -> HellhoundLifeGameTests::naturalGroupPackIdentityExcludesOutsiders);
+        REGISTRY.register("hellhound_warning_commit_leash_and_return_are_bounded",
+            () -> HellhoundLifeGameTests::warningCommitLeashAndReturnAreBounded);
+        REGISTRY.register("hellhound_scent_evidence_expires_without_omniscience",
+            () -> HellhoundLifeGameTests::scentEvidenceExpiresWithoutOmniscience);
+        REGISTRY.register("hellhound_pack_roles_calls_and_member_loss_are_bounded",
+            () -> HellhoundLifeGameTests::packRolesCallsAndMemberLossAreBounded);
+        REGISTRY.register("hellhound_blocked_sectors_and_route_failures_back_off",
+            () -> HellhoundLifeGameTests::blockedSectorsAndRouteFailuresBackOff);
+        REGISTRY.register("hellhound_bite_fire_recovery_and_ally_safety_are_exact",
+            () -> HellhoundLifeGameTests::biteFireRecoveryAndAllySafetyAreExact);
+        REGISTRY.register("hellhound_retreat_regroup_and_isolation_hysteresis_hold",
+            () -> HellhoundLifeGameTests::retreatRegroupAndIsolationHysteresisHold);
+        REGISTRY.register("hellhound_fire_water_contact_and_conversion_contracts_hold",
+            () -> HellhoundLifeGameTests::fireWaterContactAndConversionContractsHold);
+        REGISTRY.register("hellhound_heat_rest_never_edits_world",
+            () -> HellhoundLifeGameTests::heatRestNeverEditsWorld);
+        REGISTRY.register("hellhound_animus_authority_follow_and_guard_are_safe",
+            () -> HellhoundLifeGameTests::animusAuthorityFollowAndGuardAreSafe);
+        REGISTRY.register("hellhound_cure_is_transactional_and_preserves_exact_rules",
+            () -> HellhoundLifeGameTests::cureIsTransactionalAndPreservesExactRules);
     }
 
     private ModGameTests() {

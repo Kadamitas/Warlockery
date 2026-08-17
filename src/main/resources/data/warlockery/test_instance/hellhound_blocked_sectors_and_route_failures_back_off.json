@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:hellhound_blocked_sectors_and_route_failures_back_off",
+  "environment": "warlockery:hellhound_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

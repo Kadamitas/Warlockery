@@ -54,7 +54,6 @@ import net.minecraft.world.phys.Vec3;
 
 public final class CreatureBehaviorRuntime {
     private static final ThreadLocal<Boolean> APPLYING_THORNS = ThreadLocal.withInitial(() -> false);
-    private static final String HELLHOUND_CURE = "WarlockeryHellhoundCure";
     private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(
         EquipmentSlot.HEAD,
         EquipmentSlot.CHEST,
@@ -483,44 +482,7 @@ public final class CreatureBehaviorRuntime {
         final Player player,
         final ItemStack held
     ) {
-        final int walls = (int) java.util.Arrays.stream(new net.minecraft.core.Direction[]{
-            net.minecraft.core.Direction.NORTH,
-            net.minecraft.core.Direction.SOUTH,
-            net.minecraft.core.Direction.EAST,
-            net.minecraft.core.Direction.WEST
-        }).filter(direction -> {
-            final BlockPos wall = creature.blockPosition().relative(direction);
-            return level.getBlockState(wall).isFaceSturdy(level, wall, direction.getOpposite());
-        }).count();
-        final HellhoundCureRules.Result result = HellhoundCureRules.advance(
-            creature.getPersistentData().getIntOr(HELLHOUND_CURE, 0),
-            creature.hasEffect(MobEffects.WEAKNESS),
-            held.is(Items.GOLDEN_APPLE),
-            walls
-        );
-        send(player, "message.warlockery.creature.hellhound_cure."
-            + result.diagnostic().name().toLowerCase(java.util.Locale.ROOT));
-        if (result.diagnostic() == HellhoundCureRules.Diagnostic.NEEDS_WEAKNESS) {
-            return InteractionResult.PASS;
-        }
-        if (result.diagnostic() == HellhoundCureRules.Diagnostic.NEEDS_GOLDEN_APPLE) {
-            return InteractionResult.FAIL;
-        }
-        consumeOne(player, held);
-        creature.getPersistentData().putInt(HELLHOUND_CURE, result.progress());
-        if (!result.cured()) {
-            return InteractionResult.SUCCESS;
-        }
-        final Wolf wolf = EntityTypes.WOLF.create(level, EntitySpawnReason.CONVERSION);
-        if (wolf == null) {
-            return InteractionResult.FAIL;
-        }
-        wolf.snapTo(creature.getX(), creature.getY(), creature.getZ(), creature.getYRot(), creature.getXRot());
-        wolf.tame(player);
-        wolf.setPersistenceRequired();
-        level.addFreshEntity(wolf);
-        creature.discard();
-        return InteractionResult.SUCCESS;
+        return HellhoundCureRuntime.cure(creature, level, player, held);
     }
 
     private static Optional<DeliveryTarget> deliveryTarget(final ServerLevel current, final ItemStack waystone) {

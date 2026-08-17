@@ -14,6 +14,7 @@ import com.kadamitas.warlockery.entity.NamiEntity;
 import com.kadamitas.warlockery.entity.NaamahEntity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.ArcaneMob;
+import com.kadamitas.warlockery.entity.HellhoundEntity;
 import com.kadamitas.warlockery.entity.CorpseEntity;
 import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
@@ -112,7 +113,8 @@ public final class ModEntities {
         Map.entry(CreatureKind.CORPSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createCorpse),
         Map.entry(CreatureKind.DEMON, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
         Map.entry(CreatureKind.EMBERHORN_ARCHFIEND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
-        Map.entry(CreatureKind.ABYSSAL_REGENT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal)
+        Map.entry(CreatureKind.ABYSSAL_REGENT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
+        Map.entry(CreatureKind.HELLHOUND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHellhound)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -299,6 +301,14 @@ public final class ModEntities {
             .build(REGISTRY.key(registration.id()));
     }
 
+    private static EntityType<?> createHellhound(final EntityRegistration registration) {
+        return EntityType.Builder.of(HellhoundEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height())
+            .fireImmune()
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
     private static EntityType<?> createGround(final EntityRegistration registration) {
         final boolean passive = PASSIVE_GROUND_KINDS.contains(registration.kind());
         final var builder = EntityType.Builder.of(
@@ -395,7 +405,10 @@ public final class ModEntities {
                 .add(Attributes.ATTACK_DAMAGE, 7)
                 .add(Attributes.MOVEMENT_SPEED, 0.3)
                 .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
-            case "hellhound", "bramble_colossus" ->
+            case "hellhound" ->
+                attributes.add(Attributes.MAX_HEALTH, 36).add(Attributes.ATTACK_DAMAGE, 7).add(Attributes.MOVEMENT_SPEED, 0.3)
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "bramble_colossus" ->
                 attributes.add(Attributes.MAX_HEALTH, 36).add(Attributes.ATTACK_DAMAGE, 7).add(Attributes.MOVEMENT_SPEED, 0.3);
             default -> attributes;
         };

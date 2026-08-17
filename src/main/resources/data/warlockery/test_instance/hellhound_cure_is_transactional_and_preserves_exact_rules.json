@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:hellhound_cure_is_transactional_and_preserves_exact_rules",
+  "environment": "warlockery:hellhound_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

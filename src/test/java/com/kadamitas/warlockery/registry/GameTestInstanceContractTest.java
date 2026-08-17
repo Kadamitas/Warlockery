@@ -61,6 +61,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "corpse_isolated.json"
     );
+    private static final Path HELLHOUND_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "hellhound_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -167,6 +171,20 @@ final class GameTestInstanceContractTest {
         "corpse_dual_owner_grave_command_and_loyalty_are_deterministic",
         "corpse_relationships_and_zombie_lifecycle_are_replaced",
         "corpse_save_reload_hazards_and_work_are_bounded"
+    );
+    private static final Set<String> ISOLATED_HELLHOUND = Set.of(
+        "hellhound_acquisition_and_zombie_variants_are_contained",
+        "hellhound_natural_group_pack_identity_excludes_outsiders",
+        "hellhound_warning_commit_leash_and_return_are_bounded",
+        "hellhound_scent_evidence_expires_without_omniscience",
+        "hellhound_pack_roles_calls_and_member_loss_are_bounded",
+        "hellhound_blocked_sectors_and_route_failures_back_off",
+        "hellhound_bite_fire_recovery_and_ally_safety_are_exact",
+        "hellhound_retreat_regroup_and_isolation_hysteresis_hold",
+        "hellhound_fire_water_contact_and_conversion_contracts_hold",
+        "hellhound_heat_rest_never_edits_world",
+        "hellhound_animus_authority_follow_and_guard_are_safe",
+        "hellhound_cure_is_transactional_and_preserves_exact_rules"
     );
 
     @Test
@@ -301,6 +319,22 @@ final class GameTestInstanceContractTest {
             "all six exact F17 Corpse GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactHellhoundFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(HELLHOUND_ENVIRONMENT),
+            "the isolated F09 Hellhound environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(HELLHOUND_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F09 Hellhound environment must not mutate shared world state");
+        assertEquals(12, ISOLATED_HELLHOUND.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_HELLHOUND),
+            "all twelve exact F09 Hellhound GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -322,7 +356,9 @@ final class GameTestInstanceContractTest {
                                         ? "warlockery:eldritch_watcher_isolated"
                                         : ISOLATED_CORPSE.contains(registration.id())
                                             ? "warlockery:corpse_isolated"
-                                            : "minecraft:default",
+                                            : ISOLATED_HELLHOUND.contains(registration.id())
+                                                ? "warlockery:hellhound_isolated"
+                                                : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

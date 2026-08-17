@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:hellhound_natural_group_pack_identity_excludes_outsiders",
+  "environment": "warlockery:hellhound_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}
