@@ -106,7 +106,9 @@ public final class CreatureCombat {
     ) {
         final boolean silverWeakness = silver && werewolfTarget;
         final boolean woodenWeakness = wooden && kind.isWoodenVulnerable();
-        final boolean consecratedWeakness = holy && (kind.isUndead() || kind.isDemonic() || spirit);
+        final boolean consecratedWeakness = holy
+            && (kind.isUndead() || kind.isDemonic() || spirit
+                || kind == ArcaneCreature.CreatureKind.HEX_BAT);
         final boolean typedBypass = antiWerewolfTyped && werewolfTarget;
         float damage = kind.isSupernatural()
             && !silverWeakness && !woodenWeakness && !consecratedWeakness && !typedBypass

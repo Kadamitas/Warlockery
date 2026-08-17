@@ -21,7 +21,7 @@ public record AmbientActivityProfile(
         profile(ActivityType.GROVE_TENDING, Set.of(CreatureKind.ENT), 300, 8, 6_000, 1),
         profile(ActivityType.SHINY_CURIOSITY, Set.of(CreatureKind.IMP, CreatureKind.STONEBROKER,
             CreatureKind.FORGEWARDEN), 240, 10, 3_600, 0),
-        profile(ActivityType.NIGHT_PERCH, Set.of(CreatureKind.OWL, CreatureKind.HEX_BAT), 300, 8, 3_600, 0),
+        profile(ActivityType.NIGHT_PERCH, Set.of(CreatureKind.OWL), 300, 8, 3_600, 0),
         profile(ActivityType.POND_REST, Set.of(CreatureKind.TOAD), 300, 8, 3_600, 0),
         profile(ActivityType.HAUNTED_BELL, Set.of(CreatureKind.POLTERGEIST, CreatureKind.BANSHEE), 400, 14, 6_000, 0),
         profile(ActivityType.STORM_ROD, Set.of(CreatureKind.STORM_SIMIAN), 300, 8, 3_600, 0),

@@ -18,6 +18,47 @@ final class CreatureCombatTest {
     }
 
     @Test
+    void hexBatKeepsExactHolyWeaknessWithoutNewSilverWoodOrSupernaturalBehavior() {
+        // Holy Bolt against the exact Hex Bat kind stays a 1.5x consecrated weakness.
+        // The registered entity is dispatched with the spirit flag today; the deferred
+        // CreatureCombat exact-kind rule preserves the same observable result once
+        // HexBatEntity stops being a SpiritMob.
+        assertEquals(15.0F, CreatureCombat.adjustedDamage(CreatureKind.HEX_BAT, 10.0F, false, false, true, true));
+        // Ordinary damage: no supernatural reduction now or after the change.
+        assertFalse(CreatureKind.HEX_BAT.isSupernatural());
+        assertEquals(10.0F, CreatureCombat.adjustedDamage(CreatureKind.HEX_BAT, 10.0F, false, false, false, true));
+        // Silver and wooden bolts gain no new Hex Bat weakness.
+        assertEquals(10.0F, CreatureCombat.adjustedDamage(CreatureKind.HEX_BAT, 10.0F, true, false, false, true));
+        assertFalse(CreatureKind.HEX_BAT.isWoodenVulnerable());
+        assertEquals(10.0F, CreatureCombat.adjustedDamage(CreatureKind.HEX_BAT, 10.0F, false, true, false, true));
+        // Not undead, demonic, or a classic familiar.
+        assertFalse(CreatureKind.HEX_BAT.isUndead());
+        assertFalse(CreatureKind.HEX_BAT.isDemonic());
+        assertFalse(FamiliarBondRules.isClassicFamiliar(CreatureKind.HEX_BAT));
+        // Non-Hex parity: an unrelated spirit kind keeps the identical matrix.
+        assertEquals(15.0F, CreatureCombat.adjustedDamage(CreatureKind.BANSHEE, 10.0F, false, false, true, true));
+        assertEquals(1.5F, CreatureCombat.adjustedDamage(CreatureKind.WEREWOLF, 10.0F, false, false, false, false));
+    }
+
+    /**
+     * DELIBERATE DEFERRED-WIRING RED. Once the deferred ModEntities edit
+     * routes hex_bat through HexBatEntity, the spirit flag is false and ONLY
+     * the deferred CreatureCombat exact-kind clause preserves the observable
+     * 1.5x Holy Bolt result. This exact case fails until coordinator deferred
+     * edit 4 lands, so omitting that edit can never pass the suite silently.
+     */
+    @Test
+    void hexBatHolyWeaknessSurvivesLeavingTheSpiritClass() {
+        assertEquals(15.0F, CreatureCombat.adjustedDamage(
+            CreatureKind.HEX_BAT, 10.0F, false, false, true, false
+        ));
+        // The exact-kind clause must not leak to any other non-spirit kind.
+        assertEquals(1.5F, CreatureCombat.adjustedDamage(
+            CreatureKind.WEREWOLF, 10.0F, false, false, true, false
+        ));
+    }
+
+    @Test
     void supernaturalCreaturesResistOrdinaryDamage() {
         assertEquals(1.5F, CreatureCombat.adjustedDamage(CreatureKind.WEREWOLF, 10.0F, false, false, false, false));
     }

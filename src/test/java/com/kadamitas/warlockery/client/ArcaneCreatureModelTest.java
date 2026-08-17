@@ -10,6 +10,38 @@ import org.junit.jupiter.api.Test;
 
 final class ArcaneCreatureModelTest {
     @Test
+    void hexBatRoostAndSwoopPosesComeOnlyFromSynchronizedFacts() {
+        final var neutral = ArcaneCreatureModel.hexBatPose(
+            com.kadamitas.warlockery.client.CreatureModelProfile.Variant.HEX_BAT, false, false
+        );
+        assertFalse(neutral.overrides(), "ordinary flight keeps the existing flap animation");
+        final var roost = ArcaneCreatureModel.hexBatPose(
+            com.kadamitas.warlockery.client.CreatureModelProfile.Variant.HEX_BAT, true, false
+        );
+        assertTrue(roost.overrides());
+        assertTrue(roost.bodyXRot() > 3.0F, "the roost pose hangs the body upside down");
+        assertTrue(roost.wingFoldZRot() > 0.0F, "the roost pose folds the wings");
+        final var swoop = ArcaneCreatureModel.hexBatPose(
+            com.kadamitas.warlockery.client.CreatureModelProfile.Variant.HEX_BAT, false, true
+        );
+        assertTrue(swoop.overrides());
+        assertTrue(swoop.bodyXRot() > 0.0F && swoop.bodyXRot() < 1.5F,
+            "the swoop pose pitches the body forward without flipping it");
+        assertTrue(swoop.wingFoldZRot() < 0.0F, "the swoop pose sweeps and narrows the wings");
+    }
+
+    @Test
+    void nonHexAvianVariantsNeverReceiveAHexBatPose() {
+        for (final var variant : com.kadamitas.warlockery.client.CreatureModelProfile.Variant.values()) {
+            if (variant == com.kadamitas.warlockery.client.CreatureModelProfile.Variant.HEX_BAT) continue;
+            assertFalse(ArcaneCreatureModel.hexBatPose(variant, true, false).overrides(),
+                variant + " must not roost like a Hex Bat");
+            assertFalse(ArcaneCreatureModel.hexBatPose(variant, false, true).overrides(),
+                variant + " must not swoop like a Hex Bat");
+        }
+    }
+
+    @Test
     void everyArchetypeBakesAHeadBodyAndMultipleSolidParts() {
         for (final Archetype archetype : Archetype.values()) {
             final ModelPart root = ArcaneCreatureModel.createLayer(archetype).bakeRoot();

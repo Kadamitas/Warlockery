@@ -5,6 +5,8 @@ import com.kadamitas.warlockery.entity.AbyssalRegentRules;
 import com.kadamitas.warlockery.entity.EldritchWatcherEntity;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.BroomEntity;
+import com.kadamitas.warlockery.entity.HexBatEntity;
+import com.kadamitas.warlockery.entity.HexBatRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.GoblinBossRules;
@@ -114,7 +116,8 @@ public final class ModEntities {
         Map.entry(CreatureKind.DEMON, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
         Map.entry(CreatureKind.EMBERHORN_ARCHFIEND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
         Map.entry(CreatureKind.ABYSSAL_REGENT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
-        Map.entry(CreatureKind.HELLHOUND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHellhound)
+        Map.entry(CreatureKind.HELLHOUND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHellhound),
+        Map.entry(CreatureKind.HEX_BAT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHexBat)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -151,6 +154,9 @@ public final class ModEntities {
         AttributeFactoryRule.exact("werewolf_hunter", _ -> Pillager.createAttributes().build()),
         new AttributeFactoryRule(WINGED_ATTRIBUTE_IDS::contains, id ->
             WingedArcaneMob.createAttributes(kindFor(id)).build()),
+        AttributeFactoryRule.exact("hex_bat", _ -> Vex.createAttributes()
+            .add(Attributes.FLYING_SPEED, HexBatRules.FLYING_SPEED)
+            .build()),
         new AttributeFactoryRule(SPIRIT_IDS::contains, _ -> Vex.createAttributes().build())
     );
 
@@ -255,6 +261,13 @@ public final class ModEntities {
 
     private static EntityType<?> createNaamah(final EntityRegistration registration) {
         return EntityType.Builder.of(NaamahEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createHexBat(final EntityRegistration registration) {
+        return EntityType.Builder.of(HexBatEntity::new, MobCategory.MONSTER)
             .sized(registration.width(), registration.height())
             .notInPeaceful()
             .build(REGISTRY.key(registration.id()));

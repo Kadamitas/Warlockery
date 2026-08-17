@@ -65,6 +65,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "hellhound_isolated.json"
     );
+    private static final Path HEX_BAT_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "hex_bat_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -185,6 +189,12 @@ final class GameTestInstanceContractTest {
         "hellhound_heat_rest_never_edits_world",
         "hellhound_animus_authority_follow_and_guard_are_safe",
         "hellhound_cure_is_transactional_and_preserves_exact_rules"
+    );
+    private static final Set<String> ISOLATED_HEX_BAT = Set.of(
+        "hex_bat_roosts_by_day_and_sorties_at_night",
+        "hex_bat_swoop_marks_and_releases_target_safely",
+        "murderous_flock_protects_caster_and_calls_locally",
+        "hex_bat_save_reload_hazard_and_work_are_bounded"
     );
 
     @Test
@@ -335,6 +345,22 @@ final class GameTestInstanceContractTest {
             "all twelve exact F09 Hellhound GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactHexBatFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(HEX_BAT_ENVIRONMENT),
+            "the isolated F15 Hex Bat environment resource must exist");
+        final JsonObject environment = JsonParser.parseString(read(HEX_BAT_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F15 Hex Bat environment must not mutate shared world state");
+        assertEquals(4, ISOLATED_HEX_BAT.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_HEX_BAT),
+            "all four exact F15 Hex Bat GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -358,7 +384,9 @@ final class GameTestInstanceContractTest {
                                             ? "warlockery:corpse_isolated"
                                             : ISOLATED_HELLHOUND.contains(registration.id())
                                                 ? "warlockery:hellhound_isolated"
-                                                : "minecraft:default",
+                                                : ISOLATED_HEX_BAT.contains(registration.id())
+                                                    ? "warlockery:hex_bat_isolated"
+                                                    : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

@@ -22,6 +22,22 @@ final class CustomCreatureIdentityTest {
     }
 
     @Test
+    void hexBatIsADedicatedNonVexNonSpiritMonster() {
+        assertEquals(net.minecraft.world.entity.monster.Monster.class, HexBatEntity.class.getSuperclass());
+        assertFalse(Vex.class.isAssignableFrom(HexBatEntity.class),
+            "the dedicated Hex Bat must not inherit Vex phasing, goals, or owner-copy behavior");
+        assertFalse(SpiritMob.class.isAssignableFrom(HexBatEntity.class),
+            "the dedicated Hex Bat must not carry the SpiritMob class identity");
+        assertTrue(ArcaneCreature.class.isAssignableFrom(HexBatEntity.class));
+        assertTrue(java.lang.reflect.Modifier.isFinal(HexBatEntity.class.getModifiers()));
+        final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.HEX_BAT);
+        assertEquals(0.5F, visual.width());
+        assertEquals(0.45F, visual.height());
+        assertEquals(Archetype.SPIRIT, visual.archetype(),
+            "registry-owned dimensions and archetype stay exact");
+    }
+
+    @Test
     void impAndStormSimianArePurposeBuiltMobsRatherThanVexCopies() {
         assertEquals(WingedArcaneMob.class, ImpEntity.class.getSuperclass());
         assertEquals(WingedArcaneMob.class, StormSimianEntity.class.getSuperclass());

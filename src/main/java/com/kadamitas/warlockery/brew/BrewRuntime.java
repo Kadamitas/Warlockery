@@ -543,6 +543,11 @@ public final class BrewRuntime {
         final List<LivingEntity> targets = living(context).stream()
             .filter(entity -> canAffectOwner(context, entity))
             .toList();
+        // Legality-first ranked bounded initial target set, computed once per
+        // cast and reused for every successful exact Hex Bat spawn. The head
+        // of the ranked list is the strongest candidate.
+        final List<LivingEntity> legalFlockTargets = com.kadamitas.warlockery.entity.HexBatRuntime
+            .flockTargets(context.owner(), context.target(), context.center(), targets);
         int spawned = 0;
         for (int index = 0; index < requested; index++) {
             final BlockPos position = center.offset(index % 3 - 1, 1 + index / 4, index % 2 * 2 - 1);
@@ -550,9 +555,18 @@ public final class BrewRuntime {
                 context.level(), position, EntitySpawnReason.EVENT
             );
             if (entity instanceof Mob mob) {
-                targets.stream()
-                    .min(Comparator.comparingDouble(mob::distanceToSqr))
-                    .ifPresent(mob::setTarget);
+                if (mob instanceof com.kadamitas.warlockery.entity.HexBatEntity hexBat) {
+                    com.kadamitas.warlockery.entity.HexBatRuntime.initializeFlockSpawn(
+                        hexBat, context.level(), center, context.owner(),
+                        // Top-ranked candidate: an explicit cast target can
+                        // never lose to a nearer hostile.
+                        legalFlockTargets.stream().findFirst()
+                    );
+                } else {
+                    targets.stream()
+                        .min(Comparator.comparingDouble(mob::distanceToSqr))
+                        .ifPresent(mob::setTarget);
+                }
                 mob.setPersistenceRequired();
                 spawned++;
             }

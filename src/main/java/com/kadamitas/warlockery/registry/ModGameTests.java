@@ -15,6 +15,7 @@ import com.kadamitas.warlockery.entity.InfernalHierarchyGameTests;
 import com.kadamitas.warlockery.entity.HellhoundLifeGameTests;
 import com.kadamitas.warlockery.entity.ImpGameTests;
 import com.kadamitas.warlockery.entity.HazardEscapeGameTests;
+import com.kadamitas.warlockery.entity.HexBatGameTests;
 import com.kadamitas.warlockery.entity.AmbientActivityGameTests;
 import com.kadamitas.warlockery.entity.SpouseAmbientGameTests;
 import com.kadamitas.warlockery.entity.NamiLifeGameTests;
@@ -425,6 +426,14 @@ public final class ModGameTests {
             () -> HellhoundLifeGameTests::animusAuthorityFollowAndGuardAreSafe);
         REGISTRY.register("hellhound_cure_is_transactional_and_preserves_exact_rules",
             () -> HellhoundLifeGameTests::cureIsTransactionalAndPreservesExactRules);
+        REGISTRY.register("hex_bat_roosts_by_day_and_sorties_at_night",
+            () -> HexBatGameTests::hexBatRoostsByDayAndSortiesAtNight);
+        REGISTRY.register("hex_bat_swoop_marks_and_releases_target_safely",
+            () -> HexBatGameTests::hexBatSwoopMarksAndReleasesTargetSafely);
+        REGISTRY.register("murderous_flock_protects_caster_and_calls_locally",
+            () -> HexBatGameTests::murderousFlockProtectsCasterAndCallsLocally);
+        REGISTRY.register("hex_bat_save_reload_hazard_and_work_are_bounded",
+            () -> HexBatGameTests::hexBatSaveReloadHazardAndWorkAreBounded);
     }
 
     private ModGameTests() {

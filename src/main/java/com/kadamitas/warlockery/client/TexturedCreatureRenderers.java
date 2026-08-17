@@ -134,6 +134,10 @@ final class TexturedCreatureRenderers {
                 : state.hobgoblinAssaultVariant
                     ? 0xFF76964F
                     : -1;
+            state.hexBatRoosting = entity instanceof com.kadamitas.warlockery.entity.HexBatEntity bat
+                && bat.isRoosting();
+            state.hexBatSwooping = entity instanceof com.kadamitas.warlockery.entity.HexBatEntity bat
+                && bat.isSwooping();
         }
 
         @Override
@@ -168,5 +172,7 @@ final class TexturedCreatureRenderers {
     static final class ArcaneState extends ArmedEntityRenderState {
         private int tint = -1;
         private boolean hobgoblinAssaultVariant;
+        boolean hexBatRoosting;
+        boolean hexBatSwooping;
     }
 }

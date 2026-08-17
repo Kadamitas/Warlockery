@@ -23,6 +23,7 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
         "right_middle_hind_leg", "left_middle_hind_leg", "right_wing", "left_wing", "tail", "crown"
     );
     private final Archetype archetype;
+    private final Variant variant;
     private final ModelPart head;
     private final ModelPart body;
     private final ModelPart rightArm;
@@ -40,9 +41,10 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
     private final ModelPart tail;
     private final ModelPart crown;
 
-    private ArcaneCreatureModel(final Archetype archetype, final ModelPart root) {
+    private ArcaneCreatureModel(final Archetype archetype, final Variant variant, final ModelPart root) {
         super(root);
         this.archetype = archetype;
+        this.variant = variant;
         head = root.getChild("head");
         body = root.getChild("body");
         rightArm = root.getChild("right_arm");
@@ -62,7 +64,7 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
     }
 
     static ArcaneCreatureModel create(final CreatureModelProfile profile) {
-        return new ArcaneCreatureModel(profile.bodyPlan(), createLayer(profile).bakeRoot());
+        return new ArcaneCreatureModel(profile.bodyPlan(), profile.variant(), createLayer(profile).bakeRoot());
     }
 
     static LayerDefinition createLayer(final Archetype archetype) {
@@ -202,6 +204,42 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
                 animateWings(state.ageInTicks, stride * 0.6F);
             }
         }
+        applyHexBatPose(hexBatPose(variant, state.hexBatRoosting, state.hexBatSwooping));
+    }
+
+    /**
+     * Pure Hex Bat pose selection from synchronized render facts. Only the
+     * exact HEX_BAT variant may produce a non-neutral pose, so Owl and every
+     * other avian keep their existing animation. Pose reset happens every
+     * frame through {@code super.setupAnim}, so no rotation can leak.
+     */
+    static HexBatPose hexBatPose(final Variant variant, final boolean roosting, final boolean swooping) {
+        if (variant != Variant.HEX_BAT) {
+            return HexBatPose.NEUTRAL;
+        }
+        if (roosting) {
+            // Upside-down hanging silhouette with folded wings.
+            return new HexBatPose(true, Mth.PI, 0.5F, 2.1F);
+        }
+        if (swooping) {
+            // Forward-pitched attack pose with swept, narrowed wings.
+            return new HexBatPose(true, 0.65F, -0.3F, -1.1F);
+        }
+        return HexBatPose.NEUTRAL;
+    }
+
+    record HexBatPose(boolean overrides, float bodyXRot, float headXRot, float wingFoldZRot) {
+        static final HexBatPose NEUTRAL = new HexBatPose(false, 0.0F, 0.0F, 0.0F);
+    }
+
+    private void applyHexBatPose(final HexBatPose pose) {
+        if (!pose.overrides()) {
+            return;
+        }
+        body.xRot += pose.bodyXRot();
+        head.xRot += pose.headXRot();
+        rightWing.zRot = -pose.wingFoldZRot();
+        leftWing.zRot = pose.wingFoldZRot();
     }
 
     @Override

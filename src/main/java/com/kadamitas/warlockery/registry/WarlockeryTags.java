@@ -66,6 +66,7 @@ public final class WarlockeryTags {
         public static final TagKey<Block> FILTERED_FUME_FUNNELS = create("machine_upgrades/filtered_fume_funnels");
         public static final TagKey<Block> RITUAL_INHIBITORS = create("ritual_inhibitors");
         public static final TagKey<Block> ENT_SPAWNING_LOGS = create("ent_spawning_logs");
+        public static final TagKey<Block> HEX_BAT_ROOSTS = create("ai/hex_bat_roosts");
 
         private Blocks() {
         }

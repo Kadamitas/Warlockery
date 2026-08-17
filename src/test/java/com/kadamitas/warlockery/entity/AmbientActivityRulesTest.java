@@ -25,6 +25,19 @@ class AmbientActivityRulesTest {
     }
 
     @Test
+    void hexBatNoLongerReceivesGenericNightPerchAndOwlSemanticsAreUnchanged() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.HEX_BAT).isEmpty(),
+            "the dedicated Hex Bat owns its roost behavior and receives no generic ambient authority");
+        final AmbientActivityProfile nightPerch = AmbientActivityProfile.forType(ActivityType.NIGHT_PERCH);
+        assertEquals(Set.of(CreatureKind.OWL), nightPerch.kinds(),
+            "Owl keeps NIGHT_PERCH exactly as before");
+        assertEquals(300, nightPerch.checkIntervalTicks());
+        assertEquals(8, nightPerch.chanceDenominator());
+        assertEquals(3_600, nightPerch.cooldownTicks());
+        assertEquals(0, nightPerch.localChangeCap());
+    }
+
+    @Test
     void profilesAreRareCappedAndCooldownProtected() {
         AmbientActivityProfile.all().forEach(profile -> {
             assertTrue(profile.checkIntervalTicks() >= 100);
@@ -77,7 +90,9 @@ class AmbientActivityRulesTest {
             CreatureKind.HOBGOBLIN,
             CreatureKind.NAAMAH,
             CreatureKind.ELDRITCH_WATCHER,
-            CreatureKind.CORPSE
+            CreatureKind.CORPSE,
+            // F15: the dedicated HexBatRuntime owns roost/sortie behavior.
+            CreatureKind.HEX_BAT
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
