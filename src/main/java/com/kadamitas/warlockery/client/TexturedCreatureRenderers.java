@@ -146,6 +146,20 @@ final class TexturedCreatureRenderers {
                 && bat.isRoosting();
             state.hexBatSwooping = entity instanceof com.kadamitas.warlockery.entity.HexBatEntity bat
                 && bat.isSwooping();
+            if (entity instanceof com.kadamitas.warlockery.entity.HedgeCroneEntity crone) {
+                state.hedgeCroneActivity = crone.presentationActivity();
+                state.hedgeCroneWardPrepared = crone.presentationWardPrepared();
+            } else {
+                state.hedgeCroneActivity = null;
+                state.hedgeCroneWardPrepared = false;
+            }
+            if (entity instanceof com.kadamitas.warlockery.entity.CircleMageEntity mage) {
+                state.circleMageActivity = mage.presentationActivity();
+                state.circleMageFocusPrepared = mage.presentationFocusPrepared();
+            } else {
+                state.circleMageActivity = null;
+                state.circleMageFocusPrepared = false;
+            }
         }
 
         @Override
@@ -184,5 +198,9 @@ final class TexturedCreatureRenderers {
         boolean hexBatSwooping;
         com.kadamitas.warlockery.entity.BansheeRules.Mode bansheeActivity;
         int bansheePulseSequence;
+        com.kadamitas.warlockery.entity.HedgeCroneRules.Mode hedgeCroneActivity;
+        boolean hedgeCroneWardPrepared;
+        com.kadamitas.warlockery.entity.CircleMageRules.Mode circleMageActivity;
+        boolean circleMageFocusPrepared;
     }
 }

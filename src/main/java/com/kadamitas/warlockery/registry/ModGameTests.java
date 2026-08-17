@@ -10,6 +10,7 @@ import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
 import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
 import com.kadamitas.warlockery.entity.BansheeGameTests;
+import com.kadamitas.warlockery.entity.CovenPractitionerGameTests;
 import com.kadamitas.warlockery.entity.LostSoulSpiritGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
@@ -504,6 +505,18 @@ public final class ModGameTests {
             () -> LostSoulSpiritGameTests::spectralReloadHazardAndFamilyIsolation);
         REGISTRY.register("spectral_owner_race_and_route_failure_cleanup",
             () -> LostSoulSpiritGameTests::spectralOwnerRaceAndRouteFailureCleanup);
+        REGISTRY.register("hedge_crone_warns_intruders_and_casts_contextual_hex",
+            () -> CovenPractitionerGameTests::hedgeCroneWarnsIntrudersAndCastsContextualHex);
+        REGISTRY.register("hedge_crone_prepares_one_ward_and_releases_safely",
+            () -> CovenPractitionerGameTests::hedgeCronePreparesOneWardAndReleasesSafely);
+        REGISTRY.register("hedge_crone_save_reload_hazard_and_lifecycle_are_bounded",
+            () -> CovenPractitionerGameTests::hedgeCroneSaveReloadHazardAndLifecycleAreBounded);
+        REGISTRY.register("circle_mage_recruits_follows_and_regenerates_owner",
+            () -> CovenPractitionerGameTests::circleMageRecruitsFollowsAndRegeneratesOwner);
+        REGISTRY.register("circle_mages_study_and_defend_as_a_bounded_conclave",
+            () -> CovenPractitionerGameTests::circleMagesStudyAndDefendAsABoundedConclave);
+        REGISTRY.register("circle_mage_save_reload_seer_and_work_are_bounded",
+            () -> CovenPractitionerGameTests::circleMageSaveReloadSeerAndWorkAreBounded);
     }
 
     private ModGameTests() {

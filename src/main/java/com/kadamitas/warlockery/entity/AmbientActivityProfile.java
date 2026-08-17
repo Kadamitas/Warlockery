@@ -25,8 +25,10 @@ public record AmbientActivityProfile(
         profile(ActivityType.POND_REST, Set.of(CreatureKind.TOAD), 300, 8, 3_600, 0),
         profile(ActivityType.HAUNTED_BELL, Set.of(CreatureKind.POLTERGEIST), 400, 14, 6_000, 0),
         profile(ActivityType.STORM_ROD, Set.of(CreatureKind.STORM_SIMIAN), 300, 8, 3_600, 0),
-        profile(ActivityType.ARCANE_STUDY, Set.of(CreatureKind.CIRCLE_MAGE, CreatureKind.HEDGE_CRONE),
-            400, 10, 4_800, 0),
+        // F13: the dedicated Hedge Crone and Circle Mage runtimes own their own bounded
+        // workstation work, so the generic ARCANE_STUDY dispatch has no remaining kind. The
+        // activity type and its block tag set stay registered and are still the shared
+        // workstation predicate both dedicated runtimes reuse.
         profile(ActivityType.GRAVE_SCAVENGE, Set.of(CreatureKind.LOUSE), 300, 12, 4_800, 1),
         profile(ActivityType.DAYLIGHT_SHELTER, Set.of(CreatureKind.VAMPIRE, CreatureKind.BLOOD_THRALL), 100, 3, 1_200, 0),
         profile(ActivityType.SOUL_LANTERN_VIGIL, Set.of(CreatureKind.SPECTRE,

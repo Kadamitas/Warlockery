@@ -180,6 +180,52 @@ final class CreatureBehaviorParityTest {
         }
     }
 
+    @Test
+    void bothF13PractitionersDispatchThroughTheirDedicatedRuntimesOnly() {
+        // Neither dedicated entity calls CreatureBehaviorRuntime.tick at all, so the generic hex
+        // pulse and the generic bound-companion follow/aura execute zero times for them; the
+        // profile facts that other suites assert are untouched.
+        final String crone = source("HedgeCroneEntity.java");
+        final String mage = source("CircleMageEntity.java");
+        assertFalse(crone.contains("CreatureBehaviorRuntime.tick"));
+        assertFalse(mage.contains("CreatureBehaviorRuntime.tick"));
+        assertFalse(crone.contains("CreatureBehaviorFactory.create"),
+            "the Hedge Crone has no interaction, binding, offering, or trade surface at all");
+        assertTrue(crone.contains("HedgeCroneRuntime.tick(this, level)"));
+        assertTrue(mage.contains("CircleMageRuntime.tick(this, level)"));
+        assertTrue(mage.contains("covenBehavior.interact(this, player, hand)"),
+            "recruitment keeps the exact existing shared interaction surface");
+
+        // Generic tactical, ambient, and hazard runtimes are never reached from either entity.
+        Stream.of(crone, mage).forEach(entity -> {
+            assertFalse(entity.contains("TacticalCombatRuntime"));
+            assertFalse(entity.contains("AmbientActivityRuntime"));
+            assertFalse(entity.contains("HazardEscapeRuntime"));
+        });
+    }
+
+    @Test
+    void everyNonF13KindKeepsItsGenericBehaviorDispatch() {
+        final Set<CreatureKind> dedicated = Set.of(CreatureKind.HEDGE_CRONE, CreatureKind.CIRCLE_MAGE);
+        CASES.stream()
+            .map(MobCase::kind)
+            .filter(kind -> !dedicated.contains(kind))
+            .forEach(kind -> assertNotNull(CreatureBehaviorProfile.find(kind).orElse(null),
+                kind + " keeps its audited generic profile"));
+        assertNotNull(CreatureBehaviorProfile.find(CreatureKind.HEDGE_CRONE).orElse(null),
+            "the F13 profile facts remain registered for parity and integrity suites");
+        assertNotNull(CreatureBehaviorProfile.find(CreatureKind.CIRCLE_MAGE).orElse(null));
+    }
+
+    private static String source(final String fileName) {
+        try {
+            return Files.readString(Path.of(
+                "src", "main", "java", "com", "kadamitas", "warlockery", "entity", fileName));
+        } catch (IOException exception) {
+            throw new UncheckedIOException(fileName, exception);
+        }
+    }
+
     private static void assertTag(final String registry, final String path) {
         final JsonObject json = json(DATA.resolve("tags").resolve(registry).resolve(path + ".json"));
         assertFalse(json.getAsJsonArray("values").isEmpty(), registry + "/" + path);

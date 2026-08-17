@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
@@ -116,6 +117,108 @@ final class CustomCreatureIdentityTest {
         assertEquals(0.6F, CreatureVisualProfile.forKind(CreatureKind.CORPSE).width());
         assertEquals(1.95F, CreatureVisualProfile.forKind(CreatureKind.CORPSE).height());
         assertTrue(CreatureKind.CORPSE.isUndead(), "Smite and Holy classification remains");
+    }
+
+    @Test
+    void hedgeCroneIsADedicatedNonZombieMonsterWithFixedIdentity() {
+        assertEquals(net.minecraft.world.entity.monster.Monster.class,
+            HedgeCroneEntity.class.getSuperclass());
+        assertTrue(java.lang.reflect.Modifier.isFinal(HedgeCroneEntity.class.getModifiers()));
+        assertTrue(ArcaneCreature.class.isAssignableFrom(HedgeCroneEntity.class));
+        assertFalse(net.minecraft.world.entity.monster.zombie.Zombie.class
+            .isAssignableFrom(HedgeCroneEntity.class),
+            "no baby, jockey, equipment roll, doors, reinforcement, villager conversion, "
+                + "turtle grief, or Drowned conversion may survive");
+        assertFalse(ArcaneMob.class.isAssignableFrom(HedgeCroneEntity.class));
+        assertFalse(Vex.class.isAssignableFrom(HedgeCroneEntity.class));
+        assertFalse(SpiritMob.class.isAssignableFrom(HedgeCroneEntity.class));
+        assertFalse(CircleMageEntity.class.isAssignableFrom(HedgeCroneEntity.class),
+            "the two practitioners are never each other's social variant");
+        assertEquals(60.0D, HedgeCroneEntity.BASE_MAX_HEALTH);
+        assertEquals(9.0D, HedgeCroneEntity.BASE_ATTACK_DAMAGE);
+        assertEquals(6.0D, HedgeCroneEntity.BASE_ARMOR);
+        assertEquals(35.0D, HedgeCroneEntity.BASE_FOLLOW_RANGE);
+        assertEquals(0.23D, HedgeCroneEntity.BASE_MOVEMENT_SPEED);
+        final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.HEDGE_CRONE);
+        assertEquals(0.65F, visual.width());
+        assertEquals(2.0F, visual.height());
+        assertEquals(Archetype.BOSS, visual.archetype());
+    }
+
+    @Test
+    void circleMageIsADedicatedNonZombieMonsterWithFixedIdentity() {
+        assertEquals(net.minecraft.world.entity.monster.Monster.class,
+            CircleMageEntity.class.getSuperclass());
+        assertTrue(java.lang.reflect.Modifier.isFinal(CircleMageEntity.class.getModifiers()));
+        assertTrue(ArcaneCreature.class.isAssignableFrom(CircleMageEntity.class));
+        assertFalse(net.minecraft.world.entity.monster.zombie.Zombie.class
+            .isAssignableFrom(CircleMageEntity.class));
+        assertFalse(ArcaneMob.class.isAssignableFrom(CircleMageEntity.class));
+        assertFalse(HedgeCroneEntity.class.isAssignableFrom(CircleMageEntity.class),
+            "the two practitioners never share a controller or a class identity");
+        assertEquals(20.0D, CircleMageEntity.BASE_MAX_HEALTH);
+        assertEquals(3.0D, CircleMageEntity.BASE_ATTACK_DAMAGE);
+        assertEquals(2.0D, CircleMageEntity.BASE_ARMOR);
+        assertEquals(35.0D, CircleMageEntity.BASE_FOLLOW_RANGE);
+        assertEquals(0.23D, CircleMageEntity.BASE_MOVEMENT_SPEED);
+        final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.CIRCLE_MAGE);
+        assertEquals(0.6F, visual.width());
+        assertEquals(1.95F, visual.height());
+        assertEquals(Archetype.HUMANOID, visual.archetype());
+    }
+
+    @Test
+    void theTwoCovenPractitionersKeepBehaviorallyDistinctMotives() {
+        assertNotEquals(HedgeCroneRules.WITHDRAW_HEALTH_FRACTION,
+            CircleMageRules.WITHDRAW_HEALTH_FRACTION);
+        assertNotEquals(HedgeCroneRules.HEX_WINDUP_TICKS, CircleMageRules.BOLT_WINDUP_TICKS);
+        assertNotEquals(HedgeCroneRules.CAST_RECOVERY_TICKS, CircleMageRules.BOLT_RECOVERY_TICKS);
+        assertEquals(HedgeCroneRules.Mode.values().length, 6);
+        assertEquals(CircleMageRules.Mode.values().length, 5);
+        // The distinctness claim is about MOTIVE vocabulary, not about every helper. The two rule
+        // classes deliberately do share a bounded-safety vocabulary (route retry, deadline clamps,
+        // health fractions, cadence stagger, and one geometric search envelope), because the
+        // approved design permits reusing common safety shapes and because duplicating that
+        // enumeration is what previously produced an unreachable search envelope in both mobs.
+        final java.util.Set<String> croneMethods = declaredMethodNames(HedgeCroneRules.class);
+        final java.util.Set<String> mageMethods = declaredMethodNames(CircleMageRules.class);
+
+        final java.util.Set<String> croneMotives = java.util.Set.of(
+            "selectHex", "hexDurationTicks", "hexAmplifier", "wardDamage", "wardDischarges",
+            "wardPreparationAllowed", "warningEscalates", "boundaryCandidate", "threatReleases",
+            "anchorReturnRequired", "mayAdoptReplacementAnchor", "castEligible");
+        final java.util.Set<String> mageMotives = java.util.Set.of(
+            "recruitmentDecision", "auraProvider", "auraEligible", "conclaveAdmits", "acceptPeers",
+            "coordinator", "sessionSlot", "sessionReleased", "mayEmitReport", "reportRecipients",
+            "reportAcceptable", "formationSlot", "safeStepAllowed", "boltEligible", "boltDamage",
+            "consumesFocus", "studySearchAllowed");
+
+        assertTrue(croneMethods.containsAll(croneMotives), "the Crone owns its own motives");
+        assertTrue(mageMethods.containsAll(mageMotives), "the Mage owns its own motives");
+        croneMotives.forEach(motive -> assertFalse(mageMethods.contains(motive),
+            "the Circle Mage must not carry the Hedge Crone motive " + motive));
+        mageMotives.forEach(motive -> assertFalse(croneMethods.contains(motive),
+            "the Hedge Crone must not carry the Circle Mage motive " + motive));
+
+        // The shared safety vocabulary is declared explicitly rather than pretended away.
+        final java.util.Set<String> shared = new java.util.TreeSet<>(croneMethods);
+        shared.retainAll(mageMethods);
+        assertEquals(java.util.Set.of(
+            "clampRemaining", "decrementLoaded", "healthFraction", "mayRetarget",
+            "pathRequestAllowed", "priority", "rank", "relationLegal", "routeBackoffAfter",
+            "routeExhausted", "routeFailuresAfter", "safeCandidatePreference",
+            "safeSearchOffsets", "select", "shouldWithdraw", "stableOffset",
+            "workstationOffsets"
+        ), shared, "the shared surface is exactly the bounded-safety vocabulary, nothing more");
+    }
+
+    /** Declared method names excluding compiler-synthesized lambda bodies. */
+    private static java.util.Set<String> declaredMethodNames(final Class<?> type) {
+        return java.util.Arrays.stream(type.getDeclaredMethods())
+            .filter(method -> !method.isSynthetic())
+            .map(java.lang.reflect.Method::getName)
+            .filter(name -> !name.startsWith("lambda$"))
+            .collect(java.util.stream.Collectors.toSet());
     }
 
     @Test

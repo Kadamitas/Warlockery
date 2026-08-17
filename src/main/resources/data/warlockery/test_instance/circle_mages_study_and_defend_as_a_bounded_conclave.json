@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:circle_mages_study_and_defend_as_a_bounded_conclave",
+  "environment": "warlockery:coven_practitioners_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

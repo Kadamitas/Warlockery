@@ -85,6 +85,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "lost_soul_spirit_isolated.json"
     );
+    private static final Path COVEN_PRACTITIONERS_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "coven_practitioners_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -241,6 +245,14 @@ final class GameTestInstanceContractTest {
         "spirit_defends_once_with_attribution_then_recovers",
         "spectral_reload_hazard_and_family_isolation",
         "spectral_owner_race_and_route_failure_cleanup"
+    );
+    private static final Set<String> ISOLATED_COVEN_PRACTITIONERS = Set.of(
+        "hedge_crone_warns_intruders_and_casts_contextual_hex",
+        "hedge_crone_prepares_one_ward_and_releases_safely",
+        "hedge_crone_save_reload_hazard_and_lifecycle_are_bounded",
+        "circle_mage_recruits_follows_and_regenerates_owner",
+        "circle_mages_study_and_defend_as_a_bounded_conclave",
+        "circle_mage_save_reload_seer_and_work_are_bounded"
     );
 
     @Test
@@ -472,6 +484,23 @@ final class GameTestInstanceContractTest {
             "all six exact F19 Lost Soul and Spirit GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactCovenPractitionerFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(COVEN_PRACTITIONERS_ENVIRONMENT),
+            "the isolated F13 Coven Practitioner environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(COVEN_PRACTITIONERS_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F13 environment must not mutate shared world state");
+        assertEquals(6, ISOLATED_COVEN_PRACTITIONERS.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_COVEN_PRACTITIONERS),
+            "all six exact F13 Coven Practitioner GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -505,7 +534,9 @@ final class GameTestInstanceContractTest {
                                                                 ? "warlockery:lost_soul_spirit_isolated"
                                                                 : ISOLATED_GOBLIN_ENCLAVE.contains(registration.id())
                                                                     ? "warlockery:goblin_isolated"
-                                                                    : "minecraft:default",
+                                                                    : ISOLATED_COVEN_PRACTITIONERS.contains(registration.id())
+                                                                        ? "warlockery:coven_practitioners_isolated"
+                                                                        : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

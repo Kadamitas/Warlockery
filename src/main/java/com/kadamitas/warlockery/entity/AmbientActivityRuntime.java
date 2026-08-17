@@ -68,7 +68,10 @@ public final class AmbientActivityRuntime {
         final ActivityType type
     ) {
         final AmbientActivityProfile profile = AmbientActivityProfile.forType(type);
-        if (!profile.kinds().contains(kind)) {
+        // An activity type may outlive its dispatch row: F13 retired the ARCANE_STUDY profile when
+        // both practitioners moved to dedicated runtimes, while the type, its block tag set, and
+        // its action all remain registered and reused as the shared workstation predicate.
+        if (profile == null || !profile.kinds().contains(kind)) {
             return false;
         }
         return AmbientActivityFactory.create(type).perform(

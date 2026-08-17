@@ -208,6 +208,10 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
         if (state.bansheeActivity != null) {
             applyBansheePresentation(state);
         }
+        applyPractitionerPose(hedgeCronePose(
+            variant, state.hedgeCroneActivity, state.hedgeCroneWardPrepared));
+        applyPractitionerPose(circleMagePose(
+            variant, state.circleMageActivity, state.circleMageFocusPrepared));
     }
 
     /**
@@ -287,6 +291,116 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
             case VIGIL, RECOVERY -> {
             }
         }
+    }
+
+    static final float CRONE_WARNING_STAFF_RAISE = 0.85F;
+    static final float CRONE_WARNING_GUARD = 0.25F;
+    static final float CRONE_PREPARATION_STOOP = 0.45F;
+    static final float CRONE_CAST_ARM_EXTEND = 1.15F;
+    static final float CRONE_WITHDRAW_TURN = 0.3F;
+    static final float CRONE_WARD_READY_LIFT = 0.12F;
+
+    static final float MAGE_STUDY_BOOK_TILT = 0.7F;
+    static final float MAGE_STUDY_HEAD_BOW = 0.35F;
+    static final float MAGE_BOLT_ARM_FORWARD = 1.3F;
+    static final float MAGE_FOLLOW_URGENCY_LEAN = 0.2F;
+    static final float MAGE_WITHDRAW_TURN = 0.3F;
+    static final float MAGE_FOCUS_READY_LIFT = 0.12F;
+
+    /**
+     * One pose-only practitioner presentation delta. Every field is an additive rotation applied
+     * on top of the existing animation; a neutral instance changes nothing at all.
+     */
+    record PractitionerPose(
+        boolean overrides,
+        float bodyXRot,
+        float bodyYRot,
+        float headXRot,
+        float headYRot,
+        float rightArmXRot,
+        float rightArmZRot,
+        float leftArmXRot,
+        float leftArmZRot
+    ) {
+        static final PractitionerPose NEUTRAL =
+            new PractitionerPose(false, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+    }
+
+    /**
+     * Pure Hedge Crone pose selection from synchronized render facts. Only the exact HEDGE_CRONE
+     * variant may produce a non-neutral pose, so every other variant keeps its existing animation.
+     * No geometry, texture coordinate, texture file, scale, tint, or shadow value is involved.
+     */
+    static PractitionerPose hedgeCronePose(
+        final Variant variant,
+        final com.kadamitas.warlockery.entity.HedgeCroneRules.Mode mode,
+        final boolean wardPrepared
+    ) {
+        if (variant != Variant.HEDGE_CRONE || mode == null) {
+            return PractitionerPose.NEUTRAL;
+        }
+        final float wardLift = wardPrepared ? -CRONE_WARD_READY_LIFT : 0.0F;
+        return switch (mode) {
+            // Raised staff and a guarding off hand: the warning reads as a boundary challenge.
+            case WARNING -> new PractitionerPose(true, 0.0F, 0.0F, -CRONE_WARNING_GUARD, 0.0F,
+                -CRONE_WARNING_STAFF_RAISE, 0.0F, 0.0F, wardLift - CRONE_WARNING_GUARD);
+            // Lowered toward the workstation for the visible sixty-tick preparation.
+            case PREPARING -> new PractitionerPose(true, CRONE_PREPARATION_STOOP, 0.0F,
+                CRONE_PREPARATION_STOOP * 0.5F, 0.0F, 0.0F, 0.0F, 0.0F, wardLift);
+            // A deliberate extended staff arm for the twenty-tick hex windup.
+            case CASTING -> new PractitionerPose(true, 0.0F, 0.0F, 0.0F, 0.0F,
+                -CRONE_CAST_ARM_EXTEND, CRONE_WARNING_GUARD, 0.0F, wardLift);
+            case WITHDRAWING -> new PractitionerPose(true, 0.0F, CRONE_WITHDRAW_TURN, 0.0F,
+                -CRONE_WITHDRAW_TURN, 0.0F, 0.0F, 0.0F, wardLift);
+            case IDLE, RETURNING -> wardPrepared
+                ? new PractitionerPose(true, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, wardLift)
+                : PractitionerPose.NEUTRAL;
+        };
+    }
+
+    /**
+     * Pure Circle Mage pose selection. The study rehearsal and the forward bolt cast are
+     * deliberately distinct from every Hedge Crone pose so the two practitioners never read as
+     * the same mob, and no other variant can ever receive them.
+     */
+    static PractitionerPose circleMagePose(
+        final Variant variant,
+        final com.kadamitas.warlockery.entity.CircleMageRules.Mode mode,
+        final boolean focusPrepared
+    ) {
+        if (variant != Variant.CIRCLE_MAGE || mode == null) {
+            return PractitionerPose.NEUTRAL;
+        }
+        final float focusLift = focusPrepared ? -MAGE_FOCUS_READY_LIFT : 0.0F;
+        return switch (mode) {
+            // Book and staff drawn in toward a bowed head for the sixty-tick rehearsal.
+            case STUDYING -> new PractitionerPose(true, 0.0F, 0.0F, MAGE_STUDY_HEAD_BOW, 0.0F,
+                -MAGE_STUDY_BOOK_TILT * 0.5F, 0.0F, -MAGE_STUDY_BOOK_TILT, focusLift);
+            // A distinct forward staff thrust for the twelve-tick bolt windup.
+            case DEFENDING -> new PractitionerPose(true, 0.0F, 0.0F, -MAGE_STUDY_HEAD_BOW * 0.5F,
+                0.0F, -MAGE_BOLT_ARM_FORWARD, 0.0F, 0.0F, focusLift);
+            case FOLLOWING -> new PractitionerPose(true, MAGE_FOLLOW_URGENCY_LEAN, 0.0F, 0.0F,
+                0.0F, 0.0F, 0.0F, 0.0F, focusLift);
+            case WITHDRAWING -> new PractitionerPose(true, 0.0F, -MAGE_WITHDRAW_TURN, 0.0F,
+                MAGE_WITHDRAW_TURN, 0.0F, 0.0F, 0.0F, focusLift);
+            case IDLE -> focusPrepared
+                ? new PractitionerPose(true, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, focusLift)
+                : PractitionerPose.NEUTRAL;
+        };
+    }
+
+    private void applyPractitionerPose(final PractitionerPose pose) {
+        if (!pose.overrides()) {
+            return;
+        }
+        body.xRot += pose.bodyXRot();
+        body.yRot += pose.bodyYRot();
+        head.xRot += pose.headXRot();
+        head.yRot += pose.headYRot();
+        rightArm.xRot += pose.rightArmXRot();
+        rightArm.zRot += pose.rightArmZRot();
+        leftArm.xRot += pose.leftArmXRot();
+        leftArm.zRot += pose.leftArmZRot();
     }
 
     @Override

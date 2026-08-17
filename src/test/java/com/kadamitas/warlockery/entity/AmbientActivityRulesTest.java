@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -113,7 +114,10 @@ class AmbientActivityRulesTest {
             // F19: the dedicated LostSoulRuntime and SpiritRuntime own memorial
             // petition and soul-light attendance respectively.
             CreatureKind.LOST_SOUL,
-            CreatureKind.SPIRIT
+            CreatureKind.SPIRIT,
+            // F13: the dedicated Crone and Mage runtimes own their bounded workstation work.
+            CreatureKind.HEDGE_CRONE,
+            CreatureKind.CIRCLE_MAGE
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
@@ -123,15 +127,34 @@ class AmbientActivityRulesTest {
     }
 
     @Test
-    void eldritchWatcherDelegatesArcaneStudyToItsDedicatedRuntime() {
+    void everyPractitionerDelegatesArcaneStudyToItsDedicatedRuntime() {
         assertTrue(AmbientActivityProfile.forKind(CreatureKind.ELDRITCH_WATCHER).isEmpty(),
             "the dedicated Watcher runtime owns its focus-inspection schedule");
-        final AmbientActivityProfile arcaneStudy = AmbientActivityProfile.forType(ActivityType.ARCANE_STUDY);
-        assertEquals(Set.of(CreatureKind.CIRCLE_MAGE, CreatureKind.HEDGE_CRONE), arcaneStudy.kinds());
-        assertEquals(400, arcaneStudy.checkIntervalTicks());
-        assertEquals(10, arcaneStudy.chanceDenominator());
-        assertEquals(4_800, arcaneStudy.cooldownTicks());
-        assertEquals(0, arcaneStudy.localChangeCap());
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.HEDGE_CRONE).isEmpty(),
+            "F13: the dedicated Hedge Crone runtime owns its bounded ward preparation");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.CIRCLE_MAGE).isEmpty(),
+            "F13: the dedicated Circle Mage runtime owns its bounded solo and conclave study");
+        assertNull(AmbientActivityProfile.forType(ActivityType.ARCANE_STUDY),
+            "no kind remains on the generic ARCANE_STUDY dispatch");
+        assertTrue(AmbientActivityProfile.all().stream()
+                .noneMatch(profile -> profile.type() == ActivityType.ARCANE_STUDY),
+            "the retired profile is gone from the dispatch table");
+        assertFalse(AmbientActivityTags.forActivity(ActivityType.ARCANE_STUDY).isEmpty(),
+            "the shared workstation block predicate both dedicated runtimes reuse stays registered");
+    }
+
+    @Test
+    void aRetiredActivityRowNeverThrowsThroughTheGenericDispatch() {
+        // Regression: forType is a plain map lookup, so retiring the ARCANE_STUDY row made it
+        // return null while executeNow still dereferenced it unguarded at its sole call site.
+        assertNull(AmbientActivityProfile.forType(ActivityType.ARCANE_STUDY));
+        assertFalse(AmbientActivityRuntime.executeNow(
+            null, null, CreatureKind.CIRCLE_MAGE, ActivityType.ARCANE_STUDY),
+            "a retired activity row declines instead of throwing");
+        assertFalse(AmbientActivityRuntime.executeNow(
+            null, null, CreatureKind.HEDGE_CRONE, ActivityType.ARCANE_STUDY));
+        assertFalse(AmbientActivityRuntime.executeNow(
+            null, null, CreatureKind.ELDRITCH_WATCHER, ActivityType.ARCANE_STUDY));
     }
 
     @Test

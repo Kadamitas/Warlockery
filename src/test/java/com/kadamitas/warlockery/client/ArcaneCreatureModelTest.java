@@ -42,6 +42,73 @@ final class ArcaneCreatureModelTest {
     }
 
     @Test
+    void hedgeCroneAndCircleMagePosesComeOnlyFromSynchronizedFacts() {
+        final var croneVariant = CreatureModelProfile.Variant.HEDGE_CRONE;
+        final var mageVariant = CreatureModelProfile.Variant.CIRCLE_MAGE;
+
+        assertFalse(ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.IDLE, false
+        ).overrides(), "a calm unwarded Crone keeps the existing animation exactly");
+        assertFalse(ArcaneCreatureModel.hedgeCronePose(croneVariant, null, false).overrides(),
+            "an absent synchronized fact never poses anything");
+
+        final var warning = ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.WARNING, false);
+        assertTrue(warning.overrides());
+        assertTrue(warning.rightArmXRot() < 0.0F, "the warning raises the staff arm");
+
+        final var preparing = ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.PREPARING, false);
+        assertTrue(preparing.bodyXRot() > 0.0F, "preparation lowers the Crone toward the workstation");
+
+        final var casting = ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.CASTING, false);
+        assertTrue(casting.rightArmXRot() < preparing.rightArmXRot(),
+            "the cast uses a deliberate extended staff arm pose");
+
+        assertTrue(ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.IDLE, true
+        ).leftArmZRot() < 0.0F, "a prepared ward is visible on the off hand");
+
+        assertFalse(ArcaneCreatureModel.circleMagePose(
+            mageVariant, com.kadamitas.warlockery.entity.CircleMageRules.Mode.IDLE, false
+        ).overrides());
+        final var studying = ArcaneCreatureModel.circleMagePose(
+            mageVariant, com.kadamitas.warlockery.entity.CircleMageRules.Mode.STUDYING, false);
+        assertTrue(studying.leftArmXRot() < 0.0F && studying.headXRot() > 0.0F,
+            "study presents the book-facing rehearsal pose");
+        final var bolt = ArcaneCreatureModel.circleMagePose(
+            mageVariant, com.kadamitas.warlockery.entity.CircleMageRules.Mode.DEFENDING, false);
+        assertTrue(bolt.rightArmXRot() < studying.rightArmXRot(),
+            "the bolt cast is a distinct forward staff pose");
+        assertTrue(ArcaneCreatureModel.circleMagePose(
+            mageVariant, com.kadamitas.warlockery.entity.CircleMageRules.Mode.IDLE, true
+        ).leftArmZRot() < 0.0F, "a prepared focus is visible on the off hand");
+
+        assertTrue(warning.rightArmXRot() != bolt.rightArmXRot()
+                || warning.headXRot() != bolt.headXRot(),
+            "the two practitioners never read as the same mob");
+    }
+
+    @Test
+    void noOtherVariantEverReceivesAnF13PractitionerPose() {
+        for (final var variant : CreatureModelProfile.Variant.values()) {
+            if (variant != CreatureModelProfile.Variant.HEDGE_CRONE) {
+                for (final var mode : com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.values()) {
+                    assertFalse(ArcaneCreatureModel.hedgeCronePose(variant, mode, true).overrides(),
+                        variant + " must not pose like a Hedge Crone");
+                }
+            }
+            if (variant != CreatureModelProfile.Variant.CIRCLE_MAGE) {
+                for (final var mode : com.kadamitas.warlockery.entity.CircleMageRules.Mode.values()) {
+                    assertFalse(ArcaneCreatureModel.circleMagePose(variant, mode, true).overrides(),
+                        variant + " must not pose like a Circle Mage");
+                }
+            }
+        }
+    }
+
+    @Test
     void everyArchetypeBakesAHeadBodyAndMultipleSolidParts() {
         for (final Archetype archetype : Archetype.values()) {
             final ModelPart root = ArcaneCreatureModel.createLayer(archetype).bakeRoot();

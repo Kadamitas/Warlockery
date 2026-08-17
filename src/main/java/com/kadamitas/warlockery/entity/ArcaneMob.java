@@ -36,7 +36,10 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
         super(type, level);
         this.kind = kind;
         this.behavior = CreatureBehaviorFactory.create(kind);
-        this.setCanPickUpLoot(kind == CreatureKind.IRONBOUND_SENTINEL || kind == CreatureKind.CIRCLE_MAGE);
+        // F13: CIRCLE_MAGE is no longer ever constructed as an ArcaneMob -- the dedicated
+        // CircleMageEntity owns that kind and normalizes loot pickup off deliberately, so the
+        // former CIRCLE_MAGE clause here was unreachable and is dropped rather than left to rot.
+        this.setCanPickUpLoot(kind == CreatureKind.IRONBOUND_SENTINEL);
         if (kind == CreatureKind.OWL || kind == CreatureKind.TOAD || kind == CreatureKind.CAT) {
             this.goalSelector.removeAllGoals(goal -> true);
             this.targetSelector.removeAllGoals(goal -> true);

@@ -6,6 +6,8 @@ import com.kadamitas.warlockery.entity.EldritchWatcherEntity;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.BansheeEntity;
 import com.kadamitas.warlockery.entity.BroomEntity;
+import com.kadamitas.warlockery.entity.CircleMageEntity;
+import com.kadamitas.warlockery.entity.HedgeCroneEntity;
 import com.kadamitas.warlockery.entity.HexBatEntity;
 import com.kadamitas.warlockery.entity.HexBatRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
@@ -126,7 +128,9 @@ public final class ModEntities {
         Map.entry(CreatureKind.BANSHEE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createBanshee),
         Map.entry(CreatureKind.DEATH, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createDeath),
         Map.entry(CreatureKind.LOST_SOUL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLostSoul),
-        Map.entry(CreatureKind.SPIRIT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLocalSpirit)
+        Map.entry(CreatureKind.SPIRIT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLocalSpirit),
+        Map.entry(CreatureKind.HEDGE_CRONE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHedgeCrone),
+        Map.entry(CreatureKind.CIRCLE_MAGE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createCircleMage)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -346,6 +350,26 @@ public final class ModEntities {
         return EntityType.Builder.of(
             (EntityType<DeathEntity> type, net.minecraft.world.level.Level level) ->
                 new DeathEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createHedgeCrone(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<HedgeCroneEntity> type, net.minecraft.world.level.Level level) ->
+                new HedgeCroneEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createCircleMage(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<CircleMageEntity> type, net.minecraft.world.level.Level level) ->
+                new CircleMageEntity(type, level),
             MobCategory.MONSTER
         ).sized(registration.width(), registration.height())
             .notInPeaceful()
