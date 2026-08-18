@@ -3,7 +3,6 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModSounds;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
-import com.kadamitas.warlockery.world.GoblinRaidRuntime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -177,14 +176,10 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
             getNavigation().stop();
             setTarget(null);
         }
-        acquireLocalRaidTarget(level);
         behavior.tick(this, level);
         TacticalCombatRuntime.tick(this, level, kind);
         GoblinSettlementLifeRuntime.tick(this, level);
         AmbientActivityRuntime.tick(this, level, kind);
-        if (kind == CreatureKind.GOBLIN) {
-            GoblinRaidRuntime.coordinate(this, level);
-        }
         if (fleeHumanVillager(level)) {
             return;
         }
@@ -655,21 +650,11 @@ public class HobgoblinEntity extends Villager implements ArcaneCreature {
         return true;
     }
 
-    private void acquireLocalRaidTarget(final ServerLevel level) {
-        if (kind != CreatureKind.GOBLIN
-            || isBaby()
-            || isTrading()
-            || getTarget() != null) {
-            return;
-        }
-        level.getEntitiesOfClass(
-                Villager.class,
-                getBoundingBox().inflate(16.0, 6.0, 16.0),
-                villager -> villager.isAlive()
-                    && GoblinHostilityRules.canTarget(kind, villager.getType())
-                    && behavior.canAttack(this, villager)
-            ).stream()
-            .min(Comparator.comparingDouble(this::distanceToSqr))
-            .ifPresent(this::setTarget);
-    }
+    /*
+     * `acquireLocalRaidTarget` and the `GoblinRaidRuntime.coordinate` call that followed it were
+     * removed rather than repaired. Both were guarded by `kind == CreatureKind.GOBLIN`, and after
+     * the F10 split `ModEntities.GOBLIN` constructs the dedicated `GoblinEntity`, so no instance of
+     * this class can ever report that kind again: the guard is unsatisfiable and both paths were
+     * unreachable. F10's `GoblinEnclaveRuntime` owns exact-Goblin targeting and assault movement.
+     */
 }

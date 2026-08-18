@@ -3,5 +3,5 @@
   "function": "warlockery:goblin_children_gather_dance_and_gift_flowers",
   "environment": "minecraft:default",
   "structure": "forge:empty3x3x3",
-  "max_ticks": 100
+  "max_ticks": 400
 }

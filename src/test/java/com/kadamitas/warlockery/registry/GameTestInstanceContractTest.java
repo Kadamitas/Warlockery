@@ -231,6 +231,19 @@ final class GameTestInstanceContractTest {
         "banshee_save_reload_and_acquisition_contracts_are_preserved",
         "banshee_flight_hazard_feedback_and_work_are_bounded"
     );
+    private static final Path HOBGOBLIN_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "hobgoblin_isolated.json"
+    );
+
+    private static final Set<String> ISOLATED_HOBGOBLIN_JOURNEY = Set.of(
+        "hobgoblin_journey_identity_village_exclusion_and_migration",
+        "hobgoblin_journey_trade_contract_and_relations",
+        "hobgoblin_journey_caravan_family_and_camp_lifecycle",
+        "hobgoblin_journey_work_hazard_defense_and_cleanup",
+        "hobgoblin_journey_event_adapter_and_population_bounds"
+    );
+
     private static final Set<String> ISOLATED_GOBLIN_ENCLAVE = Set.of(
         "goblin_enclave_identity_schedule_and_migration",
         "goblin_enclave_family_children_and_relations",
@@ -462,6 +475,23 @@ final class GameTestInstanceContractTest {
     }
 
     @Test
+    void onlyTheExactHobgoblinJourneyFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(HOBGOBLIN_ENVIRONMENT),
+            "the isolated F11 Hobgoblin environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(HOBGOBLIN_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F11 Hobgoblin environment must not mutate shared world state");
+        assertEquals(5, ISOLATED_HOBGOBLIN_JOURNEY.size());
+        final Set<String> registeredJourney = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registeredJourney.containsAll(ISOLATED_HOBGOBLIN_JOURNEY),
+            "all five exact F11 Hobgoblin GameTests must be registered");
+    }
+
+    @Test
     void onlyTheExactGoblinEnclaveFixturesUseTheRegisteredNoOpEnvironment() {
         assertTrue(Files.exists(GOBLIN_ENVIRONMENT),
             "the isolated F10 Goblin environment resource must exist");
@@ -600,7 +630,9 @@ final class GameTestInstanceContractTest {
                                                                             ? "warlockery:poltergeist_isolated"
                                                                             : ISOLATED_ECHO_SPECTRE.contains(registration.id())
                                                                                 ? "warlockery:echo_spectre_isolated"
-                                                                                : "minecraft:default",
+                                                                                : ISOLATED_HOBGOBLIN_JOURNEY.contains(registration.id())
+                                                                                    ? "warlockery:hobgoblin_isolated"
+                                                                                    : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

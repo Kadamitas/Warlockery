@@ -56,7 +56,7 @@ class GoblinHostilityRulesTest {
         ));
         // Both goblinfolk bodies now carry their own village-exclusion predicate, and the generic
         // Monster::checkMonsterSpawnRules loop must clobber neither of them.
-        assertTrue(registry.contains("HobgoblinEntity::checkNaturalSpawnRules"));
+        assertTrue(registry.contains("HobgoblinTravelerEntity::checkNaturalSpawnRules"));
         assertTrue(registry.contains("GoblinEntity::checkNaturalSpawnRules"));
         assertTrue(registry.contains("!\"hobgoblin\".equals(id)"));
         assertTrue(registry.contains("!\"goblin\".equals(id)"));

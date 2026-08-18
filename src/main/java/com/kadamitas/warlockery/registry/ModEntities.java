@@ -12,6 +12,7 @@ import com.kadamitas.warlockery.entity.HedgeCroneEntity;
 import com.kadamitas.warlockery.entity.HexBatEntity;
 import com.kadamitas.warlockery.entity.HexBatRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.HobgoblinTravelerEntity;
 import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.GoblinBossRules;
@@ -211,7 +212,13 @@ public final class ModEntities {
             return EntityType.Builder.of(WerewolfHunterEntity::new, MobCategory.MONSTER)
                 .sized(visual.width(), visual.height()).notInPeaceful().build(REGISTRY.key("werewolf_hunter"));
         });
-    public static final RegistryObject<EntityType<HobgoblinEntity>> HOBGOBLIN = hobgoblin("hobgoblin", CreatureKind.HOBGOBLIN);
+    public static final RegistryObject<EntityType<HobgoblinTravelerEntity>> HOBGOBLIN = register("hobgoblin",
+        () -> {
+            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.HOBGOBLIN);
+            return EntityType.Builder.of(HobgoblinTravelerEntity::new, MobCategory.CREATURE)
+                .sized(visual.width(), visual.height())
+                .build(REGISTRY.key("hobgoblin"));
+        });
     public static final RegistryObject<EntityType<GoblinEntity>> GOBLIN = register("goblin",
         () -> {
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.GOBLIN);
@@ -561,7 +568,7 @@ public final class ModEntities {
             HOBGOBLIN.get(),
             SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            HobgoblinEntity::checkNaturalSpawnRules,
+            HobgoblinTravelerEntity::checkNaturalSpawnRules,
             SpawnPlacementRegisterEvent.Operation.REPLACE
         );
         event.register(

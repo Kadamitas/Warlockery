@@ -2,11 +2,15 @@ package com.kadamitas.warlockery.world;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.entity.GoblinEntity;
-import com.kadamitas.warlockery.entity.HobgoblinEntity;
-import com.kadamitas.warlockery.entity.GoblinSettlementLifeRuntime;
+import com.kadamitas.warlockery.entity.HobgoblinJourneyRules;
+import com.kadamitas.warlockery.entity.HobgoblinJourneyRules.Mode;
+import com.kadamitas.warlockery.entity.HobgoblinJourneyRuntime;
+import com.kadamitas.warlockery.entity.HobgoblinTravelerEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
@@ -23,7 +27,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.phys.AABB;
 
 public final class VillageGuardGameTests {
@@ -33,12 +36,27 @@ public final class VillageGuardGameTests {
     public static void hobgoblinTradingBypassesVillageGuardCommissioning(final GameTestHelper helper) {
         helper.setBlock(new BlockPos(1, 0, 1), Blocks.STONE);
         final ServerPlayer player = connectedSurvivalPlayer(helper);
-        final HobgoblinEntity hobgoblin = helper.spawn(
+        final HobgoblinTravelerEntity hobgoblin = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(1, 1, 1), EntitySpawnReason.NATURAL
         );
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.LEATHER_CHESTPLATE));
 
-        helper.assertTrue(!VillageGuardRuntime.isCommissionableTarget(hobgoblin),
+        // The commissioning handler's own guard is `event.getTarget() instanceof Villager`, and the
+        // exact hobgoblin is an AbstractVillager that is not a Villager, so it is rejected one step
+        // earlier than before and never reaches isCommissionableTarget at all. The vanilla villager
+        // is the positive control: without it this pair would only restate a type relation and
+        // could not fail if the predicate itself were ever broken.
+        //
+        // The control is discarded immediately. A loaded human villager inside the traveler's
+        // 12-block signal radius IS village space, and village exit correctly closes an open trade,
+        // so leaving it standing would fail this fixture for the right reason at the wrong time.
+        final Villager control = helper.spawn(EntityTypes.VILLAGER, new BlockPos(2, 1, 1));
+        helper.assertTrue(VillageGuardRuntime.isCommissionableTarget(control),
+            "a vanilla villager must stay commissionable, or the hobgoblin exclusion proves nothing");
+        control.discard();
+
+        final AbstractVillager trader = hobgoblin;
+        helper.assertTrue(!(trader instanceof Villager),
             "hobgoblins must bypass vanilla village guard commissioning");
         player.interactOn(hobgoblin, InteractionHand.MAIN_HAND, hobgoblin.position());
         helper.assertTrue(hobgoblin.isAlive() && !hobgoblin.isRemoved(),
@@ -64,7 +82,7 @@ public final class VillageGuardGameTests {
     }
 
     public static void goblinFamiliesProduceMatchingBabies(final GameTestHelper helper) {
-        final HobgoblinEntity hobgoblinChild = createBaby(
+        final HobgoblinTravelerEntity hobgoblinChild = createBaby(
             helper, ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 0), new BlockPos(1, 1, 0), new BlockPos(2, 1, 0)
         );
         final GoblinEntity goblinChild = createBaby(
@@ -131,28 +149,47 @@ public final class VillageGuardGameTests {
     public static void hobgoblinsFleeHumanVillagersAndKeepCustomProfessions(final GameTestHelper helper) {
         BlockPos.betweenClosedStream(new BlockPos(-5, 0, -5), new BlockPos(7, 0, 7))
             .forEach(position -> helper.setBlock(position, Blocks.STONE));
-        final HobgoblinEntity hobgoblin = helper.spawn(
+        final HobgoblinTravelerEntity hobgoblin = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(1, 1, 1), EntitySpawnReason.NATURAL
         );
         final Villager villager = helper.spawn(EntityTypes.VILLAGER, new BlockPos(2, 1, 1));
         villager.setNoAi(true);
-        final double startingDistance = hobgoblin.distanceToSqr(villager);
 
+        // The visible profession name survives the split unchanged. The internal VillagerData the
+        // 1.4 body carried does not exist on an AbstractVillager, so the invariant is asserted
+        // against the displayed translation key that VillagerData only ever mirrored.
         helper.assertTrue(hobgoblin.hasCustomName() && hobgoblin.isCustomNameVisible(),
             "a naturally spawned hobgoblin must expose its assigned goblin profession");
-        helper.assertTrue(!hobgoblin.getVillagerData().profession().is(VillagerProfession.NITWIT),
-            "a hobgoblin's internal profession must never be nitwit");
-        helper.assertTrue(hobgoblin.getVillagerData().profession().is(hobgoblin.goblinProfession().engineProfession()),
-            "a hobgoblin's internal profession must match its visible custom profession");
-        final boolean[] escaped = {false};
+        final Component name = hobgoblin.getCustomName();
+        helper.assertTrue(name != null
+                && name.getContents() instanceof TranslatableContents contents
+                && contents.getKey().equals(
+                    "entity.warlockery.hobgoblin.profession." + hobgoblin.goblinProfession().id()),
+            "the visible name must be exactly this hobgoblin's own assigned profession key");
+
+        // The 1.4 flee goal is replaced by the village-exclusion policy: a loaded human villager
+        // inside the signal radius IS village space, and VILLAGE_EXIT outranks every non-emergency
+        // intent. Displacement itself is deliberately NOT asserted: an accepted exit must land in
+        // the 12-to-24 block outward band, which this arena's floor cannot host, so requiring the
+        // hobgoblin to actually move would assert the arena rather than the policy.
+        helper.assertTrue(HobgoblinJourneyRules.villageExcluded(false, true, false),
+            "a human villager inside the signal radius must count as village space");
+        hobgoblin.journeyTransient().resetForLoad();
+        final boolean[] excluded = {false};
         helper.onEachTick(() -> {
             helper.assertTrue(hobgoblin.getTarget() == null,
                 "friendly hobgoblins must never target human villagers");
-            escaped[0] |= hobgoblin.distanceToSqr(villager) > startingDistance + 4.0;
+            excluded[0] |= hobgoblin.journeyTransient().insideExcludedSpace();
         });
         helper.runAfterDelay(80, () -> {
-            helper.assertTrue(escaped[0],
-                "friendly hobgoblins must flee nearby human villagers");
+            helper.assertTrue(excluded[0],
+                "a hobgoblin beside a human villager must observe itself inside excluded space");
+            helper.assertValueEqual(hobgoblin.journeyState().mode(), Mode.VILLAGE_EXIT,
+                "village exit must outrank every non-emergency intent");
+            helper.assertTrue(hobgoblin.journeyCounters().villageExitSearches() >= 1L,
+                "observing village space must arm and run at least one exit search");
+            helper.assertTrue(!HobgoblinJourneyRuntime.safeToTrade(hobgoblin),
+                "a hobgoblin inside village space must refuse to trade");
             helper.succeed();
         });
     }

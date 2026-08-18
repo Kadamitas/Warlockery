@@ -2,7 +2,7 @@ package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.registry.ModSounds;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
-import com.kadamitas.warlockery.world.GoblinEnclaveData;
+import com.kadamitas.warlockery.world.HobgoblinJourneyData;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -40,41 +40,42 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The dedicated exact {@code warlockery:goblin} body. It is a narrow merchant, not a human
- * Villager: no Brain, sensors, memories, schedules, POI claims, gossip, golem support, native raid
- * activities, Hero gifts, human-Villager breeding, Witch conversion, Zombie-Villager conversion, or
- * implicit no-distance despawn reaches this class.
+ * The dedicated exact {@code warlockery:hobgoblin} body: a reciprocal night-road helper, not a human
+ * Villager and not the F10 Goblin enclave actor. No Brain, sensor, memory, schedule, POI claim,
+ * gossip, golem support, native raid activity, Hero gift, human-Villager breeding, Witch conversion,
+ * Zombie-Villager conversion, or blanket fall immunity reaches this class.
  *
- * <p>Its executor set is intentionally minimal - float, an attack-only melee commit, player look,
- * and a look-only random look - and not one of those goals declares {@code MOVE}. Ordinary
- * navigation authority belongs entirely to {@link GoblinEnclaveRuntime}.</p>
+ * <p>Its executor set is intentionally minimal - float, an attack-only defensive melee commit,
+ * player look, and a look-only random look - and not one of those goals declares {@code MOVE}.
+ * Ordinary navigation authority belongs entirely to {@link HobgoblinJourneyRuntime}, and there is no
+ * target-selector goal at all: a Hobgoblin only ever answers a direct aggressor.</p>
  *
- * <p>Public identity is unchanged: registry ID, displayed name, category, dimensions, attributes,
- * renderer, model, texture, sound set, loot table, spawn egg, and trade catalog all stay exactly as
- * registered. Complete fall immunity is deliberately <em>not</em> reimplemented.</p>
+ * <p>Public identity is unchanged: registry ID, displayed profession names, category, dimensions,
+ * attributes, renderer, model, texture, sound set, loot table, spawn egg, four profession
+ * identities, and the exact trade catalog all stay exactly as registered.</p>
+ *
+ * <p>Naming note: the exact public ID {@code warlockery:hobgoblin} is still registered against the
+ * retained shared {@code HobgoblinEntity} at this revision because {@code ModEntities} is serialized
+ * behind a coordinator edit, and that retained class also still serves the F12 Stonebroker and
+ * Forgewarden patrons. This body is deliberately a separate file so the F12 patron behavior is not
+ * changed by F11; once F12 introduces its own patron bodies the retained class can be deleted and
+ * this one renamed.</p>
  */
-public final class GoblinEntity extends AbstractGoblinMerchantEntity {
-    public static final String STATE_KEY = "WarlockeryGoblinEnclave";
+public final class HobgoblinTravelerEntity extends AbstractGoblinMerchantEntity {
+    public static final String STATE_KEY = "WarlockeryHobgoblinJourney";
     private static final String LEGACY_PROSPECTING_KEY = "WarlockeryProspectingCooldown";
     private static final String LEGACY_GIFT_KEY = "WarlockeryNextFlowerGift";
-    private static final String ASSAULT_CENTER_KEY = "WarlockeryGoblinRaidCenter";
-    private static final String ASSAULT_WAVE_KEY = "WarlockeryGoblinRaidWave";
-    private static final String ASSAULT_LEADER_KEY = "WarlockeryGoblinRaidLeader";
 
-    private final CreatureBehavior contractBehavior = CreatureBehaviorFactory.create(CreatureKind.GOBLIN);
-    private final GoblinEnclaveRuntime.Counters enclaveCounters = new GoblinEnclaveRuntime.Counters();
-    private final GoblinEnclaveRuntime.TransientState enclaveTransient =
-        new GoblinEnclaveRuntime.TransientState();
-    private GoblinEnclaveState enclaveState = GoblinEnclaveState.empty();
+    private final CreatureBehavior contractBehavior = CreatureBehaviorFactory.create(CreatureKind.HOBGOBLIN);
+    private final HobgoblinJourneyRuntime.Counters journeyCounters = new HobgoblinJourneyRuntime.Counters();
+    private final HobgoblinJourneyRuntime.TransientState journeyTransient =
+        new HobgoblinJourneyRuntime.TransientState();
+    private HobgoblinJourneyState journeyState = HobgoblinJourneyState.empty();
     /** Set only while the shared contract binding runs; never persisted, never read elsewhere. */
     private transient boolean suppressContractPersistenceLatch;
-    private @Nullable BlockPos assaultCenter;
-    private int assaultWave;
-    private boolean assaultLeader;
 
-    public GoblinEntity(final EntityType<? extends AbstractVillager> type, final Level level) {
+    public HobgoblinTravelerEntity(final EntityType<? extends AbstractVillager> type, final Level level) {
         super(type, level);
-        this.xpReward = 3;
         // Restored Villager-supertype capability. Vanilla `Villager` enables door opening in its
         // own constructor; `AbstractVillager` does not, so the split silently took it away with no
         // compile error. Door opening is ordinary physical navigation, not part of the Brain, POI,
@@ -86,43 +87,43 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
 
     @Override
     public CreatureKind creatureKind() {
-        return CreatureKind.GOBLIN;
+        return CreatureKind.HOBGOBLIN;
     }
 
     @Override
     protected String speciesTranslationKey() {
-        return "goblin";
+        return "hobgoblin";
     }
 
     @Override
     protected ModSounds.CreatureSoundSet soundSet() {
-        return ModSounds.GOBLIN;
+        return ModSounds.HOBGOBLIN;
     }
 
     // ---------------------------------------------------------------- semantic state
 
-    public GoblinEnclaveState goblinEnclaveState() {
-        return enclaveState;
+    public HobgoblinJourneyState journeyState() {
+        return journeyState;
     }
 
-    public void setGoblinEnclaveState(final GoblinEnclaveState state) {
-        enclaveState = state == null ? GoblinEnclaveState.empty() : state;
-        setGoblinProfession(enclaveState.profession());
+    public void setJourneyState(final HobgoblinJourneyState state) {
+        journeyState = state == null ? HobgoblinJourneyState.empty() : state;
+        setGoblinProfession(journeyState.profession());
     }
 
-    public GoblinEnclaveRuntime.Counters goblinCounters() {
-        return enclaveCounters;
+    public HobgoblinJourneyRuntime.Counters journeyCounters() {
+        return journeyCounters;
     }
 
-    public GoblinEnclaveRuntime.TransientState goblinTransient() {
-        return enclaveTransient;
+    public HobgoblinJourneyRuntime.TransientState journeyTransient() {
+        return journeyTransient;
     }
 
     @Override
     public void setGoblinProfession(final GoblinProfession profession) {
         super.setGoblinProfession(profession);
-        if (enclaveState.profession() != goblinProfession()) {
-            enclaveState = enclaveState.withProfession(goblinProfession());
+        if (journeyState.profession() != goblinProfession()) {
+            journeyState = journeyState.withProfession(goblinProfession());
         }
     }
 
@@ -130,24 +131,24 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
 
     @Override
     public int merchantLevel() {
-        return enclaveState.merchant().level();
+        return journeyState.merchant().level();
     }
 
     @Override
     public int getVillagerXp() {
-        return enclaveState.merchant().xp();
+        return journeyState.merchant().xp();
     }
 
     @Override
     protected void awardMerchantXp(final int xp) {
-        enclaveState = enclaveState.withMerchant(
-            enclaveState.merchant().withXp(enclaveState.merchant().xp() + Math.max(0, xp))
+        journeyState = journeyState.withMerchant(
+            journeyState.merchant().withXp(journeyState.merchant().xp() + Math.max(0, xp))
         );
     }
 
     @Override
     protected boolean safeToTrade() {
-        return GoblinEnclaveRuntime.safeToTrade(this);
+        return HobgoblinJourneyRuntime.safeToTrade(this);
     }
 
     @Override
@@ -159,18 +160,18 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
 
     /**
      * Four executors, none of which declares {@code MOVE}. The vanilla {@link RandomLookAroundGoal}
-     * declares MOVE and LOOK, so it is redeclared LOOK-only, and melee is committed by a dedicated
-     * attack-only goal that never creates or moves a path.
+     * declares MOVE and LOOK, so it is redeclared LOOK-only, and the defensive strike is committed
+     * by a dedicated attack-only goal that never creates or moves a path.
      */
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
-        goalSelector.addGoal(1, new AttackOnlyMeleeGoal(this));
+        goalSelector.addGoal(1, new DefensiveStrikeGoal(this));
         goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
         goalSelector.addGoal(9, new LookOnlyRandomLookGoal(this));
     }
 
-    /** Exposed for the live identity fixture: F10 registers zero target-selector goals. */
+    /** Exposed for the live identity fixture: F11 registers zero target-selector goals. */
     public int operationalTargetGoalCount() {
         return targetSelector.getAvailableGoals().size();
     }
@@ -189,24 +190,28 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
     }
 
     /**
-     * Commits melee only. It declares LOOK, never MOVE, and never touches navigation: approach is
-     * the runtime's job. The target is revalidated at windup and again at commit so a stale or
-     * newly protected target receives no hit and no rider effect.
+     * Commits one ordinary melee attempt against a remembered direct aggressor, and only while the
+     * runtime is actually in {@code DEFEND}. It declares LOOK, never MOVE, and never touches
+     * navigation: approach is the runtime's job, and the target is revalidated at windup and again
+     * at commit so a lapsed or newly protected aggressor receives no hit.
      */
-    private static final class AttackOnlyMeleeGoal extends Goal {
+    private static final class DefensiveStrikeGoal extends Goal {
         private static final int COOLDOWN_TICKS = 20;
-        private final GoblinEntity goblin;
+        private final HobgoblinTravelerEntity traveler;
         private int cooldown;
 
-        private AttackOnlyMeleeGoal(final GoblinEntity goblin) {
-            this.goblin = goblin;
+        private DefensiveStrikeGoal(final HobgoblinTravelerEntity traveler) {
+            this.traveler = traveler;
             setFlags(EnumSet.of(Flag.LOOK));
         }
 
         @Override
         public boolean canUse() {
-            final LivingEntity target = goblin.getTarget();
-            return target != null && target.isAlive() && goblin.canAttack(target);
+            final LivingEntity target = traveler.getTarget();
+            return target != null
+                && target.isAlive()
+                && traveler.journeyState().mode() == HobgoblinJourneyRules.Mode.DEFEND
+                && traveler.canAttack(target);
         }
 
         @Override
@@ -226,26 +231,26 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
 
         @Override
         public void tick() {
-            final LivingEntity target = goblin.getTarget();
-            if (target == null || !(goblin.level() instanceof ServerLevel level)) {
+            final LivingEntity target = traveler.getTarget();
+            if (target == null || !(traveler.level() instanceof ServerLevel level)) {
                 return;
             }
-            goblin.getLookControl().setLookAt(target, 30.0F, 30.0F);
+            traveler.getLookControl().setLookAt(target, 30.0F, 30.0F);
             if (cooldown > 0) {
                 cooldown--;
                 return;
             }
-            if (!goblin.isWithinMeleeAttackRange(target)) {
+            if (!traveler.isWithinMeleeAttackRange(target)) {
                 return;
             }
             // Second revalidation immediately before the commit.
-            if (!target.isAlive() || !goblin.canAttack(target)) {
-                goblin.setTarget(null);
+            if (!target.isAlive() || !traveler.canAttack(target)) {
+                traveler.setTarget(null);
                 return;
             }
             cooldown = COOLDOWN_TICKS;
-            goblin.swing(InteractionHand.MAIN_HAND);
-            goblin.doHurtTarget(level, target);
+            traveler.swing(InteractionHand.MAIN_HAND);
+            traveler.doHurtTarget(level, target);
         }
     }
 
@@ -254,7 +259,7 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
     @Override
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
-        GoblinEnclaveRuntime.tick(this, level);
+        HobgoblinJourneyRuntime.tick(this, level);
     }
 
     @Override
@@ -265,11 +270,11 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
         final @Nullable SpawnGroupData groupData
     ) {
         final SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
-        // setGoblinProfession refreshes the displayed name unconditionally, so the one-in-four
-            // roll that lands back on the PROSPECTOR default is still named.
-            setGoblinProfession(GoblinProfession.values()[random.nextInt(GoblinProfession.values().length)]);
-        // The registry-owned 3.0/24.0 attribute baseline is exact; the generic Mob random
-        // follow-range spawn bonus would make every exact-attribute assertion nondeterministic.
+        // setGoblinProfession refreshes the displayed name unconditionally for a name this body
+        // owns, so the one-in-four roll that lands back on the PROSPECTOR default is still named.
+        setGoblinProfession(GoblinProfession.values()[random.nextInt(GoblinProfession.values().length)]);
+        // The registry-owned attribute baseline is exact; the generic Mob random follow-range spawn
+        // bonus would make every exact-attribute assertion nondeterministic.
         final AttributeInstance followRange = getAttribute(Attributes.FOLLOW_RANGE);
         if (followRange != null) {
             followRange.removeModifier(RANDOM_SPAWN_BONUS_ID);
@@ -278,11 +283,13 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
     }
 
     /**
-     * Night, low light, away from a human village, and locally capped. The bounded local count uses
-     * the entity's own already-loaded section query and never touches an unloaded chunk.
+     * Village exclusion is true at the spawn layer, not only at the flee layer: a natural traveler
+     * refuses a village origin, refuses the configured exclusion buffer around an observed village,
+     * and refuses to stack past the local cap. The bounded local count uses the entity's own
+     * already-loaded section query and never touches an unloaded chunk.
      */
     public static boolean checkNaturalSpawnRules(
-        final EntityType<GoblinEntity> type,
+        final EntityType<HobgoblinTravelerEntity> type,
         final ServerLevelAccessor level,
         final EntitySpawnReason spawnReason,
         final BlockPos position,
@@ -295,41 +302,37 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
             return true;
         }
         final ServerLevel serverLevel = level.getLevel();
-        return GoblinEnclaveRules.canSpawnNaturally(
-            serverLevel.isDarkOutside(),
-            serverLevel.getMaxLocalRawBrightness(position),
-            serverLevel.isVillage(position) ? 0 : GoblinEnclaveRules.MIN_HUMAN_VILLAGE_DISTANCE,
-            GoblinEnclaveRuntime.countLoadedGoblinsNear(serverLevel, position)
+        return HobgoblinJourneyRules.canSpawnNaturally(
+            serverLevel.isVillage(position),
+            serverLevel.isVillage(position) ? 0 : HobgoblinJourneyRules.MIN_HUMAN_VILLAGE_DISTANCE,
+            HobgoblinJourneyRuntime.countLoadedTravelersNear(serverLevel, position)
         );
     }
 
     /**
-     * Unanchored wild Goblins use ordinary hostile despawn. Anchored residents, contracted Goblins,
-     * and active assault members are the only exceptions, and each is an explicit recorded reason.
+     * Unanchored solitary travelers use ordinary creature despawn. Caravan members, camp residents,
+     * contracted workers, and active external-event residents are the only exceptions, and each one
+     * is an explicit recorded reason rather than a permanent latch.
      */
     @Override
     public boolean removeWhenFarAway(final double distanceSquared) {
-        return GoblinEnclaveRules.mayDespawn(
-            enclaveState.anchor().present(),
-            enclaveState.patron().bound(),
-            isAssaultMember()
+        return HobgoblinJourneyRules.mayDespawn(
+            journeyState.caravan().present(),
+            journeyState.camp().present(),
+            journeyState.contract().active(),
+            journeyTransient.eventResident()
         );
     }
 
     /**
-     * Persistence is the vanilla latch <em>plus</em> the three explicit F10 reasons.
+     * Persistence is the vanilla latch <em>plus</em> the four explicit F11 reasons.
      *
      * <p>{@code Mob.checkDespawn} short-circuits on {@code isPersistenceRequired()} before it ever
-     * consults a derived predicate, so the explicit reasons have to be visible here or an anchored
+     * consults a derived predicate, so the explicit reasons have to be visible here or a camp
      * resident would despawn. The vanilla latch is deliberately still honoured: every other
-     * {@code setPersistenceRequired()} site in 26.2 is a real player or system intent that a Goblin
-     * must respect exactly like any other mob - {@code NameTagItem}, the equipment-slot container
-     * behind {@code /item replace entity} and hoppers, {@code EquipmentDispenseItemBehavior}, and
-     * {@code GameTestEntityBuilder}, which is what keeps a GameTest-spawned mob alive for the length
-     * of its own test.</p>
-     *
-     * <p>Only one latch write is suppressed, and it is suppressed at the source rather than here:
-     * see {@link #setPersistenceRequired()}.</p>
+     * {@code setPersistenceRequired()} site is a real player or system intent that a Hobgoblin must
+     * respect exactly like any other mob, including {@code GameTestEntityBuilder}, which is what
+     * keeps a GameTest-spawned mob alive for the length of its own test.</p>
      */
     @Override
     public boolean isPersistenceRequired() {
@@ -341,11 +344,11 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
      *
      * <p>{@code CreatureBehaviorRuntime.bindCompanion} ends in the one-way
      * {@code setPersistenceRequired()}, which has no clearing setter, so honouring it would make
-     * every ex-patron permanently persistent - the 1.4 defect this family exists to remove. F10
-     * already owns patron persistence through {@link GoblinEnclaveRules.PersistenceReason#CONTRACTED},
-     * so the binding call is redundant as well as unclearable. The suppression flag is set only
-     * around that single call, so a name tag, a dispenser, a command, or the GameTest entity builder
-     * all still latch normally.</p>
+     * every ex-contractor permanently persistent - the 1.4 defect this family exists to remove. F11
+     * already owns contract persistence through
+     * {@link HobgoblinJourneyRules.PersistenceReason#CONTRACTED}, so the binding call is redundant
+     * as well as unclearable. The flag is set only around that single call, so a name tag, a
+     * dispenser, a command, a hopper, and the GameTest entity builder all still latch normally.</p>
      */
     @Override
     public void setPersistenceRequired() {
@@ -360,59 +363,59 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
         return persistenceReason().isPresent() || super.requiresCustomPersistence();
     }
 
+    public Optional<HobgoblinJourneyRules.PersistenceReason> persistenceReason() {
+        return HobgoblinJourneyRules.persistenceReason(
+            journeyState.caravan().present(),
+            journeyState.camp().present(),
+            journeyState.contract().active(),
+            journeyTransient.eventResident()
+        );
+    }
+
     /**
      * Departure is wired to death and to every removal reason, so a dead, discarded, or unloaded
-     * Goblin stops counting against its enclave. Without this, membership is monotonic: population
-     * inflates forever, breeding blocks permanently once eight Goblins have ever joined, replacement
-     * residents can never anchor, and the record never expires.
+     * traveler stops counting against its caravan. Without this, membership is monotonic:
+     * population inflates forever, conception blocks permanently once four travelers have ever
+     * joined, and the abandoned work claim is never released.
      */
     @Override
     public void remove(final RemovalReason reason) {
-        departEnclave(reason);
+        departCaravan(reason);
         super.remove(reason);
     }
 
-    private void departEnclave(final RemovalReason reason) {
+    private void departCaravan(final RemovalReason reason) {
         if (!(level() instanceof ServerLevel level)) {
             return;
         }
-        enclaveState.anchor().enclaveKey().ifPresent(key -> {
-            final GoblinEnclaveData data = GoblinEnclaveData.get(level);
+        journeyState.caravan().key().ifPresent(key -> {
+            final HobgoblinJourneyData data = HobgoblinJourneyData.get(level);
             if (reason.shouldDestroy()) {
                 // Death or discard: the seat is free immediately.
-                data.leaveEnclave(key, getUUID());
+                data.leaveCaravan(key, getUUID());
                 return;
             }
-            // Unload or dimension change: the lease is released now and the membership entry is
-            // left to age out on its own expiry, so a returning resident keeps its seat.
-            data.releaseClaimsOf(key, getUUID());
+            // Unload or dimension change: the claim is released now and the membership entry is
+            // left to age out on its own lease, so a returning traveler keeps its seat.
+            data.releaseClaimsOf(getUUID());
         });
-    }
-
-    public Optional<GoblinEnclaveRules.PersistenceReason> persistenceReason() {
-        return GoblinEnclaveRules.persistenceReason(
-            enclaveState.anchor().present(),
-            enclaveState.patron().bound(),
-            isAssaultMember()
-        );
     }
 
     @Override
     public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
-        if (!(partner instanceof GoblinEntity other)) {
+        if (!(partner instanceof HobgoblinTravelerEntity other)) {
             return null;
         }
         final Entity offspring = getType().create(level, EntitySpawnReason.BREEDING);
-        if (!(offspring instanceof GoblinEntity child)) {
+        if (!(offspring instanceof HobgoblinTravelerEntity child)) {
             return null;
         }
-        child.setGoblinProfession(GoblinEnclaveRules.childProfession(
+        child.setGoblinProfession(HobgoblinJourneyRules.childProfession(
             getUUID(), goblinProfession(), other.getUUID(), other.goblinProfession()
         ));
-        enclaveState.anchor().enclaveKey().ifPresent(key -> enclaveState.anchor().position()
-            .ifPresent(position -> enclaveState.anchor().dimension().ifPresent(dimension ->
-                child.setGoblinEnclaveState(child.goblinEnclaveState()
-                    .withAnchor(GoblinEnclaveState.Anchor.at(key, position, dimension))))));
+        journeyState.caravan().key().ifPresent(key ->
+            child.setJourneyState(child.journeyState()
+                .withCaravan(child.journeyState().caravan().withKey(key))));
         child.setTarget(null);
         return child;
     }
@@ -429,24 +432,35 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
             suppressContractPersistenceLatch = false;
         }
         if (contractResult != InteractionResult.PASS) {
-            GoblinEnclaveRuntime.onContractAccepted(this, player);
+            HobgoblinJourneyRuntime.onContractAccepted(this, player);
             return contractResult;
         }
         final ItemStack supplied = player.getItemInHand(hand);
         if (supplied.is(WarlockeryTags.Items.HOBGOBLIN_MINING_TOOLS)
-            && level() instanceof ServerLevel serverLevel) {
-            return GoblinEnclaveRuntime.equipMiningTool(this, serverLevel, player, supplied);
+            && level() instanceof ServerLevel toolLevel) {
+            return HobgoblinJourneyRuntime.equipMiningTool(this, toolLevel, player, supplied);
+        }
+        if (level() instanceof ServerLevel foodLevel
+            && HobgoblinJourneyRuntime.offerHospitality(this, foodLevel, player, supplied)) {
+            return InteractionResult.SUCCESS;
+        }
+        // Hospitality is reciprocal: a player this traveler holds a negative impression of is
+        // refused a customer screen outright rather than silently traded with.
+        if (!isBaby()
+            && HobgoblinJourneyRules.tradeRefused(journeyState.relationScore(player.getUUID()))) {
+            setUnhappyCounter(40);
+            return InteractionResult.SUCCESS;
         }
         final InteractionResult result = super.mobInteract(player, hand);
         if (isTrading()) {
-            GoblinEnclaveRuntime.onTradeOpened(this);
+            HobgoblinJourneyRuntime.onTradeOpened(this, player);
         }
         return result;
     }
 
     @Override
     public boolean canAttack(final LivingEntity target) {
-        return GoblinEnclaveRuntime.canAttack(this, target) && contractBehavior.canAttack(this, target);
+        return HobgoblinJourneyRuntime.canAttack(this, target) && contractBehavior.canAttack(this, target);
     }
 
     @Override
@@ -466,7 +480,7 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
     public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
         final boolean hurt = super.hurtServer(level, source, amount);
         if (hurt && amount > 0.0F) {
-            GoblinEnclaveRuntime.onAcceptedDamage(this, level, source);
+            HobgoblinJourneyRuntime.onAcceptedDamage(this, level, source);
             contractBehavior.afterHurt(this, level, source, amount);
         }
         return hurt;
@@ -474,47 +488,13 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
 
     @Override
     public boolean wantsToPickUp(final ServerLevel level, final ItemStack stack) {
-        if (isAssaultMember() || isTrading()) {
+        if (isTrading() || isBaby()) {
             return false;
         }
-        return stack.is(ItemTags.DIRT)
+        return stack.is(CreatureBehaviorTags.Items.HOBGOBLIN_COLLECTIBLES)
+            || stack.is(ItemTags.DIRT)
             || stack.is(ItemTags.LOGS)
-            || stack.is(net.minecraftforge.common.Tags.Items.NATURAL_LOGS)
-            || CreatureBehaviorState.owner(this).isPresent()
-            && stack.is(CreatureBehaviorTags.Items.HOBGOBLIN_COLLECTIBLES);
-    }
-
-    // ---------------------------------------------------------------- assault markers
-
-    public void joinVillageAssault(final BlockPos center, final int wave, final boolean leader) {
-        assaultCenter = center.immutable();
-        assaultWave = wave;
-        assaultLeader = leader;
-        GoblinEnclaveRuntime.onAssaultJoined(this);
-    }
-
-    /** Releases every assault marker, and persistence itself when no other reason remains. */
-    public void leaveVillageAssault() {
-        assaultCenter = null;
-        assaultWave = 0;
-        assaultLeader = false;
-        GoblinEnclaveRuntime.onAssaultLeft(this);
-    }
-
-    public Optional<BlockPos> assaultCenter() {
-        return Optional.ofNullable(assaultCenter);
-    }
-
-    public int assaultWave() {
-        return assaultWave;
-    }
-
-    public boolean isAssaultLeader() {
-        return assaultLeader;
-    }
-
-    public boolean isAssaultMember() {
-        return assaultCenter != null && assaultWave > 0;
+            || stack.is(net.minecraftforge.common.Tags.Items.NATURAL_LOGS);
     }
 
     // ---------------------------------------------------------------- persistence
@@ -522,27 +502,22 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
     @Override
     protected void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        output.store(STATE_KEY, CompoundTag.CODEC, enclaveState.write());
-        if (assaultCenter != null) {
-            output.putLong(ASSAULT_CENTER_KEY, assaultCenter.asLong());
-            output.putInt(ASSAULT_WAVE_KEY, assaultWave);
-            output.putBoolean(ASSAULT_LEADER_KEY, assaultLeader);
-        }
+        output.store(STATE_KEY, CompoundTag.CODEC, journeyState.write());
     }
 
     /**
-     * Reads the new versioned compound when present, otherwise migrates a 1.4 Goblin conservatively
-     * from its old custom profession, Villager XP, and child-gift deadline. Deserialization never
-     * merges enclaves by proximity, creates a child, edits a block, paths, trades, attacks, or emits
-     * feedback.
+     * Reads the new versioned compound when present, otherwise migrates a 1.4 Hobgoblin
+     * conservatively from its old custom profession, Villager XP, child-gift deadline, and owner
+     * UUID. Deserialization never merges caravans by proximity, creates a child, edits a block,
+     * paths, trades, attacks, or emits feedback.
      */
     @Override
     protected void readAdditionalSaveData(final ValueInput input) {
         super.readAdditionalSaveData(input);
         final String dimension = level().dimension().identifier().toString();
-        enclaveState = input.read(STATE_KEY, CompoundTag.CODEC)
-            .map(tag -> GoblinEnclaveState.read(tag, dimension))
-            .orElseGet(() -> GoblinEnclaveState.migrateLegacy(
+        journeyState = input.read(STATE_KEY, CompoundTag.CODEC)
+            .map(tag -> HobgoblinJourneyState.read(tag, dimension))
+            .orElseGet(() -> HobgoblinJourneyState.migrateLegacy(
                 input.getStringOr(PROFESSION_KEY, GoblinProfession.FALLBACK.id()),
                 input.getIntOr("Xp", 0),
                 Math.max(0L, input.getLongOr(LEGACY_GIFT_KEY, 0L)),
@@ -552,12 +527,8 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
         // The 1.4 prospecting cooldown is deliberately read and dropped: mining cadence is now a
         // bounded runtime scratch counter, so a stale saved cooldown can never delay live work.
         input.getIntOr(LEGACY_PROSPECTING_KEY, 0);
-        setGoblinProfession(enclaveState.profession());
-        final long encodedCenter = input.getLongOr(ASSAULT_CENTER_KEY, Long.MIN_VALUE);
-        assaultCenter = encodedCenter == Long.MIN_VALUE ? null : BlockPos.of(encodedCenter);
-        assaultWave = input.getIntOr(ASSAULT_WAVE_KEY, 0);
-        assaultLeader = input.getBooleanOr(ASSAULT_LEADER_KEY, false);
-        enclaveTransient.resetForLoad();
+        setGoblinProfession(journeyState.profession());
+        journeyTransient.resetForLoad();
     }
 
     private Optional<UUID> legacyOwner() {

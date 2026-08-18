@@ -40,6 +40,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.wolf.Wolf;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.MoonPhase;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -82,7 +83,7 @@ public final class VillageAssaultRuntime {
         final VampireCourtEntity member,
         final LivingEntity target
     ) {
-        if (!(target instanceof Villager villager) || !(member.level() instanceof ServerLevel level)
+        if (!(target instanceof AbstractVillager villager) || !(member.level() instanceof ServerLevel level)
             || target.level() != level || member.courtState().targetExpiresAt() <= level.getGameTime()
             || !VampireCourtRules.mayAttackAssaultObjective(
                 member.creatureKind(), member.courtState().assaultRole(),
@@ -97,7 +98,7 @@ public final class VillageAssaultRuntime {
             .filter(state -> VillageAssaultRules.isFreshObjectiveTarget(
                 state.kind(), villager.getStringUUID(), Set.copyOf(state.objectiveVictims()),
                 isBloodDrained(villager, level.getGameTime()),
-                WerewolfVillagerInfectionRuntime.isInfected(villager)
+                villager instanceof Villager human && WerewolfVillagerInfectionRuntime.isInfected(human)
             )).isPresent();
     }
 
@@ -223,15 +224,15 @@ public final class VillageAssaultRuntime {
             || kind == ArcaneCreature.CreatureKind.STONEBROKER;
     }
 
-    public static boolean isBloodDrained(final Villager villager, final long gameTime) {
+    public static boolean isBloodDrained(final AbstractVillager villager, final long gameTime) {
         return VillageAssaultRules.tradeLocked(gameTime, bloodDrainedUntil(villager));
     }
 
-    public static long bloodDrainedUntil(final Villager villager) {
+    public static long bloodDrainedUntil(final AbstractVillager villager) {
         return villager.getPersistentData().getLongOr(BLOOD_DRAINED_UNTIL, 0L);
     }
 
-    public static boolean clearExpiredTradeLock(final Villager villager, final long gameTime) {
+    public static boolean clearExpiredTradeLock(final AbstractVillager villager, final long gameTime) {
         final long expires = bloodDrainedUntil(villager);
         if (expires == 0L || VillageAssaultRules.tradeLocked(gameTime, expires)) {
             return false;
@@ -468,7 +469,7 @@ public final class VillageAssaultRuntime {
     static FeedResult feedOnVillager(
         final ServerLevel level,
         final Mob vampire,
-        final Villager victim,
+        final AbstractVillager victim,
         final float proposedDamage
     ) {
         if (!(vampire instanceof VampireCourtEntity court)
@@ -482,7 +483,7 @@ public final class VillageAssaultRuntime {
     private static FeedResult feedOnAssignedVillager(
         final ServerLevel level,
         final VampireCourtEntity vampire,
-        final Villager victim,
+        final AbstractVillager victim,
         final float proposedDamage
     ) {
         if (!isAssignedVampireObjective(vampire, victim)) {
@@ -521,7 +522,7 @@ public final class VillageAssaultRuntime {
     static boolean infectVillagerFromRaider(
         final ServerLevel level,
         final Mob werewolf,
-        final Villager victim
+        final AbstractVillager victim
     ) {
         if (!VillageAssaultRules.canInfectVillager(
             AssaultKind.WEREWOLF,
@@ -530,7 +531,7 @@ public final class VillageAssaultRuntime {
         ) || matchingAssault(VillageAssaultData.get(level), werewolf, AssaultKind.WEREWOLF).isEmpty()) {
             return false;
         }
-        if (!WerewolfVillagerInfectionRuntime.markInfected(victim)) {
+        if (!(victim instanceof Villager human) || !WerewolfVillagerInfectionRuntime.markInfected(human)) {
             return false;
         }
         return recordWerewolfObjective(level, werewolf, victim);
@@ -539,7 +540,7 @@ public final class VillageAssaultRuntime {
     static boolean recordWerewolfObjective(
         final ServerLevel level,
         final Mob werewolf,
-        final Villager victim
+        final AbstractVillager victim
     ) {
         final VillageAssaultData data = VillageAssaultData.get(level);
         final Optional<AssaultState> active = matchingAssault(data, werewolf, AssaultKind.WEREWOLF);
@@ -814,25 +815,29 @@ public final class VillageAssaultRuntime {
                 raider.getPersistentData().getBooleanOr(ASSAULT_LEADER, false),
                 courtMember.creatureKind() == ArcaneCreature.CreatureKind.VAMPIRE
             )) {
-                if (raider.getTarget() instanceof Villager) raider.setTarget(null);
+                if (raider.getTarget() instanceof AbstractVillager) raider.setTarget(null);
                 return;
             }
         }
-        final Optional<Villager> victim = selectObjectiveResident(level, raider, state);
+        final Optional<AbstractVillager> victim = selectObjectiveResident(level, raider, state);
         if (state.kind() == AssaultKind.WEREWOLF
             && raider instanceof WerewolfEntity werewolf
             && LycanPackRuntime.exactWerewolf(werewolf)) {
+            // F04 owns the pack-pressure contract and it is typed on the human Villager; a
+            // non-Villager objective simply supplies no pressure target rather than widening F04.
             LycanPackRuntime.coordinateAssaultPressure(
-                level, werewolf, victim.orElse(null), state.center()
+                level, werewolf,
+                victim.filter(Villager.class::isInstance).map(Villager.class::cast).orElse(null),
+                state.center()
             );
             return;
         }
         if (victim.isPresent()) {
-            final Villager assigned = victim.orElseThrow();
+            final AbstractVillager assigned = victim.orElseThrow();
             assignVampireObjective(level, raider, assigned);
             return;
         }
-        if (raider.getTarget() instanceof Villager) {
+        if (raider.getTarget() instanceof AbstractVillager) {
             raider.setTarget(null);
         }
         if (raider.distanceToSqr(Vec3.atCenterOf(state.center())) > 16.0) {
@@ -848,7 +853,7 @@ public final class VillageAssaultRuntime {
     public static boolean assignVampireObjective(
         final ServerLevel level,
         final Mob raider,
-        final Villager objective
+        final AbstractVillager objective
     ) {
         final Optional<AssaultState> active = matchingAssault(
             VillageAssaultData.get(level), raider, AssaultKind.VAMPIRE
@@ -865,7 +870,7 @@ public final class VillageAssaultRuntime {
         return true;
     }
 
-    static Optional<Villager> selectObjectiveResident(
+    static Optional<AbstractVillager> selectObjectiveResident(
         final ServerLevel level,
         final Mob raider,
         final AssaultState state
@@ -890,12 +895,15 @@ public final class VillageAssaultRuntime {
                         isBloodDrained(candidate, level.getGameTime()),
                         WerewolfVillagerInfectionRuntime.isInfected(candidate)
                     )
-            ).stream().min(Comparator.comparingDouble(raider::distanceToSqr));
+            ).stream()
+                .map(AbstractVillager.class::cast)
+                .min(Comparator.comparingDouble(raider::distanceToSqr));
             case HOBGOBLIN -> level.getEntitiesOfClass(
-                HobgoblinEntity.class,
+                AbstractVillager.class,
                 new AABB(state.center()).inflate(TARGET_SEARCH_RADIUS, 20.0, TARGET_SEARCH_RADIUS),
                 candidate -> candidate.isAlive()
-                    && candidate.creatureKind() != ArcaneCreature.CreatureKind.GOBLIN
+                    && candidate instanceof ArcaneCreature resident
+                    && resident.creatureKind() == ArcaneCreature.CreatureKind.HOBGOBLIN
                     && !isAssaultRaider(candidate)
                     && VillageAssaultRules.isFreshObjectiveTarget(
                         state.kind(),
@@ -905,7 +913,7 @@ public final class VillageAssaultRuntime {
                         false
                     )
             ).stream()
-                .map(Villager.class::cast)
+                .map(AbstractVillager.class::cast)
                 .min(Comparator.comparingDouble(raider::distanceToSqr));
         };
     }
@@ -1026,7 +1034,7 @@ public final class VillageAssaultRuntime {
             return;
         }
         applySupernaturalAttackPower(event, raider);
-        if (!(event.getEntity() instanceof Villager victim)
+        if (!(event.getEntity() instanceof AbstractVillager victim)
             || !(victim.level() instanceof ServerLevel level)) {
             return;
         }
@@ -1086,7 +1094,7 @@ public final class VillageAssaultRuntime {
                     .ifPresent(state -> closeApproachGatesIfUnused(assaultLevel, state, event.getEntity()));
             }
         }
-        if (!(event.getEntity() instanceof Villager victim)
+        if (!(event.getEntity() instanceof AbstractVillager victim)
             || !(event.getSource().getEntity() instanceof Mob raider)
             || assaultKind(raider).orElse(AssaultKind.GOBLIN) != AssaultKind.WEREWOLF
             || !(victim.level() instanceof ServerLevel level)) {
@@ -1096,7 +1104,7 @@ public final class VillageAssaultRuntime {
     }
 
     static boolean handleVillagerInteraction(final PlayerInteractEvent.EntityInteractSpecific event) {
-        if (!(event.getTarget() instanceof Villager villager)
+        if (!(event.getTarget() instanceof AbstractVillager villager)
             || !(event.getEntity() instanceof ServerPlayer player)) {
             return false;
         }
@@ -1111,7 +1119,7 @@ public final class VillageAssaultRuntime {
         return true;
     }
 
-    static boolean shouldDenyVillagerInteraction(final Villager villager, final long gameTime) {
+    static boolean shouldDenyVillagerInteraction(final AbstractVillager villager, final long gameTime) {
         return isBloodDrained(villager, gameTime);
     }
 
@@ -1154,13 +1162,18 @@ public final class VillageAssaultRuntime {
 
     private static boolean eligibleObjectiveResident(
         final AssaultState state,
-        final Villager resident
+        final AbstractVillager resident
     ) {
+        // The one species gate for every objective path. Widening the chain to AbstractVillager
+        // admits no new species by itself: a Wandering Trader is an AbstractVillager too and is
+        // rejected by both arms. The HOBGOBLIN arm deliberately no longer names a concrete class,
+        // because a concrete-class test here is exactly what silently matches nothing once the
+        // exact species moves to its own dedicated body.
         return switch (state.settlement()) {
             case HUMAN -> resident.getType() == EntityTypes.VILLAGER;
-            case HOBGOBLIN -> resident instanceof HobgoblinEntity hobgoblin
+            case HOBGOBLIN -> resident instanceof ArcaneCreature hobgoblin
                 && hobgoblin.creatureKind() == ArcaneCreature.CreatureKind.HOBGOBLIN
-                && !isAssaultRaider(hobgoblin);
+                && !isAssaultRaider(resident);
         };
     }
 
@@ -1433,10 +1446,11 @@ public final class VillageAssaultRuntime {
                 villager -> villager.isAlive() && villager.getType() == EntityTypes.VILLAGER
             ).isEmpty();
             case HOBGOBLIN -> !level.getEntitiesOfClass(
-                HobgoblinEntity.class,
+                AbstractVillager.class,
                 bounds,
                 hobgoblin -> hobgoblin.isAlive()
-                    && hobgoblin.creatureKind() == ArcaneCreature.CreatureKind.HOBGOBLIN
+                    && hobgoblin instanceof ArcaneCreature resident
+                    && resident.creatureKind() == ArcaneCreature.CreatureKind.HOBGOBLIN
             ).isEmpty();
         };
     }
@@ -1501,11 +1515,12 @@ public final class VillageAssaultRuntime {
         if (registered.isEmpty()) {
             return Optional.empty();
         }
-        final List<HobgoblinEntity> residents = level.getEntitiesOfClass(
-            HobgoblinEntity.class,
+        final List<AbstractVillager> residents = level.getEntitiesOfClass(
+            AbstractVillager.class,
             new AABB(registered.orElseThrow()).inflate(56.0, 20.0, 56.0),
             hobgoblin -> hobgoblin.isAlive()
-                && hobgoblin.creatureKind() == ArcaneCreature.CreatureKind.HOBGOBLIN
+                && hobgoblin instanceof ArcaneCreature resident
+                && resident.creatureKind() == ArcaneCreature.CreatureKind.HOBGOBLIN
                 && !isAssaultRaider(hobgoblin)
         );
         if (residents.size() < 2) {

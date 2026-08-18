@@ -2,7 +2,6 @@ package com.kadamitas.warlockery.world;
 
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.CreatureCombat;
-import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
@@ -526,7 +525,7 @@ public final class VillageAssaultGameTests {
         VillageAssaultRuntime.markRaider(
             vampire, center, 3, AssaultKind.VAMPIRE, SettlementKind.HOBGOBLIN, true, true
         );
-        final HobgoblinEntity fedResident = helper.spawn(
+        final var fedResident = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(1, 1, 1), EntitySpawnReason.NATURAL
         );
         helper.assertTrue(VillageAssaultRuntime.feedOnVillager(level, vampire, fedResident, 2.0F).newlyCounted(),
@@ -545,7 +544,7 @@ public final class VillageAssaultGameTests {
         VillageAssaultRuntime.markRaider(
             werewolf, center, 3, AssaultKind.WEREWOLF, SettlementKind.HOBGOBLIN, true, true
         );
-        final HobgoblinEntity huntedResident = helper.spawn(
+        final var huntedResident = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(1, 1, 2), EntitySpawnReason.NATURAL
         );
         helper.assertTrue(VillageAssaultRuntime.recordWerewolfObjective(level, werewolf, huntedResident),

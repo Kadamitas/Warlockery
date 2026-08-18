@@ -348,7 +348,8 @@ public final class VampireCourtRuntime {
         final boolean directAggressor = member.courtState().recentAttacker()
             .filter(target.getUUID()::equals).isPresent()
             && member.courtState().attackerExpiresAt() > member.level().getGameTime();
-        if (target instanceof Villager && VillageAssaultRuntime.isAssignedVampireObjective(member, target)) {
+        if (target instanceof net.minecraft.world.entity.npc.villager.AbstractVillager
+            && VillageAssaultRuntime.isAssignedVampireObjective(member, target)) {
             return true;
         }
         return courtRelationAllows(member, target, directAggressor);

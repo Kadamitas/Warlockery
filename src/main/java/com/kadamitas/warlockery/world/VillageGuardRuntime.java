@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.world;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.GoblinEntity;
+import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.world.SettlementFortificationRules.LayoutPlan;
@@ -134,9 +135,11 @@ public final class VillageGuardRuntime {
     }
 
     private static Optional<SettlementKind> protectedSettlement(final LivingEntity entity) {
-        if (entity instanceof HobgoblinEntity hobgoblin
-            && hobgoblin.creatureKind() == CreatureKind.HOBGOBLIN
-            && !hobgoblin.isVillageRaider()) {
+        // Kind first, class second. A concrete-class test alone silently stops recognising exact
+        // Hobgoblin residents the moment the exact species moves to its own dedicated body.
+        if (entity instanceof ArcaneCreature resident
+            && resident.creatureKind() == CreatureKind.HOBGOBLIN
+            && !(entity instanceof HobgoblinEntity legacy && legacy.isVillageRaider())) {
             return Optional.of(SettlementKind.HOBGOBLIN);
         }
         if (entity instanceof Villager villager && villager.getType() == EntityTypes.VILLAGER) {

@@ -43,6 +43,7 @@ import com.kadamitas.warlockery.world.VillageAssaultGameTests;
 import com.kadamitas.warlockery.world.VillageGuardGameTests;
 import com.kadamitas.warlockery.world.GoblinSettlementLifeGameTests;
 import com.kadamitas.warlockery.world.GoblinEnclaveGameTests;
+import com.kadamitas.warlockery.world.HobgoblinJourneyGameTests;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -150,6 +151,16 @@ public final class ModGameTests {
             () -> GoblinEnclaveGameTests::goblinEnclaveCombatAssaultAndCleanup);
         REGISTRY.register("goblin_enclave_hazard_navigation_and_population_bounds",
             () -> GoblinEnclaveGameTests::goblinEnclaveHazardNavigationAndPopulationBounds);
+        REGISTRY.register("hobgoblin_journey_identity_village_exclusion_and_migration",
+            () -> HobgoblinJourneyGameTests::hobgoblinJourneyIdentityVillageExclusionAndMigration);
+        REGISTRY.register("hobgoblin_journey_trade_contract_and_relations",
+            () -> HobgoblinJourneyGameTests::hobgoblinJourneyTradeContractAndRelations);
+        REGISTRY.register("hobgoblin_journey_caravan_family_and_camp_lifecycle",
+            () -> HobgoblinJourneyGameTests::hobgoblinJourneyCaravanFamilyAndCampLifecycle);
+        REGISTRY.register("hobgoblin_journey_work_hazard_defense_and_cleanup",
+            () -> HobgoblinJourneyGameTests::hobgoblinJourneyWorkHazardDefenseAndCleanup);
+        REGISTRY.register("hobgoblin_journey_event_adapter_and_population_bounds",
+            () -> HobgoblinJourneyGameTests::hobgoblinJourneyEventAdapterAndPopulationBounds);
         REGISTRY.register("goblin_raid_wave_is_grouped_and_coordinated",
             () -> VillageGuardGameTests::goblinRaidWaveIsGroupedAndCoordinated);
         REGISTRY.register("hobgoblins_flee_human_villagers_and_keep_custom_professions",

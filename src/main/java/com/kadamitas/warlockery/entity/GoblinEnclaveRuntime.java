@@ -133,6 +133,11 @@ public final class GoblinEnclaveRuntime {
         int miningCooldownTicks;
         boolean hazardActive;
         boolean sheltered;
+        /**
+         * The overworld day this body last observed. Seeded from the live clock on load rather than
+         * zeroed, so relogging can never hand a merchant a fresh restock quota.
+         */
+        long observedDay = UNSEEDED_DAY;
         WorkAvailability work = WorkAvailability.none();
         final Plan plan = new Plan();
         final int[] scanCursors = unseededCursors();
@@ -149,6 +154,7 @@ public final class GoblinEnclaveRuntime {
             miningCooldownTicks = 0;
             hazardActive = false;
             sheltered = false;
+            observedDay = UNSEEDED_DAY;
             work = WorkAvailability.none();
             plan.clear();
             // Not zero: a Goblin that unloads more often than one full rotation would restart the
@@ -205,6 +211,8 @@ public final class GoblinEnclaveRuntime {
     }
 
     private static final int UNSEEDED_CURSOR = -1;
+    private static final long UNSEEDED_DAY = Long.MIN_VALUE;
+    private static final long TICKS_PER_DAY = 24_000L;
 
     private static int[] unseededCursors() {
         final int[] cursors = new int[ScanClass.values().length];
@@ -254,6 +262,7 @@ public final class GoblinEnclaveRuntime {
         scratch.decisionCooldownTicks = offset % GoblinEnclaveRules.DECISION_INTERVAL_TICKS;
         scratch.perceptionCooldownTicks = offset % GoblinEnclaveRules.PERCEPTION_INTERVAL_TICKS;
         scratch.memberCooldownTicks = offset % GoblinEnclaveRules.MEMBER_INTERVAL_TICKS;
+        scratch.observedDay = Math.floorDiv(level.getOverworldClockTime(), TICKS_PER_DAY);
 
         GoblinEnclaveState state = goblin.goblinEnclaveState();
         // The persisted anchor key is still intact here, so any lease this Goblin left behind is
@@ -1272,6 +1281,7 @@ public final class GoblinEnclaveRuntime {
     }
 
     private static void reconcileMerchant(final GoblinEntity goblin, final ServerLevel level) {
+        rollMerchantDay(goblin, level);
         final GoblinEnclaveState state = goblin.goblinEnclaveState();
         final boolean needsRestock = goblin.getOffers().stream().anyMatch(offer -> offer.needsRestock());
         if (!GoblinEnclaveRules.canRestock(
@@ -1282,6 +1292,33 @@ public final class GoblinEnclaveRuntime {
         }
         goblin.getOffers().forEach(offer -> offer.resetUses());
         goblin.setGoblinEnclaveState(state.withMerchant(state.merchant().afterRestock()));
+    }
+
+    /**
+      * The daily restock quota reset that {@code Villager} used to perform for free.
+      *
+      * <p>The dedicated body is an {@code AbstractVillager}, and only {@code Villager} rolled
+      * {@code numberOfRestocksToday} over at the start of each day. Without this branch
+      * {@link GoblinEnclaveState.Merchant#onNewDay()} had no production caller at all and a merchant
+      * that had restocked twice could never restock again for the rest of the world's life.</p>
+      *
+      * <p>The day index is seeded from the live clock on load, never zeroed, so a player cannot
+      * relog to refresh the quota, and an unloaded merchant that missed several days collapses to
+      * exactly one deterministic reset rather than a burst.</p>
+      */
+    private static void rollMerchantDay(final GoblinEntity goblin, final ServerLevel level) {
+        final TransientState scratch = goblin.goblinTransient();
+        final long today = Math.floorDiv(level.getOverworldClockTime(), TICKS_PER_DAY);
+        if (scratch.observedDay == UNSEEDED_DAY) {
+            scratch.observedDay = today;
+            return;
+        }
+        if (scratch.observedDay == today) {
+            return;
+        }
+        scratch.observedDay = today;
+        goblin.setGoblinEnclaveState(goblin.goblinEnclaveState()
+            .withMerchant(goblin.goblinEnclaveState().merchant().onNewDay()));
     }
 
     // ================================================================ feedback
@@ -1322,7 +1359,12 @@ public final class GoblinEnclaveRuntime {
         if (state.patron().id().map(patron -> patron.equals(target.getUUID())).orElse(false)) {
             return false;
         }
-        if (target instanceof GoblinEntity || target instanceof HobgoblinEntity) {
+        // Every goblinfolk body is non-prey, including the dedicated F11 traveler. Naming only the
+        // two 1.4-era classes here would quietly make Goblins hostile to exact Hobgoblins the
+        // moment the exact species moves to its own dedicated body.
+        if (target instanceof GoblinEntity
+            || target instanceof HobgoblinEntity
+            || target instanceof HobgoblinTravelerEntity) {
             return false;
         }
         final boolean sameOwner = target instanceof Player player
