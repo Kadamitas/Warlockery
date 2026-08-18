@@ -19,6 +19,8 @@ public final class LycanVillagerRuntime {
     private static final int MAX_CANDIDATES = 12;
     private static final int LEVEL_OBSERVATIONS_PER_TICK = 4;
     private static final int LEVEL_PATHS_PER_TICK = 4;
+    /** How long a lycan may go without asking for budget before it leaves the rotation. */
+    private static final long IDLE_EVICTION_TICKS = 200L;
     private static final Map<ServerLevel, Budget> BUDGETS = new WeakHashMap<>();
     private static final Map<LycanVillagerEntity, Map<UUID, Residence>> RESIDENCE = new WeakHashMap<>();
     private static final Map<LycanVillagerEntity, Evidence> EVIDENCE = new WeakHashMap<>();
@@ -163,8 +165,13 @@ public final class LycanVillagerRuntime {
 
     private static LycanVillagerState observe(final LycanVillagerEntity lycan, final ServerLevel level,
                                                LycanVillagerState state, final long now) {
+        // Share the village first, then compete for the candidate budget. Only a villager inside
+        // eight blocks that shares this lycan's village can earn familiarity or be protected, but
+        // the query reached sixteen and the cap was spent by distance alone, so unrelated
+        // villagers standing nearer took every slot and the residents of this household were
+        // never examined.
         final var nearby = level.getEntitiesOfClass(Villager.class, lycan.getBoundingBox().inflate(16.0D),
-                entity -> entity != lycan && entity.isAlive())
+                entity -> entity != lycan && entity.isAlive() && sharesVillageContext(lycan, entity))
             .stream().sorted(Comparator.comparingDouble((Villager value) -> lycan.distanceToSqr(value))
                 .thenComparing(Villager::getUUID))
             .limit(MAX_CANDIDATES).toList();
@@ -301,18 +308,24 @@ public final class LycanVillagerRuntime {
         final java.util.NavigableSet<UUID> known = new java.util.TreeSet<>();
         final java.util.Set<UUID> observationWinners = new java.util.HashSet<>();
         final java.util.Set<UUID> pathWinners = new java.util.HashSet<>();
+        final java.util.Map<UUID, Long> lastAsked = new java.util.HashMap<>();
         UUID observationCursor;
         UUID pathCursor;
         void begin(final long now) {
             tick = now;
+            // Drop bodies that stopped asking. The rotation is level wide and only four bodies
+            // observe per tick, so every stale entry is a slot spent on nobody while a living
+            // lycan waits its turn. Nothing removed a dead lycan before this: the set only shed
+            // entries once it passed sixty four, and it shed them in UUID order, which could
+            // evict a living body and keep a corpse.
+            lastAsked.entrySet().removeIf(entry -> now - entry.getValue() > IDLE_EVICTION_TICKS);
+            known.retainAll(lastAsked.keySet());
             observationCursor = select(known, observationCursor, LEVEL_OBSERVATIONS_PER_TICK, observationWinners);
             pathCursor = select(known, pathCursor, LEVEL_PATHS_PER_TICK, pathWinners);
-            if (known.size() > 64) {
-                while (known.size() > 64) known.pollFirst();
-            }
         }
         boolean admit(final UUID id, final boolean observation) {
             known.add(id);
+            lastAsked.put(id, tick);
             return (observation ? observationWinners : pathWinners).remove(id);
         }
         private static UUID select(final java.util.NavigableSet<UUID> ids, final UUID cursor, final int limit,

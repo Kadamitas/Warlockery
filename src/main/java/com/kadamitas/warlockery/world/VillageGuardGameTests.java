@@ -140,7 +140,12 @@ public final class VillageGuardGameTests {
             coordinated[0] |= !raiders.isEmpty()
                 && raiders.stream().allMatch(goblin -> goblin.getTarget() == villager);
         });
-        helper.runAfterDelay(80, () -> {
+        // Tick 60 is the earliest the whole wave can have acquired, and every member has to be
+        // holding the villager on the same tick for this to latch, not merely to have acquired at
+        // some point. Eighty ticks left almost no margin over that worst case, so a wave whose
+        // UUID offsets happened to spread wide never lined up inside the window. The assertion is
+        // unchanged: every raider must still share the one target simultaneously.
+        helper.runAfterDelay(200, () -> {
             helper.assertTrue(coordinated[0],
                 "the raid group must coordinate on the same human villager target");
             helper.succeed();

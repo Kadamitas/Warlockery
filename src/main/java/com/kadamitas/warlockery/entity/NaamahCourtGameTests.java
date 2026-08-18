@@ -520,11 +520,22 @@ public final class NaamahCourtGameTests {
         );
         helper.assertTrue(helper.getLevel().getOverworldClockTime() % 24_000L < 13_000L,
             "the daylight assertion requires the overworld clock to be daytime");
-        // Clear the sky first. Rain counts as wet, and a wet sunlight-weak creature does not
-        // burn, so a passing shower would silently defeat the ignition assertion below without
-        // saying anything about sunlight at all. Clear is left in place afterwards rather than
-        // restored: it is the benign state, and weather resumes on its own cycle.
-        helper.getLevel().resetWeatherCycle();
+        // Clear the sky and hold it clear. Rain counts as wet, and a wet sunlight-weak creature
+        // does not burn, so a shower would silently defeat the ignition assertion below without
+        // saying anything about sunlight. Clearing alone is not enough: a rain timer of zero means
+        // "roll new weather now", which can start rain on the very next tick, so the clear window
+        // has to be set explicitly.
+        final net.minecraft.world.level.saveddata.WeatherData weather =
+            helper.getLevel().getWeatherData();
+        weather.setRaining(false);
+        weather.setThundering(false);
+        weather.setClearWeatherTime(24_000);
+        // The flags alone are not enough: isRaining reads the interpolated rain level, which
+        // decays over ticks rather than dropping at once, so a shower that was already falling
+        // still counts as rain on this tick and would both shelter her from the sun and douse the
+        // fire the escape stage lights. Drive the level itself to zero.
+        helper.getLevel().setRainLevel(0.0F);
+        helper.getLevel().setThunderLevel(0.0F);
         helper.assertFalse(helper.getLevel().isRaining(),
             "the ignition assertion requires clear weather: rain shelters her from the sun");
         naamah.tickCount = Math.floorMod(-naamah.getId(), 20);
