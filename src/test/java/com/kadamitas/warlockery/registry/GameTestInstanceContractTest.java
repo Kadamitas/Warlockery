@@ -93,6 +93,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "poltergeist_isolated.json"
     );
+    private static final Path ECHO_SPECTRE_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "echo_spectre_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -265,6 +269,16 @@ final class GameTestInstanceContractTest {
         "poltergeist_dense_candidates_stay_capped_and_stable",
         "poltergeist_hazard_and_three_route_failures_cancel",
         "poltergeist_reload_does_not_replay_and_families_stay_isolated"
+    );
+    private static final Set<String> ISOLATED_ECHO_SPECTRE = Set.of(
+        "echo_shade_records_and_replays_one_vector",
+        "echo_shade_never_copies_player_state",
+        "echo_shade_route_hazard_and_reload_cancel",
+        "spectre_warns_one_witness_dreads_once_then_fades",
+        "spectre_dread_does_not_refresh_or_spread",
+        "echo_spectre_dense_candidates_stay_capped_and_stable",
+        "echo_spectre_reload_does_not_replay",
+        "echo_spectre_families_stay_isolated"
     );
 
     @Test
@@ -530,6 +544,23 @@ final class GameTestInstanceContractTest {
             "all six exact F20 Poltergeist GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactEchoShadeAndSpectreFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(ECHO_SPECTRE_ENVIRONMENT),
+            "the isolated F21 Echo Shade and Spectre environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(ECHO_SPECTRE_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F21 environment must not mutate shared world state");
+        assertEquals(8, ISOLATED_ECHO_SPECTRE.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_ECHO_SPECTRE),
+            "all eight exact F21 Echo Shade and Spectre GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -567,7 +598,9 @@ final class GameTestInstanceContractTest {
                                                                         ? "warlockery:coven_practitioners_isolated"
                                                                         : ISOLATED_POLTERGEIST.contains(registration.id())
                                                                             ? "warlockery:poltergeist_isolated"
-                                                                            : "minecraft:default",
+                                                                            : ISOLATED_ECHO_SPECTRE.contains(registration.id())
+                                                                                ? "warlockery:echo_spectre_isolated"
+                                                                                : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

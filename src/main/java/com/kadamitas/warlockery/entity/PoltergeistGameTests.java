@@ -543,10 +543,14 @@ public final class PoltergeistGameTests {
                     }
                     helper.assertFalse(target.hasEffect(MobEffects.DARKNESS),
                         "the Poltergeist never borrows Spectre fear or darkness semantics");
+                    // F21 delegated SPECTRE and ECHO_SHADE to their own dedicated runtimes, so
+                    // UMBRAL_SIGIL is the last generic soul-lantern vigil family. Retargeted
+                    // rather than removed: the intent is that F20's own edit did not collaterally
+                    // strip the surviving generic vigil families.
                     helper.assertTrue(
-                        AmbientActivityProfile.forKind(ArcaneCreature.CreatureKind.SPECTRE).size()
-                            >= 1,
-                        "the other spectral families keep their own generic ambient routine");
+                        AmbientActivityProfile.forKind(
+                            ArcaneCreature.CreatureKind.UMBRAL_SIGIL).size() >= 1,
+                        "the remaining generic vigil family keeps its own ambient routine");
                     helper.succeed();
                 } finally {
                     fixture.close();

@@ -117,7 +117,11 @@ class AmbientActivityRulesTest {
             CreatureKind.SPIRIT,
             // F13: the dedicated Crone and Mage runtimes own their bounded workstation work.
             CreatureKind.HEDGE_CRONE,
-            CreatureKind.CIRCLE_MAGE
+            CreatureKind.CIRCLE_MAGE,
+            // F21: the dedicated EchoShadeRuntime and SpectreRuntime own the echo and the
+            // haunting; neither kind communes with soul lanterns any more.
+            CreatureKind.ECHO_SHADE,
+            CreatureKind.SPECTRE
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
@@ -186,5 +190,20 @@ class AmbientActivityRulesTest {
             .contains(AmbientActivityTags.FURNACE_WORKSTATIONS));
         assertTrue(AmbientActivityTags.forActivity(ActivityType.MIRROR_GAZE)
             .contains(AmbientActivityTags.GLASS_BLOCKS));
+    }
+
+    @Test
+    void echoShadeAndSpectreAreDelegatedWhileUmbralSigilKeepsTheExactVigil() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.ECHO_SHADE).isEmpty(),
+            "the dedicated Echo Shade runtime owns its own ambient schedule");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.SPECTRE).isEmpty(),
+            "the dedicated Spectre runtime owns its own ambient schedule");
+        final AmbientActivityProfile vigil =
+            AmbientActivityProfile.forType(ActivityType.SOUL_LANTERN_VIGIL);
+        assertEquals(Set.of(CreatureKind.UMBRAL_SIGIL), vigil.kinds());
+        assertEquals(400, vigil.checkIntervalTicks());
+        assertEquals(10, vigil.chanceDenominator());
+        assertEquals(4_800, vigil.cooldownTicks());
+        assertEquals(0, vigil.localChangeCap());
     }
 }

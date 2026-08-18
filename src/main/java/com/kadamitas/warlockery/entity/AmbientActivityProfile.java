@@ -31,8 +31,12 @@ public record AmbientActivityProfile(
         // workstation predicate both dedicated runtimes reuse.
         profile(ActivityType.GRAVE_SCAVENGE, Set.of(CreatureKind.LOUSE), 300, 12, 4_800, 1),
         profile(ActivityType.DAYLIGHT_SHELTER, Set.of(CreatureKind.VAMPIRE, CreatureKind.BLOOD_THRALL), 100, 3, 1_200, 0),
-        profile(ActivityType.SOUL_LANTERN_VIGIL, Set.of(CreatureKind.SPECTRE,
-            CreatureKind.ECHO_SHADE, CreatureKind.UMBRAL_SIGIL),
+        // F21 delegated ECHO_SHADE to EchoShadeRuntime and SPECTRE to SpectreRuntime, each of
+        // which owns its own ambient schedule, so UMBRAL_SIGIL is the last generic vigil family.
+        // This row now holds exactly one kind and the canonical constructor rejects an empty kind
+        // set, so a later family delegating UMBRAL_SIGIL must delete the whole row rather than the
+        // kind, exactly as F13 retired ARCANE_STUDY.
+        profile(ActivityType.SOUL_LANTERN_VIGIL, Set.of(CreatureKind.UMBRAL_SIGIL),
             400, 10, 4_800, 0),
         profile(ActivityType.HAY_REST, Set.of(CreatureKind.PALE_STEED, CreatureKind.NIGHTMARE), 400, 12, 6_000, 0),
         profile(ActivityType.VILLAGE_WATCH, Set.of(CreatureKind.IRONBOUND_SENTINEL,

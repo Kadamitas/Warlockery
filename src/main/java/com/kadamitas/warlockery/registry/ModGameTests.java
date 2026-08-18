@@ -13,6 +13,7 @@ import com.kadamitas.warlockery.entity.BansheeGameTests;
 import com.kadamitas.warlockery.entity.CovenPractitionerGameTests;
 import com.kadamitas.warlockery.entity.LostSoulSpiritGameTests;
 import com.kadamitas.warlockery.entity.PoltergeistGameTests;
+import com.kadamitas.warlockery.entity.EchoShadeSpectreGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
 import com.kadamitas.warlockery.entity.DeathGameTests;
@@ -530,6 +531,22 @@ public final class ModGameTests {
             () -> PoltergeistGameTests::poltergeistHazardAndThreeRouteFailuresCancel);
         REGISTRY.register("poltergeist_reload_does_not_replay_and_families_stay_isolated",
             () -> PoltergeistGameTests::poltergeistReloadDoesNotReplayAndFamiliesStayIsolated);
+        REGISTRY.register("echo_shade_records_and_replays_one_vector",
+            () -> EchoShadeSpectreGameTests::echoShadeRecordsOneVectorAndAnswersIt);
+        REGISTRY.register("echo_shade_never_copies_player_state",
+            () -> EchoShadeSpectreGameTests::echoShadeNeverCopiesPlayerState);
+        REGISTRY.register("echo_shade_route_hazard_and_reload_cancel",
+            () -> EchoShadeSpectreGameTests::echoShadeRouteHazardAndReloadCancel);
+        REGISTRY.register("spectre_warns_one_witness_dreads_once_then_fades",
+            () -> EchoShadeSpectreGameTests::spectreWarnsOneWitnessDreadsOnceThenFades);
+        REGISTRY.register("spectre_dread_does_not_refresh_or_spread",
+            () -> EchoShadeSpectreGameTests::spectreDreadDoesNotRefreshOrSpread);
+        REGISTRY.register("echo_spectre_dense_candidates_stay_capped_and_stable",
+            () -> EchoShadeSpectreGameTests::echoSpectreDenseCandidatesStayCappedAndStable);
+        REGISTRY.register("echo_spectre_reload_does_not_replay",
+            () -> EchoShadeSpectreGameTests::echoSpectreReloadDoesNotReplay);
+        REGISTRY.register("echo_spectre_families_stay_isolated",
+            () -> EchoShadeSpectreGameTests::echoSpectreFamiliesStayIsolated);
     }
 
     private ModGameTests() {

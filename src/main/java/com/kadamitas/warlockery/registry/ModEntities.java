@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.registry;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.entity.AbyssalRegentRules;
+import com.kadamitas.warlockery.entity.EchoShadeEntity;
 import com.kadamitas.warlockery.entity.EldritchWatcherEntity;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.BansheeEntity;
@@ -26,6 +27,7 @@ import com.kadamitas.warlockery.entity.HellhoundEntity;
 import com.kadamitas.warlockery.entity.CorpseEntity;
 import com.kadamitas.warlockery.entity.DeathEntity;
 import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
+import com.kadamitas.warlockery.entity.SpectreEntity;
 import com.kadamitas.warlockery.entity.SpiritEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
@@ -132,7 +134,9 @@ public final class ModEntities {
         Map.entry(CreatureKind.SPIRIT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLocalSpirit),
         Map.entry(CreatureKind.HEDGE_CRONE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHedgeCrone),
         Map.entry(CreatureKind.CIRCLE_MAGE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createCircleMage),
-        Map.entry(CreatureKind.POLTERGEIST, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createPoltergeist)
+        Map.entry(CreatureKind.POLTERGEIST, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createPoltergeist),
+        Map.entry(CreatureKind.ECHO_SHADE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createEchoShade),
+        Map.entry(CreatureKind.SPECTRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectre)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -175,6 +179,9 @@ public final class ModEntities {
             .build()),
         AttributeFactoryRule.exact("banshee", _ -> Vex.createAttributes()
             .add(Attributes.FLYING_SPEED, com.kadamitas.warlockery.entity.BansheeRules.FLYING_SPEED)
+            .build()),
+        AttributeFactoryRule.exact("spectre", _ -> Vex.createAttributes()
+            .add(Attributes.FLYING_SPEED, com.kadamitas.warlockery.entity.SpectreRules.FLYING_SPEED)
             .build()),
         new AttributeFactoryRule(SPIRIT_IDS::contains, _ -> Vex.createAttributes().build())
     );
@@ -342,6 +349,26 @@ public final class ModEntities {
         return EntityType.Builder.of(
             (EntityType<PoltergeistEntity> type, net.minecraft.world.level.Level level) ->
                 new PoltergeistEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createEchoShade(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<EchoShadeEntity> type, net.minecraft.world.level.Level level) ->
+                new EchoShadeEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createSpectre(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<SpectreEntity> type, net.minecraft.world.level.Level level) ->
+                new SpectreEntity(type, level),
             MobCategory.MONSTER
         ).sized(registration.width(), registration.height())
             .notInPeaceful()

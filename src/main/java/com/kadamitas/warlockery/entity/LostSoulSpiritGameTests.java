@@ -387,11 +387,11 @@ public final class LostSoulSpiritGameTests {
             }
             helper.assertFalse(soul.creatureKind() == spirit.creatureKind(),
                 "the two neighbours keep separate registry kinds");
-            // F18 delegated DEATH to its own dedicated runtime, so the surviving generic
-            // soul-lantern vigil families are SPECTRE, ECHO_SHADE and UMBRAL_SIGIL.
+            // F18 delegated DEATH, and F21 delegated SPECTRE and ECHO_SHADE, to their own
+            // dedicated runtimes, so UMBRAL_SIGIL is the last generic soul-lantern vigil family.
             helper.assertTrue(
-                AmbientActivityProfile.forKind(ArcaneCreature.CreatureKind.SPECTRE).size() >= 1,
-                "the other soul-lantern vigil families keep their generic ambient routine");
+                AmbientActivityProfile.forKind(ArcaneCreature.CreatureKind.UMBRAL_SIGIL).size() >= 1,
+                "the remaining soul-lantern vigil family keeps its generic ambient routine");
             helper.succeed();
         } finally {
             fixture.close();
