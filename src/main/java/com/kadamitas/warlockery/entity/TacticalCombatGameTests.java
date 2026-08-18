@@ -117,36 +117,43 @@ public final class TacticalCombatGameTests {
         }
         final ServerPlayer player = connectedPlayer(helper, new BlockPos(0, 1, 0));
         player.setInvulnerable(true);
-        final WerewolfEntity werewolf = helper.spawn(
-            ModEntities.WEREWOLF.get(), new BlockPos(4, 1, 0), EntitySpawnReason.EVENT
+        // The melee subject is an ordinary ArcaneMob whose specialization seam is the generic one,
+        // so this fixture drives a doctrine its kind really reaches. The Werewolf it used to spawn
+        // never runs TacticalCombatRuntime: LycanPackRuntime owns that family's combat and the
+        // WEREWOLF doctrine row is retired, so a hand-driven werewolf here would have demonstrated a
+        // maneuver no werewolf can perform.
+        final ArcaneMob melee = (ArcaneMob) helper.spawn(
+            ModEntities.ALL.get("illusion_zombie").get(), new BlockPos(4, 1, 0), EntitySpawnReason.EVENT
         );
-        werewolf.setTarget(player);
-        helper.runAfterDelay(2, () -> verifyBlockedMeleeDisengagement(helper, player, werewolf));
+        melee.setTarget(player);
+        helper.runAfterDelay(2, () -> verifyBlockedMeleeDisengagement(helper, player, melee));
     }
 
     private static void verifyBlockedMeleeDisengagement(
         final GameTestHelper helper,
         final ServerPlayer player,
-        final WerewolfEntity werewolf
+        final ArcaneMob melee
     ) {
-        helper.assertTrue(!TacticalCombatRuntime.routeReaches(werewolf, player),
+        helper.assertTrue(!TacticalCombatRuntime.routeReaches(melee, player),
             "the attack slit must block the melee creature's path to the player");
-        final var profile = TacticalCombatRules.profile(CreatureKind.WEREWOLF);
+        helper.assertTrue(TacticalCombatRules.usesGenericTacticalLayer(melee.creatureKind()),
+            "the melee subject must be a kind that still reaches the generic tactical layer");
+        final var profile = TacticalCombatRules.profile(melee.creatureKind());
         final Maneuver maneuver = TacticalCombatRules.choose(
             profile,
             false,
             true,
             false,
-            werewolf.distanceTo(player),
-            werewolf.getHealth(),
-            werewolf.getMaxHealth()
+            melee.distanceTo(player),
+            melee.getHealth(),
+            melee.getMaxHealth()
         );
         helper.assertValueEqual(maneuver, Maneuver.DISENGAGE,
             "an exposed melee creature with no route must disengage");
-        TacticalCombatRuntime.execute(werewolf, helper.getLevel(), player, profile, maneuver);
-        final BlockPos destination = werewolf.getNavigation().getTargetPos();
+        TacticalCombatRuntime.execute(melee, helper.getLevel(), player, profile, maneuver);
+        final BlockPos destination = melee.getNavigation().getTargetPos();
         helper.assertTrue(destination != null && destination.distSqr(player.blockPosition())
-            > werewolf.blockPosition().distSqr(player.blockPosition()),
+            > melee.blockPosition().distSqr(player.blockPosition()),
             "the disengage path must carry the creature away from the unreachable attack slit");
         helper.succeed();
     }

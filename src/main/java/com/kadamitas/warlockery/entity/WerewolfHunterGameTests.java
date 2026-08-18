@@ -367,6 +367,7 @@ public final class WerewolfHunterGameTests {
                     Math.max(1L, now - WerewolfHunterRules.WARN_MINIMUM_TICKS - 1L), 0L, 0L, 0L, 0L, 0L
                 )));
             makeDue(hunter);
+            final long lineOfSightBefore = hunter.hunterCounters().lineOfSightChecks();
             WerewolfHunterRuntime.tick(hunter, helper.getLevel());
             helper.assertTrue(hunter.getTarget() == null,
                 "a protected actor inside the projectile corridor cancels the shot");
@@ -374,9 +375,42 @@ public final class WerewolfHunterGameTests {
                 "a blocked corridor repositions instead of firing through residents");
             helper.assertTrue(hunter.hunterCounters().shotCancellations() >= 1L,
                 "the cancellation is counted, never silently retried");
-            helper.assertTrue(hunter.hunterCounters().lineOfSightChecks()
-                    <= WerewolfHunterRules.MAX_LINE_OF_SIGHT_CHECKS,
-                "corridor validation stays inside the four-check budget");
+            // The counter is a lifetime total that two independently capped scans charge into: the
+            // witnessed-attack pass spends up to MAX_LINE_OF_SIGHT_CHECKS across its retained
+            // attackers, and the corridor pass spends up to MAX_LINE_OF_SIGHT_CHECKS of its own. One
+            // decision pass runs each of them at most once, so the pass budget is twice the constant
+            // and the constant itself is right. Comparing the running total against a single scan's
+            // budget made this assertion depend on how many protected actors happened to be inside
+            // the twenty-four block observation radius, which in a shared GameTest batch includes
+            // neighbouring structures, so it failed on arena placement rather than on any overrun.
+            final long spentInOnePass = hunter.hunterCounters().lineOfSightChecks() - lineOfSightBefore;
+            helper.assertTrue(spentInOnePass <= 2L * WerewolfHunterRules.MAX_LINE_OF_SIGHT_CHECKS,
+                "one decision pass charges at most one witnessed-attack budget plus one corridor "
+                    + "budget; was " + spentInOnePass);
+            // Crowd the corridor past its budget so the cap is what the next assertion measures.
+            // Without the break in protectedInCorridor this scan would charge one check per
+            // protected actor it finds, which is at least six here, so the equality below cannot
+            // pass vacuously and cannot drift with whatever a neighbouring arena contributes.
+            final List<Villager> corridorCrowd = new ArrayList<>();
+            for (final BlockPos seat : List.of(new BlockPos(0, 1, 0), new BlockPos(0, 1, 2),
+                new BlockPos(1, 1, 0), new BlockPos(1, 1, 2), new BlockPos(2, 1, 0))) {
+                final Villager extra = fixture.spawn(EntityTypes.VILLAGER, seat, EntitySpawnReason.EVENT);
+                extra.setNoAi(true);
+                extra.setDeltaMovement(Vec3.ZERO);
+                corridorCrowd.add(extra);
+            }
+            final long corridorBefore = hunter.hunterCounters().lineOfSightChecks();
+            final List<LivingEntity> crowded = WerewolfHunterRuntime.protectedInCorridor(
+                hunter, helper.getLevel(), quarry
+            );
+            helper.assertTrue(crowded.size() <= WerewolfHunterRules.MAX_LINE_OF_SIGHT_CHECKS,
+                "a corridor scan can never report more blockers than checks it was allowed to spend");
+            helper.assertValueEqual(
+                hunter.hunterCounters().lineOfSightChecks() - corridorBefore,
+                (long) WerewolfHunterRules.MAX_LINE_OF_SIGHT_CHECKS,
+                "corridor validation stops at exactly the four-check budget in a crowded corridor"
+            );
+            corridorCrowd.forEach(Entity::discard);
             helper.assertValueEqual(bystander.getHealth(), bystanderHealth,
                 "the protected bystander takes no crossfire damage");
             helper.assertTrue(hunter.hunterCounters().laneSearches() >= 1L,

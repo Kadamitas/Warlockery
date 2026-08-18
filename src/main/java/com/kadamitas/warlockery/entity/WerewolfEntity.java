@@ -113,9 +113,21 @@ public class WerewolfEntity extends ArcaneMob {
         }
     }
 
+    /**
+     * The pack runtime replaces the generic tactical layer completely: it owns target arbitration,
+     * the pounce and harry actions, the fear retreat and every navigation request, all under its own
+     * cadence and route-failure accounting, so {@link TacticalCombatRuntime} stays out by
+     * construction and the PACK doctrine row for this kind is retired rather than left unreachable.
+     *
+     * <p>It replaced nothing in the ambient layer. The moon is read only to size a hunt, and an idle
+     * sated lycan has no night posture of its own, so the declared MOON_GAZE vigil is reached again
+     * here. The ambient pass yields on its own whenever a target, a hazard or a passenger state is
+     * live, which is exactly when the pack runtime is steering.</p>
+     */
     @Override
     protected void tickSpecializedActivity(final ServerLevel level) {
         LycanPackRuntime.tick(this, level);
+        AmbientActivityRuntime.tick(this, level, CreatureKind.WEREWOLF);
     }
 
     public LycanPackState packState() {

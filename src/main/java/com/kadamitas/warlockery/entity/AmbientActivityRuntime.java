@@ -264,26 +264,6 @@ public final class AmbientActivityRuntime {
         return true;
     }
 
-    static boolean seekDaylightShelter(final AmbientActivityContext context) {
-        final Mob creature = context.creature();
-        final ServerLevel level = context.level();
-        if (!AmbientActivityRules.isDay(level.getDefaultClockTime()) || !level.canSeeSky(creature.blockPosition())) {
-            return false;
-        }
-        return BlockPos.betweenClosedStream(
-                creature.blockPosition().offset(-AmbientActivityRules.SEARCH_RADIUS, -3, -AmbientActivityRules.SEARCH_RADIUS),
-                creature.blockPosition().offset(AmbientActivityRules.SEARCH_RADIUS, 3, AmbientActivityRules.SEARCH_RADIUS)
-            )
-            .filter(position -> !level.canSeeSky(position))
-            .map(position -> TacticalCombatRuntime.standableNear(level, position))
-            .flatMap(Optional::stream)
-            .distinct()
-            .filter(position -> TacticalCombatRuntime.routeReaches(creature, position))
-            .min(Comparator.comparingDouble(position -> position.distSqr(creature.blockPosition())))
-            .map(position -> moveTo(creature, position, 1.2))
-            .orElse(false);
-    }
-
     static boolean keepSoulLanternVigil(final AmbientActivityContext context) {
         return seekAndSignal(context,
             state -> AmbientActivityTags.matches(ActivityType.SOUL_LANTERN_VIGIL, state),

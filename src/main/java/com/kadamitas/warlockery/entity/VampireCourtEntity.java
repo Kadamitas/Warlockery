@@ -115,6 +115,14 @@ public final class VampireCourtEntity extends ArcaneMob {
         }
     }
 
+    /**
+     * The court runtime replaces both generic layers by construction rather than by branch guard.
+     * It owns target arbitration and every navigation request under its own decision cadence,
+     * route-failure backoff and level-wide prey and shelter claims, and its SEEK_SHELTER intent is
+     * the daylight retreat the generic ambient layer used to declare. The STALKER doctrine members
+     * and the DAYLIGHT_SHELTER profile row are retired instead of being left unreachable, so no data
+     * still claims behavior this seam cannot execute.
+     */
     @Override
     protected void tickSpecializedActivity(final ServerLevel level) {
         VampireCourtRuntime.tick(this, level);

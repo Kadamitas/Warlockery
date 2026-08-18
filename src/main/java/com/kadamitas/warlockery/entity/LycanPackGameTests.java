@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.entity.AmbientActivityProfile.ActivityType;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.LycanPackRules.ActionKind;
 import com.kadamitas.warlockery.entity.LycanPackRules.HuntPhase;
@@ -21,11 +22,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.clock.WorldClock;
+import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -48,6 +53,10 @@ import net.minecraft.world.level.storage.TagValueOutput;
 public final class LycanPackGameTests {
     private static final long NIGHT = 15_000L;
     private static final long DAY = 6_000L;
+    private static final long MOONLIT_NIGHT = 18_000L;
+    private static final int MAX_VIGIL_DELAY = 200;
+    private static final String HEARTH_POSITION_KEY = "WarlockeryAmbientHearthPosition";
+    private static final String HEARTH_EXPIRES_KEY = "WarlockeryAmbientHearthExpires";
 
     private LycanPackGameTests() {
     }
@@ -93,10 +102,96 @@ public final class LycanPackGameTests {
             helper.assertValueEqual(sheep.getRemainingFireTicks(), fireBefore,
                 "a burning bare-handed lycan melee hit must not inherit Zombie target ignition");
             werewolf.clearFire();
-            helper.succeed();
-        } finally {
+
+            // The MOON_GAZE row declares the WEREWOLF kind, so a live lycan has to reach
+            // AmbientActivityRuntime through its own specialization seam. Both facts asserted below
+            // are unreachable without that call: the fixture writes the two hearth-claim keys
+            // itself and only AmbientActivityRuntime.clearExpiredHearth erases them, and the
+            // MOON_GAZE cooldown stamp is written only when the scheduled generic dispatch performs
+            // the vigil. Nothing here hand-drives a tick: the subject keeps its AI and the whole
+            // vigil happens inside the server's own entity tick.
+            final ServerLevel level = helper.getLevel();
+            final Holder<WorldClock> clock = level.registryAccess().get(WorldClocks.OVERWORLD).orElseThrow();
+            final long clockBefore = level.clockManager().getTotalTicks(clock);
+            fixture.onClose(() -> level.clockManager().setTotalTicks(clock, clockBefore));
+            level.clockManager().setTotalTicks(clock, MOONLIT_NIGHT);
+            final WerewolfEntity gazer = spawnLycan(fixture, "werewolf", new BlockPos(2, 1, 2));
+            helper.assertFalse(gazer.isNoAi(), "the vigil subject must run its own AI");
+            helper.assertTrue(level.canSeeSky(gazer.blockPosition()),
+                "the moon vigil needs open sky above the subject");
+            helper.assertTrue(AmbientActivityRules.isNight(level.getDefaultClockTime()),
+                "the moon vigil needs a night clock");
+            helper.assertTrue(gazer.packState().needs().hunger() < LycanPackRules.WATCH_HUNGER,
+                "a freshly spawned lycan must stay idle so the ambient pass is admitted");
+            final long now = level.getGameTime();
+            final BlockPos staleHearth = helper.absolutePos(new BlockPos(0, 1, 0));
+            gazer.getPersistentData().putLong(HEARTH_POSITION_KEY, staleHearth.asLong());
+            gazer.getPersistentData().putLong(HEARTH_EXPIRES_KEY, now - 1L);
+            final int vigilDelay = scheduleMoonGaze(helper, gazer, now);
+            final int tickCountAtSetup = gazer.tickCount;
+            final int observeAfter = vigilDelay + 6;
+            final AmbientActivityProfile vigil = AmbientActivityProfile.forType(ActivityType.MOON_GAZE);
+            helper.runAfterDelay(observeAfter, () -> {
+                try {
+                    helper.assertValueEqual(gazer.tickCount, tickCountAtSetup + observeAfter,
+                        "the arena's tick phase must advance one entity tick per scheduled tick");
+                    helper.assertTrue(gazer.isAlive() && !gazer.isNoAi(),
+                        "the subject must have ticked its own AI for the whole window");
+                    helper.assertTrue(gazer.getTarget() == null,
+                        "the idle subject must never have entered combat, which would suspend the vigil");
+                    helper.assertValueEqual(
+                        gazer.getPersistentData().getLongOr(
+                            AmbientActivityRuntime.cooldownKey(ActivityType.MOON_GAZE), 0L
+                        ),
+                        now + vigilDelay + vigil.cooldownTicks(),
+                        "the scheduled MOON_GAZE dispatch must stamp its exact cooldown on the subject"
+                    );
+                    helper.assertFalse(gazer.getPersistentData().contains(HEARTH_POSITION_KEY),
+                        "reaching AmbientActivityRuntime clears an expired hearth claim; the key the "
+                            + "fixture wrote is still present, so the ambient layer was never reached");
+                    helper.assertFalse(gazer.getPersistentData().contains(HEARTH_EXPIRES_KEY),
+                        "the expiry half of the stale hearth claim must be cleared with it");
+                } finally {
+                    fixture.close();
+                }
+                helper.succeed();
+            });
+        } catch (final RuntimeException | Error failure) {
             fixture.close();
+            throw failure;
         }
+    }
+
+    /**
+     * Places the subject's periodic ambient check on the first future tick whose rare roll passes,
+     * by moving only its tick counter. Every gate the dispatch consults stays the production one:
+     * the check residue, the roll and the cooldown are all evaluated by the live runtime.
+     */
+    private static int scheduleMoonGaze(
+        final GameTestHelper helper,
+        final WerewolfEntity gazer,
+        final long now
+    ) {
+        final AmbientActivityProfile vigil = AmbientActivityProfile.forType(ActivityType.MOON_GAZE);
+        helper.assertTrue(vigil != null && vigil.kinds().contains(CreatureKind.WEREWOLF),
+            "the fixture is only meaningful while MOON_GAZE still declares the Werewolf");
+        int delay = 0;
+        for (int candidate = 4; candidate <= MAX_VIGIL_DELAY && delay == 0; candidate++) {
+            if (AmbientActivityRules.passesRareRoll(
+                now + candidate, gazer.getId(), ActivityType.MOON_GAZE, vigil.chanceDenominator()
+            )) {
+                delay = candidate;
+            }
+        }
+        helper.assertTrue(delay > 0, "no rare-roll tick inside the fixture budget");
+        int fireAt = delay + 2;
+        while (!AmbientActivityRules.shouldCheck(
+            fireAt, gazer.getId(), ActivityType.MOON_GAZE.ordinal(), vigil.checkIntervalTicks()
+        )) {
+            fireAt++;
+        }
+        gazer.tickCount = fireAt - delay;
+        return delay;
     }
 
     public static void werewolfHuntAssignsRolesAndReplacesCoordinator(final GameTestHelper helper) {

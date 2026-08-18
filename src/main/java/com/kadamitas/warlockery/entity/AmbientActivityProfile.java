@@ -30,7 +30,13 @@ public record AmbientActivityProfile(
         // activity type and its block tag set stay registered and are still the shared
         // workstation predicate both dedicated runtimes reuse.
         profile(ActivityType.GRAVE_SCAVENGE, Set.of(CreatureKind.LOUSE), 300, 12, 4_800, 1),
-        profile(ActivityType.DAYLIGHT_SHELTER, Set.of(CreatureKind.VAMPIRE, CreatureKind.BLOOD_THRALL), 100, 3, 1_200, 0),
+        // F03 superseded DAYLIGHT_SHELTER outright: VampireCourtRuntime raises SEEK_SHELTER from
+        // the same exposed-daylight predicate, then claims one sky-blocked block per member under a
+        // level-wide lease that the generic row cannot see, so the generic version could only route
+        // a second court member into an already claimed hole. Both declared kinds were court kinds
+        // and the canonical constructor rejects an empty kind set, so the whole row is retired the
+        // way F13 retired ARCANE_STUDY; the activity type and its dispatch entry go with it because
+        // nothing else reads them.
         // F21 delegated ECHO_SHADE to EchoShadeRuntime and SPECTRE to SpectreRuntime, each of
         // which owns its own ambient schedule, so UMBRAL_SIGIL is the last generic vigil family.
         // This row now holds exactly one kind and the canonical constructor rejects an empty kind
@@ -39,16 +45,25 @@ public record AmbientActivityProfile(
         profile(ActivityType.SOUL_LANTERN_VIGIL, Set.of(CreatureKind.UMBRAL_SIGIL),
             400, 10, 4_800, 0),
         profile(ActivityType.HAY_REST, Set.of(CreatureKind.PALE_STEED, CreatureKind.NIGHTMARE), 400, 12, 6_000, 0),
+        // F05 superseded the LYCAN_VILLAGER share of VILLAGE_WATCH. LycanVillagerRuntime raises
+        // BOUNDARY_WATCH from its own brain anchor, walks it under the level path budget and faces
+        // outward from the anchor, while the generic patrol issues a raw navigation request toward
+        // any bell that the villager brain overwrites again on the same tick. The row keeps the two
+        // kinds that still reach the generic dispatch.
         profile(ActivityType.VILLAGE_WATCH, Set.of(CreatureKind.IRONBOUND_SENTINEL,
-            CreatureKind.WEREWOLF_HUNTER, CreatureKind.LYCAN_VILLAGER), 300, 10, 3_600, 0),
+            CreatureKind.WEREWOLF_HUNTER), 300, 10, 3_600, 0),
         profile(ActivityType.FAMILIAR_HOME, Set.of(CreatureKind.CAT, CreatureKind.FAMILIAR), 300, 8, 3_600, 0),
         profile(ActivityType.THORN_GARDEN, Set.of(CreatureKind.THORNED_PURSUER, CreatureKind.MANDRAKE,
             CreatureKind.DREAMROOT, CreatureKind.BRAMBLE_COLOSSUS), 300, 8, 3_600, 0),
         profile(ActivityType.MIRROR_GAZE, Set.of(CreatureKind.GLASS_DOPPELGANGER,
             CreatureKind.ILLUSION_CREEPER, CreatureKind.ILLUSION_SPIDER, CreatureKind.ILLUSION_ZOMBIE),
             300, 10, 3_600, 0),
-        profile(ActivityType.MOON_GAZE, Set.of(CreatureKind.WEREWOLF, CreatureKind.LYCAN_VILLAGER),
-            300, 8, 3_600, 0)
+        // F05 superseded the LYCAN_VILLAGER share of MOON_GAZE with its own MOON_WATCH intent, which
+        // gates on a full moon, clear sky, a safe schedule and an anchor before it raises the same
+        // head. F04 replaced nothing here: LycanPackRuntime reads the moon only to size a hunt, and
+        // an idle sated Werewolf still has no night posture of its own, so WEREWOLF keeps the row
+        // and WerewolfEntity reaches it again.
+        profile(ActivityType.MOON_GAZE, Set.of(CreatureKind.WEREWOLF), 300, 8, 3_600, 0)
     );
     private static final Map<CreatureKind, List<AmbientActivityProfile>> BY_KIND = PROFILES.stream()
         .flatMap(profile -> profile.kinds().stream().map(kind -> Map.entry(kind, profile)))
@@ -106,7 +121,6 @@ public record AmbientActivityProfile(
         STORM_ROD,
         ARCANE_STUDY,
         GRAVE_SCAVENGE,
-        DAYLIGHT_SHELTER,
         SOUL_LANTERN_VIGIL,
         HAY_REST,
         VILLAGE_WATCH,

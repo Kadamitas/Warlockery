@@ -121,13 +121,58 @@ class AmbientActivityRulesTest {
             // F21: the dedicated EchoShadeRuntime and SpectreRuntime own the echo and the
             // haunting; neither kind communes with soul lanterns any more.
             CreatureKind.ECHO_SHADE,
-            CreatureKind.SPECTRE
+            CreatureKind.SPECTRE,
+            // F03: VampireCourtRuntime owns the claimed daylight retreat that DAYLIGHT_SHELTER
+            // used to declare for both court kinds.
+            CreatureKind.VAMPIRE,
+            CreatureKind.BLOOD_THRALL,
+            // F05: LycanVillagerRuntime owns BOUNDARY_WATCH and MOON_WATCH on the villager's own
+            // brain anchor, so the sentinel takes no generic ambient authority.
+            CreatureKind.LYCAN_VILLAGER
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
             .filter(kind -> AmbientActivityProfile.forKind(kind).isEmpty())
             .collect(java.util.stream.Collectors.toSet());
         assertEquals(Set.of(), missing);
+    }
+
+    @Test
+    void theCourtAndTheSentinelDeclareNoGenericAmbientBehaviorTheyCannotRun() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.VAMPIRE).isEmpty(),
+            "F03: VampireCourtEntity never reaches the generic ambient layer, so the retired "
+                + "DAYLIGHT_SHELTER row must not still declare the Vampire");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.BLOOD_THRALL).isEmpty(),
+            "F03: the Blood Thrall shares the court seam and the same retired row");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.LYCAN_VILLAGER).isEmpty(),
+            "F05: the sentinel villager reaches neither VILLAGE_WATCH nor MOON_GAZE");
+        assertEquals(
+            Set.of(CreatureKind.IRONBOUND_SENTINEL, CreatureKind.WEREWOLF_HUNTER),
+            AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).kinds(),
+            "VILLAGE_WATCH keeps exactly the two kinds whose entities still call the generic tick"
+        );
+        assertEquals(300, AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).checkIntervalTicks());
+        assertEquals(10, AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).chanceDenominator());
+        assertEquals(3_600, AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).cooldownTicks());
+        assertEquals(0, AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).localChangeCap());
+        assertFalse(java.util.Arrays.stream(ActivityType.values())
+                .anyMatch(type -> "DAYLIGHT_SHELTER".equals(type.name())),
+            "the retired activity type is deleted with its row because nothing else reads it");
+    }
+
+    @Test
+    void theWerewolfKeepsTheExactMoonGazeVigilItHasAlwaysDeclared() {
+        final java.util.List<AmbientActivityProfile> werewolf =
+            AmbientActivityProfile.forKind(CreatureKind.WEREWOLF);
+        assertEquals(1, werewolf.size(), "MOON_GAZE is the only ambient row the pack family declares");
+        final AmbientActivityProfile moonGaze = werewolf.getFirst();
+        assertEquals(ActivityType.MOON_GAZE, moonGaze.type());
+        assertEquals(Set.of(CreatureKind.WEREWOLF), moonGaze.kinds(),
+            "the sentinel villager is retired from the row; the Werewolf keeps it");
+        assertEquals(300, moonGaze.checkIntervalTicks());
+        assertEquals(8, moonGaze.chanceDenominator());
+        assertEquals(3_600, moonGaze.cooldownTicks());
+        assertEquals(0, moonGaze.localChangeCap());
     }
 
     @Test

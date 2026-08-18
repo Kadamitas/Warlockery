@@ -112,6 +112,15 @@ public final class LycanVillagerEntity extends Villager implements ArcaneCreatur
         return CreatureKind.LYCAN_VILLAGER;
     }
 
+    /**
+     * The sentinel runtime is the only specialization this brain-driven villager runs. It replaces
+     * the generic tactical layer with its own WARNING, INTERCEPT, DEFEND and WITHDRAW intents under
+     * a level-wide observation and path budget, and it replaces the generic ambient layer with
+     * BOUNDARY_WATCH and MOON_WATCH, both anchored on the villager's own home or meeting point. A
+     * generic navigation request would also be erased by the vanilla brain on the same tick unless
+     * the sentinel has already claimed movement, so neither generic layer is reachable here and the
+     * PACK doctrine member, the VILLAGE_WATCH member and the MOON_GAZE member are all retired.
+     */
     @Override
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);

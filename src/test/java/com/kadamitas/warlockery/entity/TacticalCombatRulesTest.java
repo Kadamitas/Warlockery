@@ -14,14 +14,43 @@ import org.junit.jupiter.api.Test;
 
 final class TacticalCombatRulesTest {
     @Test
-    void everyWarlockeryCreatureHasAValidatedCombatDoctrine() {
+    void everyWarlockeryCreatureThatReachesTheGenericLayerHasAValidatedCombatDoctrine() {
         for (final CreatureKind kind : CreatureKind.values()) {
+            if (!TacticalCombatRules.usesGenericTacticalLayer(kind)) {
+                continue;
+            }
             final Profile profile = TacticalCombatRules.profile(kind);
             assertNotNull(profile.doctrine());
             assertTrue(profile.cadenceTicks() > 0);
             assertTrue(profile.preferredDistance() > 0.0);
             assertTrue(profile.coverSearchRadius() > 0);
             assertTrue(profile.movementSpeed() > 0.0);
+        }
+    }
+
+    @Test
+    void familiesThatOwnTheirOwnCombatDeclareNoDoctrineTheyCannotExecute() {
+        final EnumSet<CreatureKind> retired = EnumSet.of(
+            CreatureKind.VAMPIRE,
+            CreatureKind.BLOOD_THRALL,
+            CreatureKind.WEREWOLF,
+            CreatureKind.LYCAN_VILLAGER
+        );
+        for (final CreatureKind kind : retired) {
+            assertTrue(!TacticalCombatRules.usesGenericTacticalLayer(kind),
+                kind + " owns navigation through its own family runtime and never reaches "
+                    + "TacticalCombatRuntime");
+            assertThrows(IllegalArgumentException.class, () -> TacticalCombatRules.profile(kind),
+                "the doctrine table must refuse a kind whose maneuvers can never run instead of "
+                    + "handing out an unreachable " + kind + " profile");
+        }
+        for (final CreatureKind kind : CreatureKind.values()) {
+            if (retired.contains(kind)) {
+                continue;
+            }
+            assertTrue(TacticalCombatRules.usesGenericTacticalLayer(kind), kind.name());
+            assertNotNull(TacticalCombatRules.profile(kind).doctrine(),
+                "every kind outside the retired set must still resolve a doctrine: " + kind);
         }
     }
 
