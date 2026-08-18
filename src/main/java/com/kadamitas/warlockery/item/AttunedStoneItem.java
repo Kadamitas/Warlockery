@@ -31,7 +31,10 @@ public final class AttunedStoneItem extends Item {
         final int before = storedPower(stack);
         final AttunedStoneRules.Transfer transfer = context.getPlayer() != null && context.getPlayer().isSecondaryUseActive()
             ? AttunedStoneRules.deposit(before, altar.getPower(), altar.getCapacity())
-            : AttunedStoneRules.withdraw(before, altar.getPower());
+            // Withdrawn against spendable power, not held power. Power promised to a rite in progress is
+            // physically in the altar and is what the altar reports, but draining it is refused, and this
+            // path used to ignore that refusal and charge the stone anyway.
+            : AttunedStoneRules.withdraw(before, altar.availablePower());
         if (!transfer.succeeded()) {
             if (context.getPlayer() != null && !context.getLevel().isClientSide()) {
                 context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.attuned_stone.no_power"));
@@ -40,7 +43,9 @@ public final class AttunedStoneItem extends Item {
         }
         if (!context.getLevel().isClientSide()) {
             if (transfer.stonePower() > before) {
-                altar.consumePower(transfer.moved());
+                if (!altar.consumePower(transfer.moved())) {
+                    return InteractionResult.FAIL;
+                }
             } else {
                 altar.receivePower(transfer.moved());
             }

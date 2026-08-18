@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
+import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +19,43 @@ final class SeerCovenRulesTest {
         assertFalse(SeerCovenRules.isCircleMageParticipant(CreatureKind.CIRCLE_MAGE, false));
         assertFalse(SeerCovenRules.isCircleMageParticipant(CreatureKind.HEDGE_CRONE, true));
         assertFalse(SeerCovenRules.isCircleMageParticipant(null, true));
+    }
+
+    @Test
+    void onlyTheCastersOwnCircleMagesCountTowardsTheirCoven() {
+        final UUID caster = UUID.randomUUID();
+        final UUID stranger = UUID.randomUUID();
+        assertTrue(
+            SeerCovenRules.countsForCaster(CreatureKind.CIRCLE_MAGE, Optional.of(caster), Optional.of(caster)),
+            "a Mage sworn to the caster is part of the coven they gathered"
+        );
+        assertFalse(
+            SeerCovenRules.countsForCaster(CreatureKind.CIRCLE_MAGE, Optional.of(stranger), Optional.of(caster)),
+            "another player's Mage standing nearby must not fill the caster's circle"
+        );
+        assertFalse(
+            SeerCovenRules.countsForCaster(CreatureKind.CIRCLE_MAGE, Optional.empty(), Optional.of(caster)),
+            "an unbound Mage answers to nobody"
+        );
+        assertFalse(
+            SeerCovenRules.countsForCaster(CreatureKind.CIRCLE_MAGE, Optional.of(caster), Optional.empty()),
+            "a coven cannot be attributed to a caster who cannot be resolved"
+        );
+        assertFalse(
+            SeerCovenRules.countsForCaster(CreatureKind.HEDGE_CRONE, Optional.of(caster), Optional.of(caster)),
+            "only Circle Mages join a coven, whoever they answer to"
+        );
+    }
+
+    @Test
+    void aCovenNeverContributesMoreThanItsCap() {
+        assertEquals(0, SeerCovenRules.cappedCoven(0));
+        assertEquals(CovenRosterData.MAX_PER_OWNER, SeerCovenRules.cappedCoven(CovenRosterData.MAX_PER_OWNER));
+        assertEquals(
+            CovenRosterData.MAX_PER_OWNER,
+            SeerCovenRules.cappedCoven(CovenRosterData.MAX_PER_OWNER + 4),
+            "a save carrying more rows than the cap must not buy a larger coven"
+        );
     }
 
     @Test

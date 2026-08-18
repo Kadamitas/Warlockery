@@ -1,10 +1,14 @@
-package com.kadamitas.warlockery.client;
+package com.kadamitas.warlockery.util;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
+/**
+ * Turns an ingredient identifier into the name a player reads. Lives outside the client package because
+ * server-side messages name ingredients too, and the component it returns is resolved by whoever displays it.
+ */
 public final class ItemDisplayNames {
     private ItemDisplayNames() {
     }

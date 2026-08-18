@@ -86,6 +86,29 @@ final class RitualTargetCoverageTest {
     }
 
     @Test
+    void everyActionThatCarriesATargetHasThatTargetValidatedAtLoadTime() {
+        final Set<String> actionsCarryingATarget = DEFINITIONS.stream()
+            .filter(fixture -> !fixture.value().target().isBlank())
+            .map(fixture -> fixture.value().action())
+            .collect(Collectors.toUnmodifiableSet());
+        final List<String> unvalidated = java.util.Arrays.stream(RitualAction.values())
+            .filter(action -> actionsCarryingATarget.contains(action.id()))
+            .filter(action -> RitualManager.targetProblem(action, unresolvableTarget(action)).isEmpty())
+            .map(RitualAction::id)
+            .toList();
+        assertTrue(
+            unvalidated.isEmpty(),
+            "actions whose declared target survives load-time validation unchecked: " + unvalidated
+        );
+    }
+
+    private static RitualDefinition unresolvableTarget(final RitualAction action) {
+        return new RitualDefinition(
+            action.id(), "", 0, 6, 0, 0, java.util.Map.of(), false, 80, "warlockery:no_such_target", 1
+        );
+    }
+
+    @Test
     void everyRegisteredHexBehaviorIsReachedByADefinition() {
         final Set<String> declared = DEFINITIONS.stream()
             .filter(fixture -> isHexRoute(fixture.value().action()))

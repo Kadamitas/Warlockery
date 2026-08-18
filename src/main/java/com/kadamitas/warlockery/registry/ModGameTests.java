@@ -76,6 +76,22 @@ public final class ModGameTests {
             () -> RitualOutcomeGameTests::aRitualWithNothingToActOnReportsNoEffect);
         REGISTRY.register("ritual_every_loaded_ritual_passes_validation",
             () -> RitualOutcomeGameTests::everyLoadedRitualPassesTargetValidation);
+        REGISTRY.register("ritual_failed_terminal_effect_does_not_strand_session",
+            () -> RitualOutcomeGameTests::aFailingTerminalEffectDoesNotStrandTheSession);
+        REGISTRY.register("ritual_presence_only_mob_is_never_consumed",
+            () -> RitualOutcomeGameTests::aPresenceOnlyMobIsNeverEatenByAConsumingRequirement);
+        REGISTRY.register("ritual_two_covens_are_counted_separately",
+            () -> SeerCovenGameTests::twoCovensInOneCircleAreCountedSeparately);
+        REGISTRY.register("ritual_counts_only_the_casters_coven",
+            () -> SeerCovenGameTests::aRiteCountsOnlyTheCovenOfThePlayerWhoStartedIt);
+        REGISTRY.register("ritual_escrowed_power_returns_exactly_once",
+            () -> RitualOutcomeGameTests::escrowedPowerIsReturnedExactlyOnceAndSettledOnlyOnce);
+        REGISTRY.register("ritual_lapsed_cast_names_its_failed_requirement",
+            () -> RitualOutcomeGameTests::aLapsedCastNamesTheRequirementThatEndedIt);
+        REGISTRY.register("ritual_absent_caster_blocks_caster_driven_rites",
+            () -> RitualOutcomeGameTests::anAbsentCasterBlocksTheRitesThatActThroughOne);
+        REGISTRY.register("ritual_cancellation_reaches_caster_outside_level",
+            () -> RitualOutcomeGameTests::aCancelledCastReachesACasterOutsideItsLevel);
         REGISTRY.register("biome_book_capture_persists_and_names",
             () -> BiomeRitualGameTests::biomeBookCapturePersistsAndNames);
         REGISTRY.register("climate_shift_uses_bound_book_target",

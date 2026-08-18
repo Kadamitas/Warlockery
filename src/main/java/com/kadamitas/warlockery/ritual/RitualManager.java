@@ -138,28 +138,51 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         JeiRecipeRefreshSignal.publish();
     }
 
-    public boolean activate(
+    /**
+     * Begins the rite, or reports what stood in the way. An empty list means the cast started; otherwise
+     * every entry is a requirement the site does not meet, ready to be named to the player.
+     *
+     * <p>Every refusal produces an entry, including the ones that are not a checklist row: an exit with
+     * nothing to say would be indistinguishable from success, and used to leave the player holding a spent
+     * circle and one sentence telling them to go and read a screen.</p>
+     */
+    public List<RequirementStatus> activate(
         final ServerLevel level,
         final BlockPos center,
         final Player caster,
         final Identifier ritualId
     ) {
         final RitualDefinition definition = rituals.get(ritualId);
-        if (definition == null || !diagnose(ritualId, definition, level, center, caster).ready()) {
-            return false;
+        if (definition == null) {
+            return List.of(unmet("condition", "known_rite"));
+        }
+        final RitualOption option = diagnose(ritualId, definition, level, center, caster);
+        if (!option.ready()) {
+            return unmetOf(option.requirements());
         }
         final Optional<TransformSelection> transform = transformSelection(level, center, definition);
         final RitualAction action = RitualAction.require(definition.action());
         if (action == RitualAction.GLYPH_TRANSFORM && transform.isEmpty()) {
-            return false;
+            return List.of(unmet("condition", "matching_transform_chalk"));
         }
         final Optional<BiomeShiftPlan> climateShift = action == RitualAction.CLIMATE_SHIFT
-            ? Optional.of(climateShiftPlan(level, center))
+            ? Optional.of(climateShiftPlan(level, center, caster))
             : Optional.empty();
-        final RitualSessionData sessions = RitualSessionData.get(level);
-        if (!consumeAltarPower(level, center, definition.power())) {
-            return false;
+        // Everything the activation is going to take is resolved before anything is taken. The offerings are
+        // loose item entities and can move or despawn between the inspection and this point, and consuming a
+        // plan that no longer holds used to fail after the altar had already been drained.
+        final Optional<String> shortfall = transform.isPresent()
+            ? Optional.empty()
+            : unofferedIngredient(level, center, definition.requirements().ingredients());
+        if (shortfall.isPresent()) {
+            return List.of(unmet("ingredient", shortfall.orElseThrow()));
         }
+        final RitualSessionData sessions = RitualSessionData.get(level);
+        final Optional<BlockPos> escrow = escrowAltarPower(level, center, definition.power());
+        if (escrow.isEmpty()) {
+            return List.of(unmet("power", "altar_power"));
+        }
+        final BlockPos escrowAltar = escrow.orElseThrow();
         if (transform.isPresent()) {
             consumeTransformChalk(level, center, transform.orElseThrow());
         } else {
@@ -169,11 +192,15 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         consumeEntityRequirements(level, center, definition.requirements().entities());
         final int variant = transform.map(selection -> selection.size().ordinal() + 1)
             .orElseGet(() -> climateShift.map(BiomeShiftPlan::chunkRadius).orElse(0));
-        if (!sessions.start(center, ritualId, caster.getUUID(), definition.castingTime(), variant)) {
-            return false;
+        if (!sessions.start(
+            center, ritualId, caster.getUUID(), definition.castingTime(), variant,
+            escrowAltar, definition.power()
+        )) {
+            releaseAltarEscrow(level, escrowAltar, definition.power());
+            return List.of(unmet("session", "inactive"));
         }
         caster.sendSystemMessage(Component.translatable("message.warlockery.ritual.started"));
-        return true;
+        return List.of();
     }
 
     public List<RitualOption> options(final ServerLevel level, final BlockPos center, final Player caster) {
@@ -184,7 +211,11 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             .toList();
     }
 
-    boolean isSessionValid(
+    /**
+     * The requirements a cast in progress has stopped meeting. An empty list means the site still supports
+     * the rite; anything else is both the reason to cancel and the reason to give the caster.
+     */
+    List<RequirementStatus> castingObstacles(
         final ServerLevel level,
         final BlockPos center,
         final Identifier ritualId,
@@ -192,10 +223,27 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final @Nullable Player caster
     ) {
         final RitualDefinition definition = rituals.get(ritualId);
-        return definition != null
-            && inspect(definition, level, center, caster, variant).stream()
-                .filter(SiteRequirement::survivesCasting)
-                .allMatch(requirement -> requirement.status().met());
+        if (definition == null) {
+            return List.of(unmet("condition", "known_rite"));
+        }
+        return unmetOf(inspect(definition, level, center, caster, variant).stream()
+            .filter(SiteRequirement::survivesCasting)
+            .map(SiteRequirement::status)
+            .toList());
+    }
+
+    private static List<RequirementStatus> unmetOf(final List<RequirementStatus> statuses) {
+        return statuses.stream()
+            .filter(RequirementStatus::blocksActivation)
+            .filter(status -> !status.met())
+            .toList();
+    }
+
+    /**
+     * A requirement stated as failed, for the refusals that never reach a site inspection.
+     */
+    private static RequirementStatus unmet(final String category, final String label) {
+        return new RequirementStatus(category, label, 1, 0, false);
     }
 
     void complete(
@@ -211,7 +259,15 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         }
     }
 
-    private static Optional<RequirementStatus> actionEnvironmentRequirement(
+    /**
+     * The condition a rite's action imposes on its site, if it imposes one.
+     *
+     * <p>A rite whose action acts on or through its caster reports an unmet requirement when no caster can be
+     * resolved in this level, rather than dropping the requirement. Dropping it let the cast run to term after
+     * the caster had walked through a portal or logged out, whereupon the action quietly declined and the
+     * player was left with no rite and no cost returned.</p>
+     */
+    static Optional<RequirementStatus> actionEnvironmentRequirement(
         final RitualDefinition definition,
         final ServerLevel level,
         final BlockPos center,
@@ -246,7 +302,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         }
         if (action == RitualAction.CALL_FAMILIAR) {
             if (caster == null) {
-                return Optional.empty();
+                return Optional.of(absentCaster());
             }
             final boolean present = ownedFamiliar(level, caster).isPresent();
             return Optional.of(new RequirementStatus(
@@ -270,7 +326,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         }
         if (action == RitualAction.MARRIAGE) {
             if (caster == null) {
-                return Optional.empty();
+                return Optional.of(absentCaster());
             }
             final MarriageData marriages = MarriageData.get(level);
             if (marriages.isMarried(caster.getUUID())) {
@@ -290,13 +346,16 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         }
         if (action == RitualAction.DIVORCE) {
             if (caster == null) {
-                return Optional.empty();
+                return Optional.of(absentCaster());
             }
             final boolean married = MarriageData.get(level).isMarried(caster.getUUID());
             return Optional.of(new RequirementStatus("condition", "existing_marriage", 1, married ? 1 : 0, married));
         }
-        if ((action == RitualAction.TRANSFORM_WEREWOLF
-            || action == RitualAction.HEX && definition.target().equals("corrupt_doll")) && caster != null) {
+        if (action == RitualAction.TRANSFORM_WEREWOLF
+            || action == RitualAction.HEX && definition.target().equals("corrupt_doll")) {
+            if (caster == null) {
+                return Optional.of(absentCaster());
+            }
             final boolean present = ownedFamiliar(level, caster).isPresent();
             return Optional.of(new RequirementStatus(
                 "condition", "owned_familiar", 1, present ? 1 : 0, present
@@ -401,7 +460,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             title,
             description,
             definition.power(),
-            findBestAltar(level, center).map(AltarBlockEntity::getPower).orElse(0),
+            findBestAltar(level, center).map(AltarBlockEntity::availablePower).orElse(0),
             definition.castingTime(),
             statuses,
             statuses.stream().filter(RequirementStatus::blocksActivation).allMatch(RequirementStatus::met)
@@ -460,9 +519,10 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             "altar", "structure", altarRequired ? 1 : 0, altar.isPresent() ? 1 : 0,
             !altarRequired || altar.isPresent()
         )));
+        final int spendable = altar.map(AltarBlockEntity::availablePower).orElse(0);
         requirements.add(consumedAtStart(new RequirementStatus(
-            "power", "altar_power", definition.power(), altar.map(AltarBlockEntity::getPower).orElse(0),
-            definition.power() == 0 || altar.map(AltarBlockEntity::getPower).orElse(0) >= definition.power()
+            "power", "altar_power", definition.power(), spendable,
+            definition.power() == 0 || spendable >= definition.power()
         )));
         if (definition.nightOnly()) {
             requirements.add(persistent(condition("night", level.isDarkOutside())));
@@ -487,7 +547,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             )));
         }
         if (declared.minimumPlayers() > 1) {
-            final int present = nearbyParticipants(level, center);
+            final int present = nearbyParticipants(level, center, caster);
             requirements.add(persistent(new RequirementStatus(
                 "coven", "coven", declared.minimumPlayers(), present, present >= declared.minimumPlayers()
             )));
@@ -495,7 +555,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         actionEnvironmentRequirement(definition, level, center, caster)
             .ifPresent(status -> requirements.add(persistent(status)));
         if (RitualAction.require(definition.action()) == RitualAction.CLIMATE_SHIFT) {
-            final ClimateShiftInputs inputs = climateShiftInputs(level, center);
+            final ClimateShiftInputs inputs = climateShiftInputs(level, center, caster);
             requirements.add(consumedAtStart(new RequirementStatus(
                 "optional", "climate_seer_stone", 1, inputs.seerStone() ? 1 : 0, inputs.seerStone()
             )));
@@ -521,6 +581,14 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             "session", "inactive", 1, inactive ? 1 : 0, inactive
         )));
         return List.copyOf(requirements);
+    }
+
+    /**
+     * The requirement a caster-driven rite reports when its caster is not in this level. Stated as unmet rather
+     * than omitted so the site is judged incomplete for as long as the caster is away.
+     */
+    private static RequirementStatus absentCaster() {
+        return new RequirementStatus("condition", "caster_present", 1, 0, false);
     }
 
     private static SiteRequirement persistent(final RequirementStatus status) {
@@ -672,7 +740,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         }
     }
 
-    private static List<RequirementStatus> inspectEntityRequirements(
+    static List<RequirementStatus> inspectEntityRequirements(
         final ServerLevel level,
         final BlockPos center,
         final List<RitualDefinition.EntityRequirement> requirements
@@ -681,13 +749,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final var reserved = new HashSet<java.util.UUID>();
         final List<RequirementStatus> statuses = new ArrayList<>();
         for (final RitualDefinition.EntityRequirement requirement : requirements) {
-            final Optional<EntityTypeIngredient> ingredient = EntityTypeIngredient.parse(requirement.entity());
-            final List<Mob> matched = ingredient.stream()
-                .flatMap(value -> entities.stream()
-                    .filter(entity -> !reserved.contains(entity.getUUID()))
-                    .filter(value::matches)
-                    .limit(requirement.count()))
-                .toList();
+            final List<Mob> matched = reserveMatching(entities, reserved, requirement);
             matched.forEach(entity -> reserved.add(entity.getUUID()));
             statuses.add(new RequirementStatus(
                 "entity",
@@ -700,23 +762,44 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         return List.copyOf(statuses);
     }
 
-    private static void consumeEntityRequirements(
+    static void consumeEntityRequirements(
         final ServerLevel level,
         final BlockPos center,
         final List<RitualDefinition.EntityRequirement> requirements
     ) {
         final List<Mob> entities = level.getEntitiesOfClass(Mob.class, new AABB(center).inflate(OFFERING_RADIUS), Mob::isAlive);
-        final var consumed = new HashSet<java.util.UUID>();
-        requirements.stream().filter(RitualDefinition.EntityRequirement::consume).forEach(requirement ->
-            EntityTypeIngredient.parse(requirement.entity()).ifPresent(ingredient -> entities.stream()
-                .filter(entity -> !consumed.contains(entity.getUUID()))
+        final var claimed = new HashSet<java.util.UUID>();
+        // Inspection reserves across every entity requirement out of one pool, so a mob it counted towards a
+        // presence-only requirement is already spoken for. Claiming those first here keeps the two passes on the
+        // same assignment; without it a consuming requirement whose matcher is broader eats the mob the site was
+        // told only had to be standing there, and the rite destroys something it never declared it would.
+        requirements.stream()
+            .filter(requirement -> !requirement.consume())
+            .forEach(requirement -> reserveMatching(entities, claimed, requirement)
+                .forEach(entity -> claimed.add(entity.getUUID())));
+        requirements.stream()
+            .filter(RitualDefinition.EntityRequirement::consume)
+            .forEach(requirement -> reserveMatching(entities, claimed, requirement).forEach(entity -> {
+                claimed.add(entity.getUUID());
+                entity.discard();
+            }));
+    }
+
+    /**
+     * The mobs one entity requirement claims out of the shared pool: up to its declared count, skipping any
+     * already claimed. Shared so inspection and consumption cannot drift into two different assignments.
+     */
+    private static List<Mob> reserveMatching(
+        final List<Mob> entities,
+        final java.util.Set<java.util.UUID> claimed,
+        final RitualDefinition.EntityRequirement requirement
+    ) {
+        return EntityTypeIngredient.parse(requirement.entity()).stream()
+            .flatMap(ingredient -> entities.stream()
+                .filter(entity -> !claimed.contains(entity.getUUID()))
                 .filter(ingredient::matches)
-                .limit(requirement.count())
-                .forEach(entity -> {
-                    consumed.add(entity.getUUID());
-                    entity.discard();
-                }))
-        );
+                .limit(requirement.count()))
+            .toList();
     }
 
     private static boolean isFullMoon(final ServerLevel level, final BlockPos center) {
@@ -724,8 +807,22 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             && level.isDarkOutside();
     }
 
-    static int nearbyParticipants(final ServerLevel level, final BlockPos center) {
-        return SeerCovenRuntime.countParticipants(level, center, SeerCovenRuntime.PARTICIPANT_RADIUS);
+    /**
+      * The participants this rite may draw on. Every ritual counts the coven of the player who started it and
+      * nobody else's, so the caster is threaded to every site that asks; there is deliberately no overload
+      * that counts every Mage in range, because such an overload is exactly how the rule would erode.
+      */
+    static int nearbyParticipants(
+        final ServerLevel level,
+        final BlockPos center,
+        final @Nullable Player caster
+    ) {
+        return SeerCovenRuntime.countParticipants(
+            level,
+            center,
+            SeerCovenRuntime.PARTICIPANT_RADIUS,
+            caster == null ? null : caster.getUUID()
+        );
     }
 
     static int blockedSummoningPositions(final ServerLevel level, final BlockPos center) {
@@ -776,17 +873,69 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         return level.getBlockState(center).is(ModBlocks.ALL.get("circle").get());
     }
 
-    private static boolean consumeAltarPower(final ServerLevel level, final BlockPos center, final int power) {
+    /**
+     * Sets aside the rite's power without draining it, and reports which altar is holding it.
+     *
+     * <p>A cast used to spend the altar the instant it began, so a circle broken on the first tick of a five
+     * hundred tick rite destroyed the whole cost. Holding it instead means the power is unavailable to anything
+     * else for the duration but is still there to hand back if the cast does not finish.</p>
+     *
+     * <p>A rite that costs nothing still names its altar, so the session records a consistent position.</p>
+     */
+    private static Optional<BlockPos> escrowAltarPower(
+        final ServerLevel level,
+        final BlockPos center,
+        final int power
+    ) {
         if (power == 0) {
-            return true;
+            return Optional.of(center);
         }
-        return findBestAltar(level, center).filter(altar -> altar.consumePower(power)).isPresent();
+        return findBestAltar(level, center)
+            .filter(altar -> altar.escrowPower(power))
+            .map(AltarBlockEntity::getBlockPos);
+    }
+
+    private static void releaseAltarEscrow(final ServerLevel level, final BlockPos altarPos, final int power) {
+        if (power > 0 && level.getBlockEntity(altarPos) instanceof AltarBlockEntity altar) {
+            altar.releaseEscrow(power);
+        }
+    }
+
+    /**
+     * The first offering the circle can no longer supply, or empty when the whole consumption plan still
+     * holds. Resolved before anything is taken, because the offerings are loose item entities that can drift,
+     * be picked up or despawn between the site inspection and the moment a cast commits.
+     */
+    private static Optional<String> unofferedIngredient(
+        final ServerLevel level,
+        final BlockPos center,
+        final List<RitualDefinition.Ingredient> requirements
+    ) {
+        final List<ItemStack> offered = level
+            .getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(OFFERING_RADIUS), ItemEntity::isAlive)
+            .stream()
+            .map(ItemEntity::getItem)
+            .toList();
+        return IngredientAllocator.allocate(
+                requirements.stream().filter(RitualDefinition.Ingredient::consume).toList(),
+                offered
+            )
+            .requirements()
+            .stream()
+            .filter(match -> !match.complete())
+            .map(match -> match.requirement().ingredient())
+            .findFirst();
     }
 
     private static boolean hasValidAltar(final ServerLevel level, final BlockPos center) {
         return findBestAltar(level, center).isPresent();
     }
 
+    /**
+     * The richest usable altar near the circle, ranked by what it can still spend rather than what it holds.
+     * An altar already holding power for another cast must not be picked for a second one on the strength of
+     * power that is already promised away.
+     */
     private static Optional<AltarBlockEntity> findBestAltar(final ServerLevel level, final BlockPos center) {
         final int range = 12;
         return BlockPos.betweenClosedStream(center.offset(-range, -4, -range), center.offset(range, 6, range))
@@ -794,7 +943,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             .filter(AltarBlockEntity.class::isInstance)
             .map(AltarBlockEntity.class::cast)
             .filter(AltarBlockEntity::isMultiblockValid)
-            .max(Comparator.comparingInt(AltarBlockEntity::getPower));
+            .max(Comparator.comparingInt(AltarBlockEntity::availablePower));
     }
 
     private static void perform(
@@ -898,8 +1047,8 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             case TELEPORT_WAYSTONE -> teleportToWaystone(level, center, caster);
             case TELEPORT_ENTITY -> teleportBoundEntity(level, center, definition);
             case TRANSPOSE_ORE -> transposeOres(level, center, definition.radius());
-            case ICE_SPHERE -> iceSphere(level, center, definition.radius(), nearbyParticipants(level, center));
-            case MANIFEST -> manifest(level, center, definition);
+            case ICE_SPHERE -> iceSphere(level, center, definition.radius(), nearbyParticipants(level, center, caster));
+            case MANIFEST -> manifest(level, center, caster, definition);
             case IMPRISONMENT_WARD -> placeWard(level, center, definition, RitualWardType.IMPRISONMENT);
             case PROTECTION_WARD -> placeWard(level, center, definition, RitualWardType.PROTECTION);
             case SANCTITY_WARD -> placeWard(level, center, definition, RitualWardType.SANCTITY);
@@ -2078,6 +2227,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
     private static boolean manifest(
         final ServerLevel level,
         final BlockPos center,
+        final @Nullable Player caster,
         final RitualDefinition definition
     ) {
         return boundTargetWithin(level, center, definition.radius())
@@ -2087,7 +2237,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
                 level,
                 center,
                 dreamer,
-                ManifestationRules.durationTicks(definition.duration(), nearbyParticipants(level, center))
+                ManifestationRules.durationTicks(definition.duration(), nearbyParticipants(level, center, caster))
             ))
             .orElse(false);
     }
@@ -2335,13 +2485,21 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             .findFirst();
     }
 
-    static BiomeShiftPlan climateShiftPlan(final ServerLevel level, final BlockPos center) {
-        return climateShiftInputs(level, center).plan();
+    static BiomeShiftPlan climateShiftPlan(
+        final ServerLevel level,
+        final BlockPos center,
+        final @Nullable Player caster
+    ) {
+        return climateShiftInputs(level, center, caster).plan();
     }
 
-    private static ClimateShiftInputs climateShiftInputs(final ServerLevel level, final BlockPos center) {
+    private static ClimateShiftInputs climateShiftInputs(
+        final ServerLevel level,
+        final BlockPos center,
+        final @Nullable Player caster
+    ) {
         final List<ItemStack> offerings = nearbyItems(level, center).stream().map(ItemEntity::getItem).toList();
-        final int participants = nearbyParticipants(level, center);
+        final int participants = nearbyParticipants(level, center, caster);
         final boolean seerStone = offerings.stream()
             .anyMatch(stack -> stack.is(ModItems.ALL.get("ingredient_seer_stone").get()));
         final int stars = offerings.stream()
@@ -2509,7 +2667,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         return List.copyOf(problems);
     }
 
-    private static Optional<String> targetProblem(
+    static Optional<String> targetProblem(
         final RitualAction action,
         final RitualDefinition definition
     ) {
@@ -2530,7 +2688,16 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             case BIND_ENTITY -> RitualBindTarget.find(target).isPresent()
                 ? Optional.empty()
                 : Optional.of("target: unknown bind target " + target);
-            default -> Optional.empty();
+            // Actions that resolve what they act on from the circle, the caster or their own constants, and so
+            // read no target field. Listing them instead of falling through a default arm is what makes a new
+            // action fail to compile here until somebody decides which of the two groups it belongs in; an
+            // unchecked target is a rite that loads clean, charges the player and then does nothing.
+            case STORM, FERTILITY, FORESTATION, NATURES_POWER, BLIGHT, BANISH, CALL_BEASTS, CALL_FAMILIAR,
+                ANGUISH_UNDEAD, DRAIN_GROWTH, FORTIFY_UNDEAD, GRAVEYARD_MIST, BROKEN_EARTH, EARTHS_WRATH,
+                SKYS_WRATH, HELL_ON_EARTH, COOK, ECLIPSE, REMOVE_VAMPIRISM, TRANSFORM_NAMI, TRANSFORM_WEREWOLF,
+                REMOVE_WEREWOLF, BIND_WAYSTONE, COPY_WAYSTONE, TELEPORT_WAYSTONE, TELEPORT_ENTITY, TRANSPOSE_ORE,
+                ICE_SPHERE, MANIFEST, IMPRISONMENT_WARD, PROTECTION_WARD, SANCTITY_WARD, CLIMATE_SHIFT,
+                PRIOR_INCARNATION, RECHARGE_PATH, MARRIAGE, DIVORCE -> Optional.empty();
         };
     }
 

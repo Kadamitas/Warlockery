@@ -102,6 +102,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "echo_spectre_isolated.json"
     );
+    private static final Path COVEN_ATTRIBUTION_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "coven_attribution_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -279,6 +283,14 @@ final class GameTestInstanceContractTest {
         "spirit_defends_once_with_attribution_then_recovers",
         "spectral_reload_hazard_and_family_isolation",
         "spectral_owner_race_and_route_failure_cleanup"
+    );
+    /**
+     * The ritual participant scan reaches eight blocks, which is wider than a test arena, so this fixture is
+     * given its own environment to keep it out of a batch with neighbours whose players and Mages it would
+     * otherwise count.
+     */
+    private static final Set<String> ISOLATED_COVEN_ATTRIBUTION = Set.of(
+        "ritual_two_covens_are_counted_separately"
     );
     private static final Set<String> ISOLATED_COVEN_PRACTITIONERS = Set.of(
         "hedge_crone_warns_intruders_and_casts_contextual_hex",
@@ -621,6 +633,23 @@ final class GameTestInstanceContractTest {
             "all eight exact F21 Echo Shade and Spectre GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactCovenAttributionFixtureUsesTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(COVEN_ATTRIBUTION_ENVIRONMENT),
+            "the isolated coven attribution environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(COVEN_ATTRIBUTION_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated coven attribution environment must not mutate shared world state");
+        assertEquals(1, ISOLATED_COVEN_ATTRIBUTION.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_COVEN_ATTRIBUTION),
+            "the cross-coven attribution GameTest must remain registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -664,7 +693,9 @@ final class GameTestInstanceContractTest {
                                                                                     ? "warlockery:hobgoblin_isolated"
                                                                                     : ISOLATED_GOBLIN_PATRON.contains(registration.id())
                                                                                         ? "warlockery:goblin_patron_isolated"
-                                                                                        : "minecraft:default",
+                                                                                        : ISOLATED_COVEN_ATTRIBUTION.contains(registration.id())
+                                                                                            ? "warlockery:coven_attribution_isolated"
+                                                                                            : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

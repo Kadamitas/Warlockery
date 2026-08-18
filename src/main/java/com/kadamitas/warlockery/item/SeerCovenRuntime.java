@@ -8,6 +8,7 @@ import com.kadamitas.warlockery.registry.ModBlocks;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import org.jspecify.annotations.Nullable;
 
 public final class SeerCovenRuntime {
     public static final int PARTICIPANT_RADIUS = 8;
@@ -75,11 +77,34 @@ public final class SeerCovenRuntime {
         return result;
     }
 
-    public static int countParticipants(final ServerLevel level, final BlockPos center, final int radius) {
+    /**
+     * The participants a rite cast by {@code caster} may draw on: every living player standing in the circle,
+     * plus that caster's own Circle Mages.
+     *
+     * <p>Players are counted whoever they are, because gathering people is the point of a coven rite. Mages
+     * are attributed strictly, because borrowing a coven is not. One query per kind, with the ownership test
+     * folded into the entity filter, since site inspection runs this once per visible ritual on every screen
+     * open.</p>
+     */
+    public static int countParticipants(
+        final ServerLevel level,
+        final BlockPos center,
+        final int radius,
+        final @Nullable UUID caster
+    ) {
         final AABB area = new AABB(center).inflate(radius);
         final int players = level.getEntitiesOfClass(Player.class, area, Player::isAlive).size();
-        final int mages = level.getEntitiesOfClass(Mob.class, area, SeerCovenRuntime::isBoundCircleMage).size();
-        return players + mages;
+        final Optional<UUID> owner = Optional.ofNullable(caster);
+        final int mages = level.getEntitiesOfClass(
+            Mob.class, area, mage -> answersTo(mage, owner)
+        ).size();
+        return players + SeerCovenRules.cappedCoven(mages);
+    }
+
+    private static boolean answersTo(final Entity entity, final Optional<UUID> caster) {
+        final CreatureKind kind = entity instanceof ArcaneCreature creature ? creature.creatureKind() : null;
+        return entity.isAlive()
+            && SeerCovenRules.countsForCaster(kind, CreatureBehaviorState.owner(entity), caster);
     }
 
     /**

@@ -247,6 +247,7 @@ final class LocalizationIntegrityTest {
             .forEach(LocalizationIntegrityTest::assertKey);
         Set.of(
             "selected_hex_present", "bound_hex_target", "owned_familiar", "nearby_spectral",
+            "fetish_spectral_pattern", "caster_present", "known_rite",
             "bound_sympathetic_sample", "nearby_familiar", "nearby_volcanic_fluid", "recorded_biome_book",
             "climate_seer_stone", "climate_participants", "climate_nether_stars",
             "recoverable_death_drops", "bloodied_wicker_structure", "ritual_inhibitors", "bound_sleeping_target",

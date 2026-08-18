@@ -8,6 +8,7 @@ import com.kadamitas.warlockery.crafting.MachineRecipeManager;
 import com.kadamitas.warlockery.crafting.MachineStatus;
 import com.kadamitas.warlockery.crafting.MachineUiState;
 import com.kadamitas.warlockery.brew.custom.CustomBrewCauldronState;
+import com.kadamitas.warlockery.util.ItemDisplayNames;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.List;

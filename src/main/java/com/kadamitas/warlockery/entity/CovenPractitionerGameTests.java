@@ -496,7 +496,7 @@ public final class CovenPractitionerGameTests {
                 "a bound dedicated Mage still counts as an exact ritual participant");
             final int participants = SeerCovenRuntime.countParticipants(
                 helper.getLevel(), helper.absolutePos(new BlockPos(1, 1, 1)),
-                SeerCovenRuntime.PARTICIPANT_RADIUS);
+                SeerCovenRuntime.PARTICIPANT_RADIUS, owner.getUUID());
             helper.assertTrue(participants >= 2,
                 "participant identity, radius, and counting are unchanged");
 

@@ -145,7 +145,7 @@ public final class BiomeRitualGameTests {
         drop(helper, center, new ItemStack(ModItems.ALL.get("ingredient_seer_stone").get()));
         final ItemEntity stars = drop(helper, center, new ItemStack(Items.NETHER_STAR, 5));
 
-        final BiomeShiftPlan plan = RitualManager.climateShiftPlan(helper.getLevel(), center);
+        final BiomeShiftPlan plan = RitualManager.climateShiftPlan(helper.getLevel(), center, player);
         helper.assertTrue(plan.empowered(), "a Seer Stone and five participants must empower the cast");
         helper.assertValueEqual(plan.netherStars(), 3, "capped Nether Star count");
         helper.assertValueEqual(plan.chunkRadius(), 4, "empowered plus three-star radius");
