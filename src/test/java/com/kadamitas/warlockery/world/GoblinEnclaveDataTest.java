@@ -18,7 +18,7 @@ import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/** Caps, claims, relations, eviction refusal, and conservative 1.4 migration for enclave storage. */
+/** Caps, claims, relations, and eviction refusal for enclave storage. */
 final class GoblinEnclaveDataTest {
     private static final long KEY = GoblinEnclaveRules.enclaveKey(0, 0, CreatureKind.GOBLIN);
     private static final long OTHER_KEY = GoblinEnclaveRules.enclaveKey(512, 512, CreatureKind.GOBLIN);
@@ -365,35 +365,6 @@ final class GoblinEnclaveDataTest {
         assertEquals(GoblinEnclaveRules.PROVISIONAL_EXPIRY_TICKS,
             data.record(KEY).provisionalRemainingTicks());
         assertFalse(data.record(KEY).safelyEvictable());
-    }
-
-    @Test
-    void legacySettlementRecordsMigrateStructuresOnlyAndNeverInventFacts() {
-        final GoblinSettlementLifeData legacy = new GoblinSettlementLifeData();
-        legacy.reserveHut(KEY, new BlockPos(0, 64, 0));
-        legacy.reserveHut(KEY, new BlockPos(20, 64, 0));
-        legacy.reserveTunnel(KEY, new BlockPos(0, 60, 0), 6);
-        final GoblinEnclaveData data = new GoblinEnclaveData();
-        assertEquals(3, data.migrateFrom(legacy, KEY));
-        final GoblinEnclaveData.EnclaveRecord migrated = data.record(KEY);
-        assertEquals(2, migrated.huts().size());
-        assertEquals(1, migrated.tunnels().size());
-        assertTrue(migrated.ownedEdits() > 0);
-        assertTrue(migrated.members().isEmpty());
-        assertTrue(migrated.claims().isEmpty());
-        assertTrue(migrated.threats().isEmpty());
-        assertTrue(migrated.relations().isEmpty());
-        // Migration never overwrites a record the new system already owns, and tolerates no source.
-        assertEquals(0, data.migrateFrom(legacy, KEY));
-        assertEquals(0, data.migrateFrom(null, OTHER_KEY));
-    }
-
-    @Test
-    void anEmptyLegacyKeyMigratesToAnEmptyButAdmittedRecord() {
-        final GoblinEnclaveData data = new GoblinEnclaveData();
-        assertEquals(0, data.migrateFrom(new GoblinSettlementLifeData(), OTHER_KEY));
-        assertTrue(data.exists(OTHER_KEY));
-        assertTrue(data.record(OTHER_KEY).huts().isEmpty());
     }
 
     @Test

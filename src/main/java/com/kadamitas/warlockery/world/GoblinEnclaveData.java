@@ -366,26 +366,6 @@ public final class GoblinEnclaveData extends SavedData {
             .orElse(0);
     }
 
-    // ---------------------------------------------------------------- migration
-
-    /**
-     * Conservative 1.4 settlement migration. Only the region key and valid bounded hut, tunnel, and
-     * edit counts cross over: no member, job, threat, relation, material, or patron fact is
-     * invented, duplicates and overflow are deterministically truncated, and an existing new record
-     * is never overwritten. Overflow past the dimension cap is refused rather than evicting a
-     * structure-bearing record.
-     */
-    public int migrateFrom(final GoblinSettlementLifeData legacy, final long key) {
-        if (legacy == null || enclaves.containsKey(key) || !admit(key)) {
-            return 0;
-        }
-        final GoblinSettlementLifeData.SettlementState source = legacy.state(key);
-        final EnclaveRecord migrated = EnclaveRecord.empty(key)
-            .withMigratedStructures(source.huts(), source.tunnels(), source.worldEdits());
-        put(migrated);
-        return migrated.huts().size() + migrated.tunnels().size();
-    }
-
     // ---------------------------------------------------------------- internals
 
     private void put(final EnclaveRecord updated) {
@@ -707,20 +687,6 @@ public final class GoblinEnclaveData extends SavedData {
                 .toList();
             return copyWith(members, huts, tunnels, ownedEdits, claims, threats,
                 concat(retained, updated));
-        }
-
-        EnclaveRecord withMigratedStructures(
-            final List<Long> legacyHuts,
-            final List<Long> legacyTunnels,
-            final int legacyEdits
-        ) {
-            return copyWith(
-                members,
-                legacyHuts.stream().distinct().limit(GoblinEnclaveRules.MAX_HUTS).toList(),
-                legacyTunnels.stream().distinct().limit(GoblinEnclaveRules.MAX_TUNNELS).toList(),
-                Math.clamp(legacyEdits, 0, GoblinEnclaveRules.MAX_OWNED_EDITS),
-                claims, threats, relations
-            );
         }
 
         private EnclaveRecord copyWith(
