@@ -54,6 +54,43 @@ public final class GoblinTradeCatalog {
             weighted(vanillaOffer(Items.EMERALD, 28, Items.OMINOUS_TRIAL_KEY, 1), 2)
         )
     );
+    /**
+     * The two patron level-1 catalogs. Patrons hold a fixed vocation rather than a rolled Goblin
+     * profession, so their core offers are keyed on the exact kind. Stonebroker brokers worked
+     * mineral wealth; Forgewarden deals in finished craft. Existing public items only.
+     */
+    private static final Map<CreatureKind, List<OfferSpec>> PATRON_CORE = Map.of(
+        CreatureKind.STONEBROKER, List.of(
+            offer(mod("raw_delvealloy"), 6, vanilla("emerald", Items.EMERALD), 2, 12, 10, 0.08F),
+            offer(vanilla("emerald", Items.EMERALD), 10, mod("ingredient_delvealloynugget"), 4, 12, 12, 0.10F),
+            offer(mod("ingredient_delvealloydust"), 12, vanilla("emerald", Items.EMERALD), 1, 12, 10, 0.08F)
+        ),
+        CreatureKind.FORGEWARDEN, List.of(
+            offer(vanilla("emerald", Items.EMERALD), 14, mod("delvealloypickaxe"), 1, 4, 20, 0.15F),
+            offer(mod("ingredient_delvealloyingot"), 3, vanilla("emerald", Items.EMERALD), 4, 8, 15, 0.10F),
+            offer(vanilla("emerald", Items.EMERALD), 8, vanilla("blaze_powder", Items.BLAZE_POWDER), 4, 8, 12, 0.10F)
+        )
+    );
+    /**
+     * The two patron specialty pools. They are deliberately disjoint in reward: a Stonebroker
+     * offers appraisal and mineral outcomes, a Forgewarden offers tools, armour, and forge stock.
+     */
+    private static final Map<CreatureKind, WeightedPool<OfferSpec>> PATRON_SPECIALTIES = Map.of(
+        CreatureKind.STONEBROKER, WeightedPool.of(
+            weighted(vanillaOffer(Items.EMERALD, 10, Items.AMETHYST_SHARD, 6), 14),
+            weighted(vanillaOffer(Items.EMERALD, 14, Items.RAW_GOLD, 6), 12),
+            weighted(vanillaOffer(Items.EMERALD, 16, Items.LAPIS_LAZULI, 12), 9),
+            weighted(vanillaOffer(Items.EMERALD, 20, Items.DIAMOND, 1), 5),
+            weighted(vanillaOffer(Items.EMERALD, 24, Items.ECHO_SHARD, 2), 3)
+        ),
+        CreatureKind.FORGEWARDEN, WeightedPool.of(
+            weighted(vanillaOffer(Items.EMERALD, 12, Items.IRON_INGOT, 8), 14),
+            weighted(vanillaOffer(Items.EMERALD, 16, Items.IRON_CHESTPLATE, 1), 11),
+            weighted(vanillaOffer(Items.EMERALD, 18, Items.ANVIL, 1), 8),
+            weighted(vanillaOffer(Items.EMERALD, 22, Items.DIAMOND_AXE, 1), 5),
+            weighted(vanillaOffer(Items.EMERALD, 26, Items.NETHERITE_SCRAP, 1), 2)
+        )
+    );
     private static final WeightedPool<OfferSpec> TREASURES = WeightedPool.of(
         weighted(gobliniteOffer(1, Items.NAUTILUS_SHELL, 4), 18),
         weighted(gobliniteOffer(2, Items.HEART_OF_THE_SEA, 1), 12),
@@ -95,6 +132,54 @@ public final class GoblinTradeCatalog {
 
     public static List<OfferSpec> coreOffers(final GoblinProfession profession) {
         return CORE.getOrDefault(profession, List.of());
+    }
+
+    /**
+     * The exact F12 patron offer list. Level 1 supplies the kind's three core offers, levels 2 to 4
+     * each add one kind-specific specialty, and level 5 adds one shared treasure. Selection is
+     * deterministic from the supplied seed, which the patron derives from its identity, its exact
+     * kind, its merchant level, and its restock epoch.
+     */
+    public static List<MerchantOffer> createPatronOffers(
+        final CreatureKind kind,
+        final long seed,
+        final int level
+    ) {
+        return patronOffersForLevel(kind, seed, level).stream()
+            .map(OfferSpec::toMerchantOffer)
+            .toList();
+    }
+
+    public static List<OfferSpec> patronOffersForLevel(
+        final CreatureKind kind,
+        final long seed,
+        final int level
+    ) {
+        return switch (Math.clamp(level, 1, 5)) {
+            case 1 -> patronCoreOffers(kind);
+            case 2, 3, 4 -> List.of(patronSpecialty(kind, seed ^ LEVEL_SALT * level));
+            case 5 -> List.of(treasure(seed));
+            default -> throw new IllegalStateException("Clamped patron trade level is outside its range");
+        };
+    }
+
+    public static List<OfferSpec> patronCoreOffers(final CreatureKind kind) {
+        return PATRON_CORE.getOrDefault(kind, List.of());
+    }
+
+    public static OfferSpec patronSpecialty(final CreatureKind kind, final long seed) {
+        final WeightedPool<OfferSpec> pool = PATRON_SPECIALTIES.get(kind);
+        if (pool == null) {
+            throw new IllegalArgumentException("Only Stonebroker and Forgewarden have patron pools");
+        }
+        return pool.select(seed);
+    }
+
+    public static List<OfferSpec> patronSpecialtyOffers(final CreatureKind kind) {
+        final WeightedPool<OfferSpec> pool = PATRON_SPECIALTIES.get(kind);
+        return pool == null
+            ? List.of()
+            : pool.entries().stream().map(WeightedPool.Entry::value).toList();
     }
 
     public static OfferSpec specialty(final CreatureKind kind, final long seed) {

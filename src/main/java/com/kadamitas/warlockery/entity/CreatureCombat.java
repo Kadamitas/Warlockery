@@ -166,6 +166,14 @@ public final class CreatureCombat {
         final LivingDamageEvent event,
         final ArcaneCreature.CreatureKind kind
     ) {
+        // The F12 ward stance is the complete protection model for the dedicated patron bodies,
+        // so the 1.4 symmetric reduction must not compose with it: nobody chose the combined
+        // number. The guard is deliberately the narrowest available, an exact instanceof against
+        // the F12 body contract, so a patron that is still the shared 1.4 body keeps 1.4
+        // behaviour exactly and nothing outside this one family is touched.
+        if (event.getEntity() instanceof GoblinPatronRuntime.PatronBody) {
+            return;
+        }
         final var counterpart = GoblinBossRules.counterpart(kind);
         if (counterpart.isEmpty() || !(event.getEntity().level() instanceof ServerLevel level)) {
             return;

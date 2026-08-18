@@ -14,6 +14,8 @@ import com.kadamitas.warlockery.entity.HexBatRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.HobgoblinTravelerEntity;
 import com.kadamitas.warlockery.entity.GoblinEntity;
+import com.kadamitas.warlockery.entity.StonebrokerEntity;
+import com.kadamitas.warlockery.entity.ForgewardenEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.GoblinBossRules;
 import com.kadamitas.warlockery.entity.LostSoulEntity;
@@ -227,8 +229,22 @@ public final class ModEntities {
                 .notInPeaceful()
                 .build(REGISTRY.key("goblin"));
         });
-    public static final RegistryObject<EntityType<HobgoblinEntity>> STONEBROKER = hobgoblin("stonebroker", CreatureKind.STONEBROKER);
-    public static final RegistryObject<EntityType<HobgoblinEntity>> FORGEWARDEN = hobgoblin("forgewarden", CreatureKind.FORGEWARDEN);
+    public static final RegistryObject<EntityType<StonebrokerEntity>> STONEBROKER = register("stonebroker",
+        () -> {
+            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.STONEBROKER);
+            return EntityType.Builder.of(StonebrokerEntity::new, MobCategory.MONSTER)
+                .sized(visual.width(), visual.height())
+                .notInPeaceful()
+                .build(REGISTRY.key("stonebroker"));
+        });
+    public static final RegistryObject<EntityType<ForgewardenEntity>> FORGEWARDEN = register("forgewarden",
+        () -> {
+            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.FORGEWARDEN);
+            return EntityType.Builder.of(ForgewardenEntity::new, MobCategory.MONSTER)
+                .sized(visual.width(), visual.height())
+                .notInPeaceful()
+                .build(REGISTRY.key("forgewarden"));
+        });
     public static final RegistryObject<EntityType<NamiEntity>> NAMI = register("nami",
         () -> EntityType.Builder.of(NamiEntity::new, MobCategory.CREATURE)
             .sized(0.6F, 1.8F)

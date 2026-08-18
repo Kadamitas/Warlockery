@@ -1268,16 +1268,48 @@ public final class GoblinEnclaveRuntime {
      */
     private static void reconcilePatron(final GoblinEntity goblin, final ServerLevel level) {
         final GoblinEnclaveState state = goblin.goblinEnclaveState();
-        if (state.patron().depositPreference().isEmpty()) {
+        if (state.patron().depositPreference().isPresent()) {
+            final boolean patronPresent = state.patron().id()
+                .map(level::getPlayerByUUID)
+                .filter(Player::isAlive)
+                .isPresent();
+            if (!patronPresent) {
+                goblin.setGoblinEnclaveState(state.withPatron(state.patron().expirePreference()));
+            }
             return;
         }
-        final boolean patronPresent = state.patron().id()
-            .map(level::getPlayerByUUID)
-            .filter(Player::isAlive)
-            .isPresent();
-        if (!patronPresent) {
-            goblin.setGoblinEnclaveState(state.withPatron(state.patron().expirePreference()));
+        adoptLocalPatronDirective(goblin, level);
+    }
+
+    /**
+     * The F12 adapter side of the goblin-society boundary.
+     *
+     * <p>A contracted Goblin queries only already-loaded local patrons on its own existing decision
+     * cadence and independently decides whether to accept the immutable {@code BROKERED_WORK}
+     * preference as a deposit hint. The enclave keeps complete ownership of its action, target,
+     * effect, and navigation: a directive supplies no target, no path, no membership, and no
+     * standing, and an expired or unresolvable one simply becomes absent with no global search.</p>
+     */
+    private static void adoptLocalPatronDirective(final GoblinEntity goblin, final ServerLevel level) {
+        if (!goblin.goblinEnclaveState().patron().bound()) {
+            return;
         }
+        final String dimension = dimensionOf(level);
+        final long now = level.getGameTime();
+        GoblinPatronRuntime.localDirectives(goblin, level).stream()
+            .filter(GoblinPatronDirective::prefersWork)
+            .filter(directive -> directive.valid(dimension, now))
+            .filter(directive -> level.getWorldBorder().isWithinBounds(directive.anchor()))
+            .findFirst()
+            .ifPresent(directive -> {
+                final GoblinEnclaveState current = goblin.goblinEnclaveState();
+                goblin.setGoblinEnclaveState(current.withPatron(new GoblinEnclaveState.Patron(
+                    current.patron().id(),
+                    Optional.of(directive.anchor()),
+                    Optional.of(dimension),
+                    (int) Math.clamp(directive.expiresGameTime() - now, 1L, GoblinEnclaveRules.FAR_FUTURE_TICKS)
+                )));
+            });
     }
 
     private static void reconcileMerchant(final GoblinEntity goblin, final ServerLevel level) {

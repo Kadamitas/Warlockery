@@ -43,6 +43,7 @@ import com.kadamitas.warlockery.world.VillageAssaultGameTests;
 import com.kadamitas.warlockery.world.VillageGuardGameTests;
 import com.kadamitas.warlockery.world.GoblinSettlementLifeGameTests;
 import com.kadamitas.warlockery.world.GoblinEnclaveGameTests;
+import com.kadamitas.warlockery.entity.GoblinPatronGameTests;
 import com.kadamitas.warlockery.world.HobgoblinJourneyGameTests;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.Registries;
@@ -161,6 +162,16 @@ public final class ModGameTests {
             () -> HobgoblinJourneyGameTests::hobgoblinJourneyWorkHazardDefenseAndCleanup);
         REGISTRY.register("hobgoblin_journey_event_adapter_and_population_bounds",
             () -> HobgoblinJourneyGameTests::hobgoblinJourneyEventAdapterAndPopulationBounds);
+        REGISTRY.register("goblin_patrons_identity_offerings_and_migration",
+            () -> GoblinPatronGameTests::goblinPatronsIdentityOfferingsAndMigration);
+        REGISTRY.register("stonebroker_parley_appraisal_and_combat_doctrine",
+            () -> GoblinPatronGameTests::stonebrokerParleyAppraisalAndCombatDoctrine);
+        REGISTRY.register("forgewarden_commission_ward_and_combat_doctrine",
+            () -> GoblinPatronGameTests::forgewardenCommissionWardAndCombatDoctrine);
+        REGISTRY.register("goblin_patrons_accord_navigation_and_cleanup",
+            () -> GoblinPatronGameTests::goblinPatronsAccordNavigationAndCleanup);
+        REGISTRY.register("goblin_patrons_structural_caps_and_foreign_boundaries",
+            () -> GoblinPatronGameTests::goblinPatronsStructuralCapsAndForeignBoundaries);
         REGISTRY.register("goblin_raid_wave_is_grouped_and_coordinated",
             () -> VillageGuardGameTests::goblinRaidWaveIsGroupedAndCoordinated);
         REGISTRY.register("hobgoblins_flee_human_villagers_and_keep_custom_professions",

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:stonebroker_parley_appraisal_and_combat_doctrine",
+  "environment": "warlockery:goblin_patron_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

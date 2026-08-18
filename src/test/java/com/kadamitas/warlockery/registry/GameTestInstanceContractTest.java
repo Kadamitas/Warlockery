@@ -77,6 +77,11 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "goblin_isolated.json"
     );
+
+    private static final Path GOBLIN_PATRON_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "goblin_patron_isolated.json"
+    );
     private static final Path DEATH_ENVIRONMENT = Path.of(
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "death_isolated.json"
@@ -250,6 +255,14 @@ final class GameTestInstanceContractTest {
         "goblin_enclave_work_transactions_and_caps",
         "goblin_enclave_combat_assault_and_cleanup",
         "goblin_enclave_hazard_navigation_and_population_bounds"
+    );
+
+    private static final Set<String> ISOLATED_GOBLIN_PATRON = Set.of(
+        "goblin_patrons_identity_offerings_and_migration",
+        "stonebroker_parley_appraisal_and_combat_doctrine",
+        "forgewarden_commission_ward_and_combat_doctrine",
+        "goblin_patrons_accord_navigation_and_cleanup",
+        "goblin_patrons_structural_caps_and_foreign_boundaries"
     );
     private static final Set<String> ISOLATED_DEATH = Set.of(
         "death_appointment_telegraphs_and_reaps_once",
@@ -492,6 +505,23 @@ final class GameTestInstanceContractTest {
     }
 
     @Test
+    void onlyTheExactGoblinPatronFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(GOBLIN_PATRON_ENVIRONMENT),
+            "the isolated F12 Goblin Patron environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(GOBLIN_PATRON_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F12 Goblin Patron environment must not mutate shared world state");
+        assertEquals(5, ISOLATED_GOBLIN_PATRON.size());
+        final Set<String> registeredPatrons = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registeredPatrons.containsAll(ISOLATED_GOBLIN_PATRON),
+            "all five exact F12 Goblin Patron GameTests must be registered");
+    }
+
+    @Test
     void onlyTheExactGoblinEnclaveFixturesUseTheRegisteredNoOpEnvironment() {
         assertTrue(Files.exists(GOBLIN_ENVIRONMENT),
             "the isolated F10 Goblin environment resource must exist");
@@ -632,7 +662,9 @@ final class GameTestInstanceContractTest {
                                                                                 ? "warlockery:echo_spectre_isolated"
                                                                                 : ISOLATED_HOBGOBLIN_JOURNEY.contains(registration.id())
                                                                                     ? "warlockery:hobgoblin_isolated"
-                                                                                    : "minecraft:default",
+                                                                                    : ISOLATED_GOBLIN_PATRON.contains(registration.id())
+                                                                                        ? "warlockery:goblin_patron_isolated"
+                                                                                        : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

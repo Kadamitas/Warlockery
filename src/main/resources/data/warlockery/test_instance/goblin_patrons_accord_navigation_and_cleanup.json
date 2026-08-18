@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:goblin_patrons_accord_navigation_and_cleanup",
+  "environment": "warlockery:goblin_patron_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}
