@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import java.util.function.Supplier;
@@ -241,7 +242,7 @@ public final class BroomFlightGameTests {
         player.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket());
         player.setGameMode(GameType.SURVIVAL);
         placeAtTestPosition(helper, player);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     private static void placeAtTestPosition(final GameTestHelper helper, final ServerPlayer player) {

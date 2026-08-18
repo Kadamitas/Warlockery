@@ -7,6 +7,8 @@ import com.kadamitas.warlockery.entity.HexBatRules.Action;
 import com.kadamitas.warlockery.entity.HexBatRules.Mode;
 import com.kadamitas.warlockery.entity.HexBatRules.Provenance;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
+import com.kadamitas.warlockery.util.GameTestWorldClock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +41,7 @@ public final class HexBatGameTests {
     }
 
     public static void hexBatRoostsByDayAndSortiesAtNight(final GameTestHelper helper) {
+        GameTestWorldClock.restoreAfterTest(helper);
         final FixtureScope fixture = new FixtureScope(helper);
         try {
             // The world clock is shared across the whole simultaneous batch:
@@ -150,6 +153,7 @@ public final class HexBatGameTests {
     public static void hexBatSwoopMarksAndReleasesTargetSafely(final GameTestHelper helper) {
         final FixtureScope fixture = new FixtureScope(helper);
         try {
+            GameTestWorldClock.restoreAfterTest(helper);
             helper.setTime(14_000L);
             erectBarrierShell(fixture, new BlockPos(1, 1, 1));
             final HexBatEntity bat = spawnBat(fixture, new BlockPos(1, 2, 1));
@@ -248,8 +252,13 @@ public final class HexBatGameTests {
             final BrewRuntime.ImpactResult result = BrewRuntime.handleImpact(
                 helper.getLevel(), BrewKind.MURDEROUS_FLOCK, Vec3.atCenterOf(impact), null, null
             );
+            // Arenas in a batch are laid out about eight blocks apart, so this search volume
+            // reaches into the neighbouring fixtures' arenas. Select the bats this cast anchored
+            // rather than every Hex Bat that happens to be standing nearby; the count below then
+            // measures this cast instead of whatever the neighbours were doing at the time.
             final List<HexBatEntity> bats = helper.getLevel().getEntitiesOfClass(
-                HexBatEntity.class, new AABB(impact).inflate(8.0D)
+                HexBatEntity.class, new AABB(impact).inflate(8.0D),
+                candidate -> candidate.batState().anchor().filter(impact::equals).isPresent()
             );
             bats.forEach(fixture::track);
             helper.assertValueEqual(bats.size(), 6,
@@ -599,7 +608,7 @@ public final class HexBatGameTests {
         public void close() {
             if (closed) return;
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             cleanupActions.forEach(Runnable::run);
             cleanupActions.clear();

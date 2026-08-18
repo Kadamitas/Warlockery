@@ -589,6 +589,11 @@ public final class BansheeRuntime {
             if (players.size() >= BansheeRules.MAX_CANDIDATES_VISITED) {
                 break;
             }
+            // Range first: a player beyond the acquire range can never be selected, so admitting
+            // it here would spend the bounded candidate budget on join order instead of distance.
+            if (banshee.distanceToSqr(player) > BansheeRules.ACQUIRE_RANGE_SQUARED) {
+                continue;
+            }
             if (!players.contains(player)) {
                 players.add(player);
             }

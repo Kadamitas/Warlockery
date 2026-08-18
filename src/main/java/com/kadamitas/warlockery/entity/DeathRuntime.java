@@ -279,9 +279,16 @@ public final class DeathRuntime {
             if (visited >= DeathRules.MAX_CANDIDATES_VISITED) {
                 break;
             }
+            final double distanceSquared = death.distanceToSqr(player);
+            // A player out of appointment range can never be appointed, so it is not a candidate
+            // and must not be charged a visit. Charging it would let players who are merely
+            // earlier in the level's player list exhaust the budget before the ones in reach are
+            // ever examined, which makes the whole sweep depend on join order rather than range.
+            if (distanceSquared > DeathRules.APPOINT_RANGE_SQUARED) {
+                continue;
+            }
             visited++;
             counters.candidateVisits++;
-            final double distanceSquared = death.distanceToSqr(player);
             final boolean disguised = DeathImpersonationRules.isComplete(player);
             if (disguised && distanceSquared <= DeathRules.APPOINT_RANGE_SQUARED) {
                 disguisedNear = true;

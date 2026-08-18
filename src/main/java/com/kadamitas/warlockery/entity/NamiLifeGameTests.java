@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.ritual.marriage.MarriageData;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.core.BlockPos;
@@ -143,11 +144,51 @@ public final class NamiLifeGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(relativePosition);
         player.teleportTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     private static void buildFloor(final GameTestHelper helper, final int length) {
         BlockPos.betweenClosedStream(new BlockPos(0, 0, 0), new BlockPos(length, 0, 2))
             .forEach(position -> helper.setBlock(position, Blocks.STONE));
+    }
+
+    /**
+     * Nami has to be led to a drowned monument to become Naamah, so she must be able to breathe
+     * down there and to path to somewhere fully submerged. This asserts the two things that
+     * decide whether that journey is possible at all, rather than racing her to an arrival,
+     * because a swim time would only measure how busy the server was.
+     */
+    public static void namiBreathesAndPathsUnderwater(final GameTestHelper helper) {
+        // A pool deep enough that the destination is genuinely below the surface.
+        for (int x = 0; x <= 4; x++) {
+            for (int z = 0; z <= 4; z++) {
+                helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+                for (int y = 1; y <= 3; y++) {
+                    helper.setBlock(new BlockPos(x, y, z), Blocks.WATER);
+                }
+            }
+        }
+        final NamiEntity nami = helper.spawn(
+            ModEntities.NAMI.get(), new BlockPos(1, 3, 1), EntitySpawnReason.TRIGGERED
+        );
+
+        helper.assertTrue(nami.canBreatheUnderwater(),
+            "a creature of the water must not drown on the way to her own transformation");
+        helper.assertFalse(nami.isPushedByFluid(),
+            "a current must not shove her out of a monument corridor");
+
+        final BlockPos submerged = helper.absolutePos(new BlockPos(4, 1, 4));
+        helper.assertTrue(
+            nami.getNavigation().createPath(submerged, 0) != null,
+            "she must be able to path to a fully submerged destination");
+
+        final int airAtStart = nami.getAirSupply();
+        helper.runAfterDelay(40L, () -> {
+            helper.assertTrue(nami.isAlive(), "she must survive being submerged");
+            helper.assertTrue(nami.getAirSupply() >= airAtStart,
+                "submersion must not drain her air; air=" + nami.getAirSupply()
+                    + ", started=" + airAtStart);
+            helper.succeed();
+        });
     }
 }

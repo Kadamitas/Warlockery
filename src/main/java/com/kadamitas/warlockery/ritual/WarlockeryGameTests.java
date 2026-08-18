@@ -36,6 +36,7 @@ import com.kadamitas.warlockery.transformation.SupernaturalProgression;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import com.kadamitas.warlockery.transformation.WerewolfProgressionRules;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.UUID;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -1102,6 +1103,6 @@ public final class WarlockeryGameTests {
         new EmbeddedChannel(connection);
         final CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
         helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 }

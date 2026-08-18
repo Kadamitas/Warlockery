@@ -3,6 +3,7 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.GoblinPatronRules.Action;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -787,7 +788,7 @@ public final class GoblinPatronGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             // Reverse order so later edits are undone before earlier ones are restored.
             for (int index = cleanupActions.size() - 1; index >= 0; index--) {

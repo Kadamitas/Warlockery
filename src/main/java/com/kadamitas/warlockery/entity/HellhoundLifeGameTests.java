@@ -6,6 +6,7 @@ import com.kadamitas.warlockery.entity.HellhoundLifeRules.Mode;
 import com.kadamitas.warlockery.entity.HellhoundLifeRules.PackOrigin;
 import com.kadamitas.warlockery.item.InfernalPactEffects;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -522,7 +523,7 @@ public final class HellhoundLifeGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(relativePosition);
         player.teleportTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     private static void buildFloor(final GameTestHelper helper) {

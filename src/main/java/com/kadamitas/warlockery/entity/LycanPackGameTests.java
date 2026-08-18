@@ -10,6 +10,7 @@ import com.kadamitas.warlockery.entity.LycanPackRules.Variant;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import com.kadamitas.warlockery.world.CreatureWorldIntegration;
 import com.kadamitas.warlockery.world.VillageAssaultData;
 import com.kadamitas.warlockery.world.VillageAssaultRules.AssaultKind;
@@ -909,7 +910,7 @@ public final class LycanPackGameTests {
         public void close() {
             if (closed) return;
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             cleanupActions.forEach(Runnable::run);
             cleanupActions.clear();

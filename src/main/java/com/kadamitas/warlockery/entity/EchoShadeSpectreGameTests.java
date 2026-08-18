@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -620,7 +621,7 @@ public final class EchoShadeSpectreGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
         }
     }

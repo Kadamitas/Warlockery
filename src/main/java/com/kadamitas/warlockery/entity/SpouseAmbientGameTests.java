@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.ritual.marriage.MarriageData;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -160,7 +161,7 @@ public final class SpouseAmbientGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(relativePosition);
         player.teleportTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     private static int countWorldItem(final GameTestHelper helper, final net.minecraft.world.item.Item item) {

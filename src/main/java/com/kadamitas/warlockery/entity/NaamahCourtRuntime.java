@@ -103,6 +103,26 @@ public final class NaamahCourtRuntime {
         private int maximumLocalHazardBlockStatesPerScan;
         private int maximumEntitiesVisitedPerCandidateScan;
         private int maximumEntitiesVisitedPerWave;
+        long mendedPulses;
+        long bindsApplied;
+        long surgesCalled;
+        long surgeVictims;
+
+        public long mendedPulses() {
+            return mendedPulses;
+        }
+
+        public long bindsApplied() {
+            return bindsApplied;
+        }
+
+        public long surgesCalled() {
+            return surgesCalled;
+        }
+
+        public long surgeVictims() {
+            return surgeVictims;
+        }
 
         public int maximumCandidatesRetained() {
             return maximumCandidatesRetained;
@@ -229,6 +249,7 @@ public final class NaamahCourtRuntime {
         if (localScanDue) {
             scheduleNextLocalHazardScan(naamah, now);
         }
+        tickRegeneration(naamah, level, now);
         if (executeTelegraphedAction(naamah, level, now)) {
             naamah.updateCourtBossBar();
             return;
@@ -450,6 +471,10 @@ public final class NaamahCourtRuntime {
 
         if (state.action() == Action.COURT_WAVE) {
             executeCourtWave(naamah, level, now);
+        } else if (state.action() == Action.TENTACLE_BIND) {
+            executeTentacleBind(naamah, level, target);
+        } else if (state.action() == Action.DROWNING_SURGE) {
+            executeDrowningSurge(naamah, level, target, now);
         } else if (state.action() == Action.DREAM_APPROACH) {
             if (!NaamahCourtRules.navigationDue(state.lastNavigationAt(), now)) {
                 naamah.setCourtState(state.cancelAction(now));
@@ -491,6 +516,63 @@ public final class NaamahCourtRuntime {
         if (state.action() != Action.DREAM_APPROACH) naamah.getNavigation().stop();
         naamah.setCourtState(naamah.courtState().finishAction());
         return true;
+    }
+
+    /**
+     * Holds one challenger where they stand. The tentacles take the challenger the action was
+     * telegraphed against and nobody else, so this never becomes a second area attack.
+     */
+    private static void executeTentacleBind(
+        final NaamahEntity naamah,
+        final ServerLevel level,
+        final LivingEntity target
+    ) {
+        naamah.courtCounters().bindsApplied++;
+        target.addEffect(new MobEffectInstance(
+            MobEffects.SLOWNESS,
+            NaamahCourtRules.BIND_DURATION_TICKS,
+            NaamahCourtRules.BIND_SLOWNESS_AMPLIFIER,
+            false,
+            true
+        ));
+        target.hurtServer(level, level.damageSources().indirectMagic(naamah, naamah),
+            NaamahCourtRules.BIND_DAMAGE);
+        level.sendParticles(ParticleTypes.BUBBLE_COLUMN_UP,
+            target.getX(), target.getY(), target.getZ(), 32, 0.4D, 0.1D, 0.4D, 0.08D);
+        level.playSound(null, target.blockPosition(), SoundEvents.DROWNED_HURT,
+            SoundSource.HOSTILE, 0.9F, 0.6F);
+    }
+
+    /**
+     * Breaks a column of water over the challenger's ground. Unlike the bind this deliberately
+     * catches everything standing with them, but it is still bounded by the same candidate cap the
+     * wave uses, and it never touches anyone her court refuses to strike.
+     */
+    private static void executeDrowningSurge(
+        final NaamahEntity naamah,
+        final ServerLevel level,
+        final LivingEntity target,
+        final long now
+    ) {
+        naamah.courtCounters().surgesCalled++;
+        final AABB area = new AABB(target.blockPosition()).inflate(NaamahCourtRules.SURGE_RADIUS);
+        int struck = 0;
+        for (final LivingEntity caught : level.getEntitiesOfClass(LivingEntity.class, area)) {
+            if (struck >= NaamahCourtRules.MAX_CANDIDATES) {
+                break;
+            }
+            if (caught == naamah || !caught.isAlive() || !eligibleTarget(naamah, caught)) {
+                continue;
+            }
+            struck++;
+            naamah.courtCounters().surgeVictims++;
+            caught.hurtServer(level, level.damageSources().indirectMagic(naamah, naamah),
+                NaamahCourtRules.SURGE_DAMAGE);
+        }
+        level.sendParticles(ParticleTypes.FALLING_WATER,
+            target.getX(), target.getY() + 3.0D, target.getZ(), 60, 2.0D, 0.5D, 2.0D, 0.1D);
+        level.playSound(null, target.blockPosition(), SoundEvents.CONDUIT_DEACTIVATE,
+            SoundSource.HOSTILE, 1.0F, 0.8F);
     }
 
     private static void executeCourtWave(
@@ -552,6 +634,47 @@ public final class NaamahCourtRuntime {
         return inspected.size() >= NaamahCourtRules.MAX_CANDIDATES;
     }
 
+    /**
+     * Mends her while she holds her challenger in sight, and shuts that off when the sight breaks.
+     *
+     * <p>The gaze is the whole counterplay, so it is read from live line of sight every second
+     * rather than from anything she remembers: a challenger who steps behind a monument pillar has
+     * stopped her healing at the instant they broke it, not at the next time she happened to look.
+     * The suppression outlives the break so that stepping back out does not immediately resume
+     * it.</p>
+     */
+    private static void tickRegeneration(
+        final NaamahEntity naamah,
+        final ServerLevel level,
+        final long now
+    ) {
+        final LivingEntity challenger = naamah.getTarget();
+        final boolean holdsGaze = challenger != null
+            && challenger.isAlive()
+            && challenger.level() == level
+            // Direct, not through Sensing. This runs once a regeneration interval rather than
+            // every tick, so the cache buys nothing here, and Sensing only refreshes on the AI
+            // step: a Naamah whose AI is suspended would otherwise answer from a stale reading.
+            && naamah.hasLineOfSight(challenger);
+        if (!holdsGaze) {
+            if (challenger != null) {
+                naamah.suppressRegenerationUntil(now + NaamahCourtRules.GAZE_BREAK_SUPPRESSION_TICKS);
+            }
+            return;
+        }
+        if (now < naamah.nextRegenerationAt()) {
+            return;
+        }
+        naamah.setNextRegenerationAt(now + NaamahCourtRules.REGENERATION_INTERVAL_TICKS);
+        if (NaamahCourtRules.mayRegenerate(
+            naamah.isAlive(), naamah.getHealth(), naamah.getMaxHealth(),
+            true, now, naamah.regenerationSuppressedUntil()
+        )) {
+            naamah.heal(NaamahCourtRules.REGENERATION_PER_INTERVAL);
+            naamah.courtCounters().mendedPulses++;
+        }
+    }
+
     private static void decideAction(final NaamahEntity naamah, final ServerLevel level, final long now) {
         NaamahCourtState state = naamah.courtState();
         if (now < state.nextDecisionAt()) {
@@ -596,8 +719,11 @@ public final class NaamahCourtRuntime {
         final ServerLevel level
     ) {
         final long dayTime = level.getOverworldClockTime() % 24_000L;
+        // Wet is safe: the same rule the rest of the sunlight-weak creatures follow. Submerged in
+        // a monument she is out of the sun entirely, which is what makes the drowned court livable.
         final boolean exposedSun = (dayTime < 13_000L || dayTime > 23_000L)
-            && level.canSeeSky(naamah.blockPosition()) && !naamah.hasEffect(MobEffects.FIRE_RESISTANCE);
+            && level.canSeeSky(naamah.blockPosition()) && !naamah.hasEffect(MobEffects.FIRE_RESISTANCE)
+            && !naamah.isInWaterOrRain();
         if (naamah.isInLava()) {
             return new HazardObservation(true, exposedSun, Optional.of(Hazard.LAVA));
         }
@@ -724,6 +850,14 @@ public final class NaamahCourtRuntime {
             return false;
         }
         if (!level.noEntityCollision(naamah, bounds)) {
+            return false;
+        }
+        // noEntityCollision only reports hard collision shapes, which in practice means boats and
+        // shulkers: ordinary mobs and players have none, so it would happily land Naamah inside a
+        // living body. A Veil Step is a teleport with no travel, so an occupied destination has to
+        // be rejected outright rather than resolved by the usual push-apart on the next tick.
+        if (!level.getEntities(naamah, bounds, occupant -> occupant instanceof LivingEntity
+            && occupant.isAlive()).isEmpty()) {
             return false;
         }
         final BlockState floor = budget.read(level, position.below()).orElse(null);

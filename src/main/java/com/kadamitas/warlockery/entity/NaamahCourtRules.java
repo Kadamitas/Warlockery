@@ -21,6 +21,20 @@ public final class NaamahCourtRules {
     public static final double MAX_LOCAL_STEP = 8.0D;
     public static final double WAVE_RADIUS = 6.0D;
     public static final float WAVE_DAMAGE = 4.0F;
+    /** Once a second, as Lilith healed; scaled to Naamah's hundred rather than her two hundred. */
+    public static final int REGENERATION_INTERVAL_TICKS = 20;
+    public static final float REGENERATION_PER_INTERVAL = 2.5F;
+    /** How long her healing stays shut after a challenger breaks her gaze. */
+    public static final int GAZE_BREAK_SUPPRESSION_TICKS = 100;
+
+    /** How long the tentacles hold, and how hard they hold. */
+    public static final int BIND_DURATION_TICKS = 60;
+    public static final int BIND_SLOWNESS_AMPLIFIER = 5;
+    public static final float BIND_DAMAGE = 2.0F;
+    /** The surge falls on the challenger's ground, so it catches whoever stands with them. */
+    public static final double SURGE_RADIUS = 4.0D;
+    public static final float SURGE_DAMAGE = 3.0F;
+
     public static final int MIN_WINDUP_TICKS = 20;
     public static final int MIN_RECOVERY_TICKS = 30;
 
@@ -35,7 +49,11 @@ public final class NaamahCourtRules {
         NONE,
         DREAM_APPROACH,
         COURT_WAVE,
-        VEIL_STEP
+        VEIL_STEP,
+        /** Tentacles out of the flooded floor hold one challenger where they stand. */
+        TENTACLE_BIND,
+        /** A column of water breaks over the challenger's ground and everything standing in it. */
+        DROWNING_SURGE
     }
 
     public enum AmbientMode {
@@ -195,13 +213,36 @@ public final class NaamahCourtRules {
         return now < window.recoverUntil();
     }
 
+    /**
+     * Naamah mends herself only while she is holding a challenger in her gaze.
+     *
+     * <p>Lilith regenerated relentlessly and was answered by knocking her own fireball back into
+     * her. A guardian is answered instead by stepping out of its line of sight, which is why its
+     * hall is full of pillars, and Naamah holds court in exactly that hall. So the counterplay is
+     * the monument's own: break her line of sight and the mending stops, and stays stopped for a
+     * while afterwards so that ducking out and back in is not free.</p>
+     */
+    public static boolean mayRegenerate(
+        final boolean alive,
+        final float health,
+        final float maxHealth,
+        final boolean holdsGaze,
+        final long now,
+        final long suppressedUntil
+    ) {
+        return alive && health > 0.0F && health < maxHealth && holdsGaze && now >= suppressedUntil;
+    }
+
     public static Action automaticAction(final Phase phase, final long decisionSlot) {
         final long slot = Math.floorMod(decisionSlot, 32L);
         return switch (phase) {
             case ENTHRONED -> slot % 8L == 0L ? Action.DREAM_APPROACH : Action.NONE;
-            case CHORUS_OF_WAVES -> slot % 4L == 1L ? Action.COURT_WAVE : Action.NONE;
+            case CHORUS_OF_WAVES -> slot % 4L == 1L ? Action.COURT_WAVE
+                : slot % 4L == 3L ? Action.TENTACLE_BIND : Action.NONE;
             case SOVEREIGN_REFUSAL -> slot % 16L == 3L ? Action.VEIL_STEP
-                : slot % 16L == 11L ? Action.COURT_WAVE : Action.NONE;
+                : slot % 16L == 11L ? Action.COURT_WAVE
+                : slot % 16L == 7L ? Action.DROWNING_SURGE
+                : slot % 16L == 15L ? Action.TENTACLE_BIND : Action.NONE;
             case AUDIENCE_CONCLUDED -> Action.NONE;
         };
     }

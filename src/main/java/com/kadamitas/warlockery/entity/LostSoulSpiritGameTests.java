@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.entity.LostSoulRules.Phase;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -619,7 +620,7 @@ public final class LostSoulSpiritGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             for (int index = cleanupActions.size() - 1; index >= 0; index--) {
                 cleanupActions.get(index).run();

@@ -448,9 +448,25 @@ public final class EldritchWatcherRuntime {
             .map(TimedSite::position)
             .orElse(anchor);
         final List<LivingEntity> visitedEntities = new ArrayList<>();
+        // The owner is seated first, before the cap is spent. Everything else here is ordered by
+        // distance, so a bound Watcher standing in a crowd would otherwise fill all sixteen slots
+        // with nearer strangers and never look at the one person it exists to guard. The cap is
+        // unchanged; only who is guaranteed a place inside it.
+        CreatureBehaviorState.owner(watcher)
+            .map(level::getPlayerByUUID)
+            .filter(LivingEntity.class::isInstance)
+            .map(LivingEntity.class::cast)
+            .filter(owner -> owner != watcher && owner.isAlive() && nearby.contains(owner))
+            .ifPresent(owner -> {
+                watcher.watcherCounters().entityVisits++;
+                visitedEntities.add(owner);
+            });
         for (final LivingEntity candidate : nearby) {
             if (visitedEntities.size() >= EldritchWatcherRules.MAX_ENTITIES_VISITED) {
                 break;
+            }
+            if (visitedEntities.contains(candidate)) {
+                continue;
             }
             watcher.watcherCounters().entityVisits++;
             visitedEntities.add(candidate);

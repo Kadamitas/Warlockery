@@ -4,6 +4,8 @@ import com.kadamitas.warlockery.entity.CircleMageRules.Mode;
 import com.kadamitas.warlockery.item.CovenRosterData;
 import com.kadamitas.warlockery.item.SeerCovenRuntime;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestAssertions;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -73,8 +75,8 @@ public final class CovenPractitionerGameTests {
                     // warned" into an opaque NullPointerException instead of a real failure.
                     helper.assertTrue(crone.croneState().threat().id().isPresent(),
                         "a warned candidate was actually selected");
-                    helper.assertValueEqual(
-                        crone.croneState().threat().id().orElse(null), intruder.getUUID(),
+                    GameTestAssertions.assertPresentValueEqual(helper, 
+                        crone.croneState().threat().id(), intruder.getUUID(),
                         "the visible survival intruder is the one warned candidate");
                     // reconcileOnLoad seeds scanCooldownTicks from stableOffset(uuid, 20), so the
                     // warning starts anywhere in ticks 1..20 and escalation lands anywhere in
@@ -365,7 +367,8 @@ public final class CovenPractitionerGameTests {
                     net.minecraft.world.InteractionHand.MAIN_HAND),
                 CircleMageRules.RecruitmentResult.NOT_AN_OFFERING,
                 "an empty hand is not an offering and reaches no binding path");
-            helper.assertValueEqual(mage.warlockeryOwner().orElse(null), owner.getUUID(),
+            GameTestAssertions.assertPresentValueEqual(
+                helper, mage.warlockeryOwner(), owner.getUUID(),
                 "a different player can never steal the existing owner");
             helper.assertValueEqual(roster.count(stranger.getUUID()), 0,
                 "a rejected recruitment never registers a roster slot");
@@ -448,7 +451,7 @@ public final class CovenPractitionerGameTests {
             helper.assertValueEqual(caster.mageState().threat().source(),
                 CircleMageRules.TargetSource.DIRECT,
                 "a direct attacker is the highest priority motive");
-            helper.assertValueEqual(caster.mageState().threat().id().orElse(null),
+            GameTestAssertions.assertPresentValueEqual(helper, caster.mageState().threat().id(),
                 aggressor.getUUID(), "the accepted direct attacker is the frozen target identity");
             helper.assertFalse(caster.mageState().session().present(),
                 "combat urgency releases the temporary conclave");
@@ -547,7 +550,8 @@ public final class CovenPractitionerGameTests {
                 "no missed conclave session is ever replayed");
             helper.assertTrue(mage.mageState().study().focusPrepared(),
                 "focus and its bounded cooldown are the only work facts that survive");
-            helper.assertValueEqual(mage.warlockeryOwner().orElse(null), owner.getUUID(),
+            GameTestAssertions.assertPresentValueEqual(
+                helper, mage.warlockeryOwner(), owner.getUUID(),
                 "the authoritative owner UUID is never duplicated or lost");
 
             // Malformed and overflow roster rows normalize deterministically without a world scan.
@@ -772,7 +776,7 @@ public final class CovenPractitionerGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             // Reverse order: later block edits are undone before earlier ones are restored.
             for (int index = cleanupActions.size() - 1; index >= 0; index--) {

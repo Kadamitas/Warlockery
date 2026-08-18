@@ -74,6 +74,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.world.entity.monster.ElderGuardian;
 import net.minecraft.world.entity.monster.zombie.ZombieVillager;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -93,6 +94,8 @@ import net.minecraft.world.level.MoonPhase;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -267,6 +270,26 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
      * the caster had walked through a portal or logged out, whereupon the action quietly declined and the
      * player was left with no rite and no cost returned.</p>
      */
+    /**
+     * True when {@code center} lies inside an ocean monument that has been cleared of its Elder
+     * Guardians.
+     *
+     * <p>Elder Guardians never despawn, so their absence from the structure is exactly the record
+     * that the monument was taken. Only loaded entities can be seen, but the caster is standing
+     * inside the structure while the circle is inspected, so the occupied part of it is loaded.</p>
+     */
+    static boolean clearedOceanMonument(final ServerLevel level, final BlockPos center) {
+        final StructureStart start = level.structureManager().getStructureWithPieceAt(
+            center, holder -> holder.is(BuiltinStructures.OCEAN_MONUMENT)
+        );
+        if (!start.isValid()) {
+            return false;
+        }
+        return level.getEntitiesOfClass(
+            ElderGuardian.class, AABB.of(start.getBoundingBox()), LivingEntity::isAlive
+        ).isEmpty();
+    }
+
     static Optional<RequirementStatus> actionEnvironmentRequirement(
         final RitualDefinition definition,
         final ServerLevel level,
@@ -284,6 +307,15 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             return general;
         }
         if (action == RitualAction.TRANSFORM_NAMI) {
+            // The journey is the gate. Nami has to be brought to a drowned monument whose Elder
+            // Guardians are already dead, so the rite cannot be performed until the place has
+            // actually been taken. Report the unfinished half first: being told the monument is
+            // still guarded is more use than being told a married Nami is ineligible.
+            if (!clearedOceanMonument(level, center)) {
+                return Optional.of(new RequirementStatus(
+                    "condition", "cleared_ocean_monument", 1, 0, false
+                ));
+            }
             final boolean present = unmarriedNami(level, center, definition.radius()).isPresent();
             return Optional.of(new RequirementStatus(
                 "condition", "unmarried_nami", 1, present ? 1 : 0, present

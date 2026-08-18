@@ -5,6 +5,7 @@ import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import com.kadamitas.warlockery.item.BiomeNoteState;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import java.util.Optional;
@@ -188,7 +189,7 @@ public final class BiomeRitualGameTests {
         new EmbeddedChannel(connection);
         final CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
         helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     private record BiomeSample(BlockPos position, Optional<ResourceKey<Biome>> biome) {

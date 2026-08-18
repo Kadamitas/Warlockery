@@ -5,6 +5,7 @@ import com.kadamitas.warlockery.entity.WerewolfHunterRules.EvidenceType;
 import com.kadamitas.warlockery.entity.WerewolfHunterRules.Intent;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import com.kadamitas.warlockery.world.CreatureWorldIntegration;
 import com.kadamitas.warlockery.world.SilverHuntData;
 import java.util.ArrayList;
@@ -814,7 +815,7 @@ public final class WerewolfHunterGameTests {
         public void close() {
             if (closed) return;
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             cleanupActions.forEach(Runnable::run);
             cleanupActions.clear();

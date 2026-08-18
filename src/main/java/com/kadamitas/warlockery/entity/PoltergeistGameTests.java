@@ -2,6 +2,8 @@ package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.entity.PoltergeistRules.Phase;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestAssertions;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -307,20 +309,20 @@ public final class PoltergeistGameTests {
                         helper.assertTrue(poltergeist.poltergeistCounters().propScans() <= 1L,
                             "a dense scene still opens exactly one prop scan per episode");
                     }
-                    helper.assertValueEqual(
-                        first.poltergeistTransient().markedTarget().orElse(null),
+                    GameTestAssertions.assertPresentValueEqual(helper, 
+                        first.poltergeistTransient().markedTarget(),
                         nearest.getUUID(),
                         "stable distance-then-identity ordering marks the nearest eligible player");
-                    helper.assertValueEqual(
-                        second.poltergeistTransient().markedTarget().orElse(null),
-                        first.poltergeistTransient().markedTarget().orElse(null),
+                    GameTestAssertions.assertPresentValueEqual(helper, 
+                        second.poltergeistTransient().markedTarget(),
+                        first.poltergeistTransient().markedTarget(),
                         "two disturbances observing the same scene mark the same player");
-                    helper.assertValueEqual(
-                        first.poltergeistTransient().markedProp().orElse(null),
-                        second.poltergeistTransient().markedProp().orElse(null),
+                    GameTestAssertions.assertPresentValueEqual(helper, 
+                        first.poltergeistTransient().markedProp(),
+                        second.poltergeistTransient().markedProp(),
                         "two disturbances observing the same scene claim the same prop");
-                    helper.assertValueEqual(
-                        first.poltergeistTransient().markedProp().orElse(null),
+                    GameTestAssertions.assertPresentValueEqual(helper, 
+                        first.poltergeistTransient().markedProp(),
                         nearestProp.getUUID(),
                         "the claimed prop is the nearest loose item, not the first one iterated");
                     for (final PoltergeistEntity poltergeist : List.of(first, second)) {
@@ -673,7 +675,7 @@ public final class PoltergeistGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             for (int index = cleanupActions.size() - 1; index >= 0; index--) {
                 cleanupActions.get(index).run();

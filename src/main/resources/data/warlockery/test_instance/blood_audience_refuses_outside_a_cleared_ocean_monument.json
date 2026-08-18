@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:blood_audience_refuses_outside_a_cleared_ocean_monument",
+  "environment": "minecraft:default",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 100
+}

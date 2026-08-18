@@ -7,6 +7,7 @@ import com.kadamitas.warlockery.entity.HobgoblinJourneyRules.Mode;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyRuntime;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -246,6 +247,6 @@ public final class VillageGuardGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(new BlockPos(1, 1, 2));
         player.teleportTo(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 }

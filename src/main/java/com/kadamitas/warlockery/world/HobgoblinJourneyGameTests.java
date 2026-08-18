@@ -13,6 +13,7 @@ import com.kadamitas.warlockery.entity.HobgoblinJourneyRuntime;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyState;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -630,7 +631,7 @@ public final class HobgoblinJourneyGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             // Reverse order so later edits are undone before earlier ones are restored.
             for (int index = cleanupActions.size() - 1; index >= 0; index--) {

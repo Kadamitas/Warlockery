@@ -3,6 +3,7 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.magic.MagicPath;
 import com.kadamitas.warlockery.magic.MagicPathState;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -396,7 +397,7 @@ public final class CorpseGameTests {
                     player.getInventory().clearContent();
                     player.removeAllEffects();
                 }
-                entity.discard();
+                GameTestMockPlayers.release(entity);
             });
             entities.clear();
         }

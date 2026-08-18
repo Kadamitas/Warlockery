@@ -160,10 +160,42 @@ final class CreatureConceptImplementationTest {
         assertOpaque(skin, entityId, "right leg", 5, 22);
         assertOpaque(skin, entityId, "left arm", 37, 54);
         assertOpaque(skin, entityId, "left leg", 21, 54);
-        assertOpaque(skin, entityId, "jacket overlay", 20, 36);
+        assertRegionPainted(skin, entityId, "jacket overlay", 16, 32, 24, 16, 16);
         assertFalse(skin.getRGB(10, 11) == 0xFFB87A5B, entityId + " must not contain Steve's face palette");
-        assertEquals(skin.getRGB(9, 11), skin.getRGB(13, 11), entityId + " paired eye line");
+        // The face panel mirrors about its own centre: x=8 pairs with 15, 9 with 14, 10 with 13.
+        // The earlier pairing of 9 with 13 compared two columns that are not reflections of each
+        // other and only held for the one generated face this audit was written against.
+        assertEquals(skin.getRGB(9, 11), skin.getRGB(14, 11), entityId + " paired eye line");
+        assertEquals(skin.getRGB(10, 11), skin.getRGB(13, 11), entityId + " paired eye line");
         assertTrue(colorDistance(skin.getRGB(10, 12), skin.getRGB(11, 12)) > 70, entityId + " readable irises");
+    }
+
+    /**
+     * Asserts an overlay region carries real paint, without dictating which pixels an artist used.
+     * A single sampled coordinate only ever described the skin this audit was first written
+     * against, so a different but perfectly complete jacket would fail it for no reason.
+     */
+    private static void assertRegionPainted(
+        final BufferedImage skin,
+        final String entityId,
+        final String region,
+        final int u,
+        final int v,
+        final int width,
+        final int height,
+        final int minimumPainted
+    ) {
+        int painted = 0;
+        for (int y = v; y < v + height; y++) {
+            for (int x = u; x < u + width; x++) {
+                if ((skin.getRGB(x, y) >>> 24) != 0) {
+                    painted++;
+                }
+            }
+        }
+        assertTrue(painted >= minimumPainted,
+            entityId + " " + region + " must be painted; painted=" + painted
+                + ", required=" + minimumPainted);
     }
 
     private static void assertOpaqueCuboid(

@@ -359,10 +359,13 @@ public final class ApparitionEpisodeRuntime {
     // ---------------------------------------------------------------- appointment sweep
 
     /**
-     * The one bounded appointment sweep over loaded players of this level. Every examined player is
-     * charged a candidate visit before any eligibility filter may reject it, line-of-sight walks are
-     * separately capped because a barrier walk is the expensive part, and the sweep never touches an
-     * unloaded player, another dimension, a creative or spectator player, or a crowd larger than the
+     * The one bounded appointment sweep over loaded players of this level. Players outside the
+     * requested range are skipped without being charged, so the candidate budget is always spent
+     * on players actually in reach rather than on whoever happens to sit earliest in the level's
+     * player list; every player still inside the range is charged a candidate visit before any
+     * remaining eligibility filter may reject it, line-of-sight walks are separately capped
+     * because a barrier walk is the expensive part, and the sweep never touches an unloaded
+     * player, another dimension, a creative or spectator player, or a crowd larger than the
      * declared cap.
      *
      * <p>The caller supplies the species eligibility test. A Shade and a Spectre look for different
@@ -383,9 +386,15 @@ public final class ApparitionEpisodeRuntime {
             if (visited >= ApparitionEpisodeRules.MAX_PLAYER_CANDIDATES) {
                 break;
             }
+            final double distanceSquared = apparition.distanceToSqr(player);
+            // Out of range is not a candidate. Charging the visit budget before the range test
+            // would let players who merely joined the level earlier exhaust it before the ones
+            // standing next to this apparition are examined at all.
+            if (distanceSquared > rangeSquared) {
+                continue;
+            }
             visited++;
             counters.appointmentCandidateVisits++;
-            final double distanceSquared = apparition.distanceToSqr(player);
             final boolean qualifies = player.isAlive()
                 && player.level() == level
                 && !player.isCreative()

@@ -100,6 +100,8 @@ public final class ModGameTests {
             () -> BiomeRitualGameTests::climateShiftEmpowermentAndStarsAreOptionalAndCapped);
         REGISTRY.register("blood_audience_transforms_unmarried_nami",
             () -> NamiRitualGameTests::bloodAudienceTransformsUnmarriedNami);
+        REGISTRY.register("blood_audience_refuses_outside_a_cleared_ocean_monument",
+            () -> NamiRitualGameTests::bloodAudienceRefusesOutsideAClearedOceanMonument);
         REGISTRY.register("blood_audience_protects_married_nami",
             () -> NamiRitualGameTests::bloodAudienceProtectsMarriedNami);
         REGISTRY.register("broom_mount_stores_damages_and_returns_exact_stack",
@@ -338,6 +340,8 @@ public final class ModGameTests {
             () -> SpouseAmbientGameTests::spouseRejectsOccupiedFurnaceWithoutTakingMeat);
         REGISTRY.register("spouse_kiss_persists_cooldown",
             () -> SpouseAmbientGameTests::spouseKissPersistsCooldown);
+        REGISTRY.register("nami_breathes_and_paths_underwater",
+            () -> NamiLifeGameTests::namiBreathesAndPathsUnderwater);
         REGISTRY.register("nami_daily_routine_returns_home",
             () -> NamiLifeGameTests::dailyRoutineReturnsHome);
         REGISTRY.register("nami_greeting_builds_bounded_trust",
@@ -350,6 +354,10 @@ public final class ModGameTests {
             () -> NaamahCourtGameTests::trialDefeatConcludesAudience);
         REGISTRY.register("naamah_sunlight_water_and_singular_lifecycle",
             () -> NaamahCourtGameTests::sunlightWaterAndSingularLifecycle);
+        REGISTRY.register("naamah_court_bind_holds_one_and_surge_catches_the_ground",
+            () -> NaamahCourtGameTests::courtBindHoldsOneAndSurgeCatchesTheGround);
+        REGISTRY.register("naamah_court_mending_stops_when_the_gaze_breaks",
+            () -> NaamahCourtGameTests::courtMendingStopsWhenTheGazeBreaks);
         REGISTRY.register("naamah_court_releases_invalid_targets",
             () -> NaamahCourtGameTests::courtReleasesInvalidTargets);
         REGISTRY.register("vampire_court_day_shelter_and_night_hunt",

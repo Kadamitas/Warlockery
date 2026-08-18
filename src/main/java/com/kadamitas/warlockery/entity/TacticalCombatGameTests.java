@@ -3,6 +3,7 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.TacticalCombatRules.Maneuver;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -178,6 +179,6 @@ public final class TacticalCombatGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(relativePosition);
         player.teleportTo(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 }

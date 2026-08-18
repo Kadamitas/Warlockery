@@ -5,6 +5,8 @@ import com.kadamitas.warlockery.entity.EldritchWatcherRules.ActionType;
 import com.kadamitas.warlockery.entity.EldritchWatcherRules.EvidenceType;
 import com.kadamitas.warlockery.entity.EldritchWatcherRules.Mode;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestAssertions;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +70,8 @@ public final class EldritchWatcherGameTests {
             makeDue(watcher);
             EldritchWatcherRuntime.tick(watcher, helper.getLevel());
             final EldritchWatcherState afterOne = watcher.watcherState();
-            helper.assertValueEqual(afterOne.evidenceType().orElse(null), EvidenceType.RECIPROCAL_GAZE,
+            GameTestAssertions.assertPresentValueEqual(
+                helper, afterOne.evidenceType(), EvidenceType.RECIPROCAL_GAZE,
                 "one reciprocal sample records gaze evidence");
             helper.assertFalse(EldritchWatcherRuntime.eligibleTarget(watcher, stranger),
                 "one reciprocal sample never escalates");
@@ -102,7 +105,8 @@ public final class EldritchWatcherGameTests {
             final EldritchWatcherState armed = watcher.watcherState();
             helper.assertValueEqual(armed.action(), ActionType.REVELATION,
                 "an escalated intercept begins the telegraphed revelation");
-            helper.assertValueEqual(armed.actionTargetId().orElse(null), victim.getUUID(),
+            GameTestAssertions.assertPresentValueEqual(
+                helper, armed.actionTargetId(), victim.getUUID(),
                 "the action target is stored immutably at start");
             helper.assertTrue(armed.actionExecuteAt()
                     >= now + EldritchWatcherRules.REVELATION_WINDUP_TICKS,
@@ -173,7 +177,8 @@ public final class EldritchWatcherGameTests {
             helper.assertTrue(watcher.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 1.0F
             ), "the warning fixture needs one real accepted hit");
-            helper.assertValueEqual(watcher.watcherState().threatId().orElse(null), attacker.getUUID(),
+            GameTestAssertions.assertPresentValueEqual(
+                helper, watcher.watcherState().threatId(), attacker.getUUID(),
                 "accepted direct harm records the direct threat");
             helper.assertTrue(watcher.watcherCounters().warningRecipients()
                     <= EldritchWatcherRules.MAX_WARNING_RECIPIENTS,
@@ -217,13 +222,19 @@ public final class EldritchWatcherGameTests {
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 1.0F
             ), "the guard fixture needs one real accepted hit on the owner");
             makeDue(guard);
-            helper.runAfterDelay(2, () -> {
+            // A full perception cadence, not two ticks. The scan runs on a twenty tick interval
+            // that each body staggers from its own id, so a two tick window only ever passed when
+            // the guard happened to draw a low offset. The harm stays reported for eighty ticks,
+            // so waiting one whole cadence still asserts the same thing: that a self-ticking bound
+            // Watcher recorded this exact attacker.
+            helper.runAfterDelay(EldritchWatcherRules.PERCEPTION_INTERVAL_TICKS, () -> {
                 try {
-                    helper.assertValueEqual(guard.watcherState().threatId().orElse(null),
+                    GameTestAssertions.assertPresentValueEqual(
+                        helper, guard.watcherState().threatId(),
                         attacker.getUUID(),
                         "the self-ticking bound Watcher observes fresh direct harm to its owner");
-                    helper.assertValueEqual(
-                        guard.watcherState().evidenceType().orElse(null),
+                    GameTestAssertions.assertPresentValueEqual(helper, 
+                        guard.watcherState().evidenceType(),
                         EldritchWatcherRules.EvidenceType.DIRECT_HARM,
                         "owner-guard harm records direct guard evidence");
                     helper.assertTrue(EldritchWatcherRuntime.eligibleTarget(guard, attacker),
@@ -397,7 +408,7 @@ public final class EldritchWatcherGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
         }
     }

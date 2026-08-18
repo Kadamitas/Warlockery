@@ -8,6 +8,7 @@ import com.kadamitas.warlockery.entity.InfernalHierarchyRules.Rank;
 import com.kadamitas.warlockery.item.InfernalPactEffects;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -2103,7 +2104,7 @@ public final class InfernalHierarchyGameTests {
         public void close() {
             if (closed) return;
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             cleanupActions.forEach(Runnable::run);
             cleanupActions.clear();

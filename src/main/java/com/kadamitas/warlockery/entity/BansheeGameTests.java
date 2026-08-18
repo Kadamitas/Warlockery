@@ -3,6 +3,8 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.BansheeRules.Mode;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestAssertions;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -62,8 +64,8 @@ public final class BansheeGameTests {
             makeDue(banshee);
             helper.runAfterDelay(120L, () -> {
                 try {
-                    helper.assertValueEqual(
-                        banshee.bansheeState().subject().id().orElse(null), atRisk.getUUID(),
+                    GameTestAssertions.assertPresentValueEqual(helper, 
+                        banshee.bansheeState().subject().id(), atRisk.getUUID(),
                         "the low-health survival player is the one selected warning subject");
                     helper.assertTrue(banshee.getTarget() == null,
                         "the warning subject is never written to Mob.target");
@@ -620,7 +622,7 @@ public final class BansheeGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             // Reverse order: later block edits (the arena shell) are undone before earlier
             // ones (the reopened framework shell) are restored, so overlaps end correct.

@@ -3,6 +3,8 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.entity.DeathRules.Phase;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.util.GameTestAssertions;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -47,7 +49,8 @@ public final class DeathGameTests {
             final ServerPlayer subject = fixture.connectedPlayer(new BlockPos(2, 1, 0), GameType.SURVIVAL);
             makeDue(helper, death);
             DeathRuntime.tick(death, helper.getLevel());
-            helper.assertValueEqual(death.deathState().appointment().subject().orElse(null),
+            GameTestAssertions.assertPresentValueEqual(
+                helper, death.deathState().appointment().subject(),
                 subject.getUUID(), "the one loaded survival player is the single appointed subject");
             helper.assertTrue(death.getTarget() == null,
                 "the appointed subject is never written to Mob.target");
@@ -94,7 +97,8 @@ public final class DeathGameTests {
             final ServerPlayer subject = fixture.connectedPlayer(new BlockPos(2, 1, 0), GameType.SURVIVAL);
             makeDue(helper, death);
             DeathRuntime.tick(death, helper.getLevel());
-            helper.assertValueEqual(death.deathState().appointment().subject().orElse(null),
+            GameTestAssertions.assertPresentValueEqual(
+                helper, death.deathState().appointment().subject(),
                 subject.getUUID(), "precondition: an undisguised survival player is appointed");
             helper.assertTrue(death.canAttack(subject),
                 "precondition: an undisguised subject is an ordinary legal target");
@@ -136,7 +140,8 @@ public final class DeathGameTests {
             final ServerPlayer unreachable = fixture.connectedPlayer(new BlockPos(1, 1, 1), GameType.SURVIVAL);
             makeDue(helper, death);
             DeathRuntime.tick(death, helper.getLevel());
-            helper.assertValueEqual(death.deathState().appointment().subject().orElse(null),
+            GameTestAssertions.assertPresentValueEqual(
+                helper, death.deathState().appointment().subject(),
                 unreachable.getUUID(), "precondition: the subject is appointed");
             // Sealing has to follow acquisition: the same barriers that make every route fail also
             // break the line of sight the bounded scan needs, so sealing first would appoint nobody
@@ -174,7 +179,8 @@ public final class DeathGameTests {
             final float subjectHealth = subject.getHealth();
             makeDue(helper, death);
             DeathRuntime.tick(death, helper.getLevel());
-            helper.assertValueEqual(death.deathState().appointment().subject().orElse(null),
+            GameTestAssertions.assertPresentValueEqual(
+                helper, death.deathState().appointment().subject(),
                 subject.getUUID(), "a creative player is never eligible for an appointment");
             for (int tick = 0; tick <= DeathRules.TELEGRAPH_TICKS + 3; tick++) {
                 makeDue(helper, death);
@@ -488,7 +494,7 @@ public final class DeathGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             // Reverse order: later block edits are undone before earlier ones are restored, so
             // overlapping edits end exactly where the framework left them.

@@ -227,6 +227,22 @@ final class GameTestInstanceContractTest {
         "hellhound_animus_authority_follow_and_guard_are_safe",
         "hellhound_cure_is_transactional_and_preserves_exact_rules"
     );
+    /**
+     * Fixtures that move the level clock. {@code setTime} writes state shared by every fixture in
+     * a batch, so two of them running side by side flip the sky out from under each other. Each
+     * gets a batch of its own, which means its environment is named after the fixture rather than
+     * after its family.
+     */
+    private static final Set<String> CLOCK_ISOLATED = Set.of(
+        "hex_bat_roosts_by_day_and_sorties_at_night",
+        "hex_bat_swoop_marks_and_releases_target_safely",
+        "naamah_court_phases_latch_and_recover",
+        "naamah_sunlight_water_and_singular_lifecycle",
+        "naamah_court_releases_invalid_targets",
+        "naamah_court_mending_stops_when_the_gaze_breaks",
+        "naamah_court_bind_holds_one_and_surge_catches_the_ground"
+    );
+
     private static final Set<String> ISOLATED_HEX_BAT = Set.of(
         "hex_bat_roosts_by_day_and_sorties_at_night",
         "hex_bat_swoop_marks_and_releases_target_safely",
@@ -655,7 +671,9 @@ final class GameTestInstanceContractTest {
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
         assertEquals("warlockery:" + registration.id(), fixture.get("function").getAsString(), registration.id());
         assertEquals(
-            ISOLATED_VAMPIRE_COURT.contains(registration.id())
+            CLOCK_ISOLATED.contains(registration.id())
+                ? "warlockery:" + registration.id()
+                : ISOLATED_VAMPIRE_COURT.contains(registration.id())
                 ? "warlockery:vampire_court_isolated"
                 : ISOLATED_LYCAN_VILLAGER.contains(registration.id())
                     ? "warlockery:lycan_villager_isolated"

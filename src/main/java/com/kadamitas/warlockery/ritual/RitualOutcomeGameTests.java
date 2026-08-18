@@ -7,6 +7,7 @@ import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.ritual.hex.HexKind;
 import com.kadamitas.warlockery.ritual.hex.HexState;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -349,7 +350,7 @@ public final class RitualOutcomeGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     public static void everyLoadedRitualPassesTargetValidation(final GameTestHelper helper) {

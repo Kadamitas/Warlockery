@@ -1,7 +1,7 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:naamah_sunlight_water_and_singular_lifecycle",
-  "environment": "minecraft:default",
+  "environment": "warlockery:naamah_sunlight_water_and_singular_lifecycle",
   "structure": "forge:empty3x3x3",
   "max_ticks": 800
 }

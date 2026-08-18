@@ -1,7 +1,7 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:naamah_court_releases_invalid_targets",
-  "environment": "minecraft:default",
+  "environment": "warlockery:naamah_court_releases_invalid_targets",
   "structure": "forge:empty3x3x3",
   "max_ticks": 250
 }

@@ -106,7 +106,7 @@ final class CreatureBehaviorParityTest {
             case WOLF_SUMMONING -> assertFalse(CreatureBehaviorRules.shouldSummonWolves(20.0F, 20.0F, 0, 400));
             case EFFECT_REDIRECTION -> assertFalse(CreatureBehaviorRules.canRedirectEffect(true, false, true, true));
             case CAULDRON_AURA -> assertEquals(0, CreatureBehaviorRules.cauldronRangeBonus(0));
-            case BLOOD_DRAIN -> assertFalse(CreatureBehaviorRules.shouldBurnInSun(false, true, false));
+            case BLOOD_DRAIN -> assertFalse(CreatureBehaviorRules.shouldBurnInSun(false, true, false, false));
             default -> assertFalse(profile.features().isEmpty());
         }
     }
@@ -155,7 +155,7 @@ final class CreatureBehaviorParityTest {
             case WOLF_SUMMONING -> assertTrue(CreatureBehaviorRules.shouldSummonWolves(10.0F, 20.0F, 0, 400));
             case EFFECT_REDIRECTION -> assertTrue(CreatureBehaviorRules.canRedirectEffect(true, true, true, true));
             case CAULDRON_AURA -> assertEquals(16, CreatureBehaviorRules.cauldronRangeBonus(4));
-            case BLOOD_DRAIN -> assertTrue(CreatureBehaviorRules.shouldBurnInSun(true, true, false));
+            case BLOOD_DRAIN -> assertTrue(CreatureBehaviorRules.shouldBurnInSun(true, true, false, false));
             default -> assertTrue(CreatureBehaviorRules.shouldPulse(0, 0, profile.pulseIntervalTicks()));
         }
         assertSupportingTags(profile);
@@ -248,5 +248,18 @@ final class CreatureBehaviorParityTest {
     }
 
     private record MobCase(String auditId, CreatureKind kind, Feature requiredFeature) {
+    }
+
+    @Test
+    void waterAndRainPutOutTheSunForSunlightWeakCreatures() {
+        // Bare daylight under open sky burns, exactly as before.
+        assertTrue(CreatureBehaviorRules.shouldBurnInSun(true, true, false, false));
+        // Being in water or standing in rain puts it out, which is how vanilla's own undead
+        // behave and what lets Naamah's line live in a drowned monument at all.
+        assertFalse(CreatureBehaviorRules.shouldBurnInSun(true, true, false, true));
+        // Wetness is not a substitute for the other guards, nor they for it.
+        assertFalse(CreatureBehaviorRules.shouldBurnInSun(false, true, false, false));
+        assertFalse(CreatureBehaviorRules.shouldBurnInSun(true, false, false, false));
+        assertFalse(CreatureBehaviorRules.shouldBurnInSun(true, true, true, false));
     }
 }

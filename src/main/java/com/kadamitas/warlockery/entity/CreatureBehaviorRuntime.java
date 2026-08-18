@@ -1027,7 +1027,8 @@ public final class CreatureBehaviorRuntime {
         if (CreatureBehaviorRules.shouldBurnInSun(
             daylight,
             level.canSeeSky(creature.blockPosition()),
-            creature.hasEffect(MobEffects.FIRE_RESISTANCE)
+            creature.hasEffect(MobEffects.FIRE_RESISTANCE),
+            creature.isInWaterOrRain()
         )) {
             creature.igniteForSeconds(3.0F);
         }

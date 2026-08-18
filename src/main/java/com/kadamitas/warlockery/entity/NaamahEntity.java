@@ -43,6 +43,8 @@ public final class NaamahEntity extends ArcaneMob {
     private final ServerBossEvent courtBossEvent;
     private final NaamahCourtRuntime.Counters courtCounters = new NaamahCourtRuntime.Counters();
     private NaamahCourtState courtState = NaamahCourtState.empty();
+    private long regenerationSuppressedUntil;
+    private long nextRegenerationAt;
 
     public NaamahEntity(final EntityType<? extends Zombie> type, final Level level) {
         super(type, level, CreatureKind.NAAMAH);
@@ -123,6 +125,22 @@ public final class NaamahEntity extends ArcaneMob {
 
     public void setCourtState(final NaamahCourtState state) {
         courtState = state == null ? NaamahCourtState.empty() : state;
+    }
+
+    public long regenerationSuppressedUntil() {
+        return regenerationSuppressedUntil;
+    }
+
+    public void suppressRegenerationUntil(final long tick) {
+        regenerationSuppressedUntil = Math.max(regenerationSuppressedUntil, tick);
+    }
+
+    public long nextRegenerationAt() {
+        return nextRegenerationAt;
+    }
+
+    public void setNextRegenerationAt(final long tick) {
+        nextRegenerationAt = tick;
     }
 
     public NaamahCourtRuntime.Counters courtCounters() {
@@ -248,6 +266,8 @@ public final class NaamahEntity extends ArcaneMob {
     protected void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.store("WarlockeryNaamahCourt", CompoundTag.CODEC, courtState.write());
+        output.putLong("WarlockeryNaamahRegenSuppressedUntil", regenerationSuppressedUntil);
+        output.putLong("WarlockeryNaamahNextRegenerationAt", nextRegenerationAt);
     }
 
     @Override
@@ -256,6 +276,8 @@ public final class NaamahEntity extends ArcaneMob {
         courtState = input.read("WarlockeryNaamahCourt", CompoundTag.CODEC)
             .map(tag -> NaamahCourtState.read(tag, level().getGameTime(), getHealth(), getMaxHealth()))
             .orElse(NaamahCourtState.empty().latchPhase(getHealth(), getMaxHealth()));
+        regenerationSuppressedUntil = input.getLongOr("WarlockeryNaamahRegenSuppressedUntil", 0L);
+        nextRegenerationAt = input.getLongOr("WarlockeryNaamahNextRegenerationAt", 0L);
         normalizeLifecycle();
     }
 }

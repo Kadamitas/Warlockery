@@ -8,6 +8,7 @@ import com.kadamitas.warlockery.transformation.SupernaturalAdvancement;
 import com.kadamitas.warlockery.transformation.SupernaturalProgression;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import com.kadamitas.warlockery.transformation.VampireProgressionRules;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import com.kadamitas.warlockery.util.GameTestWorldClock;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
@@ -253,6 +256,11 @@ public final class NaamahCourtGameTests {
             lastNavigationCount[0] = navigationBaseline[0];
             approachOriginX[0] = naamah.getX();
             approachOriginZ[0] = naamah.getZ();
+            // Measure the blood drain by itself. She also mends passively while she holds a
+            // challenger in sight, and that is a separate mechanic: letting it land inside this
+            // window would turn an exact-value assertion about the drain into an assertion about
+            // whichever of the two happened to tick first.
+            naamah.suppressRegenerationUntil(helper.getLevel().getGameTime() + 400L);
             healthBeforeDrain[0] = naamah.getHealth();
             automaticMeleeStarted.set(true);
         });
@@ -512,6 +520,13 @@ public final class NaamahCourtGameTests {
         );
         helper.assertTrue(helper.getLevel().getOverworldClockTime() % 24_000L < 13_000L,
             "the daylight assertion requires the overworld clock to be daytime");
+        // Clear the sky first. Rain counts as wet, and a wet sunlight-weak creature does not
+        // burn, so a passing shower would silently defeat the ignition assertion below without
+        // saying anything about sunlight at all. Clear is left in place afterwards rather than
+        // restored: it is the benign state, and weather resumes on its own cycle.
+        helper.getLevel().resetWeatherCycle();
+        helper.assertFalse(helper.getLevel().isRaining(),
+            "the ignition assertion requires clear weather: rain shelters her from the sun");
         naamah.tickCount = Math.floorMod(-naamah.getId(), 20);
         naamah.customServerAiStep(helper.getLevel());
         helper.assertTrue(naamah.getRemainingFireTicks() > 0,
@@ -709,6 +724,16 @@ public final class NaamahCourtGameTests {
 
     public static void courtReleasesInvalidTargets(final GameTestHelper helper) {
         buildFloor(helper);
+        // NaamahCourtRuntime.destinationSafe reads a five-by-five column around any candidate
+        // destination, so the veil checks below judge the arena origin partly on blocks two
+        // outside it. Arenas in a batch stand about eight blocks apart and fixtures build out to
+        // local ten, so that outer ring is otherwise whatever the neighbour last left there, and
+        // these preconditions would pass or fail on someone else's leftovers. Own it here rather
+        // than in buildFloor, which the other fixtures in this file share.
+        BlockPos.betweenClosedStream(new BlockPos(-3, 0, -3), new BlockPos(2, 0, 2))
+            .forEach(position -> helper.setBlock(position, Blocks.STONE));
+        BlockPos.betweenClosedStream(new BlockPos(-3, 1, -3), new BlockPos(2, 4, 2))
+            .forEach(position -> helper.setBlock(position, Blocks.AIR));
         helper.getLevel().clockManager().setTotalTicks(
             helper.getLevel().registryAccess().get(WorldClocks.OVERWORLD).orElseThrow(), 18_000L
         );
@@ -1238,6 +1263,25 @@ public final class NaamahCourtGameTests {
         });
     }
 
+    /**
+     * Reports a mock player's client as loaded, then puts it back where the fixture wanted it.
+     *
+     * <p>{@code ServerPlayer.isInvulnerableTo} ends in {@code !connection.hasClientLoaded()}, so a
+     * mock player shrugs off everything until this packet arrives, and her court releases an
+     * invulnerable challenger as ineligible. Delivering it moves the player, so the teleport has
+     * to follow it rather than precede it, or the challenger ends up out of range instead.</p>
+     */
+    private static void markLoadedAt(
+        final GameTestHelper helper,
+        final ServerPlayer player,
+        final BlockPos relativePosition
+    ) {
+        player.connection.handleAcceptPlayerLoad(
+            new net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket());
+        final BlockPos absolute = helper.absolutePos(relativePosition);
+        player.teleportTo(absolute.getX() + 0.5D, absolute.getY(), absolute.getZ() + 0.5D);
+    }
+
     private static void buildFloor(final GameTestHelper helper) {
         BlockPos.betweenClosedStream(new BlockPos(-1, 0, -1), new BlockPos(10, 0, 4))
             .forEach(position -> helper.setBlock(position, Blocks.STONE));
@@ -1252,6 +1296,162 @@ public final class NaamahCourtGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(relativePosition);
         player.teleportTo(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
+    }
+
+    /**
+     * Her mending, and the counterplay that shuts it off.
+     *
+     * <p>Lilith healed relentlessly and was answered by returning her own fire. A guardian is
+     * answered by leaving its line of sight, which is what the pillars of its hall are for, and
+     * Naamah now holds court in that hall. Both halves are asserted here: that she mends while she
+     * can see her challenger, and that she stops the moment a wall comes between them.</p>
+     */
+    public static void courtMendingStopsWhenTheGazeBreaks(final GameTestHelper helper) {
+        buildFloor(helper);
+        // The framework only clears the declared three-by-three structure, so anything placed
+        // beyond it stands in whatever terrain the arena generated with. The other court fixtures
+        // in this file open the same headroom for the same reason.
+        BlockPos.betweenClosedStream(new BlockPos(-1, 1, -1), new BlockPos(10, 3, 4))
+            .forEach(position -> helper.setBlock(position, Blocks.AIR));
+        // Night, and put it back afterwards. Sky-exposed daylight is a hazard for her and the
+        // hazard branch owns the whole tick, so a daytime arena would never reach the mending.
+        GameTestWorldClock.restoreAfterTest(helper);
+        helper.getLevel().clockManager().setTotalTicks(
+            helper.getLevel().registryAccess().get(WorldClocks.OVERWORLD).orElseThrow(), 18_000L
+        );
+        final NaamahEntity naamah = (NaamahEntity) helper.spawn(
+            ModEntities.ALL.get("naamah").get(), new BlockPos(1, 1, 1), EntitySpawnReason.EVENT
+        );
+        naamah.setNoAi(true);
+        // A player, not a mob: her court releases anything it does not accept as a challenger,
+        // and a zombie is released before the mending is ever reached.
+        final ServerPlayer challenger = connectedPlayer(helper, new BlockPos(5, 1, 1));
+        // ServerPlayer.isInvulnerableTo ends in !connection.hasClientLoaded(), so a mock player is
+        // invulnerable until its client reports loaded, and her court releases an invulnerable
+        // challenger as ineligible before the mending is ever reached.
+        markLoadedAt(helper, challenger, new BlockPos(5, 1, 1));
+        naamah.setTarget(challenger);
+        naamah.setHealth(naamah.getMaxHealth() * 0.5F);
+
+        // Sensing caches line of sight and is only refreshed by the AI step, which setNoAi
+        // suppresses. Without this the cached answer is whatever was true before the challenger
+        // was placed, which is "cannot see" and would defeat the mending for the wrong reason.
+        naamah.getSensing().tick();
+
+        helper.assertTrue(naamah.hasLineOfSight(challenger),
+            "precondition: the arena between Naamah and her challenger must be clear; naamah="
+                + naamah.position() + ", challenger=" + challenger.position());
+
+        // In plain sight: she mends.
+        final float wounded = naamah.getHealth();
+        for (int tick = 0; tick < 3; tick++) {
+            naamah.setNextRegenerationAt(0L);
+            NaamahCourtRuntime.tick(naamah, helper.getLevel());
+        }
+        final float mended = naamah.getHealth();
+        helper.assertTrue(mended > wounded,
+            "a Naamah holding her challenger in sight must mend; was " + wounded + ", now " + mended);
+
+        // Now put the hall between them, exactly as a monument pillar would.
+        for (int y = 1; y <= 3; y++) {
+            helper.setBlock(new BlockPos(3, y, 1), Blocks.OBSIDIAN);
+        }
+        naamah.getSensing().tick();
+        final float beforeBreak = naamah.getHealth();
+        for (int tick = 0; tick < 3; tick++) {
+            naamah.setNextRegenerationAt(0L);
+            NaamahCourtRuntime.tick(naamah, helper.getLevel());
+        }
+        helper.assertValueEqual(naamah.getHealth(), beforeBreak,
+            "breaking her line of sight must stop the mending");
+        helper.assertTrue(naamah.regenerationSuppressedUntil() > helper.getLevel().getGameTime(),
+            "a broken gaze must hold the mending shut for a while afterwards");
+
+        // And it stays shut for the declared window even once she can see again.
+        for (int y = 1; y <= 3; y++) {
+            helper.setBlock(new BlockPos(3, y, 1), Blocks.AIR);
+        }
+        naamah.getSensing().tick();
+        final float afterReveal = naamah.getHealth();
+        naamah.setNextRegenerationAt(0L);
+        NaamahCourtRuntime.tick(naamah, helper.getLevel());
+        helper.assertValueEqual(naamah.getHealth(), afterReveal,
+            "stepping back into view must not resume the mending immediately");
+        helper.succeed();
+    }
+
+    /**
+     * The two court actions added from the Lilith research, driven through the real telegraph
+     * path rather than by calling their executors directly.
+     *
+     * <p>The bind takes the one challenger it was telegraphed against and holds them. The surge
+     * falls on that challenger's ground and catches whoever is standing in it, which is the whole
+     * difference between the two, so both halves are asserted against a bystander as well.</p>
+     */
+    public static void courtBindHoldsOneAndSurgeCatchesTheGround(final GameTestHelper helper) {
+        buildFloor(helper);
+        // The framework only clears the declared three-by-three structure, so anything placed
+        // beyond it stands in whatever terrain the arena generated with. The other court fixtures
+        // in this file open the same headroom for the same reason.
+        BlockPos.betweenClosedStream(new BlockPos(-1, 1, -1), new BlockPos(10, 3, 4))
+            .forEach(position -> helper.setBlock(position, Blocks.AIR));
+        GameTestWorldClock.restoreAfterTest(helper);
+        helper.getLevel().clockManager().setTotalTicks(
+            helper.getLevel().registryAccess().get(WorldClocks.OVERWORLD).orElseThrow(), 18_000L
+        );
+        final NaamahEntity naamah = (NaamahEntity) helper.spawn(
+            ModEntities.ALL.get("naamah").get(), new BlockPos(1, 1, 1), EntitySpawnReason.EVENT
+        );
+        naamah.setNoAi(true);
+        final ServerPlayer challenger = connectedPlayer(helper, new BlockPos(4, 1, 1));
+        final ServerPlayer bystander = connectedPlayer(helper, new BlockPos(5, 1, 1));
+        // ServerPlayer.isInvulnerableTo ends in !connection.hasClientLoaded(), so a mock player
+        // shrugs off every hit until its client reports that it finished loading. Without this the
+        // surge assertion below would pass or fail on invulnerability rather than on the surge.
+        markLoadedAt(helper, challenger, new BlockPos(4, 1, 1));
+        markLoadedAt(helper, bystander, new BlockPos(5, 1, 1));
+        final String dimension = helper.getLevel().dimension().identifier().toString();
+
+        // --- the bind holds exactly the one it was telegraphed against ---
+        final long bindNow = helper.getLevel().getGameTime();
+        naamah.setTarget(challenger);
+        naamah.setCourtState(naamah.courtState()
+            .withAnchor(dimension, naamah.blockPosition())
+            .withChallenger(challenger.getUUID(), bindNow + 200L)
+            .withSchedule(bindNow + 200L, bindNow + 200L, bindNow + 200L, bindNow + 200L, bindNow)
+            .beginAction(Action.TENTACLE_BIND, bindNow - NaamahCourtRules.MIN_WINDUP_TICKS,
+                challenger.getUUID(), dimension));
+        NaamahCourtRuntime.tick(naamah, helper.getLevel());
+
+        helper.assertTrue(naamah.courtCounters().bindsApplied() >= 1L, "the bind must execute");
+        helper.assertTrue(challenger.hasEffect(MobEffects.SLOWNESS),
+            "the tentacles must hold the challenger where they stand");
+        helper.assertValueEqual(
+            challenger.getEffect(MobEffects.SLOWNESS).getAmplifier(),
+            NaamahCourtRules.BIND_SLOWNESS_AMPLIFIER,
+            "the bind must hold at its declared strength");
+        helper.assertFalse(bystander.hasEffect(MobEffects.SLOWNESS),
+            "the bind takes one challenger, never the ground around them");
+
+        // --- the surge falls on the ground and catches whoever stands in it ---
+        final float bystanderBefore = bystander.getHealth();
+        final long surgeNow = helper.getLevel().getGameTime();
+        naamah.setTarget(challenger);
+        naamah.setCourtState(naamah.courtState().finishAction()
+            .withChallenger(challenger.getUUID(), surgeNow + 200L)
+            .withSchedule(surgeNow + 200L, surgeNow + 200L, surgeNow + 200L, surgeNow + 200L, surgeNow)
+            .beginAction(Action.DROWNING_SURGE, surgeNow - NaamahCourtRules.MIN_WINDUP_TICKS,
+                challenger.getUUID(), dimension));
+        NaamahCourtRuntime.tick(naamah, helper.getLevel());
+
+        helper.assertTrue(naamah.courtCounters().surgesCalled() >= 1L, "the surge must execute");
+        helper.assertTrue(bystander.getHealth() < bystanderBefore,
+            "the surge must catch a bystander sharing the challenger's ground; health was "
+                + bystanderBefore + ", now " + bystander.getHealth());
+        helper.assertTrue(
+            naamah.courtCounters().surgeVictims() <= NaamahCourtRules.MAX_CANDIDATES,
+            "the surge stays inside the declared candidate cap");
+        helper.succeed();
     }
 }

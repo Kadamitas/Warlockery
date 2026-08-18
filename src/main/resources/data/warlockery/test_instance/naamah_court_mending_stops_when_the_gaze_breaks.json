@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:naamah_court_mending_stops_when_the_gaze_breaks",
+  "environment": "warlockery:naamah_court_mending_stops_when_the_gaze_breaks",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 200
+}

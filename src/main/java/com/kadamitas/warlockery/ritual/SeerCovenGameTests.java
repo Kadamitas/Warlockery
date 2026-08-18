@@ -5,6 +5,7 @@ import com.kadamitas.warlockery.item.SeerCovenRuntime;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +43,12 @@ public final class SeerCovenGameTests {
         final Mob unbound = circleMage(helper, center.offset(0, 0, 6));
         CreatureBehaviorState.bind(first, player.getUUID());
         CreatureBehaviorState.bind(second, player.getUUID());
+        // Recruitment is roster membership, not just the durable owner tag. In play a bound Mage
+        // reconciles itself into the roster on its first tick through CircleMageRuntime, but this
+        // fixture invokes the stone in the same tick it binds, so the recruitment the test name
+        // describes has to be established here or the call would have nobody to draw on.
+        SeerCovenRuntime.register(helper.getLevel(), player, first);
+        SeerCovenRuntime.register(helper.getLevel(), player, second);
         final Vec3 unboundPosition = unbound.position();
 
         final ItemStack stone = new ItemStack(ModItems.ALL.get("ingredient_seer_stone").get());
@@ -221,6 +228,6 @@ public final class SeerCovenGameTests {
         new EmbeddedChannel(connection);
         final CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
         helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 }

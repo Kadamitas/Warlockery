@@ -7,6 +7,7 @@ import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import com.kadamitas.warlockery.world.VillageAssaultData.AssaultState;
 import com.kadamitas.warlockery.world.VillageAssaultRules.AssaultKind;
 import com.kadamitas.warlockery.world.VillageAssaultRules.SettlementKind;
@@ -787,7 +788,7 @@ public final class VillageAssaultGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(new BlockPos(1, 1, 1));
         player.teleportTo(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     private static Map<BlockPos, BlockState> snapshotBlocks(

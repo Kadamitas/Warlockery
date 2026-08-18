@@ -11,6 +11,7 @@ import com.kadamitas.warlockery.entity.ImpLifeRules.OrderRank;
 import com.kadamitas.warlockery.item.InfernalPactEffects;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -1079,7 +1080,7 @@ public final class ImpGameTests {
                 return;
             }
             closed = true;
-            entities.forEach(Entity::discard);
+            entities.forEach(GameTestMockPlayers::release);
             entities.clear();
             cleanupActions.forEach(Runnable::run);
             cleanupActions.clear();
