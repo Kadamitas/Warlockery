@@ -3,7 +3,6 @@ package com.kadamitas.warlockery.world;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
-import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.world.SettlementFortificationRules.LayoutPlan;
 import com.kadamitas.warlockery.world.SettlementFortificationRules.Offset;
@@ -138,8 +137,7 @@ public final class VillageGuardRuntime {
         // Kind first, class second. A concrete-class test alone silently stops recognising exact
         // Hobgoblin residents the moment the exact species moves to its own dedicated body.
         if (entity instanceof ArcaneCreature resident
-            && resident.creatureKind() == CreatureKind.HOBGOBLIN
-            && !(entity instanceof HobgoblinEntity legacy && legacy.isVillageRaider())) {
+            && resident.creatureKind() == CreatureKind.HOBGOBLIN) {
             return Optional.of(SettlementKind.HOBGOBLIN);
         }
         if (entity instanceof Villager villager && villager.getType() == EntityTypes.VILLAGER) {
@@ -205,9 +203,6 @@ public final class VillageGuardRuntime {
         // them as hostile, marked assault member or not, exactly as it did in 1.4.
         if (candidate instanceof GoblinEntity) {
             return true;
-        }
-        if (candidate instanceof HobgoblinEntity goblin) {
-            return goblin.creatureKind() == CreatureKind.GOBLIN || goblin.isVillageRaider();
         }
         return candidate instanceof Monster;
     }

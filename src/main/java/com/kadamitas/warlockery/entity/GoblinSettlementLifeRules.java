@@ -1,25 +1,23 @@
 package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
-import java.util.Set;
 import net.minecraft.core.BlockPos;
 
+/**
+ * Persistence-side remainder of the retired 1.4 settlement life system. The behavioural half
+ * (participation gating, housing, reproduction, gifting, tunnel rolls, and tick intervals) went
+ * with {@code GoblinSettlementLifeRuntime} and the shared {@code HobgoblinEntity} body, which no
+ * registry entry constructs any more. What survives is exactly the structure-reservation contract
+ * {@link com.kadamitas.warlockery.world.GoblinSettlementLifeData} needs to read, clamp, and
+ * migrate {@code goblin_settlement_life} records that still exist in 1.4-era save directories:
+ * the caps that bound a persisted record and the key format those records are stored under.
+ */
 public final class GoblinSettlementLifeRules {
-    public static final int SETTLEMENT_RADIUS = 24;
-    public static final int MIN_RESIDENTS = 2;
-    public static final int POPULATION_CAP = 8;
     public static final int HUT_CAP = 3;
     public static final int TUNNEL_CAP = 1;
     public static final int WORLD_EDIT_CAP = 128;
-    public static final int HUT_DIRT_COST = 18;
-    public static final int HUT_LOG_COST = 3;
     public static final int HUT_EDIT_COST = 32;
     public static final int TUNNEL_EDIT_CAP = 10;
-    public static final int ADULT_TICK_INTERVAL = 200;
-    public static final int CHILD_TICK_INTERVAL = 40;
-    public static final int GIFT_COOLDOWN_TICKS = 12_000;
-    public static final int TUNNEL_ROLL_BOUND = 240;
-    private static final Set<CreatureKind> SETTLERS = Set.of(CreatureKind.GOBLIN, CreatureKind.HOBGOBLIN);
 
     private GoblinSettlementLifeRules() {
     }
@@ -29,22 +27,6 @@ public final class GoblinSettlementLifeRules {
         final long regionZ = Math.floorDiv(position.getZ(), 128);
         final long region = (regionX & 0x7FFF_FFFFL) << 32 | regionZ & 0xFFFF_FFFFL;
         return region * 31L + kind.ordinal();
-    }
-
-    public static boolean participates(final CreatureKind kind, final boolean raider, final boolean boss) {
-        return SETTLERS.contains(kind) && !raider && !boss;
-    }
-
-    public static boolean needsHousing(final int residents, final int reachableBeds) {
-        return residents >= MIN_RESIDENTS
-            && residents < POPULATION_CAP
-            && reachableBeds <= residents;
-    }
-
-    public static boolean canReproduce(final int residents, final int reachableBeds) {
-        return residents >= MIN_RESIDENTS
-            && residents < POPULATION_CAP
-            && reachableBeds > residents;
     }
 
     public static boolean canReserveHut(final int huts, final int worldEdits) {
@@ -60,14 +42,6 @@ public final class GoblinSettlementLifeRules {
 
     public static boolean canGatherNaturalBlock(final int worldEdits) {
         return fitsEditBudget(worldEdits, 1);
-    }
-
-    public static boolean shouldAttemptTunnel(final int roll) {
-        return Math.floorMod(roll, TUNNEL_ROLL_BOUND) == 0;
-    }
-
-    public static boolean giftReady(final long gameTime, final long nextGiftTime, final boolean holdingFlower) {
-        return holdingFlower && gameTime >= nextGiftTime;
     }
 
     private static boolean fitsEditBudget(final int current, final int requested) {

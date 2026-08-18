@@ -1391,12 +1391,10 @@ public final class GoblinEnclaveRuntime {
         if (state.patron().id().map(patron -> patron.equals(target.getUUID())).orElse(false)) {
             return false;
         }
-        // Every goblinfolk body is non-prey, including the dedicated F11 traveler. Naming only the
-        // two 1.4-era classes here would quietly make Goblins hostile to exact Hobgoblins the
-        // moment the exact species moves to its own dedicated body.
+        // Every goblinfolk body is non-prey: the exact Goblin and the exact Hobgoblin. Both
+        // dedicated bodies must stay named here or Goblins turn hostile to their own kin.
         if (target instanceof GoblinEntity
-            || target instanceof HobgoblinEntity
-            || target instanceof HobgoblinTravelerEntity) {
+            || target instanceof HobgoblinEntity) {
             return false;
         }
         final boolean sameOwner = target instanceof Player player

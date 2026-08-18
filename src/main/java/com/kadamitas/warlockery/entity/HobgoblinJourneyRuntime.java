@@ -273,8 +273,8 @@ public final class HobgoblinJourneyRuntime {
 
     // ================================================================ entry point
 
-    /** The one live entry point, called from {@code HobgoblinTravelerEntity.customServerAiStep}. */
-    public static void tick(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    /** The one live entry point, called from {@code HobgoblinEntity.customServerAiStep}. */
+    public static void tick(final HobgoblinEntity traveler, final ServerLevel level) {
         if (!HobgoblinJourneyRules.isExactHobgoblin(traveler.creatureKind())
             || traveler.isNoAi() || !traveler.isAlive()) {
             return;
@@ -289,7 +289,7 @@ public final class HobgoblinJourneyRuntime {
 
     // ================================================================ lifecycle
 
-    private static void reconcileOnLoad(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void reconcileOnLoad(final HobgoblinEntity traveler, final ServerLevel level) {
         final TransientState scratch = traveler.journeyTransient();
         if (scratch.reconciled) {
             return;
@@ -336,7 +336,7 @@ public final class HobgoblinJourneyRuntime {
      * phases: this is the single exit, and it is also the branch that arms the cooldown, releases
      * the real claim, clears the anchor, and emits the completion feedback.
      */
-    private static void advanceLoadedTimers(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void advanceLoadedTimers(final HobgoblinEntity traveler, final ServerLevel level) {
         final TransientState scratch = traveler.journeyTransient();
         scratch.decisionCooldownTicks = Math.max(0, scratch.decisionCooldownTicks - 1);
         scratch.perceptionCooldownTicks = Math.max(0, scratch.perceptionCooldownTicks - 1);
@@ -417,7 +417,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     /** Clears the lapsed aggressor and, with it, the target and the retreat flag it justified. */
-    private static void clearAggressor(final HobgoblinTravelerEntity traveler) {
+    private static void clearAggressor(final HobgoblinEntity traveler) {
         traveler.setJourneyState(traveler.journeyState().withCombat(
             HobgoblinJourneyState.Combat.none()
         ));
@@ -426,7 +426,7 @@ public final class HobgoblinJourneyRuntime {
 
     /** Ends the agreement, releases the job it authorized, and records the completion fact. */
     private static void endContract(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final ContractEnd reason
     ) {
@@ -448,7 +448,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     /** Leaves the caravan safely. A stranded member is never teleported and never deleted. */
-    private static void leaveCaravan(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void leaveCaravan(final HobgoblinEntity traveler, final ServerLevel level) {
         traveler.journeyState().caravan().key().ifPresent(key ->
             HobgoblinJourneyData.get(level).leaveCaravan(key, traveler.getUUID()));
         traveler.setJourneyState(traveler.journeyState()
@@ -461,7 +461,7 @@ public final class HobgoblinJourneyRuntime {
      * Immediate entity-only hazard observation runs every tick; it reads the two blocks the body
      * already occupies and nothing else, so it costs no spatial query.
      */
-    private static void observeHazard(final HobgoblinTravelerEntity traveler) {
+    private static void observeHazard(final HobgoblinEntity traveler) {
         traveler.journeyTransient().hazardActive = traveler.isOnFire()
             || traveler.isInLava()
             || traveler.getAirSupply() <= 0
@@ -470,7 +470,7 @@ public final class HobgoblinJourneyRuntime {
 
     // ================================================================ decision
 
-    private static void decide(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void decide(final HobgoblinEntity traveler, final ServerLevel level) {
         final TransientState scratch = traveler.journeyTransient();
         if (!HobgoblinJourneyRules.isDue(scratch.decisionCooldownTicks)) {
             return;
@@ -521,7 +521,7 @@ public final class HobgoblinJourneyRuntime {
 
     /** Grants at most one work claim for the newly selected mode, then commits it. */
     private static void commitMode(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final Mode mode
     ) {
@@ -552,7 +552,7 @@ public final class HobgoblinJourneyRuntime {
 
     /** Releases the claim, the target, and the mode transactionally. */
     private static void cancelJob(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final String reason
     ) {
@@ -565,7 +565,7 @@ public final class HobgoblinJourneyRuntime {
         traveler.getNavigation().stop();
     }
 
-    private static Optional<BlockPos> workTarget(final HobgoblinTravelerEntity traveler) {
+    private static Optional<BlockPos> workTarget(final HobgoblinEntity traveler) {
         final Plan plan = traveler.journeyTransient().plan;
         return plan.mine.or(() -> plan.deposit).or(() -> plan.campAnchor);
     }
@@ -576,7 +576,7 @@ public final class HobgoblinJourneyRuntime {
      * The one village-boundary observation. It is charged, bounded, and never forces a chunk: an
      * unloaded probe simply declines the candidate.
      */
-    private static void observeVillage(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void observeVillage(final HobgoblinEntity traveler, final ServerLevel level) {
         final TransientState scratch = traveler.journeyTransient();
         if (!HobgoblinJourneyRules.isDue(scratch.villageCooldownTicks)) {
             return;
@@ -608,7 +608,7 @@ public final class HobgoblinJourneyRuntime {
      * retains at most four. Every probe is charged before any filter can reject it.
      */
     private static Optional<BlockPos> findExit(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final BlockPos origin
     ) {
@@ -640,7 +640,7 @@ public final class HobgoblinJourneyRuntime {
             .min(Comparator.comparingDouble(position -> traveler.distanceToSqr(Vec3.atCenterOf(position))));
     }
 
-    private static void recordExitFailure(final HobgoblinTravelerEntity traveler) {
+    private static void recordExitFailure(final HobgoblinEntity traveler) {
         final HobgoblinJourneyState.Cadence cadence = traveler.journeyState().cadence();
         final int blocked = Math.min(
             HobgoblinJourneyRules.MAX_BLOCKED_EXITS, cadence.blockedExits() + 1
@@ -656,7 +656,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static boolean humanVillagerNearby(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         final List<Villager> visited = level.getEntitiesOfClass(
@@ -678,7 +678,7 @@ public final class HobgoblinJourneyRuntime {
      * One charged work survey per cadence. Every branch is bounded by its own read cap and a survey
      * never reads an unloaded position.
      */
-    private static void surveyWork(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void surveyWork(final HobgoblinEntity traveler, final ServerLevel level) {
         final TransientState scratch = traveler.journeyTransient();
         if (!HobgoblinJourneyRules.isDue(scratch.workScanCooldownTicks)) {
             return;
@@ -736,7 +736,7 @@ public final class HobgoblinJourneyRuntime {
      * key. Putting it behind the neighbour count or the regroup guard would let a live loaded member
      * lose its seat, and then its claim, simply because its companions wandered out of range.
      */
-    private static void reconcileCaravan(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void reconcileCaravan(final HobgoblinEntity traveler, final ServerLevel level) {
         final TransientState scratch = traveler.journeyTransient();
         if (!HobgoblinJourneyRules.isDue(scratch.groupCooldownTicks)) {
             return;
@@ -748,8 +748,8 @@ public final class HobgoblinJourneyRuntime {
         if (traveler.isBaby()) {
             return;
         }
-        final List<HobgoblinTravelerEntity> neighbours = level.getEntitiesOfClass(
-            HobgoblinTravelerEntity.class,
+        final List<HobgoblinEntity> neighbours = level.getEntitiesOfClass(
+            HobgoblinEntity.class,
             traveler.getBoundingBox().inflate(
                 HobgoblinJourneyRules.MEMBER_RADIUS, 12.0D, HobgoblinJourneyRules.MEMBER_RADIUS
             ),
@@ -806,8 +806,8 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static Optional<BlockPos> leaderPosition(
-        final HobgoblinTravelerEntity traveler,
-        final List<HobgoblinTravelerEntity> neighbours,
+        final HobgoblinEntity traveler,
+        final List<HobgoblinEntity> neighbours,
         final Optional<UUID> leader
     ) {
         if (leader.isEmpty() || leader.map(traveler.getUUID()::equals).orElse(false)) {
@@ -823,7 +823,7 @@ public final class HobgoblinJourneyRuntime {
      * Camp reconciliation. Phase advancement is a tick decision, never a record side effect, so the
      * branch that ends a phase is always the branch that also releases what that phase reserved.
      */
-    private static void reconcileCamp(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void reconcileCamp(final HobgoblinEntity traveler, final ServerLevel level) {
         final HobgoblinJourneyState state = traveler.journeyState();
         final Optional<Long> campKey = state.camp().key();
         if (campKey.isEmpty()) {
@@ -870,7 +870,7 @@ public final class HobgoblinJourneyRuntime {
             .withCamp(HobgoblinJourneyState.Camp.at(campKey.orElseThrow(), next)));
     }
 
-    private static void reconcileContract(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void reconcileContract(final HobgoblinEntity traveler, final ServerLevel level) {
         final HobgoblinJourneyState state = traveler.journeyState();
         if (state.contract().contractor().isEmpty()) {
             return;
@@ -890,7 +890,7 @@ public final class HobgoblinJourneyRuntime {
         }
     }
 
-    private static void reconcileMerchant(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void reconcileMerchant(final HobgoblinEntity traveler, final ServerLevel level) {
         rollMerchantDay(traveler, level);
         final HobgoblinJourneyState state = traveler.journeyState();
         final boolean needsRestock = traveler.getOffers().stream().anyMatch(offer -> offer.needsRestock());
@@ -916,7 +916,7 @@ public final class HobgoblinJourneyRuntime {
       * relog to refresh the quota, and a traveler that missed several days while unloaded collapses
       * to exactly one deterministic reset rather than a burst.</p>
       */
-    private static void rollMerchantDay(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void rollMerchantDay(final HobgoblinEntity traveler, final ServerLevel level) {
         final TransientState scratch = traveler.journeyTransient();
         final long today = Math.floorDiv(level.getOverworldClockTime(), TICKS_PER_DAY);
         if (scratch.observedDay == UNSEEDED_DAY) {
@@ -939,7 +939,7 @@ public final class HobgoblinJourneyRuntime {
      * health fraction.
      */
     private static DefensiveResponse defensiveResponse(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         final HobgoblinJourneyState state = traveler.journeyState();
@@ -961,7 +961,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static Optional<LivingEntity> resolveAggressor(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         return traveler.journeyState().combat().aggressor().flatMap(id -> {
@@ -973,12 +973,12 @@ public final class HobgoblinJourneyRuntime {
 
     /** A child or an already-retreating caravan member inside the rescue radius. */
     private static boolean dependentNearby(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         final Optional<Long> key = traveler.journeyState().caravan().key();
-        final List<HobgoblinTravelerEntity> visited = level.getEntitiesOfClass(
-            HobgoblinTravelerEntity.class,
+        final List<HobgoblinEntity> visited = level.getEntitiesOfClass(
+            HobgoblinEntity.class,
             traveler.getBoundingBox().inflate(
                 HobgoblinJourneyRules.DEFEND_RESCUE_RADIUS, 6.0D,
                 HobgoblinJourneyRules.DEFEND_RESCUE_RADIUS
@@ -997,7 +997,7 @@ public final class HobgoblinJourneyRuntime {
 
     // ================================================================ execution
 
-    private static void execute(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void execute(final HobgoblinEntity traveler, final ServerLevel level) {
         final HobgoblinJourneyState state = traveler.journeyState();
         // A claim-bearing mode may never execute without a live lease. Checking only when the job
         // still believes it holds one would let a lapsed traveler keep mutating a worksite.
@@ -1023,12 +1023,12 @@ public final class HobgoblinJourneyRuntime {
         }
     }
 
-    private static boolean verifyClaim(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static boolean verifyClaim(final HobgoblinEntity traveler, final ServerLevel level) {
         final Optional<UUID> claim = traveler.journeyState().job().claimId();
         return claim.isPresent() && HobgoblinJourneyData.get(level).holdsClaim(claim.orElseThrow());
     }
 
-    private static void holdForTrade(final HobgoblinTravelerEntity traveler) {
+    private static void holdForTrade(final HobgoblinEntity traveler) {
         traveler.getNavigation().stop();
         traveler.setTarget(null);
     }
@@ -1037,7 +1037,7 @@ public final class HobgoblinJourneyRuntime {
      * Trading never suspends the boundary rule: if the traveler is inside village space the customer
      * interaction is closed cleanly first, and only then does it route outward.
      */
-    private static void executeVillageExit(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeVillageExit(final HobgoblinEntity traveler, final ServerLevel level) {
         if (traveler.isTrading()) {
             traveler.setTradingPlayer(null);
         }
@@ -1055,7 +1055,7 @@ public final class HobgoblinJourneyRuntime {
         requestNavigation(traveler, level, exit.orElseThrow(), URGENT_SPEED);
     }
 
-    private static void executeTravel(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeTravel(final HobgoblinEntity traveler, final ServerLevel level) {
         final Optional<BlockPos> waypoint = traveler.journeyState().caravan().waypoint()
             .or(() -> traveler.journeyTransient().plan.travelLeg);
         if (waypoint.isEmpty()) {
@@ -1074,7 +1074,7 @@ public final class HobgoblinJourneyRuntime {
         requestNavigation(traveler, level, destination, TRAVEL_SPEED);
     }
 
-    private static void executeRegroup(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeRegroup(final HobgoblinEntity traveler, final ServerLevel level) {
         final Optional<Long> key = traveler.journeyState().caravan().key();
         if (key.isEmpty()) {
             traveler.setJourneyState(traveler.journeyState().withMode(Mode.TRAVEL));
@@ -1088,7 +1088,7 @@ public final class HobgoblinJourneyRuntime {
      * Proposal reserves the record and the exact materials before a single block is touched. A
      * refused proposal simply arms the cadence again; it never leaves a half-owned camp behind.
      */
-    private static void executeCampPropose(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeCampPropose(final HobgoblinEntity traveler, final ServerLevel level) {
         final HobgoblinJourneyState state = traveler.journeyState();
         final Optional<Long> caravanKey = state.caravan().key();
         final Optional<BlockPos> anchor = traveler.journeyTransient().plan.campAnchor;
@@ -1135,7 +1135,7 @@ public final class HobgoblinJourneyRuntime {
      * every mutation and revalidating the exact position immediately before it. A camp only ever
      * claims genuinely empty space, so teardown is the exact reverse of the placement.
      */
-    private static void executeCampBuild(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeCampBuild(final HobgoblinEntity traveler, final ServerLevel level) {
         final Optional<Long> campKey = traveler.journeyState().camp().key();
         if (campKey.isEmpty()) {
             cancelJob(traveler, level, "no camp");
@@ -1202,7 +1202,7 @@ public final class HobgoblinJourneyRuntime {
         }
     }
 
-    private static void executeCampRest(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeCampRest(final HobgoblinEntity traveler, final ServerLevel level) {
         final Optional<BlockPos> anchor = traveler.journeyState().camp().key()
             .flatMap(key -> HobgoblinJourneyData.get(level).camp(key).anchor());
         if (anchor.isEmpty()) {
@@ -1225,7 +1225,7 @@ public final class HobgoblinJourneyRuntime {
      * hazard, no event, and an expired birth cooldown.
      */
     private static void attemptConception(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         final TransientState scratch = traveler.journeyTransient();
@@ -1239,7 +1239,7 @@ public final class HobgoblinJourneyRuntime {
             return;
         }
         final HobgoblinJourneyData data = HobgoblinJourneyData.get(level);
-        final Optional<HobgoblinTravelerEntity> partner = nearestPartner(traveler, level, key.orElseThrow());
+        final Optional<HobgoblinEntity> partner = nearestPartner(traveler, level, key.orElseThrow());
         if (!HobgoblinJourneyRules.canConceive(
             data.population(key.orElseThrow()),
             partner.isPresent(),
@@ -1249,8 +1249,8 @@ public final class HobgoblinJourneyRuntime {
         )) {
             return;
         }
-        final HobgoblinTravelerEntity other = partner.orElseThrow();
-        if (!(traveler.getBreedOffspring(level, other) instanceof HobgoblinTravelerEntity child)) {
+        final HobgoblinEntity other = partner.orElseThrow();
+        if (!(traveler.getBreedOffspring(level, other) instanceof HobgoblinEntity child)) {
             return;
         }
         child.setBaby(true);
@@ -1268,13 +1268,13 @@ public final class HobgoblinJourneyRuntime {
         traveler.playWorkSound();
     }
 
-    private static Optional<HobgoblinTravelerEntity> nearestPartner(
-        final HobgoblinTravelerEntity traveler,
+    private static Optional<HobgoblinEntity> nearestPartner(
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final long caravanKey
     ) {
-        final List<HobgoblinTravelerEntity> visited = level.getEntitiesOfClass(
-            HobgoblinTravelerEntity.class,
+        final List<HobgoblinEntity> visited = level.getEntitiesOfClass(
+            HobgoblinEntity.class,
             traveler.getBoundingBox().inflate(8.0D, 4.0D, 8.0D),
             candidate -> candidate != traveler && candidate.isAlive() && !candidate.isBaby()
         );
@@ -1294,7 +1294,7 @@ public final class HobgoblinJourneyRuntime {
      * equals the state this camp placed. A player-modified or already-broken position is released
      * from ownership without any drop and without overwriting the later edit.
      */
-    private static void executeCampTeardown(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeCampTeardown(final HobgoblinEntity traveler, final ServerLevel level) {
         final Optional<Long> campKey = traveler.journeyState().camp().key();
         if (campKey.isEmpty()) {
             traveler.setJourneyState(traveler.journeyState().withMode(Mode.TRAVEL));
@@ -1332,7 +1332,7 @@ public final class HobgoblinJourneyRuntime {
         }
     }
 
-    private static void executeWorkApproach(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeWorkApproach(final HobgoblinEntity traveler, final ServerLevel level) {
         final Optional<BlockPos> target = traveler.journeyState().job().target();
         final Optional<UUID> loose = traveler.journeyTransient().plan.looseItem;
         if (target.isPresent()) {
@@ -1364,7 +1364,7 @@ public final class HobgoblinJourneyRuntime {
      * Exactly one atomic step per work pulse: one block broken, one stack deposited, or one item
      * picked up. Every guard is revalidated immediately before the mutation.
      */
-    private static void executeWorkCommit(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeWorkCommit(final HobgoblinEntity traveler, final ServerLevel level) {
         final Plan plan = traveler.journeyTransient().plan;
         final Optional<BlockPos> target = traveler.journeyState().job().target();
         if (target.isPresent() && plan.mine.filter(target.orElseThrow()::equals).isPresent()) {
@@ -1387,7 +1387,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static void commitMining(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final BlockPos position
     ) {
@@ -1427,7 +1427,7 @@ public final class HobgoblinJourneyRuntime {
      * can never duplicate or destroy a stack.
      */
     private static void commitDeposit(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final BlockPos position
     ) {
@@ -1464,7 +1464,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     /** One completed unit ends the agreement once the declared cap is reached. */
-    private static void recordContractUnit(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void recordContractUnit(final HobgoblinEntity traveler, final ServerLevel level) {
         final HobgoblinJourneyState state = traveler.journeyState();
         if (!state.contract().active()) {
             return;
@@ -1479,7 +1479,7 @@ public final class HobgoblinJourneyRuntime {
      * Approach only within a short local range and never past the disengage radius. The strike
      * itself is committed by the body's attack-only goal, which revalidates the target twice.
      */
-    private static void executeDefend(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeDefend(final HobgoblinEntity traveler, final ServerLevel level) {
         final Optional<LivingEntity> aggressor = resolveAggressor(traveler, level);
         if (aggressor.isEmpty()) {
             traveler.setTarget(null);
@@ -1500,7 +1500,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     /** Escape routes away from the aggressor and away from village space, never through it. */
-    private static void executeFlee(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void executeFlee(final HobgoblinEntity traveler, final ServerLevel level) {
         traveler.setTarget(null);
         traveler.setJourneyState(traveler.journeyState()
             .withCombat(traveler.journeyState().combat().withRetreating(true)));
@@ -1529,7 +1529,7 @@ public final class HobgoblinJourneyRuntime {
      * neutral or friendly player on a long cooldown. Every pickup is claimed by {@code mobGriefing}
      * and by an exact single-position revalidation.
      */
-    private static void executeChildPlay(final HobgoblinTravelerEntity child, final ServerLevel level) {
+    private static void executeChildPlay(final HobgoblinEntity child, final ServerLevel level) {
         final WorkAvailability work = child.journeyTransient().work;
         if (work.childGift() && offerFlowerToPlayer(child, level)) {
             return;
@@ -1543,7 +1543,7 @@ public final class HobgoblinJourneyRuntime {
         }
     }
 
-    private static boolean offerFlowerToPlayer(final HobgoblinTravelerEntity child, final ServerLevel level) {
+    private static boolean offerFlowerToPlayer(final HobgoblinEntity child, final ServerLevel level) {
         final Optional<ServerPlayer> recipient = level.players().stream()
             .filter(candidate -> candidate.isAlive() && !candidate.isSpectator())
             .filter(candidate -> child.distanceToSqr(candidate) <= 64.0D)
@@ -1571,7 +1571,7 @@ public final class HobgoblinJourneyRuntime {
         return true;
     }
 
-    private static void gatherFlower(final HobgoblinTravelerEntity child, final ServerLevel level) {
+    private static void gatherFlower(final HobgoblinEntity child, final ServerLevel level) {
         final Optional<BlockPos> target = child.journeyTransient().plan.flower;
         if (target.isEmpty()) {
             return;
@@ -1599,8 +1599,8 @@ public final class HobgoblinJourneyRuntime {
         child.journeyTransient().plan.flower = Optional.empty();
     }
 
-    private static void danceWithChildren(final HobgoblinTravelerEntity child, final ServerLevel level) {
-        final List<HobgoblinTravelerEntity> children = sameCaravanChildList(child, level);
+    private static void danceWithChildren(final HobgoblinEntity child, final ServerLevel level) {
+        final List<HobgoblinEntity> children = sameCaravanChildList(child, level);
         if (children.size() < HobgoblinJourneyRules.MIN_DANCE_CHILDREN) {
             return;
         }
@@ -1628,7 +1628,7 @@ public final class HobgoblinJourneyRuntime {
      * failures impose the declared backoff before an expensive retry.
      */
     private static void requestNavigation(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final BlockPos destination,
         final double speed
@@ -1662,7 +1662,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static void recordRouteFailure(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final RouteFailure failure
     ) {
         traveler.journeyCounters().navigationFailures++;
@@ -1682,7 +1682,7 @@ public final class HobgoblinJourneyRuntime {
      * Server-authoritative, range-checked, and rate limited. Feedback never exposes a hidden
      * inventory, unloaded target, relation score, caravan key, claim id, or protected block state.
      */
-    private static void emitFeedback(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static void emitFeedback(final HobgoblinEntity traveler, final ServerLevel level) {
         final TransientState scratch = traveler.journeyTransient();
         if (!HobgoblinJourneyRules.isDue(scratch.feedbackCooldownTicks)) {
             return;
@@ -1699,15 +1699,15 @@ public final class HobgoblinJourneyRuntime {
     // ================================================================ public body hooks
 
     /** Called from the merchant base before any trade may open or continue. */
-    public static boolean safeToTrade(final HobgoblinTravelerEntity traveler) {
+    public static boolean safeToTrade(final HobgoblinEntity traveler) {
         return !traveler.isBaby()
             && traveler.getTarget() == null
             && !traveler.journeyTransient().hazardActive()
             && !traveler.journeyTransient().insideExcludedSpace();
     }
 
-    /** Called from {@code HobgoblinTravelerEntity.canAttack} for every eligibility question. */
-    public static boolean canAttack(final HobgoblinTravelerEntity traveler, final LivingEntity target) {
+    /** Called from {@code HobgoblinEntity.canAttack} for every eligibility question. */
+    public static boolean canAttack(final HobgoblinEntity traveler, final LivingEntity target) {
         if (target == null || traveler.isBaby()) {
             return false;
         }
@@ -1726,12 +1726,11 @@ public final class HobgoblinJourneyRuntime {
      * protected, which is the mechanical form of "Hobgoblins have no proactive target selector".
      */
     private static TargetClass classify(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final LivingEntity target
     ) {
-        if (target instanceof HobgoblinTravelerEntity
+        if (target instanceof HobgoblinEntity
             || target instanceof GoblinEntity
-            || target instanceof HobgoblinEntity
             || GoblinHostilityRules.isHumanVillager(target.getType())) {
             return TargetClass.PROTECTED;
         }
@@ -1747,7 +1746,7 @@ public final class HobgoblinJourneyRuntime {
 
     /** Called from {@code hurtServer}: exactly one direct aggressor is remembered, briefly. */
     public static void onAcceptedDamage(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final DamageSource source
     ) {
@@ -1778,7 +1777,7 @@ public final class HobgoblinJourneyRuntime {
      * so a caravan can never chain-alert a neighbouring caravan.
      */
     private static void raiseAlarm(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final UUID aggressor
     ) {
@@ -1786,8 +1785,8 @@ public final class HobgoblinJourneyRuntime {
         if (key.isEmpty()) {
             return;
         }
-        final List<HobgoblinTravelerEntity> visited = level.getEntitiesOfClass(
-            HobgoblinTravelerEntity.class,
+        final List<HobgoblinEntity> visited = level.getEntitiesOfClass(
+            HobgoblinEntity.class,
             traveler.getBoundingBox().inflate(
                 HobgoblinJourneyRules.MEMBER_RADIUS, 8.0D, HobgoblinJourneyRules.MEMBER_RADIUS
             ),
@@ -1804,7 +1803,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     /** Called from {@code mobInteract} the moment the shared contract binding accepts. */
-    public static void onContractAccepted(final HobgoblinTravelerEntity traveler, final Player player) {
+    public static void onContractAccepted(final HobgoblinEntity traveler, final Player player) {
         if (!(traveler.level() instanceof ServerLevel level)) {
             return;
         }
@@ -1833,7 +1832,7 @@ public final class HobgoblinJourneyRuntime {
       * impression buys a small, vanilla-safe discount through the ordinary special-price field; no
       * item identity or count required by ritual compatibility is ever changed.
       */
-    public static void onTradeOpened(final HobgoblinTravelerEntity traveler, final Player player) {
+    public static void onTradeOpened(final HobgoblinEntity traveler, final Player player) {
         traveler.getNavigation().stop();
         traveler.setTarget(null);
         final int discount = HobgoblinJourneyRules.priceImprovement(
@@ -1856,7 +1855,7 @@ public final class HobgoblinJourneyRuntime {
      * creates ownership, a follow mode, or a contract.
      */
     public static boolean offerHospitality(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final Player player,
         final ItemStack supplied
@@ -1880,7 +1879,7 @@ public final class HobgoblinJourneyRuntime {
 
     /** Called from {@code mobInteract}: any player may hand a Miner an accepted tool. */
     public static InteractionResult equipMiningTool(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final Player player,
         final ItemStack supplied
@@ -1905,7 +1904,7 @@ public final class HobgoblinJourneyRuntime {
     /** Called from {@code checkNaturalSpawnRules}; uses already-loaded sections only. */
     public static int countLoadedTravelersNear(final ServerLevel level, final BlockPos position) {
         return level.getEntitiesOfClass(
-            HobgoblinTravelerEntity.class,
+            HobgoblinEntity.class,
             new AABB(position).inflate(HobgoblinJourneyRules.LOCAL_SPAWN_CAP_RADIUS)
         ).size();
     }
@@ -1919,7 +1918,7 @@ public final class HobgoblinJourneyRuntime {
      * has one. F03/F04 own event creation, membership, attackers, quotas, rewards, and cleanup.
      */
     public static Optional<BlockPos> activeCampAnchor(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         return traveler.journeyState().camp().key()
@@ -1931,7 +1930,7 @@ public final class HobgoblinJourneyRuntime {
     // ================================================================ surveys
 
     private static Optional<ItemEntity> nearestLooseItem(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         final List<ItemEntity> visited = level.getEntitiesOfClass(
@@ -1954,7 +1953,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static Optional<BlockPos> nearestMineable(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         final ItemStack tool = traveler.getMainHandItem();
@@ -1965,7 +1964,7 @@ public final class HobgoblinJourneyRuntime {
 
     /** The single mineable predicate, shared by the survey and by the pre-commit revalidation. */
     private static boolean isMineable(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final BlockPos position,
         final ItemStack tool
@@ -1985,7 +1984,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static Optional<BlockPos> nearestDeposit(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         return chargedScan(traveler, level, ScanClass.DEPOSIT, 6, 3,
@@ -1995,7 +1994,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static Optional<BlockPos> nearestFlower(
-        final HobgoblinTravelerEntity child,
+        final HobgoblinEntity child,
         final ServerLevel level
     ) {
         return chargedScan(child, level, ScanClass.FLOWER, 4, 1,
@@ -2005,7 +2004,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static Optional<BlockPos> findCampAnchor(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         return chargedScan(traveler, level, ScanClass.CAMP, 6, 2,
@@ -2017,7 +2016,7 @@ public final class HobgoblinJourneyRuntime {
 
     /** One bounded outward travel leg. A long journey is a sequence of these, never a global path. */
     private static Optional<BlockPos> findTravelLeg(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
         final BlockPos origin = traveler.blockPosition();
@@ -2116,7 +2115,7 @@ public final class HobgoblinJourneyRuntime {
      * world-border and loaded-chunk rejections, so a rejected candidate can never be free.</p>
      */
     private static Optional<BlockPos> chargedScan(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final ScanClass scanClass,
         final int horizontal,
@@ -2158,13 +2157,13 @@ public final class HobgoblinJourneyRuntime {
 
     // ================================================================ helpers
 
-    private static CampPhase campPhaseOf(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static CampPhase campPhaseOf(final HobgoblinEntity traveler, final ServerLevel level) {
         return traveler.journeyState().camp().key()
             .map(key -> HobgoblinJourneyData.get(level).camp(key).phase())
             .orElse(CampPhase.NONE);
     }
 
-    private static boolean campEventHeld(final HobgoblinTravelerEntity traveler, final ServerLevel level) {
+    private static boolean campEventHeld(final HobgoblinEntity traveler, final ServerLevel level) {
         return traveler.journeyState().camp().key()
             .map(key -> HobgoblinJourneyData.get(level).camp(key).eventHeld())
             .orElse(false);
@@ -2214,7 +2213,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static boolean campFootprintClear(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final ServerLevel level,
         final BlockPos anchor
     ) {
@@ -2225,7 +2224,7 @@ public final class HobgoblinJourneyRuntime {
         });
     }
 
-    private static boolean campMaterialsCarried(final HobgoblinTravelerEntity traveler) {
+    private static boolean campMaterialsCarried(final HobgoblinEntity traveler) {
         return count(traveler, stack -> stack.is(ItemTags.DIRT)) >= HobgoblinJourneyRules.CAMP_DIRT_COST;
     }
 
@@ -2261,19 +2260,19 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static int sameCaravanChildren(
-        final HobgoblinTravelerEntity child,
+        final HobgoblinEntity child,
         final ServerLevel level
     ) {
         return sameCaravanChildList(child, level).size();
     }
 
-    private static List<HobgoblinTravelerEntity> sameCaravanChildList(
-        final HobgoblinTravelerEntity child,
+    private static List<HobgoblinEntity> sameCaravanChildList(
+        final HobgoblinEntity child,
         final ServerLevel level
     ) {
         final Optional<Long> key = child.journeyState().caravan().key();
-        final List<HobgoblinTravelerEntity> visited = level.getEntitiesOfClass(
-            HobgoblinTravelerEntity.class,
+        final List<HobgoblinEntity> visited = level.getEntitiesOfClass(
+            HobgoblinEntity.class,
             child.getBoundingBox().inflate(8.0D, 3.0D, 8.0D),
             candidate -> candidate.isAlive() && candidate.isBaby()
         );
@@ -2289,14 +2288,14 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static boolean carries(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final Predicate<ItemStack> predicate
     ) {
         return count(traveler, predicate) > 0;
     }
 
     private static int count(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final Predicate<ItemStack> predicate
     ) {
         return IntStream.range(0, traveler.getInventory().getContainerSize())
@@ -2307,7 +2306,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static void consume(
-        final HobgoblinTravelerEntity traveler,
+        final HobgoblinEntity traveler,
         final Predicate<ItemStack> predicate,
         final int amount
     ) {

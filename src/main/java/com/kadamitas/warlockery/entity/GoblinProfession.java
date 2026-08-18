@@ -9,8 +9,8 @@ import net.minecraft.world.level.block.Blocks;
 /**
  * The four declared Warlockery goblin-society professions, extracted from the nested
  * {@code HobgoblinEntity.GoblinProfession} so the dedicated F10 {@link GoblinEntity} merchant body,
- * the retained {@link HobgoblinEntity}, and the shared {@link GoblinTradeCatalog} can all name one
- * type without inheriting the full human Villager implementation.
+ * the dedicated F11 {@link HobgoblinEntity}, and the shared {@link GoblinTradeCatalog} can
+ * all name one type without inheriting the full human Villager implementation.
  *
  * <p>The declared ordinal order, string ids, workstation blocks, engine-profession mapping, and
  * displayed-name translation keys are unchanged public surface: the enum move is a compile-time

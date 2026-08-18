@@ -12,7 +12,6 @@ import com.kadamitas.warlockery.entity.HedgeCroneEntity;
 import com.kadamitas.warlockery.entity.HexBatEntity;
 import com.kadamitas.warlockery.entity.HexBatRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
-import com.kadamitas.warlockery.entity.HobgoblinTravelerEntity;
 import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.StonebrokerEntity;
 import com.kadamitas.warlockery.entity.ForgewardenEntity;
@@ -214,10 +213,10 @@ public final class ModEntities {
             return EntityType.Builder.of(WerewolfHunterEntity::new, MobCategory.MONSTER)
                 .sized(visual.width(), visual.height()).notInPeaceful().build(REGISTRY.key("werewolf_hunter"));
         });
-    public static final RegistryObject<EntityType<HobgoblinTravelerEntity>> HOBGOBLIN = register("hobgoblin",
+    public static final RegistryObject<EntityType<HobgoblinEntity>> HOBGOBLIN = register("hobgoblin",
         () -> {
             final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.HOBGOBLIN);
-            return EntityType.Builder.of(HobgoblinTravelerEntity::new, MobCategory.CREATURE)
+            return EntityType.Builder.of(HobgoblinEntity::new, MobCategory.CREATURE)
                 .sized(visual.width(), visual.height())
                 .build(REGISTRY.key("hobgoblin"));
         });
@@ -259,22 +258,6 @@ public final class ModEntities {
     }
 
     private ModEntities() {
-    }
-
-    private static RegistryObject<EntityType<HobgoblinEntity>> hobgoblin(final String id, final CreatureKind kind) {
-        return register(id, () -> {
-            final boolean boss = GoblinBossRules.isBoss(kind);
-            final boolean hostile = boss || kind == CreatureKind.GOBLIN;
-            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(kind);
-            final var builder = EntityType.Builder.<HobgoblinEntity>of(
-                (type, level) -> new HobgoblinEntity(type, level, kind),
-                hostile ? MobCategory.MONSTER : MobCategory.CREATURE
-            ).sized(visual.width(), visual.height());
-            if (hostile) {
-                builder.notInPeaceful();
-            }
-            return builder.build(REGISTRY.key(id));
-        });
     }
 
     private static EntityType<?> createArcaneType(final String id, final CreatureKind kind) {
@@ -584,7 +567,7 @@ public final class ModEntities {
             HOBGOBLIN.get(),
             SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            HobgoblinTravelerEntity::checkNaturalSpawnRules,
+            HobgoblinEntity::checkNaturalSpawnRules,
             SpawnPlacementRegisterEvent.Operation.REPLACE
         );
         event.register(

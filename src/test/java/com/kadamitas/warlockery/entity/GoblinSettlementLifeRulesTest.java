@@ -9,16 +9,13 @@ import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Covers the persistence remainder only. The behavioural assertions that lived here (housing,
+ * reproduction, participation, gifting, tunnel rolls) went with the retired settlement runtime and
+ * the shared hobgoblin body; what is pinned below is the clamp and key contract that
+ * {@code GoblinSettlementLifeData} applies when reading a 1.4-era record off disk.
+ */
 final class GoblinSettlementLifeRulesTest {
-    @Test
-    void housingFollowsTheVanillaOneFreeBedForOneChildPrinciple() {
-        assertTrue(GoblinSettlementLifeRules.needsHousing(2, 2));
-        assertFalse(GoblinSettlementLifeRules.canReproduce(2, 2));
-        assertFalse(GoblinSettlementLifeRules.needsHousing(2, 3));
-        assertTrue(GoblinSettlementLifeRules.canReproduce(2, 3));
-        assertFalse(GoblinSettlementLifeRules.canReproduce(GoblinSettlementLifeRules.POPULATION_CAP, 16));
-    }
-
     @Test
     void autonomousConstructionHasPersistentHardCaps() {
         assertTrue(GoblinSettlementLifeRules.canReserveHut(0, 0));
@@ -34,11 +31,22 @@ final class GoblinSettlementLifeRulesTest {
     }
 
     @Test
-    void hutCostsAreExplicitAndCannotBePaidWithPartialMaterials() {
-        assertEquals(18, GoblinSettlementLifeRules.HUT_DIRT_COST);
-        assertEquals(3, GoblinSettlementLifeRules.HUT_LOG_COST);
+    void persistedRecordCapsKeepTheirExactStoredValues() {
+        assertEquals(3, GoblinSettlementLifeRules.HUT_CAP);
+        assertEquals(1, GoblinSettlementLifeRules.TUNNEL_CAP);
+        assertEquals(128, GoblinSettlementLifeRules.WORLD_EDIT_CAP);
         assertEquals(32, GoblinSettlementLifeRules.HUT_EDIT_COST);
+        assertEquals(10, GoblinSettlementLifeRules.TUNNEL_EDIT_CAP);
         assertTrue(GoblinSettlementLifeRules.HUT_EDIT_COST < GoblinSettlementLifeRules.WORLD_EDIT_CAP);
+    }
+
+    @Test
+    void naturalBlockGatheringStopsAtTheEditBudget() {
+        assertTrue(GoblinSettlementLifeRules.canGatherNaturalBlock(0));
+        assertTrue(GoblinSettlementLifeRules.canGatherNaturalBlock(
+            GoblinSettlementLifeRules.WORLD_EDIT_CAP - 1));
+        assertFalse(GoblinSettlementLifeRules.canGatherNaturalBlock(
+            GoblinSettlementLifeRules.WORLD_EDIT_CAP));
     }
 
     @Test
@@ -48,22 +56,5 @@ final class GoblinSettlementLifeRulesTest {
         final long distant = GoblinSettlementLifeRules.settlementKey(new BlockPos(256, 0, 0), CreatureKind.GOBLIN);
         assertNotEquals(goblin, hobgoblin);
         assertNotEquals(goblin, distant);
-    }
-
-    @Test
-    void ambientLifeExcludesRaidersBossesAndOtherCreatureFamilies() {
-        assertTrue(GoblinSettlementLifeRules.participates(CreatureKind.GOBLIN, false, false));
-        assertTrue(GoblinSettlementLifeRules.participates(CreatureKind.HOBGOBLIN, false, false));
-        assertFalse(GoblinSettlementLifeRules.participates(CreatureKind.GOBLIN, true, false));
-        assertFalse(GoblinSettlementLifeRules.participates(CreatureKind.STONEBROKER, false, false));
-    }
-
-    @Test
-    void giftsAndMiningAreRareAndCooldownBounded() {
-        assertTrue(GoblinSettlementLifeRules.giftReady(100, 100, true));
-        assertFalse(GoblinSettlementLifeRules.giftReady(99, 100, true));
-        assertFalse(GoblinSettlementLifeRules.giftReady(100, 100, false));
-        assertTrue(GoblinSettlementLifeRules.shouldAttemptTunnel(0));
-        assertFalse(GoblinSettlementLifeRules.shouldAttemptTunnel(1));
     }
 }

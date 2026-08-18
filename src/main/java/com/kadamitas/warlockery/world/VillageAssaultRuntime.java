@@ -4,7 +4,6 @@ import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.GoblinEntity;
-import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.LycanPackRuntime;
 import com.kadamitas.warlockery.entity.VampireCourtEntity;
 import com.kadamitas.warlockery.entity.VampireCourtRules;
@@ -172,9 +171,6 @@ public final class VillageAssaultRuntime {
         raider.setPersistenceRequired();
         if (raider instanceof ArcaneMob arcane) {
             arcane.setHobgoblinAssaultVariant(hobgoblinVariant);
-        }
-        if (raider instanceof HobgoblinEntity goblin && kind == AssaultKind.GOBLIN) {
-            goblin.joinVillageRaid(center, wave, leader);
         }
         // Body-level execution only: every strategic contract above this line is unchanged.
         if (raider instanceof GoblinEntity exactGoblin && kind == AssaultKind.GOBLIN) {
@@ -1345,9 +1341,6 @@ public final class VillageAssaultRuntime {
         entity.getPersistentData().remove(HOBGOBLIN_VARIANT);
         if (entity instanceof ArcaneMob arcane) {
             arcane.setHobgoblinAssaultVariant(false);
-        }
-        if (entity instanceof HobgoblinEntity goblin) {
-            goblin.leaveVillageRaid();
         }
         // Releases target, combat role, enclave claims, and the derived persistence reason so a
         // timed-out or unloaded survivor can never stay permanently persistent.

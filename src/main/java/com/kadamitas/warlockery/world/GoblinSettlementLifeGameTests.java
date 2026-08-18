@@ -3,7 +3,7 @@ package com.kadamitas.warlockery.world;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyRules;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyRules.CampPhase;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyRules.Mode;
-import com.kadamitas.warlockery.entity.HobgoblinTravelerEntity;
+import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +24,10 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>F11 gave the exact Hobgoblin a dedicated {@code AbstractVillager} body and replaced the whole
  * settlement, hut and tunnel subsystem with the caravan camp lifecycle (matrix rows HB-15, HB-16,
- * HB-17). {@code GoblinSettlementLifeRuntime} is typed on the retained shared {@code
- * HobgoblinEntity} and its gate is {@code GoblinSettlementLifeRules.participates}, which admits
- * only non-boss {@code GOBLIN} and {@code HOBGOBLIN} kinds. After the {@code ModEntities.HOBGOBLIN}
- * flip the only remaining {@code HobgoblinEntity} instances are the two F12 patrons, and both are
- * bosses, so that runtime no longer serves any obtainable entity. Its subject did not merely stop
- * compiling here, it stopped existing.
+ * HB-17). The settlement runtime it replaced was typed on the shared 1.4 hobgoblin body, which no
+ * registry entry constructed once F11 and F12 flipped the last three ids to dedicated bodies; both
+ * that runtime and the shared body have since been deleted outright. The subject of these fixtures
+ * did not merely stop compiling here, it stopped existing.
  *
  * <p>These fixtures are therefore reinterpreted against the replacement contracts rather than
  * retyped: the camp reservation replaces the hut, the bounded camp journal and the exclusive
@@ -176,22 +174,22 @@ public final class GoblinSettlementLifeGameTests {
         final HobgoblinJourneyData data = HobgoblinJourneyData.get(helper.getLevel());
         data.clearForGameTest(caravanKey);
 
-        final List<HobgoblinTravelerEntity> children = new ArrayList<>();
+        final List<HobgoblinEntity> children = new ArrayList<>();
         try {
-            final HobgoblinTravelerEntity gatherer =
+            final HobgoblinEntity gatherer =
                 child(helper, children, new BlockPos(0, 1, 0), caravanKey);
             // The two bystanders hold a non-flower item on purpose. A child surveys for a flower
             // only with an empty hand, so leaving their hands empty would put three children in a
             // race for the arena's single flower and let any of them win it; the fixture would
             // then be asserting which child happened to arrive first. They still count toward the
             // dance, which counts caravan children and not what they are carrying.
-            final HobgoblinTravelerEntity firstBystander =
+            final HobgoblinEntity firstBystander =
                 child(helper, children, new BlockPos(2, 1, 0), caravanKey);
-            final HobgoblinTravelerEntity secondBystander =
+            final HobgoblinEntity secondBystander =
                 child(helper, children, new BlockPos(0, 1, 2), caravanKey);
             firstBystander.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STICK));
             secondBystander.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STICK));
-            final HobgoblinTravelerEntity giver =
+            final HobgoblinEntity giver =
                 child(helper, children, new BlockPos(2, 1, 2), caravanKey);
             giver.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.POPPY));
 
@@ -268,13 +266,13 @@ public final class GoblinSettlementLifeGameTests {
         return HobgoblinJourneyRules.caravanKey(anchor.getX(), anchor.getZ()) * 31L + salt;
     }
 
-    private static HobgoblinTravelerEntity child(
+    private static HobgoblinEntity child(
         final GameTestHelper helper,
-        final List<HobgoblinTravelerEntity> tracked,
+        final List<HobgoblinEntity> tracked,
         final BlockPos position,
         final long caravanKey
     ) {
-        final HobgoblinTravelerEntity traveler = helper.spawn(
+        final HobgoblinEntity traveler = helper.spawn(
             ModEntities.HOBGOBLIN.get(), position, EntitySpawnReason.BREEDING
         );
         traveler.setAge(-24_000);
@@ -289,7 +287,7 @@ public final class GoblinSettlementLifeGameTests {
 
     private static void cleanup(
         final GameTestHelper helper,
-        final List<HobgoblinTravelerEntity> children,
+        final List<HobgoblinEntity> children,
         final HobgoblinJourneyData data,
         final long caravanKey,
         final BlockPos relativeFlower

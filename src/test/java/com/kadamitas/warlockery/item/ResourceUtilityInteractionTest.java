@@ -237,10 +237,11 @@ final class ResourceUtilityInteractionTest {
     }
 
     private void goblinDustHasRenewableMobRoute() {
-        final String source = read(Path.of("src/main/java/com/kadamitas/warlockery/entity/HobgoblinEntity.java"));
+        final String source = read(Path.of(
+            "src/main/java/com/kadamitas/warlockery/entity/HobgoblinJourneyRuntime.java"));
         assertTrue(source.contains("HOBGOBLIN_MINEABLES"));
         assertTrue(source.contains("ingredient_delvealloydust"));
-        assertTrue(source.contains("prospect(final ServerLevel level)"));
+        assertTrue(source.contains("commitMining("));
     }
 
     private static DynamicContainer suite(

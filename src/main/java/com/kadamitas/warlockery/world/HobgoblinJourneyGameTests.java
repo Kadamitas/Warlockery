@@ -11,7 +11,7 @@ import com.kadamitas.warlockery.entity.HobgoblinJourneyRules.PersistenceReason;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyRules.RelationFact;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyRuntime;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyState;
-import com.kadamitas.warlockery.entity.HobgoblinTravelerEntity;
+import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,10 +78,10 @@ public final class HobgoblinJourneyGameTests {
     public static void hobgoblinJourneyIdentityVillageExclusionAndMigration(final GameTestHelper helper) {
         final FixtureScope fixture = new FixtureScope(helper);
         try {
-            final HobgoblinTravelerEntity traveler = spawnTraveler(fixture, new BlockPos(1, 1, 1));
+            final HobgoblinEntity traveler = spawnTraveler(fixture, new BlockPos(1, 1, 1));
             helper.assertValueEqual(traveler.creatureKind(), CreatureKind.HOBGOBLIN,
                 "the exact public ID must construct CreatureKind.HOBGOBLIN");
-            helper.assertTrue(traveler.getClass() == HobgoblinTravelerEntity.class,
+            helper.assertTrue(traveler.getClass() == HobgoblinEntity.class,
                 "warlockery:hobgoblin must construct the dedicated traveler body");
             helper.assertFalse(Villager.class.isInstance(traveler),
                 "the dedicated body must not inherit the human Villager implementation");
@@ -109,7 +109,7 @@ public final class HobgoblinJourneyGameTests {
                 "the random spawn bonus must be stripped: " + followRange);
 
             for (int index = 0; index < 8; index++) {
-                final HobgoblinTravelerEntity rolled = spawnTraveler(fixture, new BlockPos(1, 1, 1));
+                final HobgoblinEntity rolled = spawnTraveler(fixture, new BlockPos(1, 1, 1));
                 helper.assertTrue(rolled.hasCustomName(),
                     "every spawned traveler carries its profession display name");
                 helper.assertTrue(rolled.isCustomNameVisible(),
@@ -118,7 +118,7 @@ public final class HobgoblinJourneyGameTests {
 
             // A live 1.4 Hobgoblin compound migrates rather than resetting, and the old permanent
             // owner becomes a bounded agreement rather than ownership.
-            final HobgoblinTravelerEntity migrated = spawnTraveler(fixture, new BlockPos(1, 1, 0));
+            final HobgoblinEntity migrated = spawnTraveler(fixture, new BlockPos(1, 1, 0));
             final UUID legacyOwner = UUID.randomUUID();
             migrated.setJourneyState(HobgoblinJourneyState.migrateLegacy(
                 "smith", 75, 0L, helper.getLevel().getGameTime(), Optional.of(legacyOwner)
@@ -139,7 +139,7 @@ public final class HobgoblinJourneyGameTests {
 
             // A traveler with no caravan, camp, contract, or event is ordinary and may despawn. It
             // has to be spawned unlatched: GameTestEntityBuilder latches persistence on every mob.
-            final HobgoblinTravelerEntity wild = spawnUnlatchedTraveler(fixture, new BlockPos(2, 1, 2));
+            final HobgoblinEntity wild = spawnUnlatchedTraveler(fixture, new BlockPos(2, 1, 2));
             helper.assertTrue(wild.persistenceReason().isEmpty(),
                 "an unanchored solitary traveler holds no persistence reason");
             helper.assertTrue(wild.removeWhenFarAway(4096.0D),
@@ -175,7 +175,7 @@ public final class HobgoblinJourneyGameTests {
     public static void hobgoblinJourneyTradeContractAndRelations(final GameTestHelper helper) {
         final FixtureScope fixture = new FixtureScope(helper);
         try {
-            final HobgoblinTravelerEntity traveler = spawnTraveler(fixture, new BlockPos(1, 1, 1));
+            final HobgoblinEntity traveler = spawnTraveler(fixture, new BlockPos(1, 1, 1));
             makeDue(traveler);
 
             helper.assertTrue(traveler.getOffers().isEmpty() || !traveler.getOffers().isEmpty(),
@@ -258,8 +258,8 @@ public final class HobgoblinJourneyGameTests {
             data.clearForGameTest(caravanKey);
             fixture.onClose(() -> data.clearForGameTest(caravanKey));
 
-            final HobgoblinTravelerEntity first = spawnTraveler(fixture, new BlockPos(0, 1, 1));
-            final HobgoblinTravelerEntity second = spawnTraveler(fixture, new BlockPos(2, 1, 1));
+            final HobgoblinEntity first = spawnTraveler(fixture, new BlockPos(0, 1, 1));
+            final HobgoblinEntity second = spawnTraveler(fixture, new BlockPos(2, 1, 1));
             first.setGoblinProfession(GoblinProfession.MINER);
             second.setGoblinProfession(GoblinProfession.SHAMAN);
 
@@ -277,15 +277,15 @@ public final class HobgoblinJourneyGameTests {
                 "leadership is the deterministic lowest unsigned adult UUID");
 
             // Proximity alone never merges groups.
-            final HobgoblinTravelerEntity outsider = spawnTraveler(fixture, new BlockPos(1, 1, 2));
+            final HobgoblinEntity outsider = spawnTraveler(fixture, new BlockPos(1, 1, 2));
             helper.assertTrue(outsider.journeyState().caravan().key().isEmpty(),
                 "standing next to a caravan does not join it");
 
             // A child is exactly one Hobgoblin, deterministic, holding no claim and no target.
             final Entity offspring = first.getBreedOffspring(helper.getLevel(), second);
-            helper.assertTrue(offspring instanceof HobgoblinTravelerEntity,
+            helper.assertTrue(offspring instanceof HobgoblinEntity,
                 "two exact travelers must produce a traveler child");
-            final HobgoblinTravelerEntity child = (HobgoblinTravelerEntity) offspring;
+            final HobgoblinEntity child = (HobgoblinEntity) offspring;
             fixture.track(child);
             helper.assertValueEqual(child.creatureKind(), CreatureKind.HOBGOBLIN,
                 "the child is exactly warlockery:hobgoblin");
@@ -390,7 +390,7 @@ public final class HobgoblinJourneyGameTests {
             data.clearForGameTest(caravanKey);
             fixture.onClose(() -> data.clearForGameTest(caravanKey));
 
-            final HobgoblinTravelerEntity traveler = spawnTraveler(fixture, new BlockPos(1, 1, 1));
+            final HobgoblinEntity traveler = spawnTraveler(fixture, new BlockPos(1, 1, 1));
             makeDue(traveler);
 
             // No proactive prey at all: a human Villager and another goblinfolk body are both
@@ -400,7 +400,7 @@ public final class HobgoblinJourneyGameTests {
             );
             helper.assertFalse(traveler.canAttack(human),
                 "a Hobgoblin never attacks a human Villager");
-            final HobgoblinTravelerEntity kin = spawnTraveler(fixture, new BlockPos(2, 1, 1));
+            final HobgoblinEntity kin = spawnTraveler(fixture, new BlockPos(2, 1, 1));
             helper.assertFalse(traveler.canAttack(kin), "goblinfolk are never prey");
 
             // A mock ServerPlayer cannot take damage, so the aggressor is a live Zombie.
@@ -474,7 +474,7 @@ public final class HobgoblinJourneyGameTests {
             data.clearForGameTest(caravanKey);
             fixture.onClose(() -> data.clearForGameTest(caravanKey));
 
-            final HobgoblinTravelerEntity traveler = spawnTraveler(fixture, new BlockPos(1, 1, 1));
+            final HobgoblinEntity traveler = spawnTraveler(fixture, new BlockPos(1, 1, 1));
             makeDue(traveler);
 
             helper.assertTrue(
@@ -546,19 +546,19 @@ public final class HobgoblinJourneyGameTests {
      * global world clock across a batch, so a fixture that does not claim its own cadence can
      * observe another fixture's stale phase.
      */
-    private static void makeDue(final HobgoblinTravelerEntity traveler) {
+    private static void makeDue(final HobgoblinEntity traveler) {
         traveler.journeyTransient().resetForLoad();
     }
 
-    private static HobgoblinTravelerEntity spawnTraveler(
+    private static HobgoblinEntity spawnTraveler(
         final FixtureScope fixture,
         final BlockPos position
     ) {
         final GameTestHelper helper = fixture.helper;
         @SuppressWarnings("unchecked")
-        final EntityType<HobgoblinTravelerEntity> type =
-            (EntityType<HobgoblinTravelerEntity>) ModEntities.ALL.get("hobgoblin").get();
-        final HobgoblinTravelerEntity traveler = fixture.spawn(type, position, EntitySpawnReason.NATURAL);
+        final EntityType<HobgoblinEntity> type =
+            (EntityType<HobgoblinEntity>) ModEntities.ALL.get("hobgoblin").get();
+        final HobgoblinEntity traveler = fixture.spawn(type, position, EntitySpawnReason.NATURAL);
         traveler.setDeltaMovement(Vec3.ZERO);
         final BlockPos absolute = helper.absolutePos(position);
         traveler.snapTo(absolute.getX() + 0.5D, absolute.getY(), absolute.getZ() + 0.5D);
@@ -572,15 +572,15 @@ public final class HobgoblinJourneyGameTests {
      * every mob it spawns so that a fixture cannot despawn its own subject mid-test. The despawn
      * contract has to start from a genuinely unlatched body to be provable at all.
      */
-    private static HobgoblinTravelerEntity spawnUnlatchedTraveler(
+    private static HobgoblinEntity spawnUnlatchedTraveler(
         final FixtureScope fixture,
         final BlockPos position
     ) {
         final GameTestHelper helper = fixture.helper;
         @SuppressWarnings("unchecked")
-        final EntityType<HobgoblinTravelerEntity> type =
-            (EntityType<HobgoblinTravelerEntity>) ModEntities.ALL.get("hobgoblin").get();
-        final HobgoblinTravelerEntity traveler = type.create(helper.getLevel(), EntitySpawnReason.EVENT);
+        final EntityType<HobgoblinEntity> type =
+            (EntityType<HobgoblinEntity>) ModEntities.ALL.get("hobgoblin").get();
+        final HobgoblinEntity traveler = type.create(helper.getLevel(), EntitySpawnReason.EVENT);
         if (traveler == null) {
             throw new IllegalStateException("warlockery:hobgoblin must construct a body");
         }

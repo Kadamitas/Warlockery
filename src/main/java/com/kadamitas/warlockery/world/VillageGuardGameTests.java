@@ -5,7 +5,7 @@ import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyRules;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyRules.Mode;
 import com.kadamitas.warlockery.entity.HobgoblinJourneyRuntime;
-import com.kadamitas.warlockery.entity.HobgoblinTravelerEntity;
+import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
@@ -36,7 +36,7 @@ public final class VillageGuardGameTests {
     public static void hobgoblinTradingBypassesVillageGuardCommissioning(final GameTestHelper helper) {
         helper.setBlock(new BlockPos(1, 0, 1), Blocks.STONE);
         final ServerPlayer player = connectedSurvivalPlayer(helper);
-        final HobgoblinTravelerEntity hobgoblin = helper.spawn(
+        final HobgoblinEntity hobgoblin = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(1, 1, 1), EntitySpawnReason.NATURAL
         );
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.LEATHER_CHESTPLATE));
@@ -82,7 +82,7 @@ public final class VillageGuardGameTests {
     }
 
     public static void goblinFamiliesProduceMatchingBabies(final GameTestHelper helper) {
-        final HobgoblinTravelerEntity hobgoblinChild = createBaby(
+        final HobgoblinEntity hobgoblinChild = createBaby(
             helper, ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 0), new BlockPos(1, 1, 0), new BlockPos(2, 1, 0)
         );
         final GoblinEntity goblinChild = createBaby(
@@ -149,7 +149,7 @@ public final class VillageGuardGameTests {
     public static void hobgoblinsFleeHumanVillagersAndKeepCustomProfessions(final GameTestHelper helper) {
         BlockPos.betweenClosedStream(new BlockPos(-5, 0, -5), new BlockPos(7, 0, 7))
             .forEach(position -> helper.setBlock(position, Blocks.STONE));
-        final HobgoblinTravelerEntity hobgoblin = helper.spawn(
+        final HobgoblinEntity hobgoblin = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(1, 1, 1), EntitySpawnReason.NATURAL
         );
         final Villager villager = helper.spawn(EntityTypes.VILLAGER, new BlockPos(2, 1, 1));

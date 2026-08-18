@@ -4,7 +4,6 @@ import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
-import com.kadamitas.warlockery.entity.HobgoblinTravelerEntity;
 import com.kadamitas.warlockery.entity.LycanPackRules;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
@@ -99,18 +98,14 @@ public final class CreatureWorldIntegration {
         if (sites.containsCamp(region)) {
             return;
         }
-        // The exact Goblin and the exact Hobgoblin are each their own body now, so a scan naming
-        // only the 1.4-era shared class would silently stop counting them and under-report the
-        // density this founding guard depends on.
+        // The exact Goblin and the exact Hobgoblin are each their own body, so both must be
+        // scanned or this founding guard under-reports resident density.
         final AABB residentBounds = new AABB(origin).inflate(64, 24, 64);
         final boolean residentsNearby = !level.getEntitiesOfClass(
-            HobgoblinEntity.class,
-            residentBounds
-        ).isEmpty() || !level.getEntitiesOfClass(
             GoblinEntity.class,
             residentBounds
         ).isEmpty() || !level.getEntitiesOfClass(
-            HobgoblinTravelerEntity.class,
+            HobgoblinEntity.class,
             residentBounds
         ).isEmpty();
         final boolean clear = clearHutFootprint(level, origin);
@@ -125,7 +120,7 @@ public final class CreatureWorldIntegration {
         final int residents = HobgoblinCampRules.residents(level.getRandom().nextInt());
         for (int index = 0; index < residents; index++) {
             final BlockPos spawn = origin.offset(index % 2 * 2 - 1, 0, 3 + index / 2);
-            final HobgoblinTravelerEntity hobgoblin =
+            final HobgoblinEntity hobgoblin =
                 ModEntities.HOBGOBLIN.get().spawn(level, spawn, EntitySpawnReason.EVENT);
             if (hobgoblin != null) {
                 hobgoblin.setGoblinProfession(com.kadamitas.warlockery.entity.GoblinProfession
