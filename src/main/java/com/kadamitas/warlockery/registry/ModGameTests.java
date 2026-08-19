@@ -13,6 +13,7 @@ import com.kadamitas.warlockery.entity.BansheeGameTests;
 import com.kadamitas.warlockery.entity.CovenPractitionerGameTests;
 import com.kadamitas.warlockery.entity.LostSoulSpiritGameTests;
 import com.kadamitas.warlockery.entity.PoltergeistGameTests;
+import com.kadamitas.warlockery.entity.StormSimianGameTests;
 import com.kadamitas.warlockery.entity.EchoShadeSpectreGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
@@ -593,6 +594,24 @@ public final class ModGameTests {
             () -> EchoShadeSpectreGameTests::echoSpectreReloadDoesNotReplay);
         REGISTRY.register("echo_spectre_families_stay_isolated",
             () -> EchoShadeSpectreGameTests::echoSpectreFamiliesStayIsolated);
+        REGISTRY.register("storm_simian_canopy_route_is_supported_and_bounded",
+            () -> StormSimianGameTests::stormSimianCanopyRouteIsSupportedAndBounded);
+        REGISTRY.register("storm_simian_blocked_route_backs_off",
+            () -> StormSimianGameTests::stormSimianBlockedRouteBacksOff);
+        REGISTRY.register("storm_simian_alarm_is_local_and_legal",
+            () -> StormSimianGameTests::stormSimianAlarmIsLocalAndLegal);
+        REGISTRY.register("storm_simian_storm_observation_mutates_no_world_state",
+            () -> StormSimianGameTests::stormSimianStormObservationMutatesNoWorldState);
+        REGISTRY.register("storm_simian_curiosity_does_not_move_or_take_items",
+            () -> StormSimianGameTests::stormSimianCuriosityDoesNotMoveOrTakeItems);
+        REGISTRY.register("storm_simian_charged_gust_consumes_once",
+            () -> StormSimianGameTests::stormSimianChargedGustConsumesOnce);
+        REGISTRY.register("storm_simian_reload_clears_transient_claims",
+            () -> StormSimianGameTests::stormSimianReloadClearsTransientClaims);
+        REGISTRY.register("storm_simian_preserves_owner_support",
+            () -> StormSimianGameTests::stormSimianPreservesOwnerSupport);
+        REGISTRY.register("storm_simian_excludes_owl_steed_familiar_and_imp_systems",
+            () -> StormSimianGameTests::stormSimianExcludesOwlSteedFamiliarAndImpSystems);
     }
 
     private ModGameTests() {

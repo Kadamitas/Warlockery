@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:storm_simian_storm_observation_mutates_no_world_state",
+  "environment": "warlockery:storm_simian_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 300
+}

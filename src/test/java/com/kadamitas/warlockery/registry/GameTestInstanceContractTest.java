@@ -102,6 +102,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "echo_spectre_isolated.json"
     );
+    private static final Path STORM_SIMIAN_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "storm_simian_isolated.json"
+    );
     private static final Path COVEN_ATTRIBUTION_ENVIRONMENT = Path.of(
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "coven_attribution_isolated.json"
@@ -333,6 +337,17 @@ final class GameTestInstanceContractTest {
         "echo_spectre_dense_candidates_stay_capped_and_stable",
         "echo_spectre_reload_does_not_replay",
         "echo_spectre_families_stay_isolated"
+    );
+    private static final Set<String> ISOLATED_STORM_SIMIAN = Set.of(
+        "storm_simian_canopy_route_is_supported_and_bounded",
+        "storm_simian_blocked_route_backs_off",
+        "storm_simian_alarm_is_local_and_legal",
+        "storm_simian_storm_observation_mutates_no_world_state",
+        "storm_simian_curiosity_does_not_move_or_take_items",
+        "storm_simian_charged_gust_consumes_once",
+        "storm_simian_reload_clears_transient_claims",
+        "storm_simian_preserves_owner_support",
+        "storm_simian_excludes_owl_steed_familiar_and_imp_systems"
     );
 
     @Test
@@ -666,6 +681,23 @@ final class GameTestInstanceContractTest {
             "the cross-coven attribution GameTest must remain registered");
     }
 
+    @Test
+    void onlyTheExactStormSimianFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(STORM_SIMIAN_ENVIRONMENT),
+            "the isolated F28 Storm Simian environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(STORM_SIMIAN_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F28 environment must not mutate shared world state");
+        assertEquals(9, ISOLATED_STORM_SIMIAN.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_STORM_SIMIAN),
+            "all nine exact F28 Storm Simian GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -713,7 +745,9 @@ final class GameTestInstanceContractTest {
                                                                                         ? "warlockery:goblin_patron_isolated"
                                                                                         : ISOLATED_COVEN_ATTRIBUTION.contains(registration.id())
                                                                                             ? "warlockery:coven_attribution_isolated"
-                                                                                            : "minecraft:default",
+                                                                                            : ISOLATED_STORM_SIMIAN.contains(registration.id())
+                                                                                                ? "warlockery:storm_simian_isolated"
+                                                                                                : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );
