@@ -81,17 +81,12 @@ final class CorpseResourceTest {
     }
 
     @Test
-    void corpseLeavesSharedGraveScavengeWhileLouseStaysExact() {
-        final AmbientActivityProfile profile = AmbientActivityProfile.forType(
-            AmbientActivityProfile.ActivityType.GRAVE_SCAVENGE
-        );
-        assertEquals(Set.of(CreatureKind.LOUSE), profile.kinds());
-        assertEquals(300, profile.checkIntervalTicks());
-        assertEquals(12, profile.chanceDenominator());
-        assertEquals(4_800, profile.cooldownTicks());
-        assertEquals(1, profile.localChangeCap());
+    void corpseLeavesSharedGraveScavengeAndF31RetiredTheRowOutright() {
         assertTrue(AmbientActivityProfile.forKind(CreatureKind.CORPSE).isEmpty(),
             "the Corpse is delegated to its dedicated runtime");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.LOUSE).isEmpty(),
+            "F31 delegated the Parasytic Louse, which was GRAVE_SCAVENGE's last kind, so the row "
+                + "and its ActivityType are gone rather than empty");
     }
 
     @Test

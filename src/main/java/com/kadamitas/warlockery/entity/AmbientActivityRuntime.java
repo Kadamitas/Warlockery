@@ -233,37 +233,6 @@ public final class AmbientActivityRuntime {
             false);
     }
 
-    static boolean scavengeRottenFlesh(final AmbientActivityContext context) {
-        final Optional<ItemEntity> food = context.level().getEntitiesOfClass(
-                ItemEntity.class,
-                context.creature().getBoundingBox().inflate(6.0),
-                item -> item.isAlive() && item.getItem().is(net.minecraft.world.item.Items.ROTTEN_FLESH)
-            ).stream()
-            .min(Comparator.comparingDouble(context.creature()::distanceToSqr));
-        if (food.isEmpty()) {
-            return false;
-        }
-        final ItemEntity item = food.orElseThrow();
-        if (context.creature().distanceToSqr(item) > 4.0) {
-            context.creature().getNavigation().moveTo(item, 1.0);
-            return false;
-        }
-        item.getItem().shrink(1);
-        if (item.getItem().isEmpty()) {
-            item.discard();
-        }
-        context.creature().heal(2.0F);
-        context.level().playSound(
-            null,
-            context.creature().blockPosition(),
-            SoundEvents.GENERIC_EAT.value(),
-            SoundSource.HOSTILE,
-            0.6F,
-            0.8F
-        );
-        return true;
-    }
-
     static boolean keepSoulLanternVigil(final AmbientActivityContext context) {
         return seekAndSignal(context,
             state -> AmbientActivityTags.matches(ActivityType.SOUL_LANTERN_VIGIL, state),

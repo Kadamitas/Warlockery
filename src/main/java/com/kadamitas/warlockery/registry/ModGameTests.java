@@ -12,6 +12,7 @@ import com.kadamitas.warlockery.entity.WerewolfHunterGameTests;
 import com.kadamitas.warlockery.entity.BansheeGameTests;
 import com.kadamitas.warlockery.entity.CovenPractitionerGameTests;
 import com.kadamitas.warlockery.entity.LostSoulSpiritGameTests;
+import com.kadamitas.warlockery.entity.ParasyticLouseGameTests;
 import com.kadamitas.warlockery.entity.PoltergeistGameTests;
 import com.kadamitas.warlockery.entity.StormSimianGameTests;
 import com.kadamitas.warlockery.entity.EchoShadeSpectreGameTests;
@@ -612,6 +613,16 @@ public final class ModGameTests {
             () -> StormSimianGameTests::stormSimianPreservesOwnerSupport);
         REGISTRY.register("storm_simian_excludes_owl_steed_familiar_and_imp_systems",
             () -> StormSimianGameTests::stormSimianExcludesOwlSteedFamiliarAndImpSystems);
+        REGISTRY.register("parasytic_louse_marks_before_it_attaches_to_one_host",
+            () -> ParasyticLouseGameTests::parasyticLouseMarksBeforeItAttachesToOneHost);
+        REGISTRY.register("parasytic_louse_feeds_on_a_capped_ladder_and_delivers_once",
+            () -> ParasyticLouseGameTests::parasyticLouseFeedsOnACappedLadderAndDeliversOnce);
+        REGISTRY.register("parasytic_louse_term_expires_and_grooming_frees_the_host",
+            () -> ParasyticLouseGameTests::parasyticLouseTermExpiresAndGroomingFreesTheHost);
+        REGISTRY.register("parasytic_louse_redirect_route_is_bounded_and_fires_once",
+            () -> ParasyticLouseGameTests::parasyticLouseRedirectRouteIsBoundedAndFiresOnce);
+        REGISTRY.register("parasytic_louse_reload_replaces_the_zombie_lifecycle",
+            () -> ParasyticLouseGameTests::parasyticLouseReloadReplacesTheZombieLifecycle);
     }
 
     private ModGameTests() {

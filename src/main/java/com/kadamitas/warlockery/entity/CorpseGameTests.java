@@ -142,7 +142,7 @@ public final class CorpseGameTests {
             final CorpseEntity body = fixture.spawnBody(new BlockPos(1, 1, 1));
             final Zombie attacker = fixture.spawn(net.minecraft.world.entity.EntityTypes.ZOMBIE, new BlockPos(2, 1, 1));
             attacker.setNoAi(true);
-            final long baseline = countEntities(helper.getLevel(), Zombie.class);
+            final long baseline = countEntities(helper, Zombie.class);
             helper.runAfterDelay(5, () -> fixture.step(() -> {
                 body.hurtServer(helper.getLevel(),
                     helper.getLevel().damageSources().mobAttack(attacker), 2.0F);
@@ -151,7 +151,7 @@ public final class CorpseGameTests {
                         "an effective attack from a causing LivingEntity is attributed");
                     helper.assertTrue(body.getTarget() == attacker || body.corpseCounters().attackAttempts >= 1,
                         "the direct attacker becomes the one combat subject");
-                    helper.assertValueEqual(countEntities(helper.getLevel(), Zombie.class), baseline,
+                    helper.assertValueEqual(countEntities(helper, Zombie.class), baseline,
                         "no reinforcement, horde, or conversion spawns another mob");
                     helper.assertValueEqual(body.corpseCounters().reinforcements, 0,
                         "the reinforcement counter stays zero");
@@ -292,16 +292,21 @@ public final class CorpseGameTests {
 
     // ---------------------------------------------------------------- helpers
 
-    private static long countEntities(final ServerLevel level, final Class<? extends Entity> type) {
-        final long[] count = {0L};
-        level.getEntities().get(
-            net.minecraft.world.level.entity.EntityTypeTest.forClass(type),
-            entity -> {
-                count[0]++;
-                return net.minecraft.util.AbortableIterationConsumer.Continuation.CONTINUE;
-            }
-        );
-        return count[0];
+    /**
+     * Counts only inside this fixture's own arena.
+     *
+     * <p>This used to walk {@code level.getEntities()}, which is the whole test level. Batches run
+     * concurrently -- a full run starts a dozen environments within the same second -- so a
+     * whole-level count is really a count of every other batch's entities as well, and the
+     * baseline-versus-later delta moves whenever a neighbour spawns or clears one of this type
+     * between the two reads. That is the same reach defect 4aab0a9 fixed for the Hex Bat fixture
+     * that counted every bat within eight blocks; this site was missed. Bounding the count to the
+     * arena makes the assertion mean what its message says.</p>
+     */
+    private static long countEntities(final GameTestHelper helper, final Class<? extends Entity> type) {
+        return helper.getLevel()
+            .getEntitiesOfClass(type, helper.getBounds().inflate(1.0))
+            .size();
     }
 
     private static void buildFloor(final GameTestHelper helper) {

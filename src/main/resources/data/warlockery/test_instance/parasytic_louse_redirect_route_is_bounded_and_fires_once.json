@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:parasytic_louse_redirect_route_is_bounded_and_fires_once",
+  "environment": "warlockery:parasytic_louse_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 500
+}

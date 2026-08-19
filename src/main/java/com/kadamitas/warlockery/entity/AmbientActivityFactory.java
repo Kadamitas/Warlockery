@@ -13,7 +13,7 @@ public final class AmbientActivityFactory {
         Map.entry(ActivityType.HAUNTED_BELL, AmbientActivityRuntime::hauntBell),
         Map.entry(ActivityType.STORM_ROD, AmbientActivityRuntime::chargeStormRod),
         Map.entry(ActivityType.ARCANE_STUDY, AmbientActivityRuntime::studyArcana),
-        Map.entry(ActivityType.GRAVE_SCAVENGE, AmbientActivityRuntime::scavengeRottenFlesh),
+
         Map.entry(ActivityType.SOUL_LANTERN_VIGIL, AmbientActivityRuntime::keepSoulLanternVigil),
         Map.entry(ActivityType.HAY_REST, AmbientActivityRuntime::restAtHay),
         Map.entry(ActivityType.VILLAGE_WATCH, AmbientActivityRuntime::patrolVillageBell),

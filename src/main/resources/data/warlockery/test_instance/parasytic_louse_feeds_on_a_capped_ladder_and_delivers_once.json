@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:parasytic_louse_feeds_on_a_capped_ladder_and_delivers_once",
+  "environment": "warlockery:parasytic_louse_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 500
+}

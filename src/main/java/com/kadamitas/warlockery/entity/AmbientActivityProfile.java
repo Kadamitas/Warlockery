@@ -29,7 +29,12 @@ public record AmbientActivityProfile(
         // workstation work, so the generic ARCANE_STUDY dispatch has no remaining kind. The
         // activity type and its block tag set stay registered and are still the shared
         // workstation predicate both dedicated runtimes reuse.
-        profile(ActivityType.GRAVE_SCAVENGE, Set.of(CreatureKind.LOUSE), 300, 12, 4_800, 1),
+        // F31 delegated LOUSE to ParasyticLouseRuntime, which owns its own bounded feeding and
+        // never calls AmbientActivityRuntime. F17 had already removed CORPSE, so LOUSE was the
+        // row's last kind and the canonical constructor rejects an empty kind set: the whole row
+        // goes, the way F13 retired ARCANE_STUDY and F03 retired DAYLIGHT_SHELTER. Unlike
+        // ARCANE_STUDY the ActivityType goes with it, because nothing else reads GRAVE_SCAVENGE --
+        // it had no AmbientActivityTags entry and no dedicated runtime reuses it as a predicate.
         // F03 superseded DAYLIGHT_SHELTER outright: VampireCourtRuntime raises SEEK_SHELTER from
         // the same exposed-daylight predicate, then claims one sky-blocked block per member under a
         // level-wide lease that the generic row cannot see, so the generic version could only route
@@ -120,7 +125,7 @@ public record AmbientActivityProfile(
         HAUNTED_BELL,
         STORM_ROD,
         ARCANE_STUDY,
-        GRAVE_SCAVENGE,
+
         SOUL_LANTERN_VIGIL,
         HAY_REST,
         VILLAGE_WATCH,

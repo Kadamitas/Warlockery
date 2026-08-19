@@ -6,9 +6,7 @@ import com.kadamitas.warlockery.item.BeastSpeechCharmItem;
 import com.kadamitas.warlockery.item.SympatheticBinding;
 import com.kadamitas.warlockery.item.WaystoneState;
 import com.kadamitas.warlockery.item.ResourceCompatibilityTags;
-import com.kadamitas.warlockery.item.ParasyticLouseItem;
 import com.kadamitas.warlockery.item.SeerCovenRuntime;
-import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import com.kadamitas.warlockery.magic.ImpContractRuntime;
@@ -16,7 +14,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.StreamSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -47,7 +44,6 @@ import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
@@ -94,7 +90,7 @@ public final class CreatureBehaviorRuntime {
             case DREAMROOT, BRAMBLE_COLOSSUS -> tickRootedDrain(creature, level);
             case GLASS_DOPPELGANGER -> tickReflection(creature, level);
             case STONEBROKER -> tickStonebroker(creature, level);
-            case LOUSE -> tickLouse(creature, level);
+
             case POLTERGEIST -> tickPoltergeist(creature, level);
             case EMBERHORN_ARCHFIEND -> InfernalHierarchyRuntime.tickCauldronAura(creature, level);
             case FAMILIAR -> tickOreGuidance(creature, level);
@@ -129,7 +125,7 @@ public final class CreatureBehaviorRuntime {
             case FORGEWARDEN, DREAMROOT, STONEBROKER ->
                 empowerWithHeart(creature, player, held, profile);
             case NAAMAH -> interactNaamah(creature, player, hand, profile);
-            case LOUSE -> captureEffect(creature, player, held);
+
             case FAMILIAR -> interactSpectralFamiliar(creature, player, held, profile);
             default -> InteractionResult.PASS;
         };
@@ -211,9 +207,7 @@ public final class CreatureBehaviorRuntime {
             living.addEffect(new MobEffectInstance(MobEffects.POISON, 100, 0));
             creature.heal(2.0F);
         }
-        if (profile.kind() == CreatureKind.LOUSE) {
-            injectStoredEffect(creature, living);
-        }
+
         if (profile.has(Feature.SAFE_BLAST)) {
             MinedrakeCombat.detonate(creature, level);
         }
@@ -623,43 +617,6 @@ public final class CreatureBehaviorRuntime {
         return initiateVampire(player, hand, profile);
     }
 
-    private static InteractionResult captureEffect(
-        final Mob creature,
-        final Player player,
-        final ItemStack held
-    ) {
-        final PotionContents potion = held.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-        final Optional<MobEffectInstance> effect = StreamSupport.stream(potion.getAllEffects().spliterator(), false)
-            .findFirst();
-        if (effect.isEmpty()) {
-            if (!held.isEmpty()) {
-                return InteractionResult.PASS;
-            }
-            final ItemStack capturedLouse = new ItemStack(ModItems.ALL.get("louse").get());
-            ParasyticLouseItem.writeFromCreature(capturedLouse, creature);
-            if (!player.getInventory().add(capturedLouse)) {
-                player.drop(capturedLouse, false);
-            }
-            creature.discard();
-            send(player, "message.warlockery.louse.captured");
-            return InteractionResult.SUCCESS;
-        }
-        final MobEffectInstance captured = effect.orElseThrow();
-        final Identifier effectId = BuiltInRegistries.MOB_EFFECT.getKey(captured.getEffect().value());
-        CreatureBehaviorState.bind(creature, player.getUUID());
-        CreatureBehaviorState.storeEffect(creature, new CreatureBehaviorState.StoredEffect(
-            effectId,
-            Math.max(20, captured.getDuration()),
-            Math.max(0, captured.getAmplifier())
-        ));
-        if (!player.hasInfiniteMaterials()) {
-            held.shrink(1);
-            player.getInventory().add(new ItemStack(Items.GLASS_BOTTLE));
-        }
-        send(player, "message.warlockery.creature.effect_stored", creature.getDisplayName());
-        return InteractionResult.SUCCESS;
-    }
-
     private static InteractionResult interactSpectralFamiliar(
         final Mob creature,
         final Player player,
@@ -910,48 +867,6 @@ public final class CreatureBehaviorRuntime {
         if (target != null && creature.distanceToSqr(target) <= 36.0) {
             target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0));
         }
-    }
-
-    private static void tickLouse(final Mob creature, final ServerLevel level) {
-        final Optional<LivingEntity> owner = CreatureBehaviorState.owner(creature)
-            .map(level::getEntity)
-            .filter(LivingEntity.class::isInstance)
-            .map(LivingEntity.class::cast)
-            .filter(LivingEntity::isAlive);
-        final Optional<CreatureBehaviorState.StoredEffect> stored = CreatureBehaviorState.storedEffect(creature);
-        final LivingEntity attacker = owner.map(LivingEntity::getLastHurtByMob).orElse(null);
-        final boolean armor = owner.filter(Player.class::isInstance)
-            .map(Player.class::cast)
-            .filter(player -> armorContains(player, CreatureBehaviorTags.Items.LOUSE_REDIRECTING_ARMOR))
-            .isPresent();
-        if (!CreatureBehaviorRules.canRedirectEffect(
-            owner.isPresent(),
-            armor,
-            attacker != null && attacker.isAlive(),
-            stored.isPresent()
-        )) {
-            return;
-        }
-        final CreatureBehaviorState.StoredEffect effect = stored.orElseThrow();
-        BuiltInRegistries.MOB_EFFECT.get(effect.effectId()).ifPresent(holder -> attacker.addEffect(
-            new MobEffectInstance(holder, Math.min(600, effect.durationTicks()), effect.amplifier())
-        ));
-        CreatureBehaviorState.clearStoredEffect(creature);
-    }
-
-    private static void injectStoredEffect(final Mob creature, final LivingEntity bitten) {
-        final Optional<CreatureBehaviorState.StoredEffect> stored = CreatureBehaviorState.storedEffect(creature);
-        if (stored.isEmpty()) {
-            return;
-        }
-        BuiltInRegistries.MOB_EFFECT.get(stored.orElseThrow().effectId()).ifPresent(effect -> bitten.addEffect(
-            new MobEffectInstance(
-                effect,
-                stored.orElseThrow().durationTicks(),
-                stored.orElseThrow().amplifier()
-            )
-        ));
-        CreatureBehaviorState.clearStoredEffect(creature);
     }
 
     private static void tickPoltergeist(final Mob creature, final ServerLevel level) {

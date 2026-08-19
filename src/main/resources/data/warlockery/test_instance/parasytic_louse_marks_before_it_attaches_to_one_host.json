@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:parasytic_louse_marks_before_it_attaches_to_one_host",
+  "environment": "warlockery:parasytic_louse_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

@@ -21,6 +21,7 @@ import com.kadamitas.warlockery.entity.LostSoulEntity;
 import com.kadamitas.warlockery.entity.LycanVillagerEntity;
 import com.kadamitas.warlockery.entity.LycanVillagerRules;
 import com.kadamitas.warlockery.entity.NamiEntity;
+import com.kadamitas.warlockery.entity.ParasyticLouseEntity;
 import com.kadamitas.warlockery.entity.NaamahEntity;
 import com.kadamitas.warlockery.entity.PoltergeistEntity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
@@ -138,7 +139,8 @@ public final class ModEntities {
         Map.entry(CreatureKind.CIRCLE_MAGE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createCircleMage),
         Map.entry(CreatureKind.POLTERGEIST, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createPoltergeist),
         Map.entry(CreatureKind.ECHO_SHADE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createEchoShade),
-        Map.entry(CreatureKind.SPECTRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectre)
+        Map.entry(CreatureKind.SPECTRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectre),
+        Map.entry(CreatureKind.LOUSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createParasyticLouse)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -159,6 +161,7 @@ public final class ModEntities {
     private static final List<AttributeFactoryRule> ATTRIBUTE_FACTORY_RULES = List.of(
         AttributeFactoryRule.exact("corpse", _ -> CorpseEntity.createAttributes().build()),
         AttributeFactoryRule.exact("death", _ -> DeathEntity.createAttributes().build()),
+        AttributeFactoryRule.exact("parasytic_louse", _ -> ParasyticLouseEntity.createAttributes().build()),
         AttributeFactoryRule.exact("ent", _ -> IronGolem.createAttributes().build()),
         AttributeFactoryRule.exact("forgewarden", _ -> patronAttributes(CreatureKind.FORGEWARDEN)),
         AttributeFactoryRule.exact("stonebroker", _ -> patronAttributes(CreatureKind.STONEBROKER)),
@@ -375,6 +378,16 @@ public final class ModEntities {
         return EntityType.Builder.of(
             (EntityType<SpectreEntity> type, net.minecraft.world.level.Level level) ->
                 new SpectreEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createParasyticLouse(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<ParasyticLouseEntity> type, net.minecraft.world.level.Level level) ->
+                new ParasyticLouseEntity(type, level),
             MobCategory.MONSTER
         ).sized(registration.width(), registration.height())
             .notInPeaceful()

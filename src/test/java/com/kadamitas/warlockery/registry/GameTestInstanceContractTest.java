@@ -110,6 +110,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "coven_attribution_isolated.json"
     );
+    private static final Path PARASYTIC_LOUSE_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "parasytic_louse_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -349,6 +353,31 @@ final class GameTestInstanceContractTest {
         "storm_simian_preserves_owner_support",
         "storm_simian_excludes_owl_steed_familiar_and_imp_systems"
     );
+
+    private static final Set<String> ISOLATED_PARASYTIC_LOUSE = Set.of(
+        "parasytic_louse_marks_before_it_attaches_to_one_host",
+        "parasytic_louse_feeds_on_a_capped_ladder_and_delivers_once",
+        "parasytic_louse_term_expires_and_grooming_frees_the_host",
+        "parasytic_louse_redirect_route_is_bounded_and_fires_once",
+        "parasytic_louse_reload_replaces_the_zombie_lifecycle"
+    );
+
+    @Test
+    void onlyTheExactParasyticLouseFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(PARASYTIC_LOUSE_ENVIRONMENT),
+            "the isolated F31 Parasytic Louse environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(PARASYTIC_LOUSE_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F31 Parasytic Louse environment must not mutate shared world state");
+        assertEquals(5, ISOLATED_PARASYTIC_LOUSE.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_PARASYTIC_LOUSE),
+            "all five exact F31 Parasytic Louse GameTests must be registered");
+    }
 
     @Test
     void everyGameTestRegistrationHasOneMatchingEmptyTemplateFixture() {
@@ -747,7 +776,9 @@ final class GameTestInstanceContractTest {
                                                                                             ? "warlockery:coven_attribution_isolated"
                                                                                             : ISOLATED_STORM_SIMIAN.contains(registration.id())
                                                                                                 ? "warlockery:storm_simian_isolated"
-                                                                                                : "minecraft:default",
+                                                                                                : ISOLATED_PARASYTIC_LOUSE.contains(registration.id())
+                                                                                                    ? "warlockery:parasytic_louse_isolated"
+                                                                                                    : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

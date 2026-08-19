@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.kadamitas.warlockery.entity.AmbientActivityProfile.ActivityType;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
+import java.util.Arrays;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -128,7 +129,11 @@ class AmbientActivityRulesTest {
             CreatureKind.BLOOD_THRALL,
             // F05: LycanVillagerRuntime owns BOUNDARY_WATCH and MOON_WATCH on the villager's own
             // brain anchor, so the sentinel takes no generic ambient authority.
-            CreatureKind.LYCAN_VILLAGER
+            CreatureKind.LYCAN_VILLAGER,
+            // F31: ParasyticLouseRuntime owns the louse's bounded feeding outright. It was
+            // GRAVE_SCAVENGE's last kind after F17 removed the Corpse, so the whole row and its
+            // ActivityType were retired rather than emptied.
+            CreatureKind.LOUSE
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
@@ -207,16 +212,18 @@ class AmbientActivityRulesTest {
     }
 
     @Test
-    void corpseIsDelegatedToItsDedicatedRuntimeWhileLouseKeepsExactGraveScavenge() {
+    void graveScavengeIsRetiredOutrightBecauseBothItsKindsAreDelegated() {
         assertTrue(AmbientActivityProfile.forKind(CreatureKind.CORPSE).isEmpty(),
-            "the Corpse no longer shares the ambient scavenge profile");
-        final AmbientActivityProfile scavenge =
-            AmbientActivityProfile.forType(ActivityType.GRAVE_SCAVENGE);
-        assertEquals(Set.of(CreatureKind.LOUSE), scavenge.kinds());
-        assertEquals(300, scavenge.checkIntervalTicks());
-        assertEquals(12, scavenge.chanceDenominator());
-        assertEquals(4_800, scavenge.cooldownTicks());
-        assertEquals(1, scavenge.localChangeCap());
+            "the Corpse was delegated to CorpseRuntime by F17");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.LOUSE).isEmpty(),
+            "the Parasytic Louse was delegated to ParasyticLouseRuntime by F31");
+        assertTrue(AmbientActivityProfile.all().stream()
+                .noneMatch(profile -> profile.kinds().contains(CreatureKind.LOUSE)),
+            "no surviving ambient row may still name LOUSE");
+        assertTrue(Arrays.stream(ActivityType.values())
+                .noneMatch(type -> "GRAVE_SCAVENGE".equals(type.name())),
+            "GRAVE_SCAVENGE had no tag set and no dedicated reuse, so the whole type is retired "
+                + "rather than kept as a rowless constant the way ARCANE_STUDY was");
     }
 
     @Test
