@@ -12,12 +12,13 @@ bind_fetish
 bind_spectral
 bind_statue_player
 bind_trent
-bind_witch_ladder
 bind_waystone
 bind_waystone_player
 bind_waystone_portable
+bind_witch_ladder
 blight
 blindness
+blood_audience
 call_beasts
 call_familiar
 charge_attuned_stone
@@ -26,6 +27,7 @@ cook_food
 copy_waystone
 copy_waystone_portable
 corrupt_doll
+cure_heat_metal
 cure_insanity
 cure_misfortune
 cure_nightmare
@@ -34,6 +36,7 @@ cure_sinking
 cure_vampire
 cure_wolf
 deathly_veil
+divorce
 drain_growth
 eclipse
 eclipse_portable
@@ -46,6 +49,7 @@ glyph_to_ritual
 glyph_to_the_veil
 graveyard_mist
 hell_on_earth
+hex_heat_metal
 hex_insanity
 hex_misfortune
 hex_nightmare
@@ -67,6 +71,7 @@ infusion_hell
 infusion_light
 infusion_sky
 manifestation
+marriage
 natures_power
 necrostone
 part_earth
@@ -84,7 +89,6 @@ storm_portable
 summon_banshee
 summon_cat_familiar
 summon_circle_mage
-blood_audience
 summon_demon
 summon_familiar
 summon_forgewarden
@@ -103,6 +107,3 @@ teleport_entity
 teleport_waystone
 transpose_ore
 volcano
-hex_heat_metal
-marriage
-divorce

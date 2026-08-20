@@ -14,12 +14,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -78,9 +81,8 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         final FluidStack fluid,
         final int altarPower
     ) {
-        final int inputSlots = profile.inputSlots();
         return catalog.forMachine(profile.recipeType()).stream()
-            .map(recipe -> inspect(recipe, inventory, inputSlots, fluid, altarPower))
+            .map(recipe -> inspect(recipe, profile, inventory, fluid, altarPower))
             .filter(candidate -> candidate.inputsReady(profile))
             .findFirst()
             .map(candidate -> new Match(candidate.id(), candidate.recipe()));
@@ -96,13 +98,32 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
     }
 
     public boolean acceptsInput(final MachineProfile profile, final ItemStack stack) {
+        return acceptsInput(profile, -1, stack);
+    }
+
+    public boolean acceptsInput(final MachineProfile profile, final int slot, final ItemStack stack) {
         if (stack.isEmpty()) {
             return false;
         }
         final boolean recipeIngredient = catalog.inputsFor(profile.recipeType()).stream()
             .anyMatch(ingredient -> ingredient.matches(stack));
-        return recipeIngredient || "cauldron".equals(profile.recipeType())
+        final boolean accepted = recipeIngredient || "cauldron".equals(profile.recipeType())
             && CustomBrewDefinitionManager.INSTANCE.acceptsInput(stack);
+        if (!accepted || !profile.hasDedicatedInputSlot() || slot < 0) {
+            if (!accepted || !profile.hasPrimaryInputSlot() || slot < 0) {
+                return accepted;
+            }
+            return catalog.forMachine(profile.recipeType()).stream().anyMatch(prepared -> {
+                final Stream<MachineRecipeDefinition.Input> roleInputs = slot == 0
+                    ? prepared.definition().inputs().stream().limit(1)
+                    : prepared.definition().inputs().stream().skip(1);
+                return roleInputs.anyMatch(input -> ItemIngredient.parse(input.ingredient())
+                    .filter(ingredient -> ingredient.matches(stack))
+                    .isPresent());
+            });
+        }
+        final boolean dedicatedIngredient = matchesDedicatedIngredient(profile, stack);
+        return profile.isDedicatedInputSlot(slot) == dedicatedIngredient;
     }
 
     public Diagnostic diagnose(final MachineProfile profile, final NonNullList<ItemStack> inventory) {
@@ -134,7 +155,7 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         }
 
         return catalog.forMachine(profile.recipeType()).stream()
-            .map(recipe -> inspect(recipe, inventory, inputSlots, fluid, altarPower))
+            .map(recipe -> inspect(recipe, profile, inventory, fluid, altarPower))
             .filter(candidate -> candidate.matched() > 0)
             .min(DIAGNOSTIC_ORDER)
             .map(candidate -> new Diagnostic(
@@ -188,13 +209,19 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
 
     private static Candidate inspect(
         final MachineRecipeCatalog.PreparedRecipe prepared,
+        final MachineProfile profile,
         final NonNullList<ItemStack> inventory,
-        final int inputSlots,
         final FluidStack fluid,
         final int altarPower
     ) {
+        final int inputSlots = profile.inputSlots();
         final List<ItemStack> inputs = inventory.stream().limit(inputSlots).toList();
-        final var allocation = prepared.allocationPlan().allocate(inputs, ItemStack::getCount);
+        final List<ItemStack> roleEligibleInputs = IntStream.range(0, inputs.size())
+            .mapToObj(slot -> roleAllows(prepared, profile, slot, inputs.get(slot))
+                ? inputs.get(slot)
+                : ItemStack.EMPTY)
+            .toList();
+        final var allocation = prepared.allocationPlan().allocate(roleEligibleInputs, ItemStack::getCount);
         final List<MissingInput> missingItems = allocation.requirements().stream()
             .filter(requirement -> !requirement.complete())
             .map(requirement -> new MissingInput(
@@ -202,14 +229,23 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
                 requirement.missing()
             ))
             .toList();
-        final List<WrongInput> wrongItems = IntStream.range(0, allocation.unreservedBySlot().size())
-            .filter(slot -> allocation.unreservedBySlot().get(slot) > 0 && !inputs.get(slot).isEmpty())
-            .mapToObj(slot -> new WrongInput(itemId(inputs.get(slot)), allocation.unreservedBySlot().get(slot)))
+        final List<WrongInput> wrongItems = IntStream.range(0, inputs.size())
+            .filter(slot -> !inputs.get(slot).isEmpty())
+            .filter(slot -> !roleAllows(prepared, profile, slot, inputs.get(slot))
+                || allocation.unreservedBySlot().get(slot) > 0)
+            .mapToObj(slot -> new WrongInput(
+                itemId(inputs.get(slot)),
+                roleAllows(prepared, profile, slot, inputs.get(slot))
+                    ? allocation.unreservedBySlot().get(slot)
+                    : inputs.get(slot).getCount()
+            ))
             .toList();
         final Optional<MachineRecipeDefinition.FluidInput> fluidInput = prepared.definition().fluid();
         final var expectedFluid = prepared.fluid();
         final boolean fluidMatches = expectedFluid.filter(ingredient -> ingredient.matches(fluid)).isPresent();
         final int availableFluid = fluidMatches ? fluid.getAmount() : 0;
+        final int requiredPower = prepared.definition().powerMode()
+            .requiredAvailablePower(prepared.definition().altarPower());
         final List<MissingInput> missing = Stream.concat(
             Stream.concat(
                 missingItems.stream(),
@@ -217,8 +253,8 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
                     .filter(input -> availableFluid < input.amount())
                     .map(input -> new MissingInput(input.ingredient(), input.amount() - availableFluid))
             ),
-            prepared.definition().altarPower() > altarPower
-                ? Stream.of(new MissingInput("warlockery:altar_power", prepared.definition().altarPower() - Math.max(0, altarPower)))
+            requiredPower > altarPower
+                ? Stream.of(new MissingInput("warlockery:altar_power", requiredPower - Math.max(0, altarPower)))
                 : Stream.empty()
         ).toList();
         final List<WrongInput> wrong = Stream.concat(
@@ -233,10 +269,82 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
             prepared.id(), prepared.definition(), prepared.primaryOutput(),
             allocation.matchedCount()
                 + (fluidInput.isPresent() && availableFluid >= fluidInput.orElseThrow().amount() ? 1 : 0)
-                + (prepared.definition().altarPower() > 0 && altarPower >= prepared.definition().altarPower() ? 1 : 0),
+                + (requiredPower > 0 && altarPower >= requiredPower ? 1 : 0),
             missing,
             wrong
         );
+    }
+
+    private static boolean roleAllows(
+        final MachineRecipeCatalog.PreparedRecipe prepared,
+        final MachineProfile profile,
+        final int slot,
+        final ItemStack stack
+    ) {
+        if (stack.isEmpty()) {
+            return true;
+        }
+        if (profile.hasDedicatedInputSlot()
+            && profile.isDedicatedInputSlot(slot) != matchesDedicatedIngredient(profile, stack)) {
+            return false;
+        }
+        if (!profile.hasPrimaryInputSlot()) {
+            return true;
+        }
+        final Stream<MachineRecipeDefinition.Input> roleInputs = slot == 0
+            ? prepared.definition().inputs().stream().limit(1)
+            : prepared.definition().inputs().stream().skip(1);
+        return roleInputs.anyMatch(input -> ItemIngredient.parse(input.ingredient())
+            .filter(ingredient -> ingredient.matches(stack))
+            .isPresent());
+    }
+
+    public static boolean matchesDedicatedIngredient(final MachineProfile profile, final ItemStack stack) {
+        return profile.dedicatedInputIngredient()
+            .flatMap(ItemIngredient::parse)
+            .filter(ingredient -> ingredient.matches(stack))
+            .isPresent();
+    }
+
+    /**
+     * Uses the same parsed item/tag semantics as live slot validation so JEI also handles
+     * datapack aliases that resolve to a machine's dedicated ingredient.
+     */
+    public static boolean ingredientUsesDedicatedSlot(
+        final MachineProfile profile,
+        final String recipeIngredient
+    ) {
+        if (!profile.hasDedicatedInputSlot()) {
+            return false;
+        }
+        if (profile.dedicatedInputIngredient().filter(recipeIngredient::equals).isPresent()) {
+            return true;
+        }
+        return profile.dedicatedInputIngredient()
+            .flatMap(ItemIngredient::parse)
+            .flatMap(dedicated -> ItemIngredient.parse(recipeIngredient)
+                .map(ingredient -> ingredientsOverlap(ingredient, dedicated)))
+            .orElse(false);
+    }
+
+    private static boolean ingredientsOverlap(
+        final ItemIngredient left,
+        final ItemIngredient right
+    ) {
+        if (!left.tag() && !right.tag()) {
+            return left.id().equals(right.id());
+        }
+        if (left.tag() && right.tag()) {
+            final TagKey<Item> rightTag = TagKey.create(Registries.ITEM, right.id());
+            return StreamSupport.stream(BuiltInRegistries.ITEM
+                    .getTagOrEmpty(TagKey.create(Registries.ITEM, left.id()))
+                    .spliterator(), false)
+                .anyMatch(holder -> holder.is(rightTag));
+        }
+        final ItemIngredient tag = left.tag() ? left : right;
+        final ItemIngredient exact = left.tag() ? right : left;
+        final TagKey<Item> tagKey = TagKey.create(Registries.ITEM, tag.id());
+        return BuiltInRegistries.ITEM.get(exact.id()).filter(holder -> holder.is(tagKey)).isPresent();
     }
 
     private static String itemId(final ItemStack stack) {
@@ -264,6 +372,8 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         final Optional<MachineProfile> profile = MachineProfiles.forRecipeType(recipe.machine());
         final boolean machineValid = profile
             .filter(value -> value.hasFuelSlot() == recipe.requiresFuel())
+            .filter(value -> recipe.inputs().size() <= value.inputSlots())
+            .filter(value -> recipe.outputs().size() <= value.outputSlots())
             .isPresent();
         final boolean countsValid = recipe.processingTime() > 0 && recipe.altarPower() >= 0
             && recipe.inputs().stream().allMatch(input -> input.count() > 0)

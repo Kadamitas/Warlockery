@@ -36,7 +36,29 @@ final class MachineProfilesTest {
         assertSame(idle, lit);
         assertEquals("alchemical_oven", idle.recipeType());
         assertTrue(idle.hasFuelSlot());
+        assertEquals(3, idle.dedicatedInputSlot());
         assertFalse(idle.requiresExternalHeat());
+    }
+
+    @Test
+    void witcheryParityMachinesExposeOnlyTheirFunctionalSlots() {
+        final MachineProfile distillery = MachineProfiles.forBlock("distilleryidle");
+        assertEquals(3, distillery.inputSlots());
+        assertEquals(2, distillery.dedicatedInputSlot());
+        assertEquals(3, distillery.outputStart());
+        assertEquals(4, distillery.outputSlots());
+        assertFalse(distillery.hasFuelSlot());
+
+        final MachineProfile spinningWheel = MachineProfiles.forBlock("spinningwheel");
+        assertEquals(4, spinningWheel.inputSlots());
+        assertEquals(4, spinningWheel.outputStart());
+        assertEquals(1, spinningWheel.outputSlots());
+        assertTrue(spinningWheel.hasPrimaryInputSlot());
+
+        final MachineProfile brazier = MachineProfiles.forBlock("brazier");
+        assertEquals(3, brazier.inputSlots());
+        assertEquals(3, brazier.outputStart());
+        assertEquals(1, brazier.outputSlots());
     }
 
     @Test
@@ -52,7 +74,9 @@ final class MachineProfilesTest {
 
     @Test
     void exactIngredientMachinesRejectUnexpectedInputs() {
-        final Set<String> exactIngredientMachines = Set.of("cauldron", "brazier");
+        final Set<String> exactIngredientMachines = Set.of(
+            "distilleryidle", "distilleryburning", "cauldron", "spinningwheel", "brazier"
+        );
         assertTrue(exactIngredientMachines.stream()
             .map(MachineProfiles::forBlock)
             .allMatch(MachineProfile::rejectsUnexpectedInputs));
@@ -64,10 +88,10 @@ final class MachineProfilesTest {
 
     @Test
     void liquidMachinesAdvertiseFluidStorage() {
-        assertTrue(MachineProfiles.forBlock("distilleryidle").supportsFluids());
+        assertFalse(MachineProfiles.forBlock("distilleryidle").supportsFluids());
         assertTrue(MachineProfiles.forBlock("kettle").supportsFluids());
         assertTrue(MachineProfiles.forBlock("cauldron").supportsFluids());
-        assertTrue(MachineProfiles.forBlock("silvervat").supportsFluids());
+        assertFalse(MachineProfiles.forBlock("silvervat").supportsFluids());
         assertFalse(MachineProfiles.forBlock("alchemical_oven").supportsFluids());
         assertFalse(MachineProfiles.forBlock("spinningwheel").supportsFluids());
     }

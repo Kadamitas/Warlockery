@@ -2,7 +2,6 @@ package com.kadamitas.warlockery.registry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.kadamitas.warlockery.menu.MachineUiLayout;
@@ -17,15 +16,21 @@ final class MachineAndVillagerReleaseTest {
 
     @Test
     void machineFamiliesUseCompleteAndDistinctLayouts() {
-        final MachineUiLayout oven = MachineUiLayout.forKind("alchemical_oven");
-        final MachineUiLayout wheel = MachineUiLayout.forKind("spinningwheel");
-        final MachineUiLayout kettle = MachineUiLayout.forKind("kettle");
+        final List<MachineUiLayout> layouts = List.of(
+            "alchemical_oven", "distillery", "kettle", "cauldron", "silvervat", "spinningwheel", "brazier"
+        ).stream().map(MachineUiLayout::forKind).toList();
 
-        assertEquals(9, oven.slots().size());
-        assertEquals(9, wheel.slots().size());
-        assertEquals(9, kettle.slots().size());
-        assertNotEquals(oven.slots(), wheel.slots());
-        assertNotEquals(wheel.slots(), kettle.slots());
+        assertEquals(7, layouts.size());
+        assertEquals(7, layouts.stream().map(MachineUiLayout::slots).collect(java.util.stream.Collectors.toSet()).size());
+        for (final MachineUiLayout layout : layouts) {
+            assertEquals(9, layout.slots().size());
+            assertTrue(layout.statusY() + 13 < layout.inventoryY() - 17);
+            assertTrue(layout.inventoryY() + 75 <= layout.height());
+            layout.slots().stream().filter(MachineUiLayout.SlotPosition::visible).forEach(slot -> {
+                assertTrue(slot.x() >= 0 && slot.x() + 16 <= layout.width());
+                assertTrue(slot.y() >= 24 && slot.y() + 16 < layout.statusY());
+            });
+        }
     }
 
     @Test

@@ -4,7 +4,9 @@
     { "ingredient": "#c:strings", "count": 8 }
   ],
   "outputs": [
-    { "item": "minecraft:white_wool" }
+    { "item": "minecraft:cobweb" }
   ],
-  "processing_time": 160
+  "processing_time": 300,
+  "altar_power": 180,
+  "power_mode": "continuous"
 }

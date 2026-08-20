@@ -33,10 +33,25 @@ final class MachineSlotLayoutTest {
             9
         );
 
-        assertArrayEquals(new int[]{0, 1, 2, 3, 4, 5}, layout.slotsFor(Direction.UP));
-        assertArrayEquals(new int[]{0, 1, 2, 3, 4, 5}, layout.slotsFor(Direction.WEST));
-        assertArrayEquals(new int[]{6, 7, 8}, layout.slotsFor(Direction.DOWN));
+        assertArrayEquals(new int[]{0, 1, 2, 3}, layout.slotsFor(Direction.UP));
+        assertArrayEquals(new int[]{0, 1, 2, 3}, layout.slotsFor(Direction.WEST));
+        assertArrayEquals(new int[]{4}, layout.slotsFor(Direction.DOWN));
         assertTrue(layout.accepts(Direction.SOUTH, 0));
-        assertFalse(layout.accepts(Direction.SOUTH, 6));
+        assertFalse(layout.accepts(Direction.SOUTH, 4));
+        assertFalse(layout.extractsOutput(Direction.DOWN, 5));
+    }
+
+    @Test
+    void distilleryExcludesItsTwoInactiveBackingSlots() {
+        final MachineSlotLayout layout = MachineSlotLayout.create(
+            MachineProfiles.forBlock("distilleryidle"),
+            9
+        );
+
+        assertArrayEquals(new int[]{0, 1, 2}, layout.slotsFor(Direction.UP));
+        assertArrayEquals(new int[]{0, 1, 2}, layout.slotsFor(Direction.WEST));
+        assertArrayEquals(new int[]{3, 4, 5, 6}, layout.slotsFor(Direction.DOWN));
+        assertFalse(layout.accepts(Direction.UP, 7));
+        assertFalse(layout.extractsOutput(Direction.DOWN, 7));
     }
 }

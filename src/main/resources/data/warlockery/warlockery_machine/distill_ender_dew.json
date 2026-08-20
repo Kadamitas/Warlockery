@@ -12,12 +12,20 @@
   "outputs": [
     {
       "item": "warlockery:ingredient_ender_dew",
-      "count": 6
+      "count": 2
+    },
+    {
+      "item": "warlockery:ingredient_ender_dew",
+      "count": 2
+    },
+    {
+      "item": "warlockery:ingredient_ender_dew"
     },
     {
       "item": "warlockery:ingredient_whiff_of_magic"
     }
   ],
-  "processing_time": 360,
-  "requires_fuel": true
+  "processing_time": 800,
+  "altar_power": 480,
+  "power_mode": "continuous"
 }

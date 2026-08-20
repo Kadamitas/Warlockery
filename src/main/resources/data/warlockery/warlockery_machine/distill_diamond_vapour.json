@@ -6,9 +6,11 @@
     { "ingredient": "warlockery:ingredient_clay_jar", "count": 3 }
   ],
   "outputs": [
-    { "item": "warlockery:ingredient_diamond_vapour", "count": 2 },
+    { "item": "warlockery:ingredient_diamond_vapour" },
+    { "item": "warlockery:ingredient_diamond_vapour" },
     { "item": "warlockery:ingredient_odour_of_purity" }
   ],
-  "processing_time": 400,
-  "requires_fuel": true
+  "processing_time": 800,
+  "altar_power": 480,
+  "power_mode": "continuous"
 }

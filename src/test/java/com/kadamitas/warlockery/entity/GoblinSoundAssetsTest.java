@@ -18,7 +18,8 @@ import org.junit.jupiter.api.Test;
 final class GoblinSoundAssetsTest {
     private static final Path SOUNDS = Path.of("src/main/resources/assets/warlockery/sounds.json");
     private static final Path SOUND_REGISTRY = Path.of("src/main/java/com/kadamitas/warlockery/registry/ModSounds.java");
-    private static final Path ENTITY = Path.of("src/main/java/com/kadamitas/warlockery/entity/HobgoblinEntity.java");
+    private static final Path ENTITY =
+        Path.of("src/main/java/com/kadamitas/warlockery/entity/AbstractGoblinMerchantEntity.java");
     private static final List<String> ACTIONS = List.of("ambient", "hurt", "death", "trade", "reject", "work");
 
     @Test

@@ -66,6 +66,11 @@ public final class WarlockeryTags {
         public static final TagKey<Block> FILTERED_FUME_FUNNELS = create("machine_upgrades/filtered_fume_funnels");
         public static final TagKey<Block> RITUAL_INHIBITORS = create("ritual_inhibitors");
         public static final TagKey<Block> ENT_SPAWNING_LOGS = create("ent_spawning_logs");
+        public static final TagKey<Block> HEX_BAT_ROOSTS = create("ai/hex_bat_roosts");
+        public static final TagKey<Block> FAMILIAR_CAT_HOMES = create("ai/familiar_cat_homes");
+        public static final TagKey<Block> OWL_PERCHES = create("ai/owl_perches");
+        public static final TagKey<Block> TOAD_SHELTERS = create("ai/toad_shelters");
+        public static final TagKey<Block> TOAD_HERB_LANDMARKS = create("ai/toad_herb_landmarks");
 
         private Blocks() {
         }
@@ -104,6 +109,9 @@ public final class WarlockeryTags {
         public static final TagKey<EntityType<?>> ARTHANA_FROG_SOURCES = create("arthana_frog_sources");
         public static final TagKey<EntityType<?>> ARTHANA_HEART_SOURCES = create("arthana_heart_sources");
         public static final TagKey<EntityType<?>> ARTHANA_SPECTRAL_SOURCES = create("arthana_spectral_sources");
+        public static final TagKey<EntityType<?>> FAMILIAR_CAT_VERMIN = create("ai/familiar_cat_vermin");
+        public static final TagKey<EntityType<?>> OWL_HUNT_TARGETS = create("ai/owl_hunt_targets");
+        public static final TagKey<EntityType<?>> TOAD_INSECT_TARGETS = create("ai/toad_insect_targets");
 
         private EntityTypes() {
         }
@@ -128,6 +136,7 @@ public final class WarlockeryTags {
 
     public static final class Biomes {
         public static final TagKey<Biome> OVERHEATING = create("overheating");
+        public static final TagKey<Biome> OWL_NATURAL_SPAWNS = create("owl_natural_spawns");
 
         private Biomes() {
         }

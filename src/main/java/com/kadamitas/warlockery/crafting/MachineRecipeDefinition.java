@@ -13,7 +13,8 @@ public record MachineRecipeDefinition(
     int processingTime,
     boolean requiresFuel,
     Optional<FluidInput> fluid,
-    int altarPower
+    int altarPower,
+    PowerMode powerMode
 ) {
     public static final Codec<MachineRecipeDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codec.STRING.fieldOf("machine").forGetter(MachineRecipeDefinition::machine),
@@ -22,8 +23,41 @@ public record MachineRecipeDefinition(
         Codec.INT.optionalFieldOf("processing_time", 200).forGetter(MachineRecipeDefinition::processingTime),
         Codec.BOOL.optionalFieldOf("requires_fuel", false).forGetter(MachineRecipeDefinition::requiresFuel),
         FluidInput.CODEC.optionalFieldOf("fluid").forGetter(MachineRecipeDefinition::fluid),
-        Codec.INT.optionalFieldOf("altar_power", 0).forGetter(MachineRecipeDefinition::altarPower)
-    ).apply(instance, MachineRecipeDefinition::new));
+        Codec.INT.optionalFieldOf("altar_power", 0).forGetter(MachineRecipeDefinition::altarPower),
+        PowerMode.CODEC.optionalFieldOf("power_mode").forGetter(recipe -> Optional.of(recipe.powerMode()))
+    ).apply(instance, (machine, inputs, outputs, processingTime, requiresFuel, fluid, altarPower, powerMode) ->
+        new MachineRecipeDefinition(
+            machine,
+            inputs,
+            outputs,
+            processingTime,
+            requiresFuel,
+            fluid,
+            altarPower,
+            powerMode.orElseGet(() -> PowerMode.legacyDefault(altarPower))
+        )
+    ));
+
+    public MachineRecipeDefinition(
+        final String machine,
+        final List<Input> inputs,
+        final List<Output> outputs,
+        final int processingTime,
+        final boolean requiresFuel,
+        final Optional<FluidInput> fluid,
+        final int altarPower
+    ) {
+        this(
+            machine,
+            inputs,
+            outputs,
+            processingTime,
+            requiresFuel,
+            fluid,
+            altarPower,
+            PowerMode.legacyDefault(altarPower)
+        );
+    }
 
     public MachineRecipeDefinition {
         inputs = List.copyOf(inputs);
@@ -38,8 +72,11 @@ public record MachineRecipeDefinition(
         if (processingTime <= 0) {
             throw new IllegalArgumentException("processing_time must be positive");
         }
-        if (altarPower < 0) {
-            throw new IllegalArgumentException("altar_power cannot be negative");
+        if (altarPower < 0 || powerMode == null) {
+            throw new IllegalArgumentException("Machine altar power must be valid");
+        }
+        if ((altarPower == 0) != (powerMode == PowerMode.NONE)) {
+            throw new IllegalArgumentException("Machine power mode must agree with altar_power");
         }
     }
 

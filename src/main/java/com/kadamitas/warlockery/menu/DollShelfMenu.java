@@ -12,6 +12,12 @@ import net.minecraft.world.item.ItemStack;
 
 public final class DollShelfMenu extends AbstractContainerMenu {
     private static final int SHELF_SLOTS = 9;
+    public static final int SCREEN_WIDTH = 196;
+    public static final int SCREEN_HEIGHT = 212;
+    public static final int INVENTORY_X = 17;
+    public static final int INVENTORY_Y = 132;
+    public static final int SHELF_X = 62;
+    public static final int SHELF_Y = 32;
     private final Container shelf;
 
     public static DollShelfMenu client(final int containerId, final Inventory inventory) {
@@ -26,16 +32,21 @@ public final class DollShelfMenu extends AbstractContainerMenu {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 3; column++) {
                 final int index = column + row * 3;
-                addSlot(new ShelfSlot(shelf, index, 34 + column * 24, 16 + row * 24));
+                addSlot(new ShelfSlot(shelf, index, SHELF_X + column * 24, SHELF_Y + row * 24));
             }
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 103 + row * 18));
+                addSlot(new Slot(
+                    inventory,
+                    column + row * 9 + 9,
+                    INVENTORY_X + column * 18,
+                    INVENTORY_Y + row * 18
+                ));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column, 8 + column * 18, 161));
+            addSlot(new Slot(inventory, column, INVENTORY_X + column * 18, INVENTORY_Y + 58));
         }
     }
 

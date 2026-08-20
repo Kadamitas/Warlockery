@@ -224,8 +224,11 @@ final class ResourceUtilityInteractionTest {
 
     private void spiritBucketHasMachineRoute() {
         assertMachineOutput("cauldron_flowing_spirit", "warlockery:bucketspirit");
-        assertTrue(read(DATA.resolve("warlockery/warlockery_machine/distill_condensed_fear.json"))
-            .contains("#warlockery:spirit"));
+        final String distilleryRecipe = read(
+            DATA.resolve("warlockery/warlockery_machine/distill_condensed_fear.json")
+        );
+        assertTrue(distilleryRecipe.contains("warlockery:bucketspirit"));
+        assertTrue(distilleryRecipe.contains("minecraft:bucket"));
     }
 
     private void goblinDustCannotBypassItsFormTag() {
@@ -237,10 +240,11 @@ final class ResourceUtilityInteractionTest {
     }
 
     private void goblinDustHasRenewableMobRoute() {
-        final String source = read(Path.of("src/main/java/com/kadamitas/warlockery/entity/HobgoblinEntity.java"));
+        final String source = read(Path.of(
+            "src/main/java/com/kadamitas/warlockery/entity/HobgoblinJourneyRuntime.java"));
         assertTrue(source.contains("HOBGOBLIN_MINEABLES"));
         assertTrue(source.contains("ingredient_delvealloydust"));
-        assertTrue(source.contains("prospect(final ServerLevel level)"));
+        assertTrue(source.contains("commitMining("));
     }
 
     private static DynamicContainer suite(

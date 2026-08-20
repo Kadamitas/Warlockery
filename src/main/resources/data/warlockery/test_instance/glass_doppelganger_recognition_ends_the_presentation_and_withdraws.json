@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:glass_doppelganger_recognition_ends_the_presentation_and_withdraws",
+  "environment": "warlockery:glass_doppelganger_isolated",
+  "structure": "warlockery:empty15x15x15",
+  "max_ticks": 400
+}
+

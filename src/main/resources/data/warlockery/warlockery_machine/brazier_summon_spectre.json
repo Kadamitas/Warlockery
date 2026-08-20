@@ -7,5 +7,6 @@
   ],
   "outputs": [{ "item": "warlockery:ingredient_ash_wood" }],
   "processing_time": 600,
-  "altar_power": 1200
+  "altar_power": 600,
+  "power_mode": "continuous"
 }

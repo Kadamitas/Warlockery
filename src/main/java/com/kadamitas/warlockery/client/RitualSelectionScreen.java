@@ -3,6 +3,7 @@ package com.kadamitas.warlockery.client;
 import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.diagnostic.DiagnosticChecklist;
 import com.kadamitas.warlockery.ritual.RitualManager;
+import com.kadamitas.warlockery.ritual.RitualRequirementText;
 import com.kadamitas.warlockery.ritual.RitualUiState;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -87,6 +88,12 @@ public final class RitualSelectionScreen extends Screen {
         }).bounds(left + listWidth - 36, top + 210, 28, 20).build()).active = page < lastPage();
 
         final RitualManager.RitualOption selected = selected();
+        // A cast already running here is reported by the session row, which is the same fact the server used
+        // to refuse a second one. Offering the stop button only then keeps the refund path reachable without
+        // asking the client to track state the server already sends.
+        final boolean casting = selected != null && RitualUiState.castInProgress(selected);
+        final int actionWidth = panelWidth - listWidth - 20;
+        final int beginWidth = casting ? actionWidth - 74 : actionWidth;
         final Button begin = addRenderableWidget(Button.builder(
             Component.translatable(selected != null && selected.ready()
                 ? "screen.warlockery.ritual.begin"
@@ -97,8 +104,14 @@ public final class RitualSelectionScreen extends Screen {
                     ModNetwork.requestActivation(center, current.id());
                 }
             }
-        ).bounds(left + listWidth + 12, top + 210, panelWidth - listWidth - 20, 20).build());
+        ).bounds(left + listWidth + 12, top + 210, beginWidth, 20).build());
         begin.active = selected != null && selected.ready();
+        if (casting) {
+            addRenderableWidget(Button.builder(
+                Component.translatable("screen.warlockery.ritual.stop"),
+                button -> ModNetwork.requestCancellation(center)
+            ).bounds(left + listWidth + 16 + beginWidth, top + 210, 70, 20).build());
+        }
     }
 
     private int lastPage() {
@@ -153,55 +166,20 @@ public final class RitualSelectionScreen extends Screen {
                     Component.translatable("overlay.warlockery.all_conditions_met").withColor(uiState.checklist().color()));
                 y += 14;
             }
-            final List<Component> requirements = option.requirements().stream()
-                .filter(requirement -> !"power".equals(requirement.category()))
-                .map(RitualSelectionScreen::requirementLine)
+            final List<Component> requirements = RitualUiState.checklistRows(option).stream()
+                .map(RitualRequirementText::line)
                 .toList();
-            for (final Component requirement : requirements.stream().limit(10).toList()) {
+            for (final Component requirement : requirements.stream().limit(RitualUiState.CHECKLIST_ROWS).toList()) {
                 text.accept(left + listWidth + 12, y, requirement);
                 y += 11;
             }
-            if (requirements.size() > 10) {
-                text.accept(left + listWidth + 12, y,
-                    Component.translatable("screen.warlockery.ritual.more", requirements.size() - 10).withColor(0xAAAAAA));
+            if (requirements.size() > RitualUiState.CHECKLIST_ROWS) {
+                text.accept(left + listWidth + 12, y, Component.translatable(
+                    "screen.warlockery.ritual.more", requirements.size() - RitualUiState.CHECKLIST_ROWS
+                ).withColor(0xAAAAAA));
             }
         }
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
-    }
-
-    private static Component requirementLine(final RitualManager.RequirementStatus requirement) {
-        final Component label = requirementLabel(requirement);
-        final Component line = switch (requirement.category()) {
-            case "chalk", "ingredient", "entity", "coven", "optional" -> Component.translatable(
-                "screen.warlockery.ritual.requirement_count", label, requirement.present(), requirement.required()
-            );
-            default -> Component.translatable("screen.warlockery.ritual.requirement", label);
-        };
-        if ("optional".equals(requirement.category())) {
-            return Component.literal(requirement.met() ? "◇ " : "○ ")
-                .append(line)
-                .withColor(requirement.met() ? 0xDDAA33 : 0xAAAAAA);
-        }
-        return Component.literal(requirement.met() ? "✓ " : "✗ ")
-            .append(line)
-            .withColor(requirement.met() ? 0x55FF55 : 0xFF5555);
-    }
-
-    private static Component requirementLabel(final RitualManager.RequirementStatus requirement) {
-        return switch (requirement.category()) {
-            case "chalk" -> Component.translatable("block.warlockery." + requirement.label());
-            case "ingredient" -> ItemDisplayNames.component(requirement.label());
-            case "entity" -> requirement.label().startsWith("#")
-                ? Component.literal(requirement.label())
-                : Component.translatable("entity." + requirement.label().replace(':', '.'));
-            case "altar" -> Component.translatable("screen.warlockery.ritual.requirement.altar");
-            case "center" -> Component.translatable("screen.warlockery.ritual.requirement.center");
-            case "session" -> Component.translatable("screen.warlockery.ritual.requirement.inactive");
-            case "coven" -> Component.translatable("screen.warlockery.ritual.requirement.coven");
-            case "optional" -> Component.translatable("screen.warlockery.ritual.requirement." + requirement.label());
-            case "condition" -> Component.translatable("screen.warlockery.ritual.requirement." + requirement.label().replace(':', '.'));
-            default -> Component.literal(requirement.label());
-        };
     }
 
 }

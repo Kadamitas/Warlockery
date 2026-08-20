@@ -7,5 +7,7 @@
   "outputs": [
     { "item": "warlockery:ingredient_golden_thread", "count": 3 }
   ],
-  "processing_time": 320
+  "processing_time": 300,
+  "altar_power": 180,
+  "power_mode": "continuous"
 }

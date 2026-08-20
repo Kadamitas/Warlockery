@@ -14,7 +14,10 @@ public record MachineSlotLayout(List<Integer> inputs, List<Integer> outputs, Lis
 
     public static MachineSlotLayout create(final MachineProfile profile, final int inventorySize) {
         final List<Integer> inputs = IntStream.range(0, profile.inputSlots()).boxed().toList();
-        final List<Integer> outputs = IntStream.range(profile.outputStart(), inventorySize).boxed().toList();
+        final List<Integer> outputs = IntStream.range(
+            profile.outputStart(),
+            Math.min(inventorySize, profile.outputEnd())
+        ).boxed().toList();
         final List<Integer> fuel = profile.hasFuelSlot() ? List.of(profile.fuelSlot()) : List.of();
         return new MachineSlotLayout(inputs, outputs, fuel);
     }

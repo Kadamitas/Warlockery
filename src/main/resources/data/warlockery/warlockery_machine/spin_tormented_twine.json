@@ -8,5 +8,7 @@
   "outputs": [
     { "item": "warlockery:ingredient_tormented_twine" }
   ],
-  "processing_time": 280
+  "processing_time": 300,
+  "altar_power": 180,
+  "power_mode": "continuous"
 }

@@ -23,6 +23,7 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
         "right_middle_hind_leg", "left_middle_hind_leg", "right_wing", "left_wing", "tail", "crown"
     );
     private final Archetype archetype;
+    private final Variant variant;
     private final ModelPart head;
     private final ModelPart body;
     private final ModelPart rightArm;
@@ -40,9 +41,10 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
     private final ModelPart tail;
     private final ModelPart crown;
 
-    private ArcaneCreatureModel(final Archetype archetype, final ModelPart root) {
+    private ArcaneCreatureModel(final Archetype archetype, final Variant variant, final ModelPart root) {
         super(root);
         this.archetype = archetype;
+        this.variant = variant;
         head = root.getChild("head");
         body = root.getChild("body");
         rightArm = root.getChild("right_arm");
@@ -62,7 +64,7 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
     }
 
     static ArcaneCreatureModel create(final CreatureModelProfile profile) {
-        return new ArcaneCreatureModel(profile.bodyPlan(), createLayer(profile).bakeRoot());
+        return new ArcaneCreatureModel(profile.bodyPlan(), profile.variant(), createLayer(profile).bakeRoot());
     }
 
     static LayerDefinition createLayer(final Archetype archetype) {
@@ -202,6 +204,203 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
                 animateWings(state.ageInTicks, stride * 0.6F);
             }
         }
+        applyHexBatPose(hexBatPose(variant, state.hexBatRoosting, state.hexBatSwooping));
+        if (state.bansheeActivity != null) {
+            applyBansheePresentation(state);
+        }
+        applyPractitionerPose(hedgeCronePose(
+            variant, state.hedgeCroneActivity, state.hedgeCroneWardPrepared));
+        applyPractitionerPose(circleMagePose(
+            variant, state.circleMageActivity, state.circleMageFocusPrepared));
+    }
+
+    /**
+     * Pure Hex Bat pose selection from synchronized render facts. Only the
+     * exact HEX_BAT variant may produce a non-neutral pose, so Owl and every
+     * other avian keep their existing animation. Pose reset happens every
+     * frame through {@code super.setupAnim}, so no rotation can leak.
+     */
+    static HexBatPose hexBatPose(final Variant variant, final boolean roosting, final boolean swooping) {
+        if (variant != Variant.HEX_BAT) {
+            return HexBatPose.NEUTRAL;
+        }
+        if (roosting) {
+            // Upside-down hanging silhouette with folded wings.
+            return new HexBatPose(true, Mth.PI, 0.5F, 2.1F);
+        }
+        if (swooping) {
+            // Forward-pitched attack pose with swept, narrowed wings.
+            return new HexBatPose(true, 0.65F, -0.3F, -1.1F);
+        }
+        return HexBatPose.NEUTRAL;
+    }
+
+    record HexBatPose(boolean overrides, float bodyXRot, float headXRot, float wingFoldZRot) {
+        static final HexBatPose NEUTRAL = new HexBatPose(false, 0.0F, 0.0F, 0.0F);
+    }
+
+    private void applyHexBatPose(final HexBatPose pose) {
+        if (!pose.overrides()) {
+            return;
+        }
+        body.xRot += pose.bodyXRot();
+        head.xRot += pose.headXRot();
+        rightWing.zRot = -pose.wingFoldZRot();
+        leftWing.zRot = pose.wingFoldZRot();
+    }
+
+    static final float BANSHEE_APPROACH_LEAN = 0.35F;
+    static final float BANSHEE_WARNING_ARM_DRAW = 0.55F;
+    static final float BANSHEE_WARNING_PULSE_FLARE = 0.4F;
+    static final float BANSHEE_LAMENT_HEAD_DROP = 0.5F;
+    static final float BANSHEE_LAMENT_SHOULDER_DROP = 0.18F;
+    static final float BANSHEE_RECOIL_COMPRESSION = 0.3F;
+    static final float BANSHEE_RECOIL_WING_BEAT = 0.45F;
+
+    /**
+     * Pose-only Banshee presentation driven exclusively by the synchronized activity byte and
+     * pulse sequence. No geometry, UV, texture, or non-Banshee pose changes.
+     */
+    private void applyBansheePresentation(final TexturedCreatureRenderers.ArcaneState state) {
+        switch (state.bansheeActivity) {
+            case APPROACH -> {
+                body.xRot += BANSHEE_APPROACH_LEAN;
+                head.xRot -= BANSHEE_APPROACH_LEAN * 0.5F;
+            }
+            case WARNING -> {
+                final float open = (state.bansheePulseSequence & 1) == 1
+                    ? BANSHEE_WARNING_PULSE_FLARE
+                    : 0.0F;
+                rightArm.zRot += BANSHEE_WARNING_ARM_DRAW - open;
+                leftArm.zRot -= BANSHEE_WARNING_ARM_DRAW - open;
+                head.xRot -= 0.2F;
+            }
+            case LAMENT -> {
+                head.xRot += BANSHEE_LAMENT_HEAD_DROP;
+                body.xRot += BANSHEE_LAMENT_SHOULDER_DROP;
+                rightWing.zRot *= 0.5F;
+                leftWing.zRot *= 0.5F;
+            }
+            case RECOIL -> {
+                body.xRot += BANSHEE_RECOIL_COMPRESSION;
+                head.xRot += BANSHEE_RECOIL_COMPRESSION * 0.5F;
+                final float beat = Mth.sin(state.ageInTicks * 1.3F) * BANSHEE_RECOIL_WING_BEAT;
+                rightWing.zRot -= beat;
+                leftWing.zRot += beat;
+            }
+            case VIGIL, RECOVERY -> {
+            }
+        }
+    }
+
+    static final float CRONE_WARNING_STAFF_RAISE = 0.85F;
+    static final float CRONE_WARNING_GUARD = 0.25F;
+    static final float CRONE_PREPARATION_STOOP = 0.45F;
+    static final float CRONE_CAST_ARM_EXTEND = 1.15F;
+    static final float CRONE_WITHDRAW_TURN = 0.3F;
+    static final float CRONE_WARD_READY_LIFT = 0.12F;
+
+    static final float MAGE_STUDY_BOOK_TILT = 0.7F;
+    static final float MAGE_STUDY_HEAD_BOW = 0.35F;
+    static final float MAGE_BOLT_ARM_FORWARD = 1.3F;
+    static final float MAGE_FOLLOW_URGENCY_LEAN = 0.2F;
+    static final float MAGE_WITHDRAW_TURN = 0.3F;
+    static final float MAGE_FOCUS_READY_LIFT = 0.12F;
+
+    /**
+     * One pose-only practitioner presentation delta. Every field is an additive rotation applied
+     * on top of the existing animation; a neutral instance changes nothing at all.
+     */
+    record PractitionerPose(
+        boolean overrides,
+        float bodyXRot,
+        float bodyYRot,
+        float headXRot,
+        float headYRot,
+        float rightArmXRot,
+        float rightArmZRot,
+        float leftArmXRot,
+        float leftArmZRot
+    ) {
+        static final PractitionerPose NEUTRAL =
+            new PractitionerPose(false, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+    }
+
+    /**
+     * Pure Hedge Crone pose selection from synchronized render facts. Only the exact HEDGE_CRONE
+     * variant may produce a non-neutral pose, so every other variant keeps its existing animation.
+     * No geometry, texture coordinate, texture file, scale, tint, or shadow value is involved.
+     */
+    static PractitionerPose hedgeCronePose(
+        final Variant variant,
+        final com.kadamitas.warlockery.entity.HedgeCroneRules.Mode mode,
+        final boolean wardPrepared
+    ) {
+        if (variant != Variant.HEDGE_CRONE || mode == null) {
+            return PractitionerPose.NEUTRAL;
+        }
+        final float wardLift = wardPrepared ? -CRONE_WARD_READY_LIFT : 0.0F;
+        return switch (mode) {
+            // Raised staff and a guarding off hand: the warning reads as a boundary challenge.
+            case WARNING -> new PractitionerPose(true, 0.0F, 0.0F, -CRONE_WARNING_GUARD, 0.0F,
+                -CRONE_WARNING_STAFF_RAISE, 0.0F, 0.0F, wardLift - CRONE_WARNING_GUARD);
+            // Lowered toward the workstation for the visible sixty-tick preparation.
+            case PREPARING -> new PractitionerPose(true, CRONE_PREPARATION_STOOP, 0.0F,
+                CRONE_PREPARATION_STOOP * 0.5F, 0.0F, 0.0F, 0.0F, 0.0F, wardLift);
+            // A deliberate extended staff arm for the twenty-tick hex windup.
+            case CASTING -> new PractitionerPose(true, 0.0F, 0.0F, 0.0F, 0.0F,
+                -CRONE_CAST_ARM_EXTEND, CRONE_WARNING_GUARD, 0.0F, wardLift);
+            case WITHDRAWING -> new PractitionerPose(true, 0.0F, CRONE_WITHDRAW_TURN, 0.0F,
+                -CRONE_WITHDRAW_TURN, 0.0F, 0.0F, 0.0F, wardLift);
+            case IDLE, RETURNING -> wardPrepared
+                ? new PractitionerPose(true, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, wardLift)
+                : PractitionerPose.NEUTRAL;
+        };
+    }
+
+    /**
+     * Pure Circle Mage pose selection. The study rehearsal and the forward bolt cast are
+     * deliberately distinct from every Hedge Crone pose so the two practitioners never read as
+     * the same mob, and no other variant can ever receive them.
+     */
+    static PractitionerPose circleMagePose(
+        final Variant variant,
+        final com.kadamitas.warlockery.entity.CircleMageRules.Mode mode,
+        final boolean focusPrepared
+    ) {
+        if (variant != Variant.CIRCLE_MAGE || mode == null) {
+            return PractitionerPose.NEUTRAL;
+        }
+        final float focusLift = focusPrepared ? -MAGE_FOCUS_READY_LIFT : 0.0F;
+        return switch (mode) {
+            // Book and staff drawn in toward a bowed head for the sixty-tick rehearsal.
+            case STUDYING -> new PractitionerPose(true, 0.0F, 0.0F, MAGE_STUDY_HEAD_BOW, 0.0F,
+                -MAGE_STUDY_BOOK_TILT * 0.5F, 0.0F, -MAGE_STUDY_BOOK_TILT, focusLift);
+            // A distinct forward staff thrust for the twelve-tick bolt windup.
+            case DEFENDING -> new PractitionerPose(true, 0.0F, 0.0F, -MAGE_STUDY_HEAD_BOW * 0.5F,
+                0.0F, -MAGE_BOLT_ARM_FORWARD, 0.0F, 0.0F, focusLift);
+            case FOLLOWING -> new PractitionerPose(true, MAGE_FOLLOW_URGENCY_LEAN, 0.0F, 0.0F,
+                0.0F, 0.0F, 0.0F, 0.0F, focusLift);
+            case WITHDRAWING -> new PractitionerPose(true, 0.0F, -MAGE_WITHDRAW_TURN, 0.0F,
+                MAGE_WITHDRAW_TURN, 0.0F, 0.0F, 0.0F, focusLift);
+            case IDLE -> focusPrepared
+                ? new PractitionerPose(true, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, focusLift)
+                : PractitionerPose.NEUTRAL;
+        };
+    }
+
+    private void applyPractitionerPose(final PractitionerPose pose) {
+        if (!pose.overrides()) {
+            return;
+        }
+        body.xRot += pose.bodyXRot();
+        body.yRot += pose.bodyYRot();
+        head.xRot += pose.headXRot();
+        head.yRot += pose.headYRot();
+        rightArm.xRot += pose.rightArmXRot();
+        rightArm.zRot += pose.rightArmZRot();
+        leftArm.xRot += pose.leftArmXRot();
+        leftArm.zRot += pose.leftArmZRot();
     }
 
     @Override

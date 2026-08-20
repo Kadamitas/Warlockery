@@ -3,6 +3,8 @@ package com.kadamitas.warlockery.network;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.item.FlyingBroomItem;
 import com.kadamitas.warlockery.ritual.RitualManager;
+import com.kadamitas.warlockery.ritual.RitualRequirementText;
+import com.kadamitas.warlockery.ritual.RitualSessionData;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import java.util.List;
 import java.util.Objects;
@@ -54,7 +56,7 @@ public final class ModNetwork {
     }
 
     private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("5");
+        final PayloadRegistrar registrar = event.registrar("6");
         registrar.playToClient(OpenRitualScreenPayload.TYPE, OpenRitualScreenPayload.STREAM_CODEC);
         registrar.playToClient(DollActivationPayload.TYPE, DollActivationPayload.STREAM_CODEC);
         registrar.playToClient(SupernaturalSnapshotPayload.TYPE, SupernaturalSnapshotPayload.STREAM_CODEC);
@@ -167,11 +169,15 @@ public final class ModNetwork {
     }
 
     public static void requestRefresh(final BlockPos center) {
-        ClientPacketDistributor.sendToServer(new RitualActionPayload(center, "", false));
+        ClientPacketDistributor.sendToServer(new RitualActionPayload(center, "", false, false));
     }
 
     public static void requestActivation(final BlockPos center, final String ritualId) {
-        ClientPacketDistributor.sendToServer(new RitualActionPayload(center, ritualId, true));
+        ClientPacketDistributor.sendToServer(new RitualActionPayload(center, ritualId, true, false));
+    }
+
+    public static void requestCancellation(final BlockPos center) {
+        ClientPacketDistributor.sendToServer(new RitualActionPayload(center, "", false, true));
     }
 
     private static void sendOptions(final ServerPlayer player, final BlockPos center) {
@@ -255,10 +261,23 @@ public final class ModNetwork {
             || !RitualManager.isCircleCenter(level, payload.center())) {
             return;
         }
+        if (payload.cancel()
+            && RitualSessionData.get(level).cancel(level, payload.center(), player.getUUID())) {
+            player.sendSystemMessage(Component.translatable("message.warlockery.ritual.stopped"));
+        }
         if (payload.activate()) {
             final Identifier ritualId = Identifier.tryParse(payload.ritualId());
-            if (ritualId == null || !RitualManager.INSTANCE.activate(level, payload.center(), player, ritualId)) {
-                player.sendSystemMessage(Component.translatable("message.warlockery.ritual.failed_detailed"));
+            // Activation already knows which requirements refused it. Naming them here is what the player was
+            // previously sent to read off the screen for themselves.
+            final List<RitualManager.RequirementStatus> unmet = ritualId == null
+                ? List.of()
+                : RitualManager.INSTANCE.activate(level, payload.center(), player, ritualId);
+            if (ritualId == null || !unmet.isEmpty()) {
+                player.sendSystemMessage(RitualRequirementText.notice(
+                    unmet,
+                    "message.warlockery.ritual.failed_requirements",
+                    "message.warlockery.ritual.failed_detailed"
+                ));
             }
         }
         sendOptions(player, payload.center());
@@ -305,7 +324,8 @@ public final class ModNetwork {
     public record RitualActionPayload(
         BlockPos center,
         String ritualId,
-        boolean activate
+        boolean activate,
+        boolean cancel
     ) implements CustomPacketPayload {
         public static final Type<RitualActionPayload> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "ritual_action")
@@ -316,8 +336,14 @@ public final class ModNetwork {
                     output.writeBlockPos(value.center());
                     output.writeUtf(value.ritualId(), MAX_STRING);
                     output.writeBoolean(value.activate());
+                    output.writeBoolean(value.cancel());
                 },
-                input -> new RitualActionPayload(input.readBlockPos(), input.readUtf(MAX_STRING), input.readBoolean())
+                input -> new RitualActionPayload(
+                    input.readBlockPos(),
+                    input.readUtf(MAX_STRING),
+                    input.readBoolean(),
+                    input.readBoolean()
+                )
             );
 
         @Override

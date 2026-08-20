@@ -16,6 +16,22 @@ import org.junit.jupiter.api.Test;
 
 final class VillageAssaultRulesTest {
     @Test
+    void passiveHunterKindAloneNoLongerEarnsSilverGuardStatus() {
+        assertFalse(VillageAssaultRuntime.guardKindQualifies(
+            com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind.WEREWOLF_HUNTER
+        ), "F06 removes kind-only guard classification for the passive hunter");
+        assertTrue(VillageAssaultRuntime.guardKindQualifies(
+            com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind.FORGEWARDEN
+        ), "Forgewarden guard behavior remains exact");
+        assertTrue(VillageAssaultRuntime.guardKindQualifies(
+            com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind.STONEBROKER
+        ), "Stonebroker guard behavior remains exact");
+        assertFalse(VillageAssaultRuntime.guardKindQualifies(
+            com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind.WEREWOLF
+        ));
+    }
+
+    @Test
     void everyAssaultEscalatesAcrossThreeValidatedWaves() {
         for (final AssaultKind kind : AssaultKind.values()) {
             final int first = VillageAssaultRules.waveSize(kind, 1);
@@ -193,5 +209,17 @@ final class VillageAssaultRulesTest {
             assertTrue(delay >= VillageAssaultRules.MINIMUM_DELAY_TICKS);
             assertTrue(delay <= VillageAssaultRules.MAXIMUM_DELAY_TICKS);
         }
+    }
+
+    @Test
+    void vampireCourtCompositionChangesBodiesWithoutChangingEventContracts() {
+        assertEquals("vampire", VillageAssaultRuntime.vampireRaiderId(true));
+        assertEquals("blood_thrall", VillageAssaultRuntime.vampireRaiderId(false));
+        assertEquals(2, VillageAssaultRules.waveSize(AssaultKind.VAMPIRE, 1));
+        assertEquals(4, VillageAssaultRules.waveSize(AssaultKind.VAMPIRE, 2));
+        assertEquals(5, VillageAssaultRules.waveSize(AssaultKind.VAMPIRE, 3));
+        assertTrue(VillageAssaultRuntime.mayUseVampireObjective(true, true));
+        assertFalse(VillageAssaultRuntime.mayUseVampireObjective(false, true));
+        assertFalse(VillageAssaultRuntime.mayUseVampireObjective(true, false));
     }
 }

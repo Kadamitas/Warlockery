@@ -43,10 +43,6 @@ public final class HellRiftData extends SavedData {
         return level.getDataStorage().computeIfAbsent(TYPE);
     }
 
-    public void open(final ServerLevel level, final BlockPos center, final int radius, final int duration) {
-        open(level, center, center, radius, duration);
-    }
-
     public void open(
         final ServerLevel level,
         final BlockPos center,

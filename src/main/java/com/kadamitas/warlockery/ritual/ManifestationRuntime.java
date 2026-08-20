@@ -23,12 +23,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public final class ManifestationRuntime {
     private ManifestationRuntime() {
     }
 
-    public static ManifestationRules.Decision diagnose(final ServerPlayer target) {
+    public static ManifestationRules.Decision diagnose(final @Nullable ServerPlayer target) {
+        if (target == null) {
+            return ManifestationRules.decide(false, false, false);
+        }
         final long tick = target.level().getServer().getTickCount();
         return ManifestationRules.decide(
             true,

@@ -1,0 +1,196 @@
+%% Warlockery ritual progression overview.
+%% Standalone source for the diagram embedded in docs/RITUAL_PROGRESSION.md.
+%% Every node and edge is traceable to src/main/resources/data/warlockery/ritual/*.json,
+%% src/main/resources/data/warlockery/recipe/*.json, src/main/resources/data/warlockery/warlockery_machine/*.json,
+%% or src/main/java/com/kadamitas/warlockery/ritual/*.java. See the markdown for per-cluster citations.
+
+graph TD
+    classDef vanilla fill:#dcdcdc,stroke:#4a4a4a,stroke-width:1px,color:#111
+    classDef witem fill:#cdb8ea,stroke:#54338a,stroke-width:1px,color:#111
+    classDef ritual fill:#a8c8f4,stroke:#1d4d8c,stroke-width:2px,color:#111
+    classDef mob fill:#f3a8a8,stroke:#8c1d1d,stroke-width:1px,color:#111
+    classDef feature fill:#a8e0b4,stroke:#1d7a3c,stroke-width:1px,color:#111
+
+    subgraph S0["Stage 0 - Bench and machines, no circle yet"]
+        vClay["Clay ball + redstone + fertilizer"]:::vanilla
+        wChalkR["Ritual Chalk"]:::witem
+        vBlaze["Blaze powder"]:::vanilla
+        vEnder["Ender pearl"]:::vanilla
+        wChalkI["Infernal Chalk"]:::witem
+        wChalkV["Veil Chalk"]:::witem
+        wGypsum["Gypsum (distillery)"]:::witem
+        wChalkG["Golden Chalk"]:::witem
+        wBreath["Breath of the Goddess (alchemical oven)"]:::witem
+        wAltar["Altar multiblock"]:::witem
+        wFocus["Arcane Focus"]:::witem
+        wCircle["Circle heart block"]:::witem
+    end
+
+    vClay --> wChalkR
+    wChalkR --> wChalkI
+    vBlaze --> wChalkI
+    wChalkR --> wChalkV
+    vEnder --> wChalkV
+    wGypsum --> wChalkG
+    wChalkG --> wCircle
+    wBreath --> wAltar
+
+    fCircle["Working circle: heart + rings + powered altar"]:::feature
+    wCircle --> fCircle
+    wChalkR --> fCircle
+    wAltar --> fCircle
+    wFocus --> fCircle
+
+    subgraph S1["Stage 1 - First rites on a plain ritual ring"]
+        rGlyph["glyph_to_ritual / glyph_to_infernal / glyph_to_the_veil"]:::ritual
+        rBindCircle["bind_circle"]:::ritual
+        rBindWay["bind_waystone"]:::ritual
+        rCharge["charge_attuned_stone"]:::ritual
+        rCook["cook_food"]:::ritual
+        rRaise["raise_earth_small / raise_earth / raise_earth_large"]:::ritual
+        rSanctity["sanctity"]:::ritual
+        rTranspose["transpose_ore"]:::ritual
+    end
+
+    fCircle --> rGlyph
+    fCircle --> rBindCircle
+    fCircle --> rBindWay
+    fCircle --> rCharge
+    fCircle --> rCook
+    fCircle --> rRaise
+    fCircle --> rSanctity
+    fCircle --> rTranspose
+
+    wTalisman["Circle Talisman"]:::witem
+    wStoneC["Charged Attuned Stone"]:::witem
+    wWayBound["Bound Waystone"]:::witem
+    fPortable["Portable rites: zero altar power, talisman kept"]:::feature
+
+    rBindCircle --> wTalisman
+    rCharge --> wStoneC
+    rBindWay --> wWayBound
+    wTalisman --> fPortable
+    wStoneC --> fPortable
+    rGlyph --> fCircle
+
+    subgraph S2["Stage 2 - Branch openers, one per chalk colour"]
+        rSummonFam["summon_familiar / summon_cat_familiar"]:::ritual
+        rSpectralStone["spectral_stone"]:::ritual
+        rSummonImp["summon_imp"]:::ritual
+        rInfusion["infusion_earth / _light / _ender / _sky / _hell"]:::ritual
+        rStorm["storm / storm_large"]:::ritual
+        rFertility["fertility / forestation / natures_power"]:::ritual
+        rNecro["necrostone"]:::ritual
+    end
+
+    fCircle --> rSummonFam
+    fCircle --> rSpectralStone
+    fCircle --> rSummonImp
+    fCircle --> rInfusion
+    fCircle --> rStorm
+    fCircle --> rFertility
+    fCircle --> rNecro
+    wChalkV --> rSpectralStone
+    wChalkI --> rSummonImp
+
+    mFamiliar["Spectral Familiar / Familiar Cat"]:::mob
+    mImp["Imp"]:::mob
+    wSpectralStone["Spectral Stone"]:::witem
+    wNecroStone["Necromantic Stone"]:::witem
+    fInfusion["Infusion paths on the Arcane Focus"]:::feature
+
+    rSummonFam --> mFamiliar
+    rSummonImp --> mImp
+    rSpectralStone --> wSpectralStone
+    rNecro --> wNecroStone
+    rInfusion --> fInfusion
+
+    subgraph S3["Stage 3 - Sympathetic magic and the hex line"]
+        wVial["Sympathetic Vial"]:::witem
+        fImprint["Bound imprint drives every hex, cure and transposition"]:::feature
+        rHex["hex_misfortune / _sinking / _insanity / _overheating / _nightmare / _heat_metal"]:::ritual
+        rCure["cure_misfortune / _sinking / _insanity / _overheating / _nightmare"]:::ritual
+        rCorrupt["corrupt_doll"]:::ritual
+        rTeleEnt["teleport_entity"]:::ritual
+        rPrior["prior_incarnation"]:::ritual
+    end
+
+    fCircle --> wVial
+    wVial --> fImprint
+    fImprint --> rHex
+    fImprint --> rCure
+    fImprint --> rCorrupt
+    fImprint --> rTeleEnt
+    fImprint --> rPrior
+    mFamiliar --> rCorrupt
+
+    subgraph S4["Stage 4 - Spirits, demons and greater summoning"]
+        rSummonSpirits["summon_spectre / summon_banshee / summon_poltergeist / summon_lost_soul"]:::ritual
+        rBindSpectral["bind_spectral"]:::ritual
+        rBindFetish["bind_fetish / bind_trent / bind_witch_ladder"]:::ritual
+        rSummonDemon["summon_demon"]:::ritual
+        rInfuseMirror["infuse_mirror"]:::ritual
+        rManifest["manifestation"]:::ritual
+        rEclipse["eclipse"]:::ritual
+        rClimate["climate_change"]:::ritual
+        rVolcano["volcano"]:::ritual
+    end
+
+    wSpectralStone --> rBindSpectral
+    fCircle --> rSummonSpirits
+    wChalkV --> rSummonSpirits
+    rSummonSpirits --> mSpirits
+    mSpirits["Spectre / Banshee / Poltergeist / Lost Soul"]:::mob
+    mSpirits --> rBindSpectral
+    mSpirits --> rBindFetish
+    wChalkI --> rSummonDemon
+    rSummonDemon --> mDemon
+    mDemon["Demon"]:::mob
+    mDemon --> wDemonheart
+    wDemonheart["Demon Heart"]:::witem
+    rInfuseMirror --> wMirror
+    wMirror["Infernal Mirror"]:::witem
+    fCircle --> rManifest
+    fCircle --> rEclipse
+    fCircle --> rClimate
+    fCircle --> rVolcano
+
+    subgraph S5["Stage 5 - Capstones"]
+        rBindDeath["bind_death"]:::ritual
+        rHellOnEarth["hell_on_earth"]:::ritual
+        rThorned["summon_thorned_pursuer"]:::ritual
+        rBloodAudience["blood_audience"]:::ritual
+        rHexWolf["hex_wolf"]:::ritual
+        rMarriage["marriage"]:::ritual
+        rSummonWither["summon_wither"]:::ritual
+        rReflection["summon_reflection"]:::ritual
+    end
+
+    mSpirits --> rBindDeath
+    wDemonheart --> rHellOnEarth
+    wWayBound --> rHellOnEarth
+    wDemonheart --> rThorned
+    wMirror --> rReflection
+    wNecroStone --> rSummonWither
+    wChalkG --> rMarriage
+    fImprint --> rHexWolf
+    mFamiliar --> rHexWolf
+    fCircle --> rBloodAudience
+
+    mDeath["Death"]:::mob
+    mNaamah["Naamah"]:::mob
+    mThorned["Thorned Pursuer"]:::mob
+    mEcho["Echo Shade"]:::mob
+    fHellRift["Hell rift: timed undead spawner, drains 200 power per second"]:::feature
+    fVampire["Vampire initiation"]:::feature
+    fWerewolf["Lycanthropy"]:::feature
+    fMarriage["Marriage bond and shared buffs"]:::feature
+
+    rBindDeath --> mDeath
+    rHellOnEarth --> fHellRift
+    rThorned --> mThorned
+    rBloodAudience --> mNaamah
+    mNaamah --> fVampire
+    rHexWolf --> fWerewolf
+    rMarriage --> fMarriage
+    rReflection --> mEcho

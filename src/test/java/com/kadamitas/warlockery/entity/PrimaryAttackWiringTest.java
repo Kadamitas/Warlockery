@@ -14,7 +14,7 @@ final class PrimaryAttackWiringTest {
         final String hobgoblin = source("HobgoblinEntity.java");
         final String runtime = source("CreatureBehaviorRuntime.java");
         assertTrue(hobgoblin.contains("PrimaryAttackModifier.withDamageBonus("));
-        assertTrue(hobgoblin.contains("behavior.attackDamageBonus(this, level)"));
+        assertTrue(hobgoblin.contains("contractBehavior.attackDamageBonus(this, level)"));
         assertFalse(runtime.contains("creature.damageSources().mobAttack(creature), bonus"));
     }
 

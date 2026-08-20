@@ -1,0 +1,17 @@
+{
+  "machine": "distillery",
+  "inputs": [
+    { "ingredient": "warlockery:demonheart" },
+    { "ingredient": "minecraft:netherrack" },
+    { "ingredient": "warlockery:ingredient_clay_jar", "count": 2 }
+  ],
+  "outputs": [
+    { "item": "minecraft:soul_sand" },
+    { "item": "warlockery:ingredient_infernal_blood" },
+    { "item": "warlockery:ingredient_infernal_blood" }
+  ],
+  "processing_time": 800,
+  "altar_power": 480,
+  "power_mode": "continuous"
+}
+

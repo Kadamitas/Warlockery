@@ -1,10 +1,9 @@
 {
   "machine": "distillery",
-  "fluid": {
-    "ingredient": "#warlockery:spirit",
-    "amount": 1000
-  },
   "inputs": [
+    {
+      "ingredient": "warlockery:bucketspirit"
+    },
     {
       "ingredient": "warlockery:ingredient_oil_of_vitriol"
     },
@@ -22,8 +21,12 @@
     },
     {
       "item": "warlockery:buckethollowtears"
+    },
+    {
+      "item": "minecraft:bucket"
     }
   ],
-  "processing_time": 420,
-  "requires_fuel": true
+  "processing_time": 800,
+  "altar_power": 480,
+  "power_mode": "continuous"
 }

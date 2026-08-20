@@ -7,8 +7,10 @@
   ],
   "outputs": [
     { "item": "warlockery:ingredient_gypsum" },
-    { "item": "warlockery:ingredient_oil_of_vitriol" }
+    { "item": "warlockery:ingredient_oil_of_vitriol" },
+    { "item": "minecraft:slime_ball" }
   ],
-  "processing_time": 300,
-  "requires_fuel": true
+  "processing_time": 800,
+  "altar_power": 480,
+  "power_mode": "continuous"
 }

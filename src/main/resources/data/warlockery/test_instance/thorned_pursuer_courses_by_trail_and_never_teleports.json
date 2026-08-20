@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:thorned_pursuer_courses_by_trail_and_never_teleports",
+  "environment": "warlockery:thorned_pursuer_isolated",
+  "structure": "warlockery:empty15x15x15",
+  "max_ticks": 12000
+}

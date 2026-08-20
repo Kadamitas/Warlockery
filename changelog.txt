@@ -1,9 +1,21 @@
-Warlockery 1.4.0-LlaGuiT0-26.2.0.45
+Warlockery 1.5.0-LlaGuiT0-26.2.0.45
 =====================================
 
 - Supporter compatibility build compiled and tested specifically for NeoForge 26.2.0.45-beta.
 - Uses the exact NeoForge dependency range `[26.2.0.45-beta,26.2.0.46-beta)`.
-- Includes the complete Warlockery 1.4.0 feature set listed below.
+- Includes the complete Warlockery 1.5.0 feature set listed below.
+
+Warlockery 1.5.0
+================
+
+- Added dedicated behavior systems across Warlockery's creature families, with bounded perception, navigation, hazard escape, persistence, and lifecycle handling.
+- Reworked illusion creatures and the Glass Doppelganger around attributed damage, controlled mimicry, recognition, privacy-safe presentation, and deterministic cancellation.
+- Reimagined machine interfaces for clearer slot roles, readable status and power displays, and distinct layouts inspired by classic machine-focused mods.
+- Restored and modernized Witchery machine behavior, including continuously powered spinning and distilling, dedicated jar handling, Brazier burn effects, migration-safe inventories, and initiating-brewer ownership.
+- Expanded Nami and Naamah's ocean progression, making it clear to bring Nami to an Ocean Monument and defeat its Elder Guardians.
+- Added extensive bounded-query and read-budget safeguards to reduce continuous entity and block scanning.
+- Updated the normal builds to Forge 65.1.2, NeoForge 26.2.0.64, Fabric Loader 0.19.3, Fabric API 0.158.0+26.2, and stable Fabric Loom 1.17.19; this supporter artifact remains pinned to NeoForge 26.2.0.45-beta.
+- Added the NeoForge-only `1.5.0-LlaGuiT0-26.2.0.45` supporter build for LlaGuiT0's modpack, with the exact NeoForge range `[26.2.0.45-beta,26.2.0.46-beta)`.
 
 Warlockery 1.4.0
 ================

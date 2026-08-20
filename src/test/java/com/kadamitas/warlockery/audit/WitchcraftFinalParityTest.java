@@ -15,8 +15,8 @@ import com.kadamitas.warlockery.magic.MagicConstructRules;
 import com.kadamitas.warlockery.magic.MagicPath;
 import com.kadamitas.warlockery.magic.MagicPathProfile;
 import com.kadamitas.warlockery.magic.MagicPathRules;
-import com.kadamitas.warlockery.ritual.BindingRules;
-import com.kadamitas.warlockery.ritual.HexbreakingRules;
+import com.kadamitas.warlockery.ritual.HexBehaviors;
+import com.kadamitas.warlockery.ritual.RitualBindTarget;
 import com.kadamitas.warlockery.ritual.ManifestationRules;
 import com.kadamitas.warlockery.ritual.RitualAction;
 import java.io.IOException;
@@ -167,20 +167,18 @@ final class WitchcraftFinalParityTest {
     }
 
     private static void bindingFailure() {
-        assertEquals(
-            BindingRules.Diagnostic.MISSING_TARGET,
-            BindingRules.decide(BindingRules.Variant.FAMILIAR, true, false, false).diagnostic()
-        );
-        assertEquals(
-            BindingRules.Diagnostic.BOUND_ELSEWHERE,
-            BindingRules.decide(BindingRules.Variant.SPECTRAL, true, true, true).diagnostic()
-        );
+        assertTrue(RitualBindTarget.find("statue").isEmpty());
+        assertTrue(RitualBindTarget.find("").isEmpty());
     }
 
     private static void bindingUi() {
         assertEquals(
-            "message.warlockery.binding.binding_ready",
-            BindingRules.decide(BindingRules.Variant.FAMILIAR, true, true, false).messageKey()
+            RitualBindTarget.FAMILIAR,
+            RitualBindTarget.find(RitualBindTarget.FAMILIAR.id()).orElseThrow()
+        );
+        assertEquals(
+            RitualBindTarget.SPECTRAL,
+            RitualBindTarget.find(RitualBindTarget.SPECTRAL.id()).orElseThrow()
         );
     }
 
@@ -229,23 +227,18 @@ final class WitchcraftFinalParityTest {
     }
 
     private static void hexbreakingFailure() {
-        assertEquals(
-            HexbreakingRules.Diagnostic.SELECTED_HEX_ABSENT,
-            HexbreakingRules.decide(true, false, 2_000, 2_000).diagnostic()
-        );
-        assertEquals(
-            HexbreakingRules.Diagnostic.INSUFFICIENT_POWER,
-            HexbreakingRules.decide(true, true, 1_999, 2_000).diagnostic()
-        );
+        assertTrue(HexBehaviors.find("no_such_hex").isEmpty());
+        assertFalse(HexBehaviors.supports("no_such_hex"));
     }
 
     private static void hexbreakingUi() {
-        assertEquals("selected_hex_present", HexbreakingRules.Diagnostic.SELECTED_HEX_ABSENT.id());
-        assertEquals("hexbreaking_ready", HexbreakingRules.Diagnostic.READY.id());
+        assertTrue(HexBehaviors.isPersistent("heat_metal"));
+        assertFalse(HexBehaviors.isPersistent("blindness"));
     }
 
     private static void hexbreakingSuccess() {
         final Set<String> targets = Stream.of(
+            "cure_heat_metal",
             "cure_insanity",
             "cure_misfortune",
             "cure_nightmare",
@@ -255,8 +248,11 @@ final class WitchcraftFinalParityTest {
             .peek(json -> assertEquals(RitualAction.CLEANSE.id(), json.get("action").getAsString()))
             .map(json -> json.get("target").getAsString())
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        assertEquals(Set.of("insanity", "misfortune", "nightmare", "overheating", "sinking"), targets);
-        assertTrue(HexbreakingRules.decide(true, true, 2_000, 2_000).ready());
+        assertEquals(
+            Set.of("heat_metal", "insanity", "misfortune", "nightmare", "overheating", "sinking"),
+            targets
+        );
+        targets.forEach(target -> assertTrue(HexBehaviors.supports(target)));
     }
 
     private static void vampiricFailure() {

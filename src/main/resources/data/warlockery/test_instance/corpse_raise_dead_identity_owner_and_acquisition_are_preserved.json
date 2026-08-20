@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:corpse_raise_dead_identity_owner_and_acquisition_are_preserved",
+  "environment": "warlockery:corpse_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 400
+}

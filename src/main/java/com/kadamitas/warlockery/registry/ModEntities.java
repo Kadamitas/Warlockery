@@ -2,18 +2,53 @@ package com.kadamitas.warlockery.registry;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.entity.AbyssalRegentRules;
+import com.kadamitas.warlockery.entity.EchoShadeEntity;
+import com.kadamitas.warlockery.entity.EldritchWatcherEntity;
 import com.kadamitas.warlockery.entity.EntEntity;
+import com.kadamitas.warlockery.entity.BansheeEntity;
+import com.kadamitas.warlockery.entity.BrambleColossusEntity;
 import com.kadamitas.warlockery.entity.BroomEntity;
+import com.kadamitas.warlockery.entity.CircleMageEntity;
+import com.kadamitas.warlockery.entity.HedgeCroneEntity;
+import com.kadamitas.warlockery.entity.GlassDoppelgangerEntity;
+import com.kadamitas.warlockery.entity.IllusionCreeperEntity;
+import com.kadamitas.warlockery.entity.IllusionSpiderEntity;
+import com.kadamitas.warlockery.entity.IllusionZombieEntity;
+import com.kadamitas.warlockery.entity.IronboundSentinelEntity;
+import com.kadamitas.warlockery.entity.HexBatEntity;
+import com.kadamitas.warlockery.entity.HexBatRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.GoblinEntity;
+import com.kadamitas.warlockery.entity.StonebrokerEntity;
+import com.kadamitas.warlockery.entity.ForgewardenEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.GoblinBossRules;
+import com.kadamitas.warlockery.entity.LostSoulEntity;
+import com.kadamitas.warlockery.entity.MandrakeEntity;
 import com.kadamitas.warlockery.entity.LycanVillagerEntity;
+import com.kadamitas.warlockery.entity.LycanVillagerRules;
 import com.kadamitas.warlockery.entity.NamiEntity;
+import com.kadamitas.warlockery.entity.ParasyticLouseEntity;
 import com.kadamitas.warlockery.entity.NaamahEntity;
+import com.kadamitas.warlockery.entity.PoltergeistEntity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.ArcaneMob;
+import com.kadamitas.warlockery.entity.HellhoundEntity;
+import com.kadamitas.warlockery.entity.CorpseEntity;
+import com.kadamitas.warlockery.entity.DeathEntity;
+import com.kadamitas.warlockery.entity.DreamrootEntity;
+import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
+import com.kadamitas.warlockery.entity.SpectreEntity;
+import com.kadamitas.warlockery.entity.SpectralSteedEntity;
+import com.kadamitas.warlockery.entity.SpiritEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
+import com.kadamitas.warlockery.entity.SpectralFamiliarEntity;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
+import com.kadamitas.warlockery.entity.ThornedPursuerEntity;
+import com.kadamitas.warlockery.entity.UmbralSigilEntity;
+import com.kadamitas.warlockery.entity.UmbralSigilRules;
+import com.kadamitas.warlockery.entity.VampireCourtEntity;
+import com.kadamitas.warlockery.entity.FeralLycanEntity;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
 import com.kadamitas.warlockery.entity.WingedArcaneMob;
@@ -30,7 +65,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -96,19 +130,51 @@ public final class ModEntities {
         CreatureKind.EMBERHORN_ARCHFIEND,
         CreatureKind.ABYSSAL_REGENT
     );
-    private static final Map<CreatureKind, ContentFactory<EntityRegistration, EntityType<?>>> SPECIAL_ARCANE_FACTORIES = Map.of(
-        CreatureKind.WEREWOLF, ModEntities::createWerewolf,
-        CreatureKind.IMP, ModEntities::createImp,
-        CreatureKind.STORM_SIMIAN, ModEntities::createStormSimian,
-        CreatureKind.LYCAN_VILLAGER, ModEntities::createLycanVillager,
-        CreatureKind.NAAMAH, ModEntities::createNaamah
+    private static final Map<CreatureKind, ContentFactory<EntityRegistration, EntityType<?>>> SPECIAL_ARCANE_FACTORIES = Map.ofEntries(
+        Map.entry(CreatureKind.ELDRITCH_WATCHER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createEldritchWatcher),
+        Map.entry(CreatureKind.WEREWOLF, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createWerewolf),
+        Map.entry(CreatureKind.IMP, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createImp),
+        Map.entry(CreatureKind.STORM_SIMIAN, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createStormSimian),
+        Map.entry(CreatureKind.LYCAN_VILLAGER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLycanVillager),
+        Map.entry(CreatureKind.NAAMAH, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createNaamah),
+        Map.entry(CreatureKind.VAMPIRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createVampireCourt),
+        Map.entry(CreatureKind.BLOOD_THRALL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createVampireCourt),
+        Map.entry(CreatureKind.CORPSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createCorpse),
+        Map.entry(CreatureKind.DEMON, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
+        Map.entry(CreatureKind.EMBERHORN_ARCHFIEND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
+        Map.entry(CreatureKind.ABYSSAL_REGENT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createInfernal),
+        Map.entry(CreatureKind.HELLHOUND, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHellhound),
+        Map.entry(CreatureKind.HEX_BAT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHexBat),
+        Map.entry(CreatureKind.BANSHEE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createBanshee),
+        Map.entry(CreatureKind.DEATH, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createDeath),
+        Map.entry(CreatureKind.LOST_SOUL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLostSoul),
+        Map.entry(CreatureKind.SPIRIT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createLocalSpirit),
+        Map.entry(CreatureKind.HEDGE_CRONE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createHedgeCrone),
+        Map.entry(CreatureKind.CIRCLE_MAGE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createCircleMage),
+        Map.entry(CreatureKind.POLTERGEIST, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createPoltergeist),
+        Map.entry(CreatureKind.ECHO_SHADE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createEchoShade),
+        Map.entry(CreatureKind.SPECTRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectre),
+        Map.entry(CreatureKind.FAMILIAR, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralFamiliar),
+        Map.entry(CreatureKind.LOUSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createParasyticLouse),
+        Map.entry(CreatureKind.IRONBOUND_SENTINEL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIronboundSentinel),
+        Map.entry(CreatureKind.UMBRAL_SIGIL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createUmbralSigil),
+        Map.entry(CreatureKind.THORNED_PURSUER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createThornedPursuer),
+        Map.entry(CreatureKind.MANDRAKE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createMandrake),
+        Map.entry(CreatureKind.DREAMROOT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createDreamroot),
+        Map.entry(CreatureKind.BRAMBLE_COLOSSUS, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createBrambleColossus),
+        Map.entry(CreatureKind.PALE_STEED, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralSteed),
+        Map.entry(CreatureKind.NIGHTMARE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralSteed),
+        Map.entry(CreatureKind.ILLUSION_CREEPER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIllusionCreeper),
+        Map.entry(CreatureKind.ILLUSION_SPIDER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIllusionSpider),
+        Map.entry(CreatureKind.ILLUSION_ZOMBIE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIllusionZombie),
+        Map.entry(CreatureKind.GLASS_DOPPELGANGER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createGlassDoppelganger)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
         .map(Map.Entry::getKey)
         .collect(java.util.stream.Collectors.toUnmodifiableSet());
     private static final Set<String> WINGED_ATTRIBUTE_IDS = Set.of("imp", "storm_simian");
-    private static final Set<String> VILLAGER_ATTRIBUTE_IDS = Set.of("hobgoblin", "lycan_villager", "nami");
+    private static final Set<String> VILLAGER_ATTRIBUTE_IDS = Set.of("hobgoblin", "nami");
     private static final Set<String> NATURAL_SPAWN_IDS = Set.of(
         "ent",
         "goblin",
@@ -116,21 +182,70 @@ public final class ModEntities {
         "spirit",
         "hellhound",
         "mandrake",
-        "dreamroot"
+        "dreamroot",
+        "owl"
     );
-    private static final Set<String> PASSIVE_SPAWN_IDS = Set.of("ent", "goblin", "hobgoblin", "spirit");
+    private static final Set<String> PASSIVE_SPAWN_IDS = Set.of("ent", "goblin", "hobgoblin", "spirit", "owl");
     private static final List<AttributeFactoryRule> ATTRIBUTE_FACTORY_RULES = List.of(
-        AttributeFactoryRule.exact("ent", _ -> IronGolem.createAttributes().build()),
+        AttributeFactoryRule.exact("corpse", _ -> CorpseEntity.createAttributes().build()),
+        AttributeFactoryRule.exact("death", _ -> DeathEntity.createAttributes().build()),
+        AttributeFactoryRule.exact("parasytic_louse", _ -> ParasyticLouseEntity.createAttributes().build()),
+        AttributeFactoryRule.exact("ent", _ -> Mob.createMobAttributes()
+            .add(Attributes.MAX_HEALTH, EntEntity.BASE_MAX_HEALTH)
+            .add(Attributes.ATTACK_DAMAGE, EntEntity.BASE_ATTACK_DAMAGE)
+            .add(Attributes.MOVEMENT_SPEED, EntEntity.BASE_MOVEMENT_SPEED)
+            .add(Attributes.ARMOR, EntEntity.BASE_ARMOR)
+            .add(Attributes.FOLLOW_RANGE, EntEntity.BASE_FOLLOW_RANGE)
+            .add(Attributes.KNOCKBACK_RESISTANCE, EntEntity.BASE_KNOCKBACK_RESISTANCE)
+            .add(Attributes.STEP_HEIGHT, EntEntity.BASE_STEP_HEIGHT)
+            .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D)
+            .build()),
+        AttributeFactoryRule.exact("thorned_pursuer", _ -> Monster.createMonsterAttributes()
+            .add(Attributes.MAX_HEALTH, ThornedPursuerEntity.BASE_MAX_HEALTH)
+            .add(Attributes.ATTACK_DAMAGE, ThornedPursuerEntity.BASE_ATTACK_DAMAGE)
+            .add(Attributes.ARMOR, ThornedPursuerEntity.BASE_ARMOR)
+            .add(Attributes.FOLLOW_RANGE, ThornedPursuerEntity.BASE_FOLLOW_RANGE)
+            .add(Attributes.MOVEMENT_SPEED, ThornedPursuerEntity.BASE_MOVEMENT_SPEED)
+            .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, ThornedPursuerEntity.BASE_REINFORCEMENT_CHANCE)
+            .build()),
+        AttributeFactoryRule.exact("mandrake", _ -> MandrakeEntity.createAttributes().build()),
+        AttributeFactoryRule.exact("dreamroot", _ -> DreamrootEntity.createAttributes().build()),
+        AttributeFactoryRule.exact("bramble_colossus", _ -> Monster.createMonsterAttributes()
+            .add(Attributes.MAX_HEALTH, BrambleColossusEntity.BASE_MAX_HEALTH)
+            .add(Attributes.ATTACK_DAMAGE, BrambleColossusEntity.BASE_ATTACK_DAMAGE)
+            .add(Attributes.MOVEMENT_SPEED, BrambleColossusEntity.BASE_MOVEMENT_SPEED)
+            .add(Attributes.FOLLOW_RANGE, 35.0D)
+            .add(Attributes.ARMOR, 2.0D)
+            .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D)
+            .build()),
         AttributeFactoryRule.exact("forgewarden", _ -> patronAttributes(CreatureKind.FORGEWARDEN)),
         AttributeFactoryRule.exact("stonebroker", _ -> patronAttributes(CreatureKind.STONEBROKER)),
         AttributeFactoryRule.exact("goblin", _ -> Villager.createAttributes()
             .add(Attributes.ATTACK_DAMAGE, 3.0)
             .add(Attributes.FOLLOW_RANGE, 24.0)
             .build()),
+        AttributeFactoryRule.exact("lycan_villager", _ -> Villager.createAttributes()
+            .add(Attributes.MAX_HEALTH, LycanVillagerRules.MAX_HEALTH)
+            .add(Attributes.MOVEMENT_SPEED, LycanVillagerRules.MOVEMENT_SPEED)
+            .add(Attributes.FOLLOW_RANGE, LycanVillagerRules.FOLLOW_RANGE)
+            .add(Attributes.ATTACK_DAMAGE, LycanVillagerRules.ATTACK_DAMAGE)
+            .build()),
         new AttributeFactoryRule(VILLAGER_ATTRIBUTE_IDS::contains, _ -> Villager.createAttributes().build()),
         AttributeFactoryRule.exact("werewolf_hunter", _ -> Pillager.createAttributes().build()),
         new AttributeFactoryRule(WINGED_ATTRIBUTE_IDS::contains, id ->
             WingedArcaneMob.createAttributes(kindFor(id)).build()),
+        AttributeFactoryRule.exact("hex_bat", _ -> Vex.createAttributes()
+            .add(Attributes.FLYING_SPEED, HexBatRules.FLYING_SPEED)
+            .build()),
+        AttributeFactoryRule.exact("banshee", _ -> Vex.createAttributes()
+            .add(Attributes.FLYING_SPEED, com.kadamitas.warlockery.entity.BansheeRules.FLYING_SPEED)
+            .build()),
+        AttributeFactoryRule.exact("spectre", _ -> Vex.createAttributes()
+            .add(Attributes.FLYING_SPEED, com.kadamitas.warlockery.entity.SpectreRules.FLYING_SPEED)
+            .build()),
+        AttributeFactoryRule.exact("umbral_sigil", _ -> Vex.createAttributes()
+            .add(Attributes.FLYING_SPEED, UmbralSigilRules.FLYING_SPEED)
+            .build()),
         new AttributeFactoryRule(SPIRIT_IDS::contains, _ -> Vex.createAttributes().build())
     );
 
@@ -159,10 +274,37 @@ public final class ModEntities {
             return EntityType.Builder.of(WerewolfHunterEntity::new, MobCategory.MONSTER)
                 .sized(visual.width(), visual.height()).notInPeaceful().build(key("werewolf_hunter"));
         });
-    public static final DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> HOBGOBLIN = hobgoblin("hobgoblin", CreatureKind.HOBGOBLIN);
-    public static final DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> GOBLIN = hobgoblin("goblin", CreatureKind.GOBLIN);
-    public static final DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> STONEBROKER = hobgoblin("stonebroker", CreatureKind.STONEBROKER);
-    public static final DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> FORGEWARDEN = hobgoblin("forgewarden", CreatureKind.FORGEWARDEN);
+    public static final DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> HOBGOBLIN = register("hobgoblin",
+        () -> {
+            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.HOBGOBLIN);
+            return EntityType.Builder.of(HobgoblinEntity::new, MobCategory.CREATURE)
+                .sized(visual.width(), visual.height())
+                .build(key("hobgoblin"));
+        });
+    public static final DeferredHolder<EntityType<?>, EntityType<GoblinEntity>> GOBLIN = register("goblin",
+        () -> {
+            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.GOBLIN);
+            return EntityType.Builder.of(GoblinEntity::new, MobCategory.MONSTER)
+                .sized(visual.width(), visual.height())
+                .notInPeaceful()
+                .build(key("goblin"));
+        });
+    public static final DeferredHolder<EntityType<?>, EntityType<StonebrokerEntity>> STONEBROKER = register("stonebroker",
+        () -> {
+            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.STONEBROKER);
+            return EntityType.Builder.of(StonebrokerEntity::new, MobCategory.MONSTER)
+                .sized(visual.width(), visual.height())
+                .notInPeaceful()
+                .build(key("stonebroker"));
+        });
+    public static final DeferredHolder<EntityType<?>, EntityType<ForgewardenEntity>> FORGEWARDEN = register("forgewarden",
+        () -> {
+            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.FORGEWARDEN);
+            return EntityType.Builder.of(ForgewardenEntity::new, MobCategory.MONSTER)
+                .sized(visual.width(), visual.height())
+                .notInPeaceful()
+                .build(key("forgewarden"));
+        });
     public static final DeferredHolder<EntityType<?>, EntityType<NamiEntity>> NAMI = register("nami",
         () -> EntityType.Builder.of(NamiEntity::new, MobCategory.CREATURE)
             .sized(0.6F, 1.8F)
@@ -179,22 +321,6 @@ public final class ModEntities {
     private ModEntities() {
     }
 
-    private static DeferredHolder<EntityType<?>, EntityType<HobgoblinEntity>> hobgoblin(final String id, final CreatureKind kind) {
-        return register(id, () -> {
-            final boolean boss = GoblinBossRules.isBoss(kind);
-            final boolean hostile = boss || kind == CreatureKind.GOBLIN;
-            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(kind);
-            final var builder = EntityType.Builder.<HobgoblinEntity>of(
-                (type, level) -> new HobgoblinEntity(type, level, kind),
-                hostile ? MobCategory.MONSTER : MobCategory.CREATURE
-            ).sized(visual.width(), visual.height());
-            if (hostile) {
-                builder.notInPeaceful();
-            }
-            return builder.build(key(id));
-        });
-    }
-
     private static EntityType<?> createArcaneType(final String id, final CreatureKind kind) {
         final EntityRegistration registration = new EntityRegistration(id, kind, CreatureVisualProfile.forKind(kind));
         return Optional.ofNullable(SPECIAL_ARCANE_FACTORIES.get(kind))
@@ -203,8 +329,12 @@ public final class ModEntities {
     }
 
     private static EntityType<?> createWerewolf(final EntityRegistration registration) {
-        return EntityType.Builder.of(WerewolfEntity::new, MobCategory.MONSTER)
-            .sized(registration.width(), registration.height())
+        final boolean feral = "feral_lycan".equals(registration.id());
+        final EntityType.EntityFactory<WerewolfEntity> factory = feral
+            ? FeralLycanEntity::new
+            : WerewolfEntity::new;
+        return EntityType.Builder.of(factory, MobCategory.MONSTER)
+            .sized(feral ? 0.95F : registration.width(), feral ? 1.25F : registration.height())
             .notInPeaceful()
             .build(key(registration.id()));
     }
@@ -232,6 +362,204 @@ public final class ModEntities {
     private static EntityType<?> createNaamah(final EntityRegistration registration) {
         return EntityType.Builder.of(NaamahEntity::new, MobCategory.MONSTER)
             .sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createHexBat(final EntityRegistration registration) {
+        return EntityType.Builder.of(HexBatEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createVampireCourt(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<VampireCourtEntity> type, net.minecraft.world.level.Level level) ->
+                new VampireCourtEntity(type, level, registration.kind()),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createBanshee(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<BansheeEntity> type, net.minecraft.world.level.Level level) ->
+                new BansheeEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createLostSoul(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<LostSoulEntity> type, net.minecraft.world.level.Level level) ->
+                new LostSoulEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createLocalSpirit(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<SpiritEntity> type, net.minecraft.world.level.Level level) ->
+                new SpiritEntity(type, level),
+            MobCategory.CREATURE
+        ).sized(registration.width(), registration.height())
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createPoltergeist(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<PoltergeistEntity> type, net.minecraft.world.level.Level level) ->
+                new PoltergeistEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createEchoShade(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<EchoShadeEntity> type, net.minecraft.world.level.Level level) ->
+                new EchoShadeEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createSpectre(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<SpectreEntity> type, net.minecraft.world.level.Level level) ->
+                new SpectreEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createIllusionCreeper(final EntityRegistration registration) {
+        return EntityType.Builder.of(IllusionCreeperEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height()).notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createIllusionSpider(final EntityRegistration registration) {
+        return EntityType.Builder.of(IllusionSpiderEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height()).notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createIllusionZombie(final EntityRegistration registration) {
+        return EntityType.Builder.of(IllusionZombieEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height()).notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createGlassDoppelganger(final EntityRegistration registration) {
+        return EntityType.Builder.of(GlassDoppelgangerEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height()).notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createParasyticLouse(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<ParasyticLouseEntity> type, net.minecraft.world.level.Level level) ->
+                new ParasyticLouseEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createUmbralSigil(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<UmbralSigilEntity> type, net.minecraft.world.level.Level level) ->
+                new UmbralSigilEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createCorpse(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<CorpseEntity> type, net.minecraft.world.level.Level level) ->
+                new CorpseEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createDeath(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<DeathEntity> type, net.minecraft.world.level.Level level) ->
+                new DeathEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createHedgeCrone(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<HedgeCroneEntity> type, net.minecraft.world.level.Level level) ->
+                new HedgeCroneEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createIronboundSentinel(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<IronboundSentinelEntity> type, net.minecraft.world.level.Level level) ->
+                new IronboundSentinelEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createCircleMage(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<CircleMageEntity> type, net.minecraft.world.level.Level level) ->
+                new CircleMageEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createEldritchWatcher(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<EldritchWatcherEntity> type, net.minecraft.world.level.Level level) ->
+                new EldritchWatcherEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createInfernal(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<InfernalHierarchyEntity> type, net.minecraft.world.level.Level level) ->
+                new InfernalHierarchyEntity(type, level, registration.kind()),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .fireImmune()
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createHellhound(final EntityRegistration registration) {
+        return EntityType.Builder.of(HellhoundEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height())
             .fireImmune()
             .notInPeaceful()
             .build(key(registration.id()));
@@ -239,9 +567,15 @@ public final class ModEntities {
 
     private static EntityType<?> createGround(final EntityRegistration registration) {
         final boolean passive = PASSIVE_GROUND_KINDS.contains(registration.kind());
+        final EntityType.EntityFactory<ArcaneMob> factory = switch (registration.kind()) {
+            case CAT -> com.kadamitas.warlockery.entity.FamiliarCatEntity::new;
+            case OWL -> com.kadamitas.warlockery.entity.OwlEntity::new;
+            case TOAD -> com.kadamitas.warlockery.entity.ToadEntity::new;
+            default -> (EntityType<ArcaneMob> type, net.minecraft.world.level.Level level) ->
+                new ArcaneMob(type, level, registration.kind());
+        };
         final var builder = EntityType.Builder.of(
-            (EntityType<ArcaneMob> type, net.minecraft.world.level.Level level) ->
-                new ArcaneMob(type, level, registration.kind()),
+            factory,
             passive ? MobCategory.CREATURE : MobCategory.MONSTER
         ).sized(registration.width(), registration.height());
         if (!passive) {
@@ -251,6 +585,56 @@ public final class ModEntities {
             builder.fireImmune();
         }
         return builder.build(key(registration.id()));
+    }
+
+    private static EntityType<?> createThornedPursuer(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<ThornedPursuerEntity> type, net.minecraft.world.level.Level level) ->
+                new ThornedPursuerEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createMandrake(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<MandrakeEntity> type, net.minecraft.world.level.Level level) ->
+                new MandrakeEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createDreamroot(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<DreamrootEntity> type, net.minecraft.world.level.Level level) ->
+                new DreamrootEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createBrambleColossus(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<BrambleColossusEntity> type, net.minecraft.world.level.Level level) ->
+                new BrambleColossusEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
+    }
+
+    private static EntityType<?> createSpectralSteed(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<SpectralSteedEntity> type, net.minecraft.world.level.Level level) ->
+                new SpectralSteedEntity(type, level, registration.kind()),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
     }
 
     private static EntityType<?> createSpirit(final EntityRegistration registration) {
@@ -264,6 +648,16 @@ public final class ModEntities {
             builder.notInPeaceful();
         }
         return builder.build(key(registration.id()));
+    }
+
+    private static EntityType<?> createSpectralFamiliar(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<SpectralFamiliarEntity> type, net.minecraft.world.level.Level level) ->
+                new SpectralFamiliarEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(key(registration.id()));
     }
 
     private static <T extends EntityType<?>> DeferredHolder<EntityType<?>, T> register(final String id, final java.util.function.Supplier<T> factory) {
@@ -305,21 +699,39 @@ public final class ModEntities {
     private static net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder groundAttributes(final String id) {
         final var attributes = Zombie.createAttributes();
         return switch (id) {
-            case "death" -> attributes
-                .add(Attributes.MAX_HEALTH, com.kadamitas.warlockery.entity.DeathCombatRules.MAX_HEALTH)
-                .add(Attributes.ATTACK_DAMAGE, 14)
-                .add(Attributes.ARMOR, 12);
             case "abyssal_regent" -> attributes
                 .add(Attributes.MAX_HEALTH, AbyssalRegentRules.MAX_HEALTH)
                 .add(Attributes.ATTACK_DAMAGE, AbyssalRegentRules.ATTACK_DAMAGE)
-                .add(Attributes.ARMOR, AbyssalRegentRules.ARMOR);
-            case "thorned_pursuer", "emberhorn_archfiend", "naamah" ->
-                attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11).add(Attributes.ARMOR, 8);
-            case "hedge_crone", "demon" -> attributes.add(Attributes.MAX_HEALTH, 60).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.ARMOR, 6);
-            case "werewolf", "feral_lycan", "lycan_villager" ->
-                attributes.add(Attributes.MAX_HEALTH, 42).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.MOVEMENT_SPEED, 0.32);
-            case "vampire", "blood_thrall", "hellhound", "bramble_colossus" ->
-                attributes.add(Attributes.MAX_HEALTH, 36).add(Attributes.ATTACK_DAMAGE, 7).add(Attributes.MOVEMENT_SPEED, 0.3);
+                .add(Attributes.ARMOR, AbyssalRegentRules.ARMOR)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "emberhorn_archfiend" -> attributes.add(Attributes.MAX_HEALTH, 100)
+                .add(Attributes.ATTACK_DAMAGE, 11)
+                .add(Attributes.ARMOR, 8)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "naamah" -> attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11)
+                .add(Attributes.ARMOR, 8).add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "illusion_creeper", "illusion_spider", "illusion_zombie", "glass_doppelganger" ->
+                attributes.add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "hedge_crone" -> attributes.add(Attributes.MAX_HEALTH, 60).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.ARMOR, 6);
+            case "demon" -> attributes.add(Attributes.MAX_HEALTH, 60)
+                .add(Attributes.ATTACK_DAMAGE, 9)
+                .add(Attributes.ARMOR, 6)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "werewolf", "feral_lycan" -> attributes
+                .add(Attributes.MAX_HEALTH, 42)
+                .add(Attributes.ATTACK_DAMAGE, 9)
+                .add(Attributes.MOVEMENT_SPEED, 0.32)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "vampire", "blood_thrall" -> attributes
+                .add(Attributes.MAX_HEALTH, 36)
+                .add(Attributes.ATTACK_DAMAGE, 7)
+                .add(Attributes.MOVEMENT_SPEED, 0.3)
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "hellhound" ->
+                attributes.add(Attributes.MAX_HEALTH, 36).add(Attributes.ATTACK_DAMAGE, 7).add(Attributes.MOVEMENT_SPEED, 0.3)
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "owl" -> attributes.add(Attributes.FLYING_SPEED,
+                com.kadamitas.warlockery.entity.OwlEntity.FLYING_SPEED);
             default -> attributes;
         };
     }
@@ -343,7 +755,16 @@ public final class ModEntities {
             HobgoblinEntity::checkNaturalSpawnRules,
             RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
-        NATURAL_SPAWN_IDS.stream().filter(id -> !"hobgoblin".equals(id)).forEach(id -> {
+        event.register(
+            GOBLIN.get(),
+            SpawnPlacementTypes.ON_GROUND,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            GoblinEntity::checkNaturalSpawnRules,
+            RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+        NATURAL_SPAWN_IDS.stream()
+            .filter(id -> !"hobgoblin".equals(id) && !"goblin".equals(id))
+            .forEach(id -> {
             final EntityType type = ALL.get(id).get();
             event.register(type, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 PASSIVE_SPAWN_IDS.contains(id)

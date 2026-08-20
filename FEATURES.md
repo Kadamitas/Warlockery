@@ -156,12 +156,12 @@ Right-clicking air binds an eligible protection, mending, or guard doll to the u
 
 - **Altar**: Supplies renewable ritual power when its multiblock and nearby natural environment are valid.
 - **Runed Cauldron**: Builds ordered custom brews and reports invalid ingredients, missing heat, fluid, power, or output space.
-- **Kettle**: Produces fixed brews from data-driven item and fluid recipes.
-- **Alchemical Oven**: Converts tagged materials into ash, jars, and magical fumes.
-- **Distillery**: Refines tagged ingredients and fluids into advanced magical reagents.
+- **Kettle**: Produces fixed brews from data-driven item and fluid recipes, with familiar and brewing-garb benefits belonging only to the player who starts the batch.
+- **Alchemical Oven**: Converts tagged materials into ash and magical fumes, with separate feed, clay-jar, fuel, primary-output, and fume-output roles.
+- **Distillery**: Refines tagged ingredients with a dedicated clay-jar slot into advanced magical reagents.
 - **Spinning Wheel**: Converts fibers and magical materials into thread, cloth, and woven components.
 - **Brazier**: Burns configured reagents to produce bounded magical effects.
-- **Silver Vat**: Collects Silver Deposits whenever an adjacent furnace smelts a common-tagged gold ore, supports several vats and furnaces at once, and exposes its inventory and fluid tank through NeoForge automation.
+- **Silver Vat**: Passively collects Silver Deposits whenever an adjacent furnace smelts a common-tagged gold ore, or refines iron and Oil of Vitriol over heat as a manual recipe. It supports several vats and furnaces at once and exposes every deposit to hoppers and item pipes.
 
 ### Travel, divination, and summoning
 

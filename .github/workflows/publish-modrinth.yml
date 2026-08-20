@@ -9,7 +9,7 @@ on:
       tag:
         description: GitHub release tag to publish
         required: true
-        default: v1.4.0
+        default: v1.5.0
       loader:
         description: Mod loader versions to publish
         required: true
@@ -50,9 +50,9 @@ jobs:
       MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
       MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID }}
       RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
-      REQUESTED_LOADER: ${{ (inputs.supporter_neoforge_only || (inputs.tag || github.event.release.tag_name) == 'v1.4.0-LlaGuiT0-26.2.0.45') && 'neoforge' || inputs.loader || 'all' }}
-      REQUESTED_RELEASE_TYPE: ${{ (inputs.supporter_neoforge_only || (inputs.tag || github.event.release.tag_name) == 'v1.4.0-LlaGuiT0-26.2.0.45') && 'beta' || inputs.release_type }}
-      SUPPORTER_NEOFORGE_ONLY: ${{ (inputs.supporter_neoforge_only || (inputs.tag || github.event.release.tag_name) == 'v1.4.0-LlaGuiT0-26.2.0.45') && 'true' || 'false' }}
+      REQUESTED_LOADER: ${{ (inputs.supporter_neoforge_only || (inputs.tag || github.event.release.tag_name) == 'v1.5.0-LlaGuiT0-26.2.0.45') && 'neoforge' || inputs.loader || 'all' }}
+      REQUESTED_RELEASE_TYPE: ${{ (inputs.supporter_neoforge_only || (inputs.tag || github.event.release.tag_name) == 'v1.5.0-LlaGuiT0-26.2.0.45') && 'beta' || inputs.release_type }}
+      SUPPORTER_NEOFORGE_ONLY: ${{ (inputs.supporter_neoforge_only || (inputs.tag || github.event.release.tag_name) == 'v1.5.0-LlaGuiT0-26.2.0.45') && 'true' || 'false' }}
       RELEASE_IS_PRERELEASE: ${{ github.event.release.prerelease }}
 
     steps:
@@ -67,7 +67,7 @@ jobs:
             *) echo "Unsupported loader selection: $REQUESTED_LOADER"; exit 1 ;;
           esac
           if [[ "$SUPPORTER_NEOFORGE_ONLY" == "true" ]]; then
-            test "$RELEASE_TAG" = "v1.4.0-LlaGuiT0-26.2.0.45" || { echo "The supporter option requires the LlaGuiT0 supporter tag"; exit 1; }
+            test "$RELEASE_TAG" = "v1.5.0-LlaGuiT0-26.2.0.45" || { echo "The supporter option requires the LlaGuiT0 supporter tag"; exit 1; }
             test "$REQUESTED_LOADER" = "neoforge" || { echo "The supporter build must publish as NeoForge only"; exit 1; }
             test "$REQUESTED_RELEASE_TYPE" = "beta" || { echo "The supporter build must publish as beta"; exit 1; }
           fi

@@ -5,10 +5,9 @@
   "power": 5000,
   "radius": 8,
   "casting_time": 240,
-  "night_only": true,
   "glyphs": {
     "circleglyphritual": 12,
-    "circleglyphinfernal": 16,
+    "circleglyphgolden": 16,
     "circleglyph_veil": 8
   },
   "requirements": {
@@ -24,12 +23,17 @@
         "consume": true
       },
       {
-        "ingredient": "minecraft:wither_rose",
+        "ingredient": "minecraft:heart_of_the_sea",
         "count": 1,
         "consume": true
       },
       {
-        "ingredient": "minecraft:ghast_tear",
+        "ingredient": "minecraft:prismarine_crystals",
+        "count": 4,
+        "consume": true
+      },
+      {
+        "ingredient": "minecraft:nautilus_shell",
         "count": 1,
         "consume": true
       }

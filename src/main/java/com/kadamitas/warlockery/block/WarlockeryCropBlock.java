@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.entity.MandrakeEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
@@ -46,6 +47,9 @@ public final class WarlockeryCropBlock extends CropBlock {
         player.causeFoodExhaustion(0.005F);
         final var mandrake = ModEntities.ALL.get("mandrake").get().create(serverLevel, EntitySpawnReason.EVENT);
         if (mandrake != null) {
+            if (mandrake instanceof MandrakeEntity dedicated) {
+                dedicated.markExtractionBorn();
+            }
             mandrake.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
             serverLevel.addFreshEntity(mandrake);
         }

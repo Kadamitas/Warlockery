@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:imp_projectile_allies_griefing_and_protected_blocks_are_safe",
+  "environment": "warlockery:imp_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 400
+}

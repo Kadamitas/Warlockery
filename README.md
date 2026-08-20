@@ -2,7 +2,7 @@
 
 [Releases](https://github.com/Kadamitas/Warlockery/releases) | [Issue tracker](https://github.com/Kadamitas/Warlockery/issues) | [MIT license](LICENSE)
 
-Warlockery `1.4.0-LlaGuiT0-26.2.0.45` is a supporter compatibility build for Minecraft 26.2, Java 25, and NeoForge 26.2.0.45-beta exactly.
+Warlockery `1.5.0-LlaGuiT0-26.2.0.45` is a supporter compatibility build for Minecraft 26.2, Java 25, and NeoForge 26.2.0.45-beta exactly.
 
 It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, goblin village enclaves, silver hunting equipment, and Netherite-tier Goblinite gear.
 

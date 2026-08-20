@@ -215,6 +215,10 @@ public final class SupernaturalState {
         if (CreatureCombat.isSilverDamage(event)) {
             return true;
         }
+        if (form == SupernaturalForm.WEREWOLF
+            && com.kadamitas.warlockery.entity.LycanDamageTypes.isHarmWerewolves(event.getSource())) {
+            return true;
+        }
         final ItemStack weapon = event.getSource().getWeaponItem();
         return weapon != null && weapon.is(WarlockeryTags.Items.SUPERNATURAL_WEAKNESSES);
     }

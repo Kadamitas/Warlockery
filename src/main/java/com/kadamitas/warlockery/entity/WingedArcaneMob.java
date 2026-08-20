@@ -91,10 +91,18 @@ public abstract class WingedArcaneMob extends Monster implements ArcaneCreature,
     @Override
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
+        if (ownsSpecializedWingedAi()) {
+            customWingedAiStep(level);
+            return;
+        }
         behavior.tick(this, level);
         customWingedAiStep(level);
         TacticalCombatRuntime.tick(this, level, kind);
         AmbientActivityRuntime.tick(this, level, kind);
+    }
+
+    protected boolean ownsSpecializedWingedAi() {
+        return false;
     }
 
     protected void customWingedAiStep(final ServerLevel level) {

@@ -1,6 +1,6 @@
 # Cross-mod compatibility
 
-Warlockery `1.4.0-LlaGuiT0-26.2.0.45` targets Minecraft 26.2, Java 25, and NeoForge 26.2.0.45-beta exactly. Matching Warlockery 1.4.0 releases target Forge 65.1.1, NeoForge 26.2.0.59, and Fabric Loader 0.19.3 with Fabric API 0.157.0+26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and NeoForge capabilities.
+Warlockery 1.5.0 targets Minecraft 26.2 and Java 25. This supporter build remains pinned to NeoForge 26.2.0.45-beta. Matching normal releases target Forge 65.1.2, NeoForge 26.2.0.64, and Fabric Loader 0.19.3 with Fabric API 0.158.0+26.2. Codecs serialize data. They do not replace the shared item dictionary. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, and NeoForge capabilities.
 
 The `1.4.0-LlaGuiT0-26.2.0.45` supporter build is NeoForge-only for LlaGuiT0's modpack. Its NeoForge dependency is intentionally exact: `[26.2.0.45-beta,26.2.0.46-beta)`. It does not imply Forge or Fabric artifacts.
 
@@ -56,9 +56,9 @@ The fixed Brew of Combustion supplies 2,400 burn ticks through `Item.getBurnTime
 
 ## Machine capabilities
 
-All nine machine block variants expose sided `Capabilities.Item.BLOCK` handlers through `WorldlyContainerWrapper`. Top, bottom, and horizontal access use the machine slot layout. Distilleries, kettles, cauldrons, and silver vats also expose transactional `Capabilities.Fluid.BLOCK` handlers because their profiles store transferable fluids. Machines without a tank do not publish a fake fluid handler.
+All nine machine block variants expose sided `Capabilities.Item.BLOCK` handlers through `WorldlyContainerWrapper`. Top, bottom, and horizontal access use the machine slot layout. Kettles and cauldrons also expose transactional `Capabilities.Fluid.BLOCK` handlers because their recipes store transferable fluids. Machines without a fluid recipe, including the Distillery and Silver Vat, do not publish a fake fluid handler.
 
-The Silver Vat recognizes adjacent furnace recipes whose inputs use `c:ores/gold` and whose outputs use `c:ingots/gold`. Each completed smelt adds a Silver Deposit to the vat's ordinary output inventory, so a hopper or compatible item pipe can extract it from below.
+The Silver Vat recognizes adjacent furnace recipes whose inputs use `c:ores/gold` and whose outputs use `c:ingots/gold`. Each completed smelt passively adds a Silver Deposit to the vat's ordinary output inventory, so a hopper or compatible item pipe can extract it from below. Its separate manual mode accepts iron and Oil of Vitriol as items and requires a heat source underneath; it does not accept either as a transferred fluid.
 
 NeoForge 26.2 has no universal mana capability. Its built-in capability set provides energy, fluid, and item handlers. Warlockery altar power is not NeoForge Energy and is not labeled as another mod's mana. Optional mana support requires a soft adapter for each external mana API.
 
