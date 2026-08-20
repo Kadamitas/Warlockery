@@ -118,6 +118,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "parasytic_louse_isolated.json"
     );
+    private static final Path UMBRAL_SIGIL_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "umbral_sigil_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -353,6 +357,14 @@ final class GameTestInstanceContractTest {
         "echo_spectre_dense_candidates_stay_capped_and_stable",
         "echo_spectre_reload_does_not_replay",
         "echo_spectre_families_stay_isolated"
+    );
+    private static final Set<String> ISOLATED_UMBRAL_SIGIL = Set.of(
+        "umbral_sigil_traces_three_vertices_and_strikes_once",
+        "umbral_sigil_target_escape_breaks_unfinished_seal",
+        "umbral_sigil_route_hazard_and_damage_cancel",
+        "umbral_sigil_dense_candidates_stay_capped_and_stable",
+        "umbral_sigil_reload_never_replays_close_or_strike",
+        "umbral_sigil_families_wards_and_world_stay_isolated"
     );
     private static final Set<String> ISOLATED_STORM_SIMIAN = Set.of(
         "storm_simian_canopy_route_is_supported_and_bounded",
@@ -756,6 +768,23 @@ final class GameTestInstanceContractTest {
             "all nine exact F28 Storm Simian GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactUmbralSigilFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(UMBRAL_SIGIL_ENVIRONMENT),
+            "the isolated F22 Umbral Sigil environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(UMBRAL_SIGIL_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F22 environment must not mutate shared world state");
+        assertEquals(6, ISOLATED_UMBRAL_SIGIL.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_UMBRAL_SIGIL),
+            "all six exact F22 Umbral Sigil GameTests must be registered");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -797,7 +826,9 @@ final class GameTestInstanceContractTest {
                                                                             ? "warlockery:poltergeist_isolated"
                                                                             : ISOLATED_ECHO_SPECTRE.contains(registration.id())
                                                                                 ? "warlockery:echo_spectre_isolated"
-                                                                                : ISOLATED_HOBGOBLIN_JOURNEY.contains(registration.id())
+                                                                                : ISOLATED_UMBRAL_SIGIL.contains(registration.id())
+                                                                                    ? "warlockery:umbral_sigil_isolated"
+                                                                                    : ISOLATED_HOBGOBLIN_JOURNEY.contains(registration.id())
                                                                                     ? "warlockery:hobgoblin_isolated"
                                                                                     : ISOLATED_GOBLIN_PATRON.contains(registration.id())
                                                                                         ? "warlockery:goblin_patron_isolated"

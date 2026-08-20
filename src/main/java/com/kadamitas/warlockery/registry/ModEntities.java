@@ -35,6 +35,8 @@ import com.kadamitas.warlockery.entity.SpectreEntity;
 import com.kadamitas.warlockery.entity.SpiritEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
+import com.kadamitas.warlockery.entity.UmbralSigilEntity;
+import com.kadamitas.warlockery.entity.UmbralSigilRules;
 import com.kadamitas.warlockery.entity.VampireCourtEntity;
 import com.kadamitas.warlockery.entity.FeralLycanEntity;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
@@ -142,7 +144,8 @@ public final class ModEntities {
         Map.entry(CreatureKind.ECHO_SHADE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createEchoShade),
         Map.entry(CreatureKind.SPECTRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectre),
         Map.entry(CreatureKind.LOUSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createParasyticLouse),
-        Map.entry(CreatureKind.IRONBOUND_SENTINEL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIronboundSentinel)
+        Map.entry(CreatureKind.IRONBOUND_SENTINEL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIronboundSentinel),
+        Map.entry(CreatureKind.UMBRAL_SIGIL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createUmbralSigil)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -189,6 +192,9 @@ public final class ModEntities {
             .build()),
         AttributeFactoryRule.exact("spectre", _ -> Vex.createAttributes()
             .add(Attributes.FLYING_SPEED, com.kadamitas.warlockery.entity.SpectreRules.FLYING_SPEED)
+            .build()),
+        AttributeFactoryRule.exact("umbral_sigil", _ -> Vex.createAttributes()
+            .add(Attributes.FLYING_SPEED, UmbralSigilRules.FLYING_SPEED)
             .build()),
         new AttributeFactoryRule(SPIRIT_IDS::contains, _ -> Vex.createAttributes().build())
     );
@@ -390,6 +396,16 @@ public final class ModEntities {
         return EntityType.Builder.of(
             (EntityType<ParasyticLouseEntity> type, net.minecraft.world.level.Level level) ->
                 new ParasyticLouseEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createUmbralSigil(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<UmbralSigilEntity> type, net.minecraft.world.level.Level level) ->
+                new UmbralSigilEntity(type, level),
             MobCategory.MONSTER
         ).sized(registration.width(), registration.height())
             .notInPeaceful()

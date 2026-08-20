@@ -49,7 +49,8 @@ public final class CreatureCombat {
                 silver,
                 wooden,
                 holy,
-                creature instanceof SpiritMob || creature instanceof EldritchWatcherEntity,
+                creature instanceof SpiritMob || creature instanceof EldritchWatcherEntity
+                    || creature instanceof UmbralSigilEntity,
                 isWerewolfTarget(event.getEntity()),
                 LycanDamageTypes.isHarmWerewolves(event.getSource())
             ));

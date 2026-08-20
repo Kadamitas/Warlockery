@@ -17,6 +17,7 @@ import com.kadamitas.warlockery.entity.PoltergeistGameTests;
 import com.kadamitas.warlockery.entity.IronboundSentinelGameTests;
 import com.kadamitas.warlockery.entity.StormSimianGameTests;
 import com.kadamitas.warlockery.entity.EchoShadeSpectreGameTests;
+import com.kadamitas.warlockery.entity.UmbralSigilGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
 import com.kadamitas.warlockery.entity.DeathGameTests;
@@ -608,6 +609,18 @@ public final class ModGameTests {
             () -> EchoShadeSpectreGameTests::echoSpectreReloadDoesNotReplay);
         REGISTRY.register("echo_spectre_families_stay_isolated",
             () -> EchoShadeSpectreGameTests::echoSpectreFamiliesStayIsolated);
+        REGISTRY.register("umbral_sigil_traces_three_vertices_and_strikes_once",
+            () -> UmbralSigilGameTests::umbralSigilTracesThreeVerticesAndStrikesOnce);
+        REGISTRY.register("umbral_sigil_target_escape_breaks_unfinished_seal",
+            () -> UmbralSigilGameTests::umbralSigilTargetEscapeBreaksUnfinishedSeal);
+        REGISTRY.register("umbral_sigil_route_hazard_and_damage_cancel",
+            () -> UmbralSigilGameTests::umbralSigilRouteHazardAndDamageCancel);
+        REGISTRY.register("umbral_sigil_dense_candidates_stay_capped_and_stable",
+            () -> UmbralSigilGameTests::umbralSigilDenseCandidatesStayCappedAndStable);
+        REGISTRY.register("umbral_sigil_reload_never_replays_close_or_strike",
+            () -> UmbralSigilGameTests::umbralSigilReloadNeverReplaysCloseOrStrike);
+        REGISTRY.register("umbral_sigil_families_wards_and_world_stay_isolated",
+            () -> UmbralSigilGameTests::umbralSigilFamiliesWardsAndWorldStayIsolated);
         REGISTRY.register("storm_simian_canopy_route_is_supported_and_bounded",
             () -> StormSimianGameTests::stormSimianCanopyRouteIsSupportedAndBounded);
         REGISTRY.register("storm_simian_blocked_route_backs_off",

@@ -133,7 +133,10 @@ class AmbientActivityRulesTest {
             // F31: ParasyticLouseRuntime owns the louse's bounded feeding outright. It was
             // GRAVE_SCAVENGE's last kind after F17 removed the Corpse, so the whole row and its
             // ActivityType were retired rather than emptied.
-            CreatureKind.LOUSE
+            CreatureKind.LOUSE,
+            // F22: the dedicated UmbralSigilRuntime owns the whole seal, and its removal retired
+            // the last kind on SOUL_LANTERN_VIGIL and with it the row itself.
+            CreatureKind.UMBRAL_SIGIL
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
@@ -245,17 +248,27 @@ class AmbientActivityRulesTest {
     }
 
     @Test
-    void echoShadeAndSpectreAreDelegatedWhileUmbralSigilKeepsTheExactVigil() {
+    void everySoulLanternVigilKindIsDelegatedAndTheWholeRowIsRetired() {
         assertTrue(AmbientActivityProfile.forKind(CreatureKind.ECHO_SHADE).isEmpty(),
             "the dedicated Echo Shade runtime owns its own ambient schedule");
         assertTrue(AmbientActivityProfile.forKind(CreatureKind.SPECTRE).isEmpty(),
             "the dedicated Spectre runtime owns its own ambient schedule");
-        final AmbientActivityProfile vigil =
-            AmbientActivityProfile.forType(ActivityType.SOUL_LANTERN_VIGIL);
-        assertEquals(Set.of(CreatureKind.UMBRAL_SIGIL), vigil.kinds());
-        assertEquals(400, vigil.checkIntervalTicks());
-        assertEquals(10, vigil.chanceDenominator());
-        assertEquals(4_800, vigil.cooldownTicks());
-        assertEquals(0, vigil.localChangeCap());
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.UMBRAL_SIGIL).isEmpty(),
+            "F22: the dedicated Umbral Sigil runtime owns its own ambient schedule");
+        // The compact constructor rejects an empty kind set, so retiring the last kind had to
+        // retire the row. This is the exact shape F13 used for ARCANE_STUDY.
+        assertNull(AmbientActivityProfile.forType(ActivityType.SOUL_LANTERN_VIGIL),
+            "no kind remains on the generic SOUL_LANTERN_VIGIL dispatch");
+        assertTrue(AmbientActivityProfile.all().stream()
+                .noneMatch(profile -> profile.type() == ActivityType.SOUL_LANTERN_VIGIL),
+            "the retired profile is gone from the dispatch table");
+        assertTrue(AmbientActivityProfile.all().stream()
+                .noneMatch(profile -> profile.kinds().isEmpty()),
+            "no surviving row was left with an empty kind set, which would not even construct");
+        assertFalse(AmbientActivityTags.forActivity(ActivityType.SOUL_LANTERN_VIGIL).isEmpty(),
+            "the soul-light block predicate stays registered for any later reuse");
+        assertFalse(AmbientActivityRuntime.executeNow(
+            null, null, CreatureKind.UMBRAL_SIGIL, ActivityType.SOUL_LANTERN_VIGIL),
+            "a retired activity row declines instead of throwing");
     }
 }

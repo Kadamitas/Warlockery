@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:umbral_sigil_target_escape_breaks_unfinished_seal",
+  "environment": "warlockery:umbral_sigil_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 300
+}

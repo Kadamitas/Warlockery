@@ -21,7 +21,10 @@ public class SpiritMob extends Vex implements ArcaneCreature {
         super(type, level);
         this.kind = kind;
         this.behavior = CreatureBehaviorFactory.create(kind);
-        if (Set.of(CreatureKind.HEX_BAT, CreatureKind.BANSHEE, CreatureKind.UMBRAL_SIGIL,
+        // F22 removed UMBRAL_SIGIL: the dedicated UmbralSigilEntity owns its own goals, and the
+        // only thing a nearest-player target goal could still do for a kind that no longer routes
+        // through this class is contest the runtime's movement authority if it ever came back.
+        if (Set.of(CreatureKind.HEX_BAT, CreatureKind.BANSHEE,
             CreatureKind.POLTERGEIST, CreatureKind.SPECTRE, CreatureKind.IMP).contains(kind)) {
             this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
         }

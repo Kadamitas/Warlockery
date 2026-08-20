@@ -42,13 +42,13 @@ public record AmbientActivityProfile(
         // and the canonical constructor rejects an empty kind set, so the whole row is retired the
         // way F13 retired ARCANE_STUDY; the activity type and its dispatch entry go with it because
         // nothing else reads them.
-        // F21 delegated ECHO_SHADE to EchoShadeRuntime and SPECTRE to SpectreRuntime, each of
-        // which owns its own ambient schedule, so UMBRAL_SIGIL is the last generic vigil family.
-        // This row now holds exactly one kind and the canonical constructor rejects an empty kind
-        // set, so a later family delegating UMBRAL_SIGIL must delete the whole row rather than the
-        // kind, exactly as F13 retired ARCANE_STUDY.
-        profile(ActivityType.SOUL_LANTERN_VIGIL, Set.of(CreatureKind.UMBRAL_SIGIL),
-            400, 10, 4_800, 0),
+        // F22: UMBRAL_SIGIL was the last kind left on SOUL_LANTERN_VIGIL once F18, F19 and F21
+        // delegated DEATH, LOST_SOUL, SPIRIT, ECHO_SHADE and SPECTRE, and the dedicated
+        // UmbralSigilRuntime now owns the Sigil's whole schedule. The canonical constructor
+        // rejects an empty kind set, so the entire row is retired here rather than emptied,
+        // exactly as F13 retired ARCANE_STUDY. The activity type, its SOUL_LIGHTS block tag and
+        // its action stay registered: forType returns null and executeNow declines for a retired
+        // row, which AmbientActivityRulesTest pins for both retired rows.
         profile(ActivityType.HAY_REST, Set.of(CreatureKind.PALE_STEED, CreatureKind.NIGHTMARE), 400, 12, 6_000, 0),
         // F05 superseded the LYCAN_VILLAGER share of VILLAGE_WATCH. LycanVillagerRuntime raises
         // BOUNDARY_WATCH from its own brain anchor, walks it under the level path budget and faces

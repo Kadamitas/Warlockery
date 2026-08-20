@@ -545,14 +545,20 @@ public final class PoltergeistGameTests {
                     }
                     helper.assertFalse(target.hasEffect(MobEffects.DARKNESS),
                         "the Poltergeist never borrows Spectre fear or darkness semantics");
-                    // F21 delegated SPECTRE and ECHO_SHADE to their own dedicated runtimes, so
-                    // UMBRAL_SIGIL is the last generic soul-lantern vigil family. Retargeted
-                    // rather than removed: the intent is that F20's own edit did not collaterally
-                    // strip the surviving generic vigil families.
+                    // Original intent: F20's own edit must not collaterally strip other families'
+                    // generic ambient rows. F21 retargeted this probe onto UMBRAL_SIGIL as the
+                    // last vigil family; F22 delegated that kind too and retired the whole
+                    // SOUL_LANTERN_VIGIL row, because the profile constructor rejects an empty
+                    // kind set. The probe therefore moves to an unrelated still-generic family,
+                    // and the retired row is asserted retired rather than silently dropped.
+                    helper.assertTrue(
+                        AmbientActivityProfile.forType(
+                            AmbientActivityProfile.ActivityType.SOUL_LANTERN_VIGIL) == null,
+                        "F22 retired the whole soul-lantern vigil row rather than emptying it");
                     helper.assertTrue(
                         AmbientActivityProfile.forKind(
-                            ArcaneCreature.CreatureKind.UMBRAL_SIGIL).size() >= 1,
-                        "the remaining generic vigil family keeps its own ambient routine");
+                            ArcaneCreature.CreatureKind.OWL).size() >= 1,
+                        "an unrelated generic ambient family keeps its own routine");
                     helper.succeed();
                 } finally {
                     fixture.close();
