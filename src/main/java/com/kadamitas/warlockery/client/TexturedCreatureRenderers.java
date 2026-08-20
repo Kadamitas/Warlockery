@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.entity.BansheeEntity;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.GoblinLifecycleRules;
@@ -120,6 +121,13 @@ final class TexturedCreatureRenderers {
             ArmedEntityRenderState.extractArmedEntityRenderState(
                 entity, state, this.itemModelResolver, partialTicks
             );
+            if (entity instanceof BansheeEntity banshee) {
+                state.bansheeActivity = banshee.presentationActivity();
+                state.bansheePulseSequence = banshee.presentationPulseSequence();
+            } else {
+                state.bansheeActivity = null;
+                state.bansheePulseSequence = 0;
+            }
             state.hobgoblinAssaultVariant = entity instanceof ArcaneMob arcane
                 && arcane.isHobgoblinAssaultVariant();
             state.tint = entity instanceof EntEntity ent
@@ -127,6 +135,24 @@ final class TexturedCreatureRenderers {
                 : state.hobgoblinAssaultVariant
                     ? 0xFF76964F
                     : -1;
+            state.hexBatRoosting = entity instanceof com.kadamitas.warlockery.entity.HexBatEntity bat
+                && bat.isRoosting();
+            state.hexBatSwooping = entity instanceof com.kadamitas.warlockery.entity.HexBatEntity bat
+                && bat.isSwooping();
+            if (entity instanceof com.kadamitas.warlockery.entity.HedgeCroneEntity crone) {
+                state.hedgeCroneActivity = crone.presentationActivity();
+                state.hedgeCroneWardPrepared = crone.presentationWardPrepared();
+            } else {
+                state.hedgeCroneActivity = null;
+                state.hedgeCroneWardPrepared = false;
+            }
+            if (entity instanceof com.kadamitas.warlockery.entity.CircleMageEntity mage) {
+                state.circleMageActivity = mage.presentationActivity();
+                state.circleMageFocusPrepared = mage.presentationFocusPrepared();
+            } else {
+                state.circleMageActivity = null;
+                state.circleMageFocusPrepared = false;
+            }
         }
 
         @Override
@@ -161,5 +187,13 @@ final class TexturedCreatureRenderers {
     static final class ArcaneState extends ArmedEntityRenderState {
         private int tint = -1;
         private boolean hobgoblinAssaultVariant;
+        boolean hexBatRoosting;
+        boolean hexBatSwooping;
+        com.kadamitas.warlockery.entity.BansheeRules.Mode bansheeActivity;
+        int bansheePulseSequence;
+        com.kadamitas.warlockery.entity.HedgeCroneRules.Mode hedgeCroneActivity;
+        boolean hedgeCroneWardPrepared;
+        com.kadamitas.warlockery.entity.CircleMageRules.Mode circleMageActivity;
+        boolean circleMageFocusPrepared;
     }
 }

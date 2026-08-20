@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.dream;
 
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.ritual.RitualManager;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -182,6 +183,6 @@ public final class SpiritWorldGameTests {
         final BlockPos position = helper.absolutePos(new BlockPos(1, 2, 1));
         player.teleportTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5);
         SpiritWorldRuntime.useGameTestDestination(player);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 }

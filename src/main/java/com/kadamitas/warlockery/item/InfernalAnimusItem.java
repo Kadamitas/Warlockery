@@ -26,6 +26,21 @@ public final class InfernalAnimusItem extends Item {
         if (!target.typeHolder().is(WarlockeryTags.EntityTypes.DEMONS)) {
             return InteractionResult.PASS;
         }
+        if (target.typeHolder().is(
+            com.kadamitas.warlockery.magic.MagicCompatibilityTags.INFERNAL_ENTHRALLMENT_IMMUNE
+        )) {
+            return InteractionResult.PASS;
+        }
+        final java.util.Optional<java.util.UUID> directOwner =
+            com.kadamitas.warlockery.entity.CreatureBehaviorState.owner(target);
+        if (directOwner.isPresent() && !directOwner.orElseThrow().equals(player.getUUID())) {
+            if (!player.level().isClientSide()) {
+                player.sendSystemMessage(Component.translatable(
+                    "message.warlockery.creature.bound_elsewhere", target.getDisplayName()
+                ));
+            }
+            return InteractionResult.FAIL;
+        }
         if (!player.level().isClientSide()) {
             WarlockeryEntityData.get(target).putString(InfernalPactEffects.OWNER_KEY, player.getStringUUID());
             if (target instanceof Mob mob) {

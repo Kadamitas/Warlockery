@@ -13,7 +13,6 @@
     "minecraft:phantom",
     "minecraft:zoglin",
     "minecraft:wither",
-    "#warlockery:spectral",
-    "warlockery:corpse"
+    "#warlockery:spectral"
   ]
 }

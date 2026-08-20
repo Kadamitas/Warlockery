@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.AlluringSkullRules.Diagnostic;
+import com.kadamitas.warlockery.entity.EldritchWatcherEntity;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
@@ -120,12 +121,18 @@ public final class AlluringSkullBlock extends Block {
                 mob.isAlive()
             )
         );
-        targets.forEach(mob -> mob.getNavigation().moveTo(
-            pos.getX() + 0.5,
-            pos.getY() + 0.25,
-            pos.getZ() + 0.5,
-            1.0
-        ));
+        targets.forEach(mob -> {
+            if (mob instanceof EldritchWatcherEntity watcher) {
+                watcher.acceptExternalLure(level, pos);
+                return;
+            }
+            mob.getNavigation().moveTo(
+                pos.getX() + 0.5,
+                pos.getY() + 0.25,
+                pos.getZ() + 0.5,
+                1.0
+            );
+        });
         if (!targets.isEmpty()) {
             level.sendParticles(
                 ParticleTypes.SOUL,

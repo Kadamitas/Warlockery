@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:solidifying_sandstone_converts_every_hollow_tears_state",
   "environment": "minecraft:default",
-  "structure": "fabric-gametest-api-v1:empty",
+  "structure": "warlockery:empty3x3x3",
   "max_ticks": 100
 }

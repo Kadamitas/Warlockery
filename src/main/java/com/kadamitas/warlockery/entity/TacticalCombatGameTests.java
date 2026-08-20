@@ -3,6 +3,7 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.TacticalCombatRules.Maneuver;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -103,10 +104,10 @@ public final class TacticalCombatGameTests {
     }
 
     public static void meleeCreatureDisengagesFromUnreachableAttackSlit(final GameTestHelper helper) {
-        buildFloor(helper, -1, 7, -3, 3);
-        for (int x = 2; x <= 6; x++) {
+        buildFloor(helper, -3, 14, -4, 4);
+        for (int x = -2; x <= 2; x++) {
             for (int z = -2; z <= 2; z++) {
-                if (x == 2 || x == 6 || z == -2 || z == 2) {
+                if (x == -2 || x == 2 || z == -2 || z == 2) {
                     for (int y = 1; y <= 3; y++) {
                         if (!(x == 2 && y == 2 && z == 0)) {
                             helper.setBlock(new BlockPos(x, y, z), Blocks.STONE_BRICKS);
@@ -117,36 +118,38 @@ public final class TacticalCombatGameTests {
         }
         final ServerPlayer player = connectedPlayer(helper, new BlockPos(0, 1, 0));
         player.setInvulnerable(true);
-        final WerewolfEntity werewolf = helper.spawn(
-            ModEntities.WEREWOLF.get(), new BlockPos(4, 1, 0), EntitySpawnReason.EVENT
+        final WerewolfHunterEntity melee = helper.spawn(
+            ModEntities.WEREWOLF_HUNTER.get(), new BlockPos(4, 1, 0), EntitySpawnReason.EVENT
         );
-        werewolf.setTarget(player);
-        helper.runAfterDelay(2, () -> verifyBlockedMeleeDisengagement(helper, player, werewolf));
+        melee.setTarget(player);
+        helper.runAfterDelay(2, () -> verifyBlockedMeleeDisengagement(helper, player, melee));
     }
 
     private static void verifyBlockedMeleeDisengagement(
         final GameTestHelper helper,
         final ServerPlayer player,
-        final WerewolfEntity werewolf
+        final WerewolfHunterEntity melee
     ) {
-        helper.assertTrue(!TacticalCombatRuntime.routeReaches(werewolf, player),
+        helper.assertTrue(!TacticalCombatRuntime.routeReaches(melee, player),
             "the attack slit must block the melee creature's path to the player");
-        final var profile = TacticalCombatRules.profile(CreatureKind.WEREWOLF);
+        helper.assertTrue(TacticalCombatRules.usesGenericTacticalLayer(melee.creatureKind()),
+            "the melee subject must be a kind that still reaches the generic tactical layer");
+        final var profile = TacticalCombatRules.profile(melee.creatureKind());
         final Maneuver maneuver = TacticalCombatRules.choose(
             profile,
             false,
             true,
             false,
-            werewolf.distanceTo(player),
-            werewolf.getHealth(),
-            werewolf.getMaxHealth()
+            melee.distanceTo(player),
+            melee.getHealth(),
+            melee.getMaxHealth()
         );
         helper.assertValueEqual(maneuver, Maneuver.DISENGAGE,
             "an exposed melee creature with no route must disengage");
-        TacticalCombatRuntime.execute(werewolf, helper.getLevel(), player, profile, maneuver);
-        final BlockPos destination = werewolf.getNavigation().getTargetPos();
+        TacticalCombatRuntime.execute(melee, helper.getLevel(), player, profile, maneuver);
+        final BlockPos destination = melee.getNavigation().getTargetPos();
         helper.assertTrue(destination != null && destination.distSqr(player.blockPosition())
-            > werewolf.blockPosition().distSqr(player.blockPosition()),
+            > melee.blockPosition().distSqr(player.blockPosition()),
             "the disengage path must carry the creature away from the unreachable attack slit");
         helper.succeed();
     }
@@ -171,7 +174,7 @@ public final class TacticalCombatGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(relativePosition);
         player.teleportTo(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 }
 

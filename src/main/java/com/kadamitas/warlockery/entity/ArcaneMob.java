@@ -8,13 +8,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -37,7 +34,11 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
         super(type, level);
         this.kind = kind;
         this.behavior = CreatureBehaviorFactory.create(kind);
-        this.setCanPickUpLoot(kind == CreatureKind.IRONBOUND_SENTINEL || kind == CreatureKind.CIRCLE_MAGE);
+        // F13 dropped the CIRCLE_MAGE disjunct when CircleMageEntity took that kind, and F36 has
+        // now done the same for IRONBOUND_SENTINEL: both kinds are built by dedicated bodies that
+        // normalize loot pickup off, so no construction path reaches this gate with either kind
+        // and the expression had no remaining true branch. No arcane ground mob picks up loot.
+        this.setCanPickUpLoot(false);
         if (kind == CreatureKind.OWL || kind == CreatureKind.TOAD || kind == CreatureKind.CAT) {
             this.goalSelector.removeAllGoals(goal -> true);
             this.targetSelector.removeAllGoals(goal -> true);
@@ -47,10 +48,6 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
             if (CompanionCombatRules.requiresDedicatedMeleeGoal(kind)) {
                 this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.15, true));
             }
-        } else if (kind == CreatureKind.IRONBOUND_SENTINEL) {
-            this.targetSelector.removeAllGoals(goal -> true);
-            this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Monster.class, true,
-                (target, serverLevel) -> !(target instanceof ArcaneCreature)));
         }
     }
 
@@ -76,7 +73,25 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
     @Override
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
+        tickProfiledBehavior(level);
+        tickSpecializedActivity(level);
+    }
+
+    /**
+     * Narrow specialization seam for bodies whose dedicated runtime replaces the generic profiled
+     * companion layer. That layer writes owner follow, emergency owner teleport, the owner aura and
+     * the owner's attacker as a target, so a body that owns those decisions itself has to be able
+     * to decline it rather than compete with it for the same tick. Behaviour is unchanged for every
+     * body that does not override this.
+     */
+    protected void tickProfiledBehavior(final ServerLevel level) {
         behavior.tick(this, level);
+    }
+
+    /**
+     * Narrow specialization seam for mobs whose runtime replaces the generic tactical and ambient layers.
+     */
+    protected void tickSpecializedActivity(final ServerLevel level) {
         TacticalCombatRuntime.tick(this, level, kind);
         AmbientActivityRuntime.tick(this, level, kind);
     }
@@ -94,13 +109,9 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
 
     @Override
     public boolean doHurtTarget(final ServerLevel level, final Entity target) {
-        final float pairedBonus = behavior.attackDamageBonus(this, level);
-        final float deathBonus = kind == CreatureKind.DEATH && target instanceof LivingEntity living
-            ? Math.max(0.0F, DeathCombatRules.meleeDamage(living.getMaxHealth()) - (float) getAttributeValue(Attributes.ATTACK_DAMAGE))
-            : 0.0F;
         final boolean hurt = PrimaryAttackModifier.withDamageBonus(
             this,
-            pairedBonus + deathBonus,
+            behavior.attackDamageBonus(this, level),
             () -> super.doHurtTarget(level, target)
         );
         if (hurt) {

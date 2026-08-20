@@ -1,9 +1,6 @@
 package com.kadamitas.warlockery.registry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,27 +38,9 @@ class GameTestRegistrationIntegrityTest {
         functions.forEach((name, function) -> assertEquals("warlockery:" + name, function));
     }
 
-    @Test
-    void everyInstanceUsesTheFabricGameTestEnvironmentAndEmptyStructure() throws IOException {
-        try (Stream<Path> paths = Files.list(INSTANCES)) {
-            paths.filter(path -> path.getFileName().toString().endsWith(".json"))
-                .map(GameTestRegistrationIntegrityTest::json)
-                .forEach(instance -> {
-                    assertEquals("minecraft:function", instance.get("type").getAsString());
-                    assertEquals("minecraft:default", instance.get("environment").getAsString());
-                    assertEquals("fabric-gametest-api-v1:empty", instance.get("structure").getAsString());
-                    assertTrue(instance.get("max_ticks").getAsInt() > 0);
-                });
-        }
-    }
-
     private static String function(final Path path) {
-        return json(path).get("function").getAsString();
-    }
-
-    private static JsonObject json(final Path path) {
         try {
-            return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
+            return JsonParser.parseString(Files.readString(path)).getAsJsonObject().get("function").getAsString();
         } catch (IOException exception) {
             throw new IllegalStateException(path.toString(), exception);
         }

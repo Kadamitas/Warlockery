@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorageUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
@@ -21,6 +22,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -81,9 +84,6 @@ public final class MagicMachineBlock extends BaseEntityBlock {
         if ("brazier".equals(machine.machineKind())) {
             return useBrazier(itemStack, level, player, hand, machine);
         }
-        if (!machine.machineProfile().supportsFluids()) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
-        }
         if (level.isClientSide()) {
             return ContainerItemContext.forPlayerInteraction(player, hand).find(FluidStorage.ITEM) != null
                 ? InteractionResult.SUCCESS
@@ -93,9 +93,13 @@ public final class MagicMachineBlock extends BaseEntityBlock {
         if (storage == null) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        return FluidStorageUtil.interactWithFluidStorage(storage, player, hand)
-            ? InteractionResult.SUCCESS_SERVER
-            : InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!FluidStorageUtil.interactWithFluidStorage(storage, player, hand)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        if ("kettle".equals(machine.machineKind())) {
+            machine.claimKettleBrewer(player);
+        }
+        return InteractionResult.SUCCESS_SERVER;
     }
 
     private static InteractionResult useBrazier(
@@ -105,19 +109,27 @@ public final class MagicMachineBlock extends BaseEntityBlock {
         final InteractionHand hand,
         final MagicMachineBlockEntity machine
     ) {
-        if (!stack.is(WarlockeryTags.Items.BRAZIER_IGNITERS) && !stack.is(Items.WATER_BUCKET)) {
+        final boolean waterBottle = isWaterBottle(stack);
+        if (!stack.is(WarlockeryTags.Items.BRAZIER_IGNITERS)
+            && !stack.is(Items.WATER_BUCKET)
+            && !waterBottle) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        if (stack.is(Items.WATER_BUCKET)) {
+        if (stack.is(Items.WATER_BUCKET) || waterBottle) {
             final int cleared = machine.extinguishBrazier();
+            if (cleared < 0) {
+                return InteractionResult.FAIL;
+            }
             player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable(
                 "message.warlockery.brazier.extinguished",
                 cleared
             ));
-            return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(new ItemStack(Items.BUCKET));
+            return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(new ItemStack(
+                waterBottle ? Items.GLASS_BOTTLE : Items.BUCKET
+            ));
         }
         if (!machine.igniteBrazier()) {
             return InteractionResult.FAIL;
@@ -129,6 +141,12 @@ public final class MagicMachineBlock extends BaseEntityBlock {
         }
         player.sendOverlayMessage(net.minecraft.network.chat.Component.translatable("message.warlockery.brazier.ignited"));
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    private static boolean isWaterBottle(final ItemStack stack) {
+        return stack.is(Items.POTION)
+            && stack.getOrDefault(net.minecraft.core.component.DataComponents.POTION_CONTENTS, PotionContents.EMPTY)
+                .is(net.minecraft.world.item.alchemy.Potions.WATER);
     }
 
     @Override
@@ -182,6 +200,20 @@ public final class MagicMachineBlock extends BaseEntityBlock {
         final net.minecraft.core.Direction direction
     ) {
         return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(pos));
+    }
+
+    @Override
+    protected void affectNeighborsAfterRemoval(
+        final BlockState state,
+        final ServerLevel level,
+        final BlockPos pos,
+        final boolean moved
+    ) {
+        if (level.getBlockEntity(pos) instanceof MagicMachineBlockEntity machine) {
+            net.minecraft.world.Containers.dropContents(level, pos, machine);
+            machine.dropLegacyOverflow(level, pos);
+        }
+        super.affectNeighborsAfterRemoval(state, level, pos, moved);
     }
 
     @Override

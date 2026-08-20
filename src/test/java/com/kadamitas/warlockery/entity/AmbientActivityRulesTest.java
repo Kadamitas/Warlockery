@@ -2,11 +2,13 @@ package com.kadamitas.warlockery.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.kadamitas.warlockery.entity.AmbientActivityProfile.ActivityType;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
+import java.util.Arrays;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +24,32 @@ class AmbientActivityRulesTest {
             .anyMatch(profile -> profile.type() == ActivityType.GROVE_TENDING));
         assertTrue(AmbientActivityProfile.forKind(CreatureKind.IMP).stream()
             .anyMatch(profile -> profile.type() == ActivityType.SHINY_CURIOSITY));
+    }
+
+    @Test
+    void hexBatNoLongerReceivesGenericNightPerchAndOwlSemanticsAreUnchanged() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.HEX_BAT).isEmpty(),
+            "the dedicated Hex Bat owns its roost behavior and receives no generic ambient authority");
+        final AmbientActivityProfile nightPerch = AmbientActivityProfile.forType(ActivityType.NIGHT_PERCH);
+        assertEquals(Set.of(CreatureKind.OWL), nightPerch.kinds(),
+            "Owl keeps NIGHT_PERCH exactly as before");
+        assertEquals(300, nightPerch.checkIntervalTicks());
+        assertEquals(8, nightPerch.chanceDenominator());
+        assertEquals(3_600, nightPerch.cooldownTicks());
+        assertEquals(0, nightPerch.localChangeCap());
+    }
+
+    @Test
+    void hauntedBellBelongsOnlyToThePoltergeistWithExactScheduling() {
+        final AmbientActivityProfile hauntedBell = AmbientActivityProfile.forType(ActivityType.HAUNTED_BELL);
+        assertEquals(Set.of(CreatureKind.POLTERGEIST), hauntedBell.kinds(),
+            "the Banshee no longer receives the haunted-bell routine; the Poltergeist keeps it");
+        assertEquals(400, hauntedBell.checkIntervalTicks());
+        assertEquals(14, hauntedBell.chanceDenominator());
+        assertEquals(6_000, hauntedBell.cooldownTicks());
+        assertEquals(0, hauntedBell.localChangeCap());
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.BANSHEE).isEmpty(),
+            "Banshee ambient presentation is owned by its dedicated vigil runtime");
     }
 
     @Test
@@ -75,13 +103,149 @@ class AmbientActivityRulesTest {
         final Set<CreatureKind> delegated = Set.of(
             CreatureKind.GOBLIN,
             CreatureKind.HOBGOBLIN,
-            CreatureKind.NAAMAH
+            CreatureKind.NAAMAH,
+            CreatureKind.ELDRITCH_WATCHER,
+            CreatureKind.CORPSE,
+            // F15: the dedicated HexBatRuntime owns roost/sortie behavior.
+            CreatureKind.HEX_BAT,
+            CreatureKind.BANSHEE,
+            // F18: the dedicated DeathRuntime owns every Death schedule; Death never communes
+            // with soul lanterns.
+            CreatureKind.DEATH,
+            // F19: the dedicated LostSoulRuntime and SpiritRuntime own memorial
+            // petition and soul-light attendance respectively.
+            CreatureKind.LOST_SOUL,
+            CreatureKind.SPIRIT,
+            // F13: the dedicated Crone and Mage runtimes own their bounded workstation work.
+            CreatureKind.HEDGE_CRONE,
+            CreatureKind.CIRCLE_MAGE,
+            // F21: the dedicated EchoShadeRuntime and SpectreRuntime own the echo and the
+            // haunting; neither kind communes with soul lanterns any more.
+            CreatureKind.ECHO_SHADE,
+            CreatureKind.SPECTRE,
+            // F03: VampireCourtRuntime owns the claimed daylight retreat that DAYLIGHT_SHELTER
+            // used to declare for both court kinds.
+            CreatureKind.VAMPIRE,
+            CreatureKind.BLOOD_THRALL,
+            // F05: LycanVillagerRuntime owns BOUNDARY_WATCH and MOON_WATCH on the villager's own
+            // brain anchor, so the sentinel takes no generic ambient authority.
+            CreatureKind.LYCAN_VILLAGER,
+            // F31: ParasyticLouseRuntime owns the louse's bounded feeding outright. It was
+            // GRAVE_SCAVENGE's last kind after F17 removed the Corpse, so the whole row and its
+            // ActivityType were retired rather than emptied.
+            CreatureKind.LOUSE,
+            // F22: the dedicated UmbralSigilRuntime owns the whole seal, and its removal retired
+            // the last kind on SOUL_LANTERN_VIGIL and with it the row itself.
+            CreatureKind.UMBRAL_SIGIL,
+            CreatureKind.MANDRAKE,
+            CreatureKind.DREAMROOT,
+            CreatureKind.ILLUSION_CREEPER,
+            CreatureKind.ILLUSION_SPIDER,
+            CreatureKind.ILLUSION_ZOMBIE
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
             .filter(kind -> AmbientActivityProfile.forKind(kind).isEmpty())
             .collect(java.util.stream.Collectors.toSet());
         assertEquals(Set.of(), missing);
+    }
+
+    @Test
+    void livingRootsUseDedicatedRuntimesAndLeaveTheThornGardenPairExact() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.MANDRAKE).isEmpty());
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.DREAMROOT).isEmpty());
+        final AmbientActivityProfile thornGarden =
+            AmbientActivityProfile.forType(ActivityType.THORN_GARDEN);
+        assertEquals(Set.of(CreatureKind.THORNED_PURSUER, CreatureKind.BRAMBLE_COLOSSUS),
+            thornGarden.kinds());
+        assertEquals(300, thornGarden.checkIntervalTicks());
+        assertEquals(8, thornGarden.chanceDenominator());
+        assertEquals(3_600, thornGarden.cooldownTicks());
+        assertEquals(0, thornGarden.localChangeCap());
+    }
+
+    @Test
+    void theCourtAndTheSentinelDeclareNoGenericAmbientBehaviorTheyCannotRun() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.VAMPIRE).isEmpty(),
+            "F03: VampireCourtEntity never reaches the generic ambient layer, so the retired "
+                + "DAYLIGHT_SHELTER row must not still declare the Vampire");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.BLOOD_THRALL).isEmpty(),
+            "F03: the Blood Thrall shares the court seam and the same retired row");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.LYCAN_VILLAGER).isEmpty(),
+            "F05: the sentinel villager reaches neither VILLAGE_WATCH nor MOON_GAZE");
+        assertEquals(
+            Set.of(CreatureKind.IRONBOUND_SENTINEL, CreatureKind.WEREWOLF_HUNTER),
+            AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).kinds(),
+            "VILLAGE_WATCH keeps exactly the two kinds whose entities still call the generic tick"
+        );
+        assertEquals(300, AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).checkIntervalTicks());
+        assertEquals(10, AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).chanceDenominator());
+        assertEquals(3_600, AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).cooldownTicks());
+        assertEquals(0, AmbientActivityProfile.forType(ActivityType.VILLAGE_WATCH).localChangeCap());
+        assertFalse(java.util.Arrays.stream(ActivityType.values())
+                .anyMatch(type -> "DAYLIGHT_SHELTER".equals(type.name())),
+            "the retired activity type is deleted with its row because nothing else reads it");
+    }
+
+    @Test
+    void theWerewolfKeepsTheExactMoonGazeVigilItHasAlwaysDeclared() {
+        final java.util.List<AmbientActivityProfile> werewolf =
+            AmbientActivityProfile.forKind(CreatureKind.WEREWOLF);
+        assertEquals(1, werewolf.size(), "MOON_GAZE is the only ambient row the pack family declares");
+        final AmbientActivityProfile moonGaze = werewolf.getFirst();
+        assertEquals(ActivityType.MOON_GAZE, moonGaze.type());
+        assertEquals(Set.of(CreatureKind.WEREWOLF), moonGaze.kinds(),
+            "the sentinel villager is retired from the row; the Werewolf keeps it");
+        assertEquals(300, moonGaze.checkIntervalTicks());
+        assertEquals(8, moonGaze.chanceDenominator());
+        assertEquals(3_600, moonGaze.cooldownTicks());
+        assertEquals(0, moonGaze.localChangeCap());
+    }
+
+    @Test
+    void everyPractitionerDelegatesArcaneStudyToItsDedicatedRuntime() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.ELDRITCH_WATCHER).isEmpty(),
+            "the dedicated Watcher runtime owns its focus-inspection schedule");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.HEDGE_CRONE).isEmpty(),
+            "F13: the dedicated Hedge Crone runtime owns its bounded ward preparation");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.CIRCLE_MAGE).isEmpty(),
+            "F13: the dedicated Circle Mage runtime owns its bounded solo and conclave study");
+        assertNull(AmbientActivityProfile.forType(ActivityType.ARCANE_STUDY),
+            "no kind remains on the generic ARCANE_STUDY dispatch");
+        assertTrue(AmbientActivityProfile.all().stream()
+                .noneMatch(profile -> profile.type() == ActivityType.ARCANE_STUDY),
+            "the retired profile is gone from the dispatch table");
+        assertFalse(AmbientActivityTags.forActivity(ActivityType.ARCANE_STUDY).isEmpty(),
+            "the shared workstation block predicate both dedicated runtimes reuse stays registered");
+    }
+
+    @Test
+    void aRetiredActivityRowNeverThrowsThroughTheGenericDispatch() {
+        // Regression: forType is a plain map lookup, so retiring the ARCANE_STUDY row made it
+        // return null while executeNow still dereferenced it unguarded at its sole call site.
+        assertNull(AmbientActivityProfile.forType(ActivityType.ARCANE_STUDY));
+        assertFalse(AmbientActivityRuntime.executeNow(
+            null, null, CreatureKind.CIRCLE_MAGE, ActivityType.ARCANE_STUDY),
+            "a retired activity row declines instead of throwing");
+        assertFalse(AmbientActivityRuntime.executeNow(
+            null, null, CreatureKind.HEDGE_CRONE, ActivityType.ARCANE_STUDY));
+        assertFalse(AmbientActivityRuntime.executeNow(
+            null, null, CreatureKind.ELDRITCH_WATCHER, ActivityType.ARCANE_STUDY));
+    }
+
+    @Test
+    void graveScavengeIsRetiredOutrightBecauseBothItsKindsAreDelegated() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.CORPSE).isEmpty(),
+            "the Corpse was delegated to CorpseRuntime by F17");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.LOUSE).isEmpty(),
+            "the Parasytic Louse was delegated to ParasyticLouseRuntime by F31");
+        assertTrue(AmbientActivityProfile.all().stream()
+                .noneMatch(profile -> profile.kinds().contains(CreatureKind.LOUSE)),
+            "no surviving ambient row may still name LOUSE");
+        assertTrue(Arrays.stream(ActivityType.values())
+                .noneMatch(type -> "GRAVE_SCAVENGE".equals(type.name())),
+            "GRAVE_SCAVENGE had no tag set and no dedicated reuse, so the whole type is retired "
+                + "rather than kept as a rowless constant the way ARCANE_STUDY was");
     }
 
     @Test
@@ -100,6 +264,31 @@ class AmbientActivityRulesTest {
             .contains(AmbientActivityTags.FURNACE_WORKSTATIONS));
         assertTrue(AmbientActivityTags.forActivity(ActivityType.MIRROR_GAZE)
             .contains(AmbientActivityTags.GLASS_BLOCKS));
+    }
+
+    @Test
+    void everySoulLanternVigilKindIsDelegatedAndTheWholeRowIsRetired() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.ECHO_SHADE).isEmpty(),
+            "the dedicated Echo Shade runtime owns its own ambient schedule");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.SPECTRE).isEmpty(),
+            "the dedicated Spectre runtime owns its own ambient schedule");
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.UMBRAL_SIGIL).isEmpty(),
+            "F22: the dedicated Umbral Sigil runtime owns its own ambient schedule");
+        // The compact constructor rejects an empty kind set, so retiring the last kind had to
+        // retire the row. This is the exact shape F13 used for ARCANE_STUDY.
+        assertNull(AmbientActivityProfile.forType(ActivityType.SOUL_LANTERN_VIGIL),
+            "no kind remains on the generic SOUL_LANTERN_VIGIL dispatch");
+        assertTrue(AmbientActivityProfile.all().stream()
+                .noneMatch(profile -> profile.type() == ActivityType.SOUL_LANTERN_VIGIL),
+            "the retired profile is gone from the dispatch table");
+        assertTrue(AmbientActivityProfile.all().stream()
+                .noneMatch(profile -> profile.kinds().isEmpty()),
+            "no surviving row was left with an empty kind set, which would not even construct");
+        assertFalse(AmbientActivityTags.forActivity(ActivityType.SOUL_LANTERN_VIGIL).isEmpty(),
+            "the soul-light block predicate stays registered for any later reuse");
+        assertFalse(AmbientActivityRuntime.executeNow(
+            null, null, CreatureKind.UMBRAL_SIGIL, ActivityType.SOUL_LANTERN_VIGIL),
+            "a retired activity row declines instead of throwing");
     }
 }
 

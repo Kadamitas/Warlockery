@@ -37,7 +37,7 @@ final class CreatureBehaviorParityTest {
         mob("circle_mage", CreatureKind.CIRCLE_MAGE, Feature.COVEN_RECRUITMENT),
         mob("death", CreatureKind.DEATH, Feature.DEATH_DISGUISE),
         mob("demon", CreatureKind.DEMON, Feature.INFERNAL_BARTER),
-        mob("ent", CreatureKind.ENT, Feature.PROXIMITY_AGGRESSION),
+        mob("ent", CreatureKind.ENT, Feature.BIOME_VARIANTS),
         mob("familiar_cat", CreatureKind.CAT, Feature.FAMILIAR_BOND),
         mob("imp", CreatureKind.IMP, Feature.FIRE_MELEE),
         mob("storm_simian", CreatureKind.STORM_SIMIAN, Feature.WAYSTONE_TRAVEL),
@@ -64,14 +64,15 @@ final class CreatureBehaviorParityTest {
         mob("toad", CreatureKind.TOAD, Feature.AMPHIBIOUS_AURA),
         mob("bramble_colossus", CreatureKind.BRAMBLE_COLOSSUS, Feature.HEART_EMPOWERMENT),
         mob("vampire", CreatureKind.VAMPIRE, Feature.BLOOD_DRAIN),
+        mob("blood_thrall", CreatureKind.BLOOD_THRALL, Feature.COURT_SUBORDINATE),
         mob("werewolf_hunter", CreatureKind.WEREWOLF_HUNTER, Feature.SILVER_HUNTING),
         mob("werewolf", CreatureKind.WEREWOLF, Feature.WEREWOLF_INTEGRATION)
     );
 
     @Test
     void everyAuditedMobHasAProfile() {
-        assertEquals(35, CASES.size());
-        assertEquals(35, CreatureBehaviorProfile.audited().size());
+        assertEquals(36, CASES.size());
+        assertEquals(36, CreatureBehaviorProfile.audited().size());
         assertEquals(
             CASES.stream().map(MobCase::kind).collect(java.util.stream.Collectors.toUnmodifiableSet()),
             CreatureBehaviorProfile.audited().stream()
@@ -105,7 +106,7 @@ final class CreatureBehaviorParityTest {
             case WOLF_SUMMONING -> assertFalse(CreatureBehaviorRules.shouldSummonWolves(20.0F, 20.0F, 0, 400));
             case EFFECT_REDIRECTION -> assertFalse(CreatureBehaviorRules.canRedirectEffect(true, false, true, true));
             case CAULDRON_AURA -> assertEquals(0, CreatureBehaviorRules.cauldronRangeBonus(0));
-            case BLOOD_DRAIN -> assertFalse(CreatureBehaviorRules.shouldBurnInSun(false, true, false));
+            case BLOOD_DRAIN -> assertFalse(CreatureBehaviorRules.shouldBurnInSun(false, true, false, false));
             default -> assertFalse(profile.features().isEmpty());
         }
     }
@@ -132,7 +133,22 @@ final class CreatureBehaviorParityTest {
     private static void success(final MobCase testCase) {
         final CreatureBehaviorProfile profile = profile(testCase);
         assertTrue(profile.has(testCase.requiredFeature()), testCase.requiredFeature().name());
-        assertTrue(profile.features().size() >= 2);
+        if (testCase.kind() == CreatureKind.BANSHEE) {
+            assertEquals(Set.of(Feature.DUST_EMPOWERMENT), profile.features(),
+                "the Banshee profile is compatibility metadata only: its mob-specific behavior "
+                    + "lives in the dedicated BansheeRuntime, and no generic SCREECH or PHASED "
+                    + "claim may return");
+        } else if (testCase.kind() == CreatureKind.ENT) {
+            assertEquals(Set.of(Feature.BIOME_VARIANTS), profile.features(),
+                "the Ent profile keeps variant compatibility metadata only; its behavior lives "
+                    + "in the dedicated EntRuntime and generic proximity aggression may not return");
+        } else {
+            assertTrue(profile.features().size() >= 2);
+        }
+        if (testCase.kind() == CreatureKind.BLOOD_THRALL) {
+            assertTrue(profile.has(Feature.SUNLIGHT_WEAKNESS));
+            assertFalse(profile.has(Feature.BLOOD_DRAIN));
+        }
         switch (testCase.requiredFeature()) {
             case DUST_EMPOWERMENT, HEART_EMPOWERMENT ->
                 assertEquals(1, CreatureBehaviorRules.empoweredLevel(0, 1));
@@ -143,7 +159,7 @@ final class CreatureBehaviorParityTest {
             case WOLF_SUMMONING -> assertTrue(CreatureBehaviorRules.shouldSummonWolves(10.0F, 20.0F, 0, 400));
             case EFFECT_REDIRECTION -> assertTrue(CreatureBehaviorRules.canRedirectEffect(true, true, true, true));
             case CAULDRON_AURA -> assertEquals(16, CreatureBehaviorRules.cauldronRangeBonus(4));
-            case BLOOD_DRAIN -> assertTrue(CreatureBehaviorRules.shouldBurnInSun(true, true, false));
+            case BLOOD_DRAIN -> assertTrue(CreatureBehaviorRules.shouldBurnInSun(true, true, false, false));
             default -> assertTrue(CreatureBehaviorRules.shouldPulse(0, 0, profile.pulseIntervalTicks()));
         }
         assertSupportingTags(profile);
@@ -165,6 +181,52 @@ final class CreatureBehaviorParityTest {
         }
         if (profile.has(Feature.ROOTED_DRAIN)) {
             assertTag("block", "creature_habitats/living_ground");
+        }
+    }
+
+    @Test
+    void bothF13PractitionersDispatchThroughTheirDedicatedRuntimesOnly() {
+        // Neither dedicated entity calls CreatureBehaviorRuntime.tick at all, so the generic hex
+        // pulse and the generic bound-companion follow/aura execute zero times for them; the
+        // profile facts that other suites assert are untouched.
+        final String crone = source("HedgeCroneEntity.java");
+        final String mage = source("CircleMageEntity.java");
+        assertFalse(crone.contains("CreatureBehaviorRuntime.tick"));
+        assertFalse(mage.contains("CreatureBehaviorRuntime.tick"));
+        assertFalse(crone.contains("CreatureBehaviorFactory.create"),
+            "the Hedge Crone has no interaction, binding, offering, or trade surface at all");
+        assertTrue(crone.contains("HedgeCroneRuntime.tick(this, level)"));
+        assertTrue(mage.contains("CircleMageRuntime.tick(this, level)"));
+        assertTrue(mage.contains("covenBehavior.interact(this, player, hand)"),
+            "recruitment keeps the exact existing shared interaction surface");
+
+        // Generic tactical, ambient, and hazard runtimes are never reached from either entity.
+        Stream.of(crone, mage).forEach(entity -> {
+            assertFalse(entity.contains("TacticalCombatRuntime"));
+            assertFalse(entity.contains("AmbientActivityRuntime"));
+            assertFalse(entity.contains("HazardEscapeRuntime"));
+        });
+    }
+
+    @Test
+    void everyNonF13KindKeepsItsGenericBehaviorDispatch() {
+        final Set<CreatureKind> dedicated = Set.of(CreatureKind.HEDGE_CRONE, CreatureKind.CIRCLE_MAGE);
+        CASES.stream()
+            .map(MobCase::kind)
+            .filter(kind -> !dedicated.contains(kind))
+            .forEach(kind -> assertNotNull(CreatureBehaviorProfile.find(kind).orElse(null),
+                kind + " keeps its audited generic profile"));
+        assertNotNull(CreatureBehaviorProfile.find(CreatureKind.HEDGE_CRONE).orElse(null),
+            "the F13 profile facts remain registered for parity and integrity suites");
+        assertNotNull(CreatureBehaviorProfile.find(CreatureKind.CIRCLE_MAGE).orElse(null));
+    }
+
+    private static String source(final String fileName) {
+        try {
+            return Files.readString(Path.of(
+                "src", "main", "java", "com", "kadamitas", "warlockery", "entity", fileName));
+        } catch (IOException exception) {
+            throw new UncheckedIOException(fileName, exception);
         }
     }
 
@@ -190,5 +252,18 @@ final class CreatureBehaviorParityTest {
     }
 
     private record MobCase(String auditId, CreatureKind kind, Feature requiredFeature) {
+    }
+
+    @Test
+    void waterAndRainPutOutTheSunForSunlightWeakCreatures() {
+        // Bare daylight under open sky burns, exactly as before.
+        assertTrue(CreatureBehaviorRules.shouldBurnInSun(true, true, false, false));
+        // Being in water or standing in rain puts it out, which is how vanilla's own undead
+        // behave and what lets Naamah's line live in a drowned monument at all.
+        assertFalse(CreatureBehaviorRules.shouldBurnInSun(true, true, false, true));
+        // Wetness is not a substitute for the other guards, nor they for it.
+        assertFalse(CreatureBehaviorRules.shouldBurnInSun(false, true, false, false));
+        assertFalse(CreatureBehaviorRules.shouldBurnInSun(true, false, false, false));
+        assertFalse(CreatureBehaviorRules.shouldBurnInSun(true, true, true, false));
     }
 }

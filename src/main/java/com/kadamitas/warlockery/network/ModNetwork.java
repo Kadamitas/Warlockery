@@ -3,6 +3,8 @@ package com.kadamitas.warlockery.network;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.item.FlyingBroomItem;
 import com.kadamitas.warlockery.ritual.RitualManager;
+import com.kadamitas.warlockery.ritual.RitualRequirementText;
+import com.kadamitas.warlockery.ritual.RitualSessionData;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +27,7 @@ public final class ModNetwork {
     private static final int MAX_RITUALS = 128;
     private static final int MAX_REQUIREMENTS = 32;
     private static final int MAX_STRING = 256;
-    private static final String PROTOCOL_PATH = "network/v5/";
+    private static final String PROTOCOL_PATH = "network/v6/";
     private static boolean initialized;
 
     private ModNetwork() {
@@ -160,10 +162,23 @@ public final class ModNetwork {
             || !RitualManager.isCircleCenter(level, payload.center())) {
             return;
         }
+        if (payload.cancel()
+            && RitualSessionData.get(level).cancel(level, payload.center(), player.getUUID())) {
+            player.sendSystemMessage(Component.translatable("message.warlockery.ritual.stopped"));
+        }
         if (payload.activate()) {
             final Identifier ritualId = Identifier.tryParse(payload.ritualId());
-            if (ritualId == null || !RitualManager.INSTANCE.activate(level, payload.center(), player, ritualId)) {
-                player.sendSystemMessage(Component.translatable("message.warlockery.ritual.failed_detailed"));
+            // Activation already knows which requirements refused it. Naming them here is what the player was
+            // previously sent to read off the screen for themselves.
+            final List<RitualManager.RequirementStatus> unmet = ritualId == null
+                ? List.of()
+                : RitualManager.INSTANCE.activate(level, payload.center(), player, ritualId);
+            if (ritualId == null || !unmet.isEmpty()) {
+                player.sendSystemMessage(RitualRequirementText.notice(
+                    unmet,
+                    "message.warlockery.ritual.failed_requirements",
+                    "message.warlockery.ritual.failed_detailed"
+                ));
             }
         }
         sendOptions(player, payload.center());
@@ -215,7 +230,7 @@ public final class ModNetwork {
         }
     }
 
-    public record RitualActionPayload(BlockPos center, String ritualId, boolean activate)
+    public record RitualActionPayload(BlockPos center, String ritualId, boolean activate, boolean cancel)
         implements CustomPacketPayload {
         public static final Type<RitualActionPayload> TYPE = payloadType("ritual_action");
         public static final StreamCodec<RegistryFriendlyByteBuf, RitualActionPayload> STREAM_CODEC =
@@ -224,8 +239,14 @@ public final class ModNetwork {
                     output.writeBlockPos(value.center());
                     output.writeUtf(value.ritualId(), MAX_STRING);
                     output.writeBoolean(value.activate());
+                    output.writeBoolean(value.cancel());
                 },
-                input -> new RitualActionPayload(input.readBlockPos(), input.readUtf(MAX_STRING), input.readBoolean())
+                input -> new RitualActionPayload(
+                    input.readBlockPos(),
+                    input.readUtf(MAX_STRING),
+                    input.readBoolean(),
+                    input.readBoolean()
+                )
             );
 
         @Override

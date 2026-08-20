@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:human_village_builds_a_closed_stone_defense",
   "environment": "minecraft:default",
-  "structure": "fabric-gametest-api-v1:empty",
+  "structure": "warlockery:empty3x3x3",
   "max_ticks": 100
 }

@@ -24,6 +24,5 @@
     "thundering": false,
     "dimension": "",
     "minimum_players": 1
-  },
-  "target": "all"
+  }
 }

@@ -21,7 +21,8 @@ public final class VampireProgressionRules {
             1,
             "blood_audience",
             "The Blood Audience",
-            "Complete the Blood Audience beneath the night sky and accept Naamah's immortal gift.",
+            "Bring an unmarried Nami to an Ocean Monument after defeating its Elder Guardians, then complete "
+                + "the Blood Audience beneath the full moon to accept Naamah's immortal gift.",
             750,
             List.of(requirement(
                 Metric.BLOOD_AUDIENCE_COMPLETED,

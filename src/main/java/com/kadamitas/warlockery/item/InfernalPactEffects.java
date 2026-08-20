@@ -25,12 +25,26 @@ public final class InfernalPactEffects {
             Mob.class,
             new AABB(owner.blockPosition()).inflate(32),
             mob -> mob.typeHolder().is(WarlockeryTags.EntityTypes.DEMONS)
-                && owner.getStringUUID().equals(WarlockeryEntityData.get(mob).getStringOr(OWNER_KEY, ""))
+                && com.kadamitas.warlockery.entity.InfernalHierarchyRules.commandAccepted(
+                    owner.getUUID(),
+                    com.kadamitas.warlockery.entity.InfernalHierarchyRuntime.directPactOwner(mob),
+                    com.kadamitas.warlockery.entity.InfernalHierarchyRuntime.animusOwner(mob)
+                )
         ).forEach(demon -> {
+            if (demon instanceof com.kadamitas.warlockery.entity.HellhoundEntity hellhound) {
+                // F09: Hellhound commands travel through the dedicated bounded semantic seam
+                // instead of an external raw target write.
+                com.kadamitas.warlockery.entity.HellhoundLifeRuntime.deliverOwnerCommand(
+                    hellhound, level, owner,
+                    commandedTarget != null && commandedTarget.isAlive() ? commandedTarget : null
+                );
+                return;
+            }
             if (demon.getTarget() == owner) {
                 demon.setTarget(null);
             }
-            if (commandedTarget != null && commandedTarget != owner && commandedTarget.isAlive()) {
+            if (commandedTarget != null && commandedTarget != owner && commandedTarget.isAlive()
+                && demon.canAttack(commandedTarget)) {
                 demon.setTarget(commandedTarget);
             }
         });

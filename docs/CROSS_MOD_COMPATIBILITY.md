@@ -1,6 +1,6 @@
 # Cross-mod compatibility
 
-Warlockery 1.4.0 targets Minecraft 26.2 and Java 25. The Fabric build targets Fabric Loader 0.19.3 with Fabric API 0.157.0+26.2; matching cross-loader releases target Forge 65.1.1 and NeoForge 26.2.0.59. Codecs serialize data. They do not replace shared material contracts. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, Fabric Transfer API storage, and Fabric API lookups.
+Warlockery 1.5.0 targets Minecraft 26.2 and Java 25. The Fabric build targets Fabric Loader 0.19.3 with Fabric API 0.158.0+26.2; matching cross-loader releases target Forge 65.1.2 and NeoForge 26.2.0.64. Codecs serialize data. They do not replace shared material contracts. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, Fabric Transfer API storage, and Fabric API lookups.
 
 The `1.4.0-LlaGuiT0-26.2.0.45` supporter build is NeoForge-only for LlaGuiT0's modpack. Its NeoForge dependency is intentionally exact: `[26.2.0.45-beta,26.2.0.46-beta)`. It does not imply Forge or Fabric artifacts.
 
@@ -56,13 +56,9 @@ The fixed Brew of Combustion supplies 2,400 burn ticks through Fabric's fuel reg
 
 ## Fabric Transfer API
 
-All nine machine block variants expose sided `ItemStorage.SIDED` views. Top, bottom, and horizontal access use the machine slot layout. Distilleries, kettles, cauldrons, and silver vats also expose `FluidStorage.SIDED` because their profiles store transferable fluids. Inserts and extracts participate in Fabric transactions, and machines without a tank do not publish fake fluid storage.
+All nine machine block variants expose sided `ForgeCapabilities.ITEM_HANDLER` views. Top, bottom, and horizontal access use the machine slot layout. Kettles and cauldrons also expose `ForgeCapabilities.FLUID_HANDLER` because their recipes store transferable fluids. Machines without a fluid recipe, including the Distillery and Silver Vat, do not publish a fake fluid handler.
 
-Machine interaction uses Fabric's fluid-container bridge, so vanilla buckets and compatible containers from other mods can move liquid without Warlockery recognizing each container class. Internal recipes retain their documented millibucket amounts and convert only at the Transfer API boundary to Fabric droplets.
-
-Living and player progression state uses Fabric Data Attachments with persistent codecs. Network synchronization uses registered Fabric payload types, and biome additions use Fabric biome modifications rather than loader-specific data patches.
-
-The Silver Vat recognizes adjacent furnace recipes whose inputs use `c:ores/gold` and whose outputs use `c:ingots/gold`. Each completed smelt adds a Silver Deposit to the vat's ordinary output inventory, so a hopper or compatible item pipe can extract it from below.
+The Silver Vat recognizes adjacent furnace recipes whose inputs use `c:ores/gold` and whose outputs use `c:ingots/gold`. Each completed smelt passively adds a Silver Deposit to the vat's ordinary output inventory, so a hopper or compatible item pipe can extract it from below. Its separate manual mode accepts iron and Oil of Vitriol as items and requires a heat source underneath; it does not accept either as a transferred fluid.
 
 Fabric API has no universal energy or mana storage. Warlockery altar power is not labeled as another mod's mana. Items from an optional integration can expose `warlockery:energy_reserve` through `FabricEnergyCompatibility.ITEM`; integrations for incompatible mana systems still require a soft adapter for that API.
 

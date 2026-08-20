@@ -1,13 +1,14 @@
 package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.entity.MinedrakeCombatRules;
+import com.kadamitas.warlockery.entity.DreamrootEntity;
+import com.kadamitas.warlockery.entity.LivingRootsRules;
 import com.kadamitas.warlockery.registry.ModEntities;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -23,10 +24,13 @@ public final class MinedrakeBulbItem extends BlockItem implements DroppedItemBeh
             || !MinedrakeCombatRules.bulbReady(entity.getAge(), stack.getCount(), true)) {
             return false;
         }
-        final Player target = target(level, entity);
         int spawned = 0;
         final int requested = stack.getCount();
-        for (int index = 0; index < requested; index++) {
+        final int batch = Math.min(requested, MinedrakeCombatRules.BULB_PER_WAKE_BATCH);
+        for (int index = 0; index < batch; index++) {
+            if (!LivingRootsRules.quota(level).bulb()) {
+                break;
+            }
             final Entity created = ModEntities.ALL.get("dreamroot").get().create(level, EntitySpawnReason.EVENT);
             if (!(created instanceof Mob minedrake)) {
                 continue;
@@ -38,8 +42,10 @@ public final class MinedrakeBulbItem extends BlockItem implements DroppedItemBeh
                 entity.getZ() + Math.sin(angle) * 0.4
             );
             minedrake.setPersistenceRequired();
-            if (target != null && minedrake.canAttack(target)) {
-                minedrake.setTarget(target);
+            if (minedrake instanceof DreamrootEntity dreamroot
+                && entity.getOwner() instanceof net.minecraft.world.entity.player.Player owner
+                && owner.isAlive() && !owner.isSpectator() && !owner.isCreative()) {
+                dreamroot.setBulbOwnerHint(owner.getUUID());
             }
             if (level.addFreshEntity(minedrake)) {
                 spawned++;
@@ -57,22 +63,4 @@ public final class MinedrakeBulbItem extends BlockItem implements DroppedItemBeh
         return true;
     }
 
-    private static Player target(final ServerLevel level, final ItemEntity entity) {
-        if (entity.getOwner() instanceof Player owner
-            && owner.isAlive()
-            && !owner.isSpectator()
-            && !owner.isCreative()) {
-            return owner;
-        }
-        return level.getNearestPlayer(
-            entity.getX(),
-            entity.getY(),
-            entity.getZ(),
-            MinedrakeCombatRules.TARGET_RANGE,
-            candidate -> candidate instanceof Player player
-                && player.isAlive()
-                && !player.isSpectator()
-                && !player.isCreative()
-        );
-    }
 }

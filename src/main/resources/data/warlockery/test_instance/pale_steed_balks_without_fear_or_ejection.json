@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:pale_steed_balks_without_fear_or_ejection",
+  "environment": "warlockery:spectral_steeds_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 400
+}
+
+

@@ -1,17 +1,21 @@
 package com.kadamitas.warlockery.block.entity;
 
 import com.kadamitas.warlockery.crafting.MachineRecipeDefinition;
+import com.kadamitas.warlockery.crafting.KettleBrewerContext;
 import com.kadamitas.warlockery.crafting.AltarPowerNetwork;
 import com.kadamitas.warlockery.crafting.BrazierEffectRuntime;
+import com.kadamitas.warlockery.crafting.BrazierEffectRules;
 import com.kadamitas.warlockery.crafting.MachineRecipeManager;
 import com.kadamitas.warlockery.crafting.SpiritWorldMachineRules;
 import com.kadamitas.warlockery.crafting.MachineDisplay;
 import com.kadamitas.warlockery.crafting.MachineInsertionRules;
+import com.kadamitas.warlockery.crafting.MachineInventoryMigration;
 import com.kadamitas.warlockery.crafting.MachineProfile;
 import com.kadamitas.warlockery.crafting.MachineProfiles;
 import com.kadamitas.warlockery.crafting.MachineSlotLayout;
 import com.kadamitas.warlockery.crafting.MachineStatus;
 import com.kadamitas.warlockery.crafting.MachineUpgradeRules;
+import com.kadamitas.warlockery.crafting.PowerMode;
 import com.kadamitas.warlockery.crafting.ArchfiendBrewingRisk;
 import com.kadamitas.warlockery.crafting.SilverVatFurnaceObserver;
 import com.kadamitas.warlockery.block.MagicMachineBlock;
@@ -31,6 +35,7 @@ import com.kadamitas.warlockery.brew.CauldronChalkCircles;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
@@ -43,16 +48,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -79,7 +88,6 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     private int progress;
     private String activeRecipe = "";
     private long cachedRevision = -1;
-    private int cachedAltarPower = -1;
     private boolean recipeDirty = true;
     private Optional<MachineRecipeManager.Match> cachedRecipe = Optional.empty();
     private MachineDisplay machineDisplay = MachineDisplay.EMPTY;
@@ -87,13 +95,20 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     private CauldronChalkCircles.State cauldronChalkCircles = CauldronChalkCircles.State.EMPTY;
     private int customBrewProgress;
     private boolean brazierIgnited;
+    private boolean brazierRedstonePowered;
+    private int brazierBurnExtension;
     private final SilverVatFurnaceObserver silverVatFurnaceObserver = new SilverVatFurnaceObserver();
     private int pendingSilverDeposits;
+    private List<ItemStack> legacyMachineOverflow = List.of();
+    private boolean pendingInventoryMigrationSave;
+    private KettleBrewerContext kettleBrewer = KettleBrewerContext.EMPTY;
     private MachineSlotLayout slotLayout;
     private final SingleFluidStorage fluidStorage = SingleFluidStorage.withFixedCapacity(
         4L * FluidConstants.BUCKET,
         this::handleFluidChanged
     );
+    private long menuSnapshotTick = Long.MIN_VALUE;
+    private MachineMenuSnapshot menuSnapshot;
 
     public MagicMachineBlockEntity(final BlockPos pos, final BlockState state) {
         super(ModBlockEntities.MAGIC_MACHINE.get(), pos, state);
@@ -105,6 +120,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         final BlockState state,
         final MagicMachineBlockEntity machine
     ) {
+        machine.persistCompletedInventoryMigration();
         if (machine.burnTime > 0) {
             machine.burnTime--;
         }
@@ -117,8 +133,25 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             machine.updateCauldronChalkCircles(level, pos, state);
         }
         if ("brazier".equals(profile.recipeType())) {
-            machine.brazierIgnited |= level.hasNeighborSignal(pos);
-            if (!machine.brazierIgnited) {
+            final boolean redstonePowered = level.hasNeighborSignal(pos);
+            if (machine.brazierRedstonePowered != redstonePowered) {
+                if (BrazierEffectRules.isRisingEdge(
+                    machine.brazierRedstonePowered,
+                    redstonePowered
+                )) {
+                    machine.igniteBrazier();
+                }
+                machine.brazierRedstonePowered = redstonePowered;
+                machine.setChanged();
+            }
+            if (!BrazierEffectRules.canContinueBurn(
+                machine.brazierIgnited,
+                machine.hasBrazierAsh(profile)
+            )) {
+                if (machine.brazierIgnited) {
+                    machine.brazierIgnited = false;
+                    machine.setChanged();
+                }
                 machine.resetProgress();
                 setLit(level, pos, state, false);
                 machine.updateMachineDisplay(level, pos, state);
@@ -135,8 +168,11 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             return;
         }
 
-        final var match = machine.findRecipe(profile, level, pos);
+        final var match = machine.findRecipe(profile);
         if (match.isEmpty()) {
+            if ("brazier".equals(profile.recipeType()) && machine.brazierIgnited) {
+                machine.extinguishBrazier();
+            }
             machine.resetProgress();
             setLit(level, pos, state, machine.burnTime > 0);
             machine.updateMachineDisplay(level, pos, state);
@@ -145,7 +181,12 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
 
         final MachineRecipeDefinition recipe = match.get().recipe();
         if (level instanceof ServerLevel serverLevel
-            && !BodegaBrewingRules.allows(serverLevel, pos, match.get().id())) {
+            && !BodegaBrewingRules.allows(
+                serverLevel,
+                pos,
+                match.get().id(),
+                machine.kettleBrewerId(level.getGameTime())
+            )) {
             machine.resetProgress();
             setLit(level, pos, state, false);
             machine.updateMachineDisplay(level, pos, state);
@@ -161,12 +202,38 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         final List<ItemStack> upgradedOutputs = MachineUpgradeRules.enhanceOutputs(
             MachineRecipeManager.INSTANCE.createOutputs(recipe), upgrade
         );
-        final List<ItemStack> outputs = level instanceof ServerLevel serverLevel
-            ? EquipmentSetEffects.enhanceMachineOutputs(serverLevel, pos, profile.recipeType(), upgradedOutputs)
-            : upgradedOutputs;
+        final List<ItemStack> outputs;
+        if (level instanceof ServerLevel serverLevel) {
+            outputs = "kettle".equals(profile.recipeType())
+                ? EquipmentSetEffects.enhanceMachineOutputs(
+                    serverLevel,
+                    machine.kettleBrewer(serverLevel),
+                    profile.recipeType(),
+                    upgradedOutputs
+                )
+                : EquipmentSetEffects.enhanceNearbyMachineOutputs(
+                    serverLevel,
+                    pos,
+                    profile.recipeType(),
+                    upgradedOutputs
+                );
+        } else {
+            outputs = upgradedOutputs;
+        }
         if (outputs.stream().anyMatch(ItemStack::isEmpty) || !machine.canAccept(outputs, profile)) {
             machine.resetProgress();
             setLit(level, pos, state, machine.burnTime > 0);
+            machine.updateMachineDisplay(level, pos, state);
+            return;
+        }
+
+        if (level instanceof ServerLevel serverLevel
+            && AltarPowerNetwork.available(serverLevel, pos)
+                < recipe.powerMode().requiredAvailablePower(recipe.altarPower())) {
+            if (recipe.powerMode() != PowerMode.CONTINUOUS) {
+                machine.resetProgress();
+            }
+            setLit(level, pos, state, false);
             machine.updateMachineDisplay(level, pos, state);
             return;
         }
@@ -182,16 +249,54 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         if (!recipeId.equals(machine.activeRecipe)) {
             machine.progress = 0;
             machine.activeRecipe = recipeId;
+            machine.brazierBurnExtension = 0;
         }
+
         if (machine.progress == 0) {
+            machine.beginKettleCycle(level.getGameTime());
             level.playSound(null, pos, ModSounds.MACHINE_START.get(), SoundSource.BLOCKS, 0.55F, 1.0F);
         }
-        machine.progress += upgrade.progressPerTick();
+        final int previousProgress = machine.progress;
+        final int processingTarget = machine.processingTarget(recipe);
+        final int nextProgress = Math.min(
+            processingTarget,
+            (int) Math.min(Integer.MAX_VALUE, (long) previousProgress + upgrade.progressPerTick())
+        );
+        final int continuousPower = recipe.powerMode().powerForAdvance(
+            recipe.altarPower(),
+            recipe.processingTime(),
+            previousProgress,
+            nextProgress
+        );
+        if (level instanceof ServerLevel serverLevel
+            && !AltarPowerNetwork.consume(serverLevel, pos, continuousPower)) {
+            setLit(level, pos, state, false);
+            machine.invalidateRecipeCache();
+            machine.updateMachineDisplay(level, pos, state);
+            return;
+        }
+        machine.progress = nextProgress;
+        if (level instanceof ServerLevel serverLevel
+            && "brazier".equals(profile.recipeType())
+            && nextProgress < processingTarget) {
+            final BrazierEffectRuntime.Result effect = BrazierEffectRuntime.applyDuringBurn(
+                serverLevel,
+                pos,
+                match.get().id(),
+                previousProgress,
+                nextProgress
+            );
+            machine.extendBrazierBurn(effect.cropsDrained());
+        }
         setLit(level, pos, state, true);
 
-        if (machine.progress >= recipe.processingTime()) {
+        if (machine.progress >= processingTarget) {
             if (level instanceof ServerLevel serverLevel
-                && !AltarPowerNetwork.consume(serverLevel, pos, recipe.altarPower())) {
+                && !AltarPowerNetwork.consume(
+                    serverLevel,
+                    pos,
+                    recipe.powerMode().completionCost(recipe.altarPower())
+                )) {
                 machine.resetProgress();
                 machine.invalidateRecipeCache();
                 machine.updateMachineDisplay(level, pos, state);
@@ -199,7 +304,9 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             }
             MachineRecipeManager.INSTANCE.consumeInputs(recipe, machine.items, profile.inputSlots());
             machine.consumeFluid(recipe);
-            machine.insertOutputs(outputs, profile);
+            if (!"brazier".equals(profile.recipeType())) {
+                machine.insertOutputs(outputs, profile);
+            }
             if (level instanceof ServerLevel serverLevel && "cauldron".equals(profile.recipeType())) {
                 ArchfiendBrewingRisk.apply(serverLevel, pos, machine.cauldronChalkCircles);
             }
@@ -209,7 +316,9 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             }
             machine.progress = 0;
             machine.activeRecipe = "";
+            machine.brazierBurnExtension = 0;
             machine.recipeDirty = true;
+            machine.clearKettleCycle();
             level.playSound(null, pos, ModSounds.MACHINE_COMPLETE.get(), SoundSource.BLOCKS, 0.75F, 1.0F);
         }
         machine.setChanged();
@@ -271,7 +380,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
                 .map(formula -> CauldronChalkCircles.influence(formula, cauldronChalkCircles))
                 .map(CustomBrewRuntime::createOutput)
                 .orElse(ItemStack.EMPTY);
-            final ItemStack output = EquipmentSetEffects.enhanceMachineOutputs(
+            final ItemStack output = EquipmentSetEffects.enhanceNearbyMachineOutputs(
                 serverLevel, pos, profile.recipeType(), List.of(baseOutput)
             ).stream().findFirst().orElse(ItemStack.EMPTY);
             if (output.isEmpty() || !items.get(profile.outputStart()).isEmpty()) {
@@ -428,7 +537,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
 
     private boolean canAccept(final List<ItemStack> outputs, final MachineProfile profile) {
         final int outputStart = profile.outputStart();
-        if (outputs.size() > INVENTORY_SIZE - outputStart) {
+        if (outputs.size() > profile.outputSlots()) {
             return false;
         }
         for (int index = 0; index < outputs.size(); index++) {
@@ -457,29 +566,25 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     }
 
     private void resetProgress() {
-        if (progress != 0 || !activeRecipe.isEmpty()) {
+        if (progress != 0 || !activeRecipe.isEmpty() || brazierBurnExtension != 0) {
             progress = 0;
             activeRecipe = "";
+            brazierBurnExtension = 0;
+            clearKettleCycle();
             setChanged();
         }
     }
 
-    private Optional<MachineRecipeManager.Match> findRecipe(
-        final MachineProfile profile,
-        final Level level,
-        final BlockPos pos
-    ) {
+    private Optional<MachineRecipeManager.Match> findRecipe(final MachineProfile profile) {
         final MachineRecipeManager manager = MachineRecipeManager.INSTANCE;
-        final int altarPower = level instanceof ServerLevel serverLevel ? AltarPowerNetwork.available(serverLevel, pos) : 0;
-        if (recipeDirty || cachedRevision != manager.revision() || cachedAltarPower != altarPower) {
+        if (recipeDirty || cachedRevision != manager.revision()) {
             cachedRecipe = manager.find(
                 profile,
                 items,
                 profile.supportsFluids() ? fluidContents() : FluidContents.EMPTY,
-                altarPower
+                getAvailableAltarPower()
             );
             cachedRevision = manager.revision();
-            cachedAltarPower = altarPower;
             recipeDirty = false;
         }
         return cachedRecipe;
@@ -544,8 +649,95 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         return burnTime;
     }
 
+    public int getFluidAmount() {
+        return FluidContents.milliBucketsFromDroplets(fluidStorage.getAmount());
+    }
+
+    public int getAvailableAltarPower() {
+        return level instanceof ServerLevel serverLevel
+            ? AltarPowerNetwork.available(serverLevel, worldPosition)
+            : 0;
+    }
+
+    public int getRequiredAltarPower() {
+        return powerRecipe()
+            .map(recipe -> recipe.powerMode().requiredAvailablePower(recipe.altarPower()))
+            .orElse(0);
+    }
+
+    public int getTotalAltarPower() {
+        return powerRecipe().map(MachineRecipeDefinition::altarPower).orElse(0);
+    }
+
+    public int getAltarMillipowerPerTick() {
+        return powerRecipe()
+            .map(recipe -> recipe.powerMode().millipowerPerTick(recipe.altarPower(), recipe.processingTime()))
+            .orElse(0);
+    }
+
+    public int getPowerModeOrdinal() {
+        return powerRecipe().map(MachineRecipeDefinition::powerMode).orElse(PowerMode.NONE).ordinal();
+    }
+
+    public MachineMenuSnapshot getMachineMenuSnapshot() {
+        final long gameTime = level == null ? Long.MIN_VALUE : level.getGameTime();
+        if (menuSnapshot != null && menuSnapshotTick == gameTime) {
+            return menuSnapshot;
+        }
+        final Optional<MachineRecipeDefinition> recipe = powerRecipe();
+        menuSnapshot = new MachineMenuSnapshot(
+            machineDisplay.progressPercent(),
+            machineDisplay.status().ordinal(),
+            getFluidAmount(),
+            getAvailableAltarPower(),
+            recipe.map(value -> value.powerMode().requiredAvailablePower(value.altarPower())).orElse(0),
+            recipe.map(MachineRecipeDefinition::altarPower).orElse(0),
+            recipe.map(value -> value.powerMode().millipowerPerTick(value.altarPower(), value.processingTime()))
+                .orElse(0),
+            recipe.map(MachineRecipeDefinition::powerMode).orElse(PowerMode.NONE).ordinal()
+        );
+        menuSnapshotTick = gameTime;
+        return menuSnapshot;
+    }
+
+    private Optional<MachineRecipeDefinition> powerRecipe() {
+        final String recipe = activeRecipe.isEmpty() ? machineDisplay.diagnostic().recipe() : activeRecipe;
+        return Optional.ofNullable(Identifier.tryParse(recipe))
+            .flatMap(MachineRecipeManager.INSTANCE::byId)
+            .map(MachineRecipeManager.Match::recipe);
+    }
+
     public MachineDisplay getMachineDisplay() {
         return machineDisplay;
+    }
+
+    public Optional<UUID> kettleBrewerId(final long gameTime) {
+        return "kettle".equals(machineKind()) ? kettleBrewer.brewer(gameTime) : Optional.empty();
+    }
+
+    public void claimKettleBrewer(final Player player) {
+        if ("kettle".equals(machineKind()) && level != null && progress == 0 && activeRecipe.isEmpty()) {
+            kettleBrewer = kettleBrewer.claim(player.getUUID(), level.getGameTime());
+        }
+    }
+
+    public @Nullable ServerPlayer kettleBrewer(final ServerLevel level) {
+        return kettleBrewerId(level.getGameTime())
+            .map(level.getServer().getPlayerList()::getPlayer)
+            .orElse(null);
+    }
+
+    public void beginKettleCycle(final long gameTime) {
+        if ("kettle".equals(machineKind())) {
+            kettleBrewer = kettleBrewer.begin(gameTime);
+        }
+    }
+
+    public void clearKettleCycle() {
+        if (!kettleBrewer.equals(KettleBrewerContext.EMPTY)) {
+            kettleBrewer = kettleBrewer.clear();
+            setChanged();
+        }
     }
 
     public CustomBrewCauldronState getCustomBrewState() {
@@ -577,18 +769,30 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             profile.supportsFluids() ? fluidContents() : FluidContents.EMPTY,
             level instanceof ServerLevel serverLevel ? AltarPowerNetwork.available(serverLevel, pos) : 0
         );
+        final boolean missingAltarPower = diagnostic.missing().stream()
+            .anyMatch(missing -> "warlockery:altar_power".equals(missing.ingredient()));
+        final boolean missingSomethingElse = diagnostic.missing().stream()
+            .anyMatch(missing -> !"warlockery:altar_power".equals(missing.ingredient()))
+            || profile.rejectsUnexpectedInputs() && !diagnostic.wrong().isEmpty();
         final MachineStatus status;
         if (diagnostic.isEmpty()) {
             status = MachineStatus.EMPTY;
         } else if (diagnostic.recipe().isEmpty()) {
             status = MachineStatus.INVALID;
+        } else if (missingAltarPower && !missingSomethingElse) {
+            status = MachineStatus.NO_ALTAR_POWER;
         } else if (!diagnostic.inputsReady(profile)) {
             status = MachineStatus.INCOMPLETE;
         } else if (profile.requiresExternalHeat() && !isHeated(level, pos)) {
             status = MachineStatus.NO_HEAT;
         } else if (level instanceof ServerLevel serverLevel
             && !diagnostic.recipe().isEmpty()
-            && !BodegaBrewingRules.allows(serverLevel, pos, Identifier.parse(diagnostic.recipe()))) {
+            && !BodegaBrewingRules.allows(
+                serverLevel,
+                pos,
+                Identifier.parse(diagnostic.recipe()),
+                kettleBrewerId(level.getGameTime())
+            )) {
             status = MachineStatus.NO_FAMILIAR;
         } else if ("brazier".equals(profile.recipeType()) && !brazierIgnited) {
             status = MachineStatus.NO_IGNITION;
@@ -613,9 +817,12 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
                 status = MachineStatus.READY;
             }
         }
-        final int percent = diagnostic.processingTime() <= 0
+        final int displayProcessingTime = activeRecipe.equals(diagnostic.recipe())
+            ? powerRecipe().map(this::processingTarget).orElse(diagnostic.processingTime())
+            : diagnostic.processingTime();
+        final int percent = displayProcessingTime <= 0
             ? 0
-            : Math.clamp((progress * 100 / diagnostic.processingTime()) / 5 * 5, 0, 100);
+            : Math.clamp((int) ((long) progress * 100L / displayProcessingTime) / 5 * 5, 0, 100);
         final MachineDisplay next = new MachineDisplay(diagnostic, status, percent);
         if (!next.equals(machineDisplay)) {
             machineDisplay = next;
@@ -652,7 +859,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             slot,
             stack,
             level == null || !level.isClientSide(),
-            candidate -> MachineRecipeManager.INSTANCE.acceptsInput(profile, candidate),
+            candidate -> MachineRecipeManager.INSTANCE.acceptsInput(profile, slot, candidate),
             candidate -> level != null && level.fuelValues().isFuel(candidate)
         );
     }
@@ -719,7 +926,24 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         if (!"brazier".equals(machineKind())) {
             return false;
         }
+        final MachineProfile profile = machineProfile();
+        final boolean hasIngredient = items.stream().limit(profile.inputSlots()).anyMatch(stack -> !stack.isEmpty());
+        final ItemStack ash = new ItemStack(ModItems.ALL.get("ingredient_ash_wood").get());
+        final ItemStack output = items.get(profile.outputStart());
+        final boolean outputAcceptsAsh = output.isEmpty()
+            || ItemStack.isSameItemSameComponents(output, ash) && output.getCount() == 1;
+        if (!BrazierEffectRules.canIgnite(
+            hasIngredient,
+            outputAcceptsAsh,
+            brazierIgnited
+        )) {
+            return false;
+        }
+        if (output.isEmpty()) {
+            items.set(profile.outputStart(), ash);
+        }
         brazierIgnited = true;
+        invalidateRecipeCache();
         setChanged();
         if (level != null) {
             updateMachineDisplay(level, worldPosition, getBlockState());
@@ -727,14 +951,24 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         return true;
     }
 
+    private boolean hasBrazierAsh(final MachineProfile profile) {
+        final ItemStack output = items.get(profile.outputStart());
+        return output.is(ModItems.ALL.get("ingredient_ash_wood").get()) && !output.isEmpty();
+    }
+
     public int extinguishBrazier() {
         if (!"brazier".equals(machineKind())) {
             return 0;
         }
         final MachineProfile profile = machineProfile();
-        final int cleared = (int) items.stream().limit(profile.inputSlots()).filter(stack -> !stack.isEmpty()).count();
-        java.util.stream.IntStream.range(0, profile.inputSlots()).forEach(slot -> items.set(slot, ItemStack.EMPTY));
+        final boolean hasContents = brazierIgnited || items.stream().anyMatch(stack -> !stack.isEmpty());
+        if (!hasContents) {
+            return -1;
+        }
+        final int cleared = (int) items.stream().filter(stack -> !stack.isEmpty()).count();
+        java.util.stream.IntStream.range(0, getContainerSize()).forEach(slot -> items.set(slot, ItemStack.EMPTY));
         brazierIgnited = false;
+        brazierBurnExtension = 0;
         resetProgress();
         invalidateRecipeCache();
         setChanged();
@@ -746,6 +980,8 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
 
     @Override
     protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
+        recoverLegacyOverflow(inventory.player);
+        claimKettleBrewer(inventory.player);
         return new MachineMenu(containerId, inventory, this, machineKind());
     }
 
@@ -754,9 +990,28 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         super.loadAdditional(input);
         items = NonNullList.withSize(INVENTORY_SIZE, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
+        final MachineInventoryMigration.Result migration = MachineInventoryMigration.migrate(
+            machineKind(),
+            input.getIntOr("MachineInventoryVersion", 0),
+            items,
+            (slot, stack) -> MachineRecipeManager.INSTANCE.acceptsInput(machineProfile(), slot, stack)
+        );
+        items = migration.inventory();
+        pendingInventoryMigrationSave = migration.migrated();
+        legacyMachineOverflow = Stream.concat(
+            input.read("LegacyMachineOverflow", ItemStack.CODEC.listOf()).orElse(List.of()).stream(),
+            migration.overflow().stream()
+        ).map(ItemStack::copy).toList();
         burnTime = input.getIntOr("BurnTime", 0);
         progress = input.getIntOr("Progress", 0);
         activeRecipe = input.getStringOr("ActiveRecipe", "");
+        brazierBurnExtension = Math.max(0, input.getIntOr("BrazierBurnExtension", 0));
+        if (migration.migrated()) {
+            burnTime = 0;
+            progress = 0;
+            activeRecipe = "";
+            brazierBurnExtension = 0;
+        }
         machineDisplay = input.read("MachineDisplay", MachineDisplay.CODEC)
             .orElseGet(() -> readLegacyMachineDisplay(input));
         customBrewState = input.read("CustomBrewState", CustomBrewCauldronState.CODEC)
@@ -764,8 +1019,13 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         cauldronChalkCircles = input.read("CauldronChalkCircles", CauldronChalkCircles.State.CODEC)
             .orElse(CauldronChalkCircles.State.EMPTY);
         customBrewProgress = input.getIntOr("CustomBrewProgress", 0);
-        brazierIgnited = input.getBooleanOr("BrazierIgnited", false);
+        brazierIgnited = BrazierEffectRules.restoreIgnitionAfterMigration(
+            input.getBooleanOr("BrazierIgnited", false),
+            migration.migrated()
+        );
+        brazierRedstonePowered = input.getBooleanOr("BrazierRedstonePowered", false);
         pendingSilverDeposits = input.getIntOr("PendingSilverDeposits", 0);
+        kettleBrewer = KettleBrewerContext.restored(input.read("KettleBrewer", UUIDUtil.CODEC));
         silverVatFurnaceObserver.restore(input.childrenListOrEmpty("SilverVatFurnaces").stream().collect(
             java.util.stream.Collectors.toMap(
                 entry -> entry.getLongOr("Position", 0L),
@@ -781,15 +1041,22 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     protected void saveAdditional(final ValueOutput output) {
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, items);
+        output.putInt("MachineInventoryVersion", MachineInventoryMigration.CURRENT_VERSION);
         output.putInt("BurnTime", burnTime);
         output.putInt("Progress", progress);
         output.putString("ActiveRecipe", activeRecipe);
+        output.putInt("BrazierBurnExtension", brazierBurnExtension);
+        if (!legacyMachineOverflow.isEmpty()) {
+            output.store("LegacyMachineOverflow", ItemStack.CODEC.listOf(), legacyMachineOverflow);
+        }
         output.store("MachineDisplay", MachineDisplay.CODEC, machineDisplay);
         output.store("CustomBrewState", CustomBrewCauldronState.CODEC, customBrewState);
         output.store("CauldronChalkCircles", CauldronChalkCircles.State.CODEC, cauldronChalkCircles);
         output.putInt("CustomBrewProgress", customBrewProgress);
         output.putBoolean("BrazierIgnited", brazierIgnited);
+        output.putBoolean("BrazierRedstonePowered", brazierRedstonePowered);
         output.putInt("PendingSilverDeposits", pendingSilverDeposits);
+        kettleBrewer.activeBrewer().ifPresent(brewer -> output.store("KettleBrewer", UUIDUtil.CODEC, brewer));
         final ValueOutput.ValueOutputList observedFurnaces = output.childrenList("SilverVatFurnaces");
         silverVatFurnaceObserver.snapshot().forEach((position, observedProgress) -> {
             final ValueOutput observed = observedFurnaces.addChild();
@@ -845,4 +1112,71 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             input.getIntOr("CauldronProgress", 0)
         );
     }
+
+    private int processingTarget(final MachineRecipeDefinition recipe) {
+        return (int) Math.min(
+            Integer.MAX_VALUE,
+            (long) recipe.processingTime() + Math.max(0, brazierBurnExtension)
+        );
+    }
+
+    private void extendBrazierBurn(final int cropsDrained) {
+        if (cropsDrained <= 0) {
+            return;
+        }
+        final long extension = (long) brazierBurnExtension + cropsDrained * 800L;
+        brazierBurnExtension = (int) Math.min(Integer.MAX_VALUE, extension);
+        setChanged();
+    }
+
+    private void recoverLegacyOverflow(final Player player) {
+        if (legacyMachineOverflow.isEmpty()) {
+            return;
+        }
+        final List<ItemStack> recovered = legacyMachineOverflow;
+        legacyMachineOverflow = List.of();
+        setChanged();
+        recovered.stream().map(ItemStack::copy).forEach(stack -> {
+            player.getInventory().add(stack);
+            if (!stack.isEmpty()) {
+                player.drop(stack, false);
+            }
+        });
+    }
+
+    public void dropLegacyOverflow(final Level level, final BlockPos pos) {
+        if (legacyMachineOverflow.isEmpty()) {
+            return;
+        }
+        legacyMachineOverflow.forEach(stack -> Containers.dropItemStack(
+            level,
+            pos.getX() + 0.5,
+            pos.getY() + 1.0,
+            pos.getZ() + 0.5,
+            stack.copy()
+        ));
+        legacyMachineOverflow = List.of();
+        setChanged();
+    }
+
+    private void persistCompletedInventoryMigration() {
+        if (!pendingInventoryMigrationSave) {
+            return;
+        }
+        pendingInventoryMigrationSave = false;
+        setChanged();
+    }
+
+    public record MachineMenuSnapshot(
+        int progressPercent,
+        int statusOrdinal,
+        int fluidAmount,
+        int availableAltarPower,
+        int requiredAltarPower,
+        int totalAltarPower,
+        int altarMillipowerPerTick,
+        int powerModeOrdinal
+    ) {
+    }
+
 }

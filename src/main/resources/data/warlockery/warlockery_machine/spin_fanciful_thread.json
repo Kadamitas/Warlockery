@@ -8,5 +8,7 @@
   "outputs": [
     { "item": "warlockery:ingredient_fanciful_thread" }
   ],
-  "processing_time": 240
+  "processing_time": 300,
+  "altar_power": 180,
+  "power_mode": "continuous"
 }

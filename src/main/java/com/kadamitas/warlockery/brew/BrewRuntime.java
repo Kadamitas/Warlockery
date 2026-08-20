@@ -139,7 +139,7 @@ public final class BrewRuntime {
             case REMOVE_BENEFICIAL -> removeEffects(context, true);
             case REMOVE_HARMFUL -> removeEffects(context, false);
             case REMOVE_NAUSEA -> removeNausea(context);
-            case HARM_WEREWOLVES -> harmTarget(context, Target.WEREWOLF, 10.0F);
+            case HARM_WEREWOLVES -> harmWerewolves(context);
             case WEAKEN_VAMPIRES -> weakenVampires(context);
             case HARM_DEMONS -> harmTarget(context, Target.DEMON, 12.0F);
             case SUMMON_BATS -> summonBats(context);
@@ -502,6 +502,20 @@ public final class BrewRuntime {
         return ImpactResult.entities(entities.size());
     }
 
+    private static ImpactResult harmWerewolves(final ImpactContext context) {
+        final List<LivingEntity> entities = living(context).stream()
+            .filter(entity -> BrewTargeting.matches(entity, Target.WEREWOLF))
+            .toList();
+        entities.forEach(entity -> entity.hurtServer(
+            context.level(),
+            com.kadamitas.warlockery.entity.LycanDamageTypes.harmWerewolvesSource(
+                context.level(), context.directSource(), context.owner()
+            ),
+            10.0F * context.potency()
+        ));
+        return ImpactResult.entities(entities.size());
+    }
+
     private static ImpactResult weakenVampires(final ImpactContext context) {
         final List<LivingEntity> entities = living(context).stream()
             .filter(entity -> BrewTargeting.matches(entity, Target.VAMPIRE))
@@ -529,6 +543,11 @@ public final class BrewRuntime {
         final List<LivingEntity> targets = living(context).stream()
             .filter(entity -> canAffectOwner(context, entity))
             .toList();
+        // Legality-first ranked bounded initial target set, computed once per
+        // cast and reused for every successful exact Hex Bat spawn. The head
+        // of the ranked list is the strongest candidate.
+        final List<LivingEntity> legalFlockTargets = com.kadamitas.warlockery.entity.HexBatRuntime
+            .flockTargets(context.owner(), context.target(), context.center(), targets);
         int spawned = 0;
         for (int index = 0; index < requested; index++) {
             final BlockPos position = center.offset(index % 3 - 1, 1 + index / 4, index % 2 * 2 - 1);
@@ -536,9 +555,18 @@ public final class BrewRuntime {
                 context.level(), position, EntitySpawnReason.EVENT
             );
             if (entity instanceof Mob mob) {
-                targets.stream()
-                    .min(Comparator.comparingDouble(mob::distanceToSqr))
-                    .ifPresent(mob::setTarget);
+                if (mob instanceof com.kadamitas.warlockery.entity.HexBatEntity hexBat) {
+                    com.kadamitas.warlockery.entity.HexBatRuntime.initializeFlockSpawn(
+                        hexBat, context.level(), center, context.owner(),
+                        // Top-ranked candidate: an explicit cast target can
+                        // never lose to a nearer hostile.
+                        legalFlockTargets.stream().findFirst()
+                    );
+                } else {
+                    targets.stream()
+                        .min(Comparator.comparingDouble(mob::distanceToSqr))
+                        .ifPresent(mob::setTarget);
+                }
                 mob.setPersistenceRequired();
                 spawned++;
             }

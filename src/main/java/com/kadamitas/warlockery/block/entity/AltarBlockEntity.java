@@ -11,6 +11,7 @@ import com.kadamitas.warlockery.item.ResourceCompatibilityTags;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
+import com.kadamitas.warlockery.ritual.RitualSessionData;
 import java.util.EnumSet;
 import java.util.EnumMap;
 import java.util.List;
@@ -38,6 +39,7 @@ public final class AltarBlockEntity extends BlockEntity {
     private static final int SCAN_INTERVAL = 40;
     private static final int SEARCH_RADIUS = 16;
     private int power;
+    private int escrowed;
     private int capacity;
     private boolean multiblockValid;
     private int connectedBlocks;
@@ -93,9 +95,13 @@ public final class AltarBlockEntity extends BlockEntity {
             altar.environmentalPower = 0;
             altar.capacity = 0;
             altar.power = 0;
+            altar.escrowed = 0;
             altar.capacityMultiplier = 1.0;
             altar.rechargeMultiplier = 1;
             altar.activeUpgradeCount = 0;
+        }
+        if (level instanceof ServerLevel ritualLevel && (altar.escrowed > 0 || altar.multiblockValid)) {
+            altar.reconcileEscrow(RitualSessionData.get(ritualLevel).escrowedAt(pos));
         }
         altar.setChanged();
         if (!previous.equals(altar.getDisplay())) {
@@ -153,15 +159,75 @@ public final class AltarBlockEntity extends BlockEntity {
     }
 
     public boolean consumePower(final int requested) {
-        if (!multiblockValid || power < requested) {
+        if (!multiblockValid || availablePower() < requested) {
             return false;
         }
         power -= requested;
+        publish();
+        return true;
+    }
+
+    /**
+     * Power this altar has promised to a cast that has not finished. It is still physically here, which is why
+     * the altar display keeps showing it, but nothing else may spend or promise it.
+     */
+    public int getEscrowedPower() {
+        return escrowed;
+    }
+
+    /** Power free to be spent or promised right now. */
+    public int availablePower() {
+        return Math.max(0, power - escrowed);
+    }
+
+    /**
+     * Promises power to a cast about to begin, or refuses. Nothing drains: a cast that never finishes has
+     * taken nothing, and a cast that does finish settles the promise then.
+     */
+    public boolean escrowPower(final int requested) {
+        if (!multiblockValid || requested < 0 || availablePower() < requested) {
+            return false;
+        }
+        escrowed += requested;
+        publish();
+        return true;
+    }
+
+    /** Turns a promise into the real drain a finished cast has earned. */
+    public void settleEscrow(final int amount) {
+        final int settled = Math.clamp(amount, 0, escrowed);
+        escrowed -= settled;
+        power = Math.max(0, power - settled);
+        publish();
+    }
+
+    /** Hands a promise back untouched, for a cast that ended without finishing. */
+    public void releaseEscrow(final int amount) {
+        escrowed = Math.max(0, escrowed - Math.max(0, amount));
+        publish();
+    }
+
+    /**
+     * Brings this altar's promises back in line with what live sessions actually claim.
+     *
+     * <p>Altars and ritual sessions are saved independently, so a world that stopped between the two writes,
+     * or a session dropped on load for an unreadable id, can leave a promise with nobody behind it. Nothing
+     * else would ever release it and the altar would look permanently poorer, so the sessions are treated as
+     * the authority on what is owed.</p>
+     */
+    public void reconcileEscrow(final int claimed) {
+        final int corrected = Math.clamp(claimed, 0, power);
+        if (corrected != escrowed) {
+            escrowed = corrected;
+            publish();
+        }
+    }
+
+    private void publish() {
         setChanged();
         if (level != null) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
-        return true;
     }
 
     public int receivePower(final int offered) {
@@ -308,6 +374,7 @@ public final class AltarBlockEntity extends BlockEntity {
     protected void loadAdditional(final ValueInput input) {
         super.loadAdditional(input);
         power = input.getIntOr("Power", 0);
+        escrowed = input.getIntOr("Escrowed", 0);
         capacity = input.getIntOr("Capacity", 0);
         multiblockValid = input.getBooleanOr("MultiblockValid", false);
         connectedBlocks = input.getIntOr("ConnectedBlocks", 0);
@@ -328,6 +395,7 @@ public final class AltarBlockEntity extends BlockEntity {
     protected void saveAdditional(final ValueOutput output) {
         super.saveAdditional(output);
         output.putInt("Power", power);
+        output.putInt("Escrowed", escrowed);
         output.putInt("Capacity", capacity);
         output.putBoolean("MultiblockValid", multiblockValid);
         output.putInt("ConnectedBlocks", connectedBlocks);

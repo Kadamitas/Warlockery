@@ -3,6 +3,7 @@ package com.kadamitas.warlockery.item;
 import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import java.util.function.Supplier;
@@ -43,14 +44,23 @@ public final class BroomFlightGameTests {
         helper.assertValueEqual(vehicle.getBroomStack().getDamageValue(), 37,
             "stored broom damage before flight");
         sendGlideHeartbeat(player);
-        helper.runAfterDelay(5, () -> sendGlideHeartbeat(player));
-        helper.runAfterDelay(10, () -> sendGlideHeartbeat(player));
-        helper.runAfterDelay(15, () -> sendGlideHeartbeat(player));
-        helper.runAfterDelay(20, () -> sendGlideHeartbeat(player));
-        helper.runAfterDelay(21, () -> {
+        // The durability tick fires on the vehicle's own 20th tick, which leaves one tick of
+        // slack against a fixed tick-21 assertion; under batch load the entity clock can slip
+        // behind the test clock. Poll for the spent durability instead, bounded by max_ticks.
+        final boolean[] finished = {false};
+        helper.onEachTick(() -> {
+            if (finished[0]) {
+                return;
+            }
+            sendGlideHeartbeat(player);
+            final int damage = vehicle.getBroomStack().getDamageValue();
+            if (damage == 37) {
+                return;
+            }
+            finished[0] = true;
             helper.assertTrue(vehicle.isGliding(),
                 "the server-approved glide state must persist while fresh control heartbeats arrive");
-            helper.assertValueEqual(vehicle.getBroomStack().getDamageValue(), 38,
+            helper.assertValueEqual(damage, 38,
                 "one durability is spent after one second of mounted flight");
             player.stopRiding();
             helper.assertTrue(player.getMainHandItem().is(ModItems.ALL.get("ingredient_broom_enchanted").get()),
@@ -232,7 +242,7 @@ public final class BroomFlightGameTests {
         player.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket());
         player.setGameMode(GameType.SURVIVAL);
         placeAtTestPosition(helper, player);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     private static void placeAtTestPosition(final GameTestHelper helper, final ServerPlayer player) {

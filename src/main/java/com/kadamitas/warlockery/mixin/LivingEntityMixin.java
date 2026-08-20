@@ -2,6 +2,8 @@ package com.kadamitas.warlockery.mixin;
 
 import com.kadamitas.warlockery.fabric.WarlockeryFabricEvents;
 import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
@@ -19,8 +21,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 abstract class LivingEntityMixin {
     @Unique
-    private boolean warlockery$redispatchingDamage;
-    @Unique
     private List<ItemEntity> warlockery$deathDrops;
 
     @Inject(method = "tick", at = @At("TAIL"))
@@ -28,31 +28,19 @@ abstract class LivingEntityMixin {
         WarlockeryFabricEvents.dispatchLivingTick((LivingEntity) (Object) this);
     }
 
-    @Inject(method = "hurtServer", at = @At("HEAD"), cancellable = true)
-    private void warlockery$modifyDamage(
+    @WrapMethod(method = "hurtServer")
+    private boolean warlockery$modifyDamage(
         final ServerLevel level,
         final DamageSource source,
         final float amount,
-        final CallbackInfoReturnable<Boolean> callback
+        final Operation<Boolean> original
     ) {
-        if (warlockery$redispatchingDamage) {
-            return;
-        }
         final LivingEntity entity = (LivingEntity) (Object) this;
         final LivingDamageContext context = WarlockeryFabricEvents.dispatchDamage(entity, source, amount);
         if (context.isCanceled()) {
-            callback.setReturnValue(false);
-            return;
+            return false;
         }
-        if (Float.compare(context.getAmount(), amount) == 0) {
-            return;
-        }
-        warlockery$redispatchingDamage = true;
-        try {
-            callback.setReturnValue(entity.hurtServer(level, source, context.getAmount()));
-        } finally {
-            warlockery$redispatchingDamage = false;
-        }
+        return original.call(level, source, context.getAmount());
     }
 
     @Inject(method = "dropAllDeathLoot", at = @At("HEAD"))

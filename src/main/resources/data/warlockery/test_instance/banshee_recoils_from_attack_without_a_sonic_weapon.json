@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:banshee_recoils_from_attack_without_a_sonic_weapon",
+  "environment": "warlockery:banshee_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 400
+}

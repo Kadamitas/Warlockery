@@ -46,11 +46,15 @@ class GoblinHostilityRulesTest {
     }
 
     @Test
-    void hobgoblinNaturalSpawnRegistrationUsesTheVillageExclusionPredicate() throws IOException {
+    void goblinAndHobgoblinNaturalSpawnRegistrationsUseTheirOwnExactPredicates() throws IOException {
         final String registry = Files.readString(Path.of(
             "src/main/java/com/kadamitas/warlockery/registry/ModEntities.java"
         ));
+        // Both goblinfolk bodies now carry their own village-exclusion predicate, and the generic
+        // Monster::checkMonsterSpawnRules loop must clobber neither of them.
         assertTrue(registry.contains("HobgoblinEntity::checkNaturalSpawnRules"));
-        assertTrue(registry.contains("filter(id -> !\"hobgoblin\".equals(id))"));
+        assertTrue(registry.contains("GoblinEntity::checkNaturalSpawnRules"));
+        assertTrue(registry.contains("!\"hobgoblin\".equals(id)"));
+        assertTrue(registry.contains("!\"goblin\".equals(id)"));
     }
 }

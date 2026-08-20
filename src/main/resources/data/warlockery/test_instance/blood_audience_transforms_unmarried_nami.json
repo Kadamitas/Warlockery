@@ -2,6 +2,6 @@
   "type": "minecraft:function",
   "function": "warlockery:blood_audience_transforms_unmarried_nami",
   "environment": "minecraft:default",
-  "structure": "fabric-gametest-api-v1:empty",
+  "structure": "warlockery:empty3x3x3",
   "max_ticks": 100
 }

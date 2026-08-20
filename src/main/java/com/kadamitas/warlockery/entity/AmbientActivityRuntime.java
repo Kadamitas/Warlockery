@@ -5,6 +5,7 @@ import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.entity.AmbientActivityProfile.ActivityType;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import java.util.Comparator;
+import java.util.ArrayList;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.BellBlock;
 import net.minecraft.world.level.block.Blocks;
@@ -70,7 +72,10 @@ public final class AmbientActivityRuntime {
         final ActivityType type
     ) {
         final AmbientActivityProfile profile = AmbientActivityProfile.forType(type);
-        if (!profile.kinds().contains(kind)) {
+        // An activity type may outlive its dispatch row: F13 retired the ARCANE_STUDY profile when
+        // both practitioners moved to dedicated runtimes, while the type, its block tag set, and
+        // its action all remain registered and reused as the shared workstation predicate.
+        if (profile == null || !profile.kinds().contains(kind)) {
             return false;
         }
         return AmbientActivityFactory.create(type).perform(
@@ -121,37 +126,58 @@ public final class AmbientActivityRuntime {
 
     static boolean tendGrove(final AmbientActivityContext context) {
         final ServerLevel level = context.level();
-        if (!level.getGameRules().get(GameRules.MOB_GRIEFING)
-            || countBlocks(level, context.creature().blockPosition(), AmbientActivityRules.SEARCH_RADIUS,
-                state -> state.getBlock().asItem().getDefaultInstance().is(ItemTags.SAPLINGS)) >= 12) {
+        final EntRuntime.Counters counters = ((EntEntity) context.creature()).entCounters();
+        counters.tendActualReads=0;counters.tendItemVisits=0;counters.tendAdmissions=0;
+        if (!level.getGameRules().get(GameRules.MOB_GRIEFING)) {
             return false;
         }
-        final Optional<ItemEntity> sapling = level.getEntitiesOfClass(
-                ItemEntity.class,
-                context.creature().getBoundingBox().inflate(8.0),
-                item -> item.isAlive() && item.getItem().is(ItemTags.SAPLINGS)
-                    && item.getItem().getItem() instanceof BlockItem
-            ).stream()
+        final BlockPos origin=context.creature().blockPosition();
+        final EntRuntime.HaloReadCache cache=new EntRuntime.HaloReadCache(level,origin.offset(-13,-4,-13),origin.offset(13,5,13),896);
+        if(!cache.admit()){counters.tendAdmissions=cache.admissions();return false;}counters.tendAdmissions=cache.admissions();
+        if(!cache.haloLoaded()||!cache.admit()){counters.tendAdmissions=cache.admissions();return false;}
+        counters.tendAdmissions=cache.admissions();
+        if(!level.getWorldBorder().isWithinBounds(new net.minecraft.world.phys.AABB(cache.min.getX(),cache.min.getY(),cache.min.getZ(),cache.max.getX()+1,cache.max.getY()+1,cache.max.getZ()+1)))return false;
+        int saplings=0;
+        for(BlockPos position:BlockPos.betweenClosed(origin.offset(-4,-2,-4),origin.offset(4,2,4))){
+            if(cache.getBlockState(position).getBlock().asItem().getDefaultInstance().is(ItemTags.SAPLINGS)&&++saplings>=12){counters.tendActualReads=cache.actualReads();return false;}
+            if(!cache.withinContract()){counters.tendActualReads=cache.actualReads();return false;}
+        }
+        counters.tendActualReads=cache.actualReads();
+        final ArrayList<ItemEntity> nearbyItems = new ArrayList<>(8);
+        if(!cache.admit()){counters.tendActualReads=cache.actualReads();counters.tendAdmissions=cache.admissions();return false;}
+        counters.tendAdmissions=cache.admissions();
+        level.getEntities(EntityTypeTest.forClass(ItemEntity.class),
+            context.creature().getBoundingBox().inflate(8.0), _ -> true, nearbyItems, 8);
+        for(int index=0;index<nearbyItems.size();index++){if(!EntRuntime.chargeRawVisit(level)){counters.tendActualReads=cache.actualReads();return false;}counters.tendItemVisits++;}
+        final Optional<ItemEntity> sapling = nearbyItems.stream()
+            .filter(item -> item.isAlive() && item.getItem().is(ItemTags.SAPLINGS)
+                && item.getItem().getItem() instanceof BlockItem)
             .min(Comparator.comparingDouble(context.creature()::distanceToSqr));
         if (sapling.isEmpty()) {
             return false;
         }
         final ItemEntity item = sapling.orElseThrow();
         final BlockState planted = ((BlockItem) item.getItem().getItem()).getBlock().defaultBlockState();
-        final Optional<BlockPos> destination = BlockPos.betweenClosedStream(
-                item.blockPosition().offset(-4, -2, -4),
-                item.blockPosition().offset(4, 2, 4)
-            )
-            .filter(position -> level.getBlockState(position).isAir())
-            .filter(position -> planted.canSurvive(level, position))
-            .min(Comparator.comparingDouble(item.blockPosition()::distSqr));
+        BlockPos chosen=null;double distance=Double.MAX_VALUE;
+        final net.minecraft.world.level.LevelReader cachedLevel=cache.levelReader();
+        for(BlockPos mutable:BlockPos.betweenClosed(item.blockPosition().offset(-4,-2,-4),item.blockPosition().offset(4,2,4))){
+            BlockPos position=mutable.immutable();
+            if(cache.getBlockState(position).isAir()&&planted.canSurvive(cachedLevel,position)&&cache.withinContract()){
+                double candidateDistance=item.blockPosition().distSqr(position);if(candidateDistance<distance){chosen=position;distance=candidateDistance;}
+            }
+            if(!cache.withinContract())break;
+        }
+        counters.tendActualReads=cache.actualReads();
+        final Optional<BlockPos> destination=Optional.ofNullable(chosen);
         if (destination.isEmpty()) {
             return false;
         }
         final BlockPos position = destination.orElseThrow();
-        if (!level.setBlockAndUpdate(position, planted)) {
+        if (!cache.withinContract()||!cache.admit()||!EntRuntime.chargeBlockEdit(level)) {
             return false;
         }
+        counters.tendAdmissions=cache.admissions();
+        if (!level.setBlockAndUpdate(position, planted)) return false;
         item.getItem().shrink(1);
         if (item.getItem().isEmpty()) {
             item.discard();
@@ -230,57 +256,6 @@ public final class AmbientActivityRuntime {
             state -> AmbientActivityTags.matches(ActivityType.ARCANE_STUDY, state),
             ParticleTypes.ENCHANT,
             false);
-    }
-
-    static boolean scavengeRottenFlesh(final AmbientActivityContext context) {
-        final Optional<ItemEntity> food = context.level().getEntitiesOfClass(
-                ItemEntity.class,
-                context.creature().getBoundingBox().inflate(6.0),
-                item -> item.isAlive() && item.getItem().is(net.minecraft.world.item.Items.ROTTEN_FLESH)
-            ).stream()
-            .min(Comparator.comparingDouble(context.creature()::distanceToSqr));
-        if (food.isEmpty()) {
-            return false;
-        }
-        final ItemEntity item = food.orElseThrow();
-        if (context.creature().distanceToSqr(item) > 4.0) {
-            context.creature().getNavigation().moveTo(item, 1.0);
-            return false;
-        }
-        item.getItem().shrink(1);
-        if (item.getItem().isEmpty()) {
-            item.discard();
-        }
-        context.creature().heal(2.0F);
-        context.level().playSound(
-            null,
-            context.creature().blockPosition(),
-            SoundEvents.GENERIC_EAT.value(),
-            SoundSource.HOSTILE,
-            0.6F,
-            0.8F
-        );
-        return true;
-    }
-
-    static boolean seekDaylightShelter(final AmbientActivityContext context) {
-        final Mob creature = context.creature();
-        final ServerLevel level = context.level();
-        if (!AmbientActivityRules.isDay(level.getDefaultClockTime()) || !level.canSeeSky(creature.blockPosition())) {
-            return false;
-        }
-        return BlockPos.betweenClosedStream(
-                creature.blockPosition().offset(-AmbientActivityRules.SEARCH_RADIUS, -3, -AmbientActivityRules.SEARCH_RADIUS),
-                creature.blockPosition().offset(AmbientActivityRules.SEARCH_RADIUS, 3, AmbientActivityRules.SEARCH_RADIUS)
-            )
-            .filter(position -> !level.canSeeSky(position))
-            .map(position -> TacticalCombatRuntime.standableNear(level, position))
-            .flatMap(Optional::stream)
-            .distinct()
-            .filter(position -> TacticalCombatRuntime.routeReaches(creature, position))
-            .min(Comparator.comparingDouble(position -> position.distSqr(creature.blockPosition())))
-            .map(position -> moveTo(creature, position, 1.2))
-            .orElse(false);
     }
 
     static boolean keepSoulLanternVigil(final AmbientActivityContext context) {
@@ -373,6 +348,23 @@ public final class AmbientActivityRuntime {
         if (level.getGameTime() < expires) {
             return;
         }
+        final long encoded = WarlockeryEntityData.get(creature).getLongOr(HEARTH_POSITION, Long.MIN_VALUE);
+        if (encoded != Long.MIN_VALUE) {
+            final BlockPos position = BlockPos.of(encoded);
+            activeHearth(creature, level).ifPresent(owned -> level.removeBlock(owned, false));
+            AmbientActivityHearthData.get(level).release(position, creature.getUUID());
+        }
+        ACTIVE_HEARTHS.remove(creature);
+        WarlockeryEntityData.get(creature).remove(HEARTH_POSITION);
+        WarlockeryEntityData.get(creature).remove(HEARTH_EXPIRES);
+    }
+
+    /**
+     * Narrow exact-owner release used by Hellhound cure, death, and discard migration cleanup.
+     * It removes only a campfire that is still owned by this exact creature under the existing
+     * claim contract and then clears the claim state; no other block or family is touched.
+     */
+    static void releaseExactOwnedLegacyHearth(final Mob creature, final ServerLevel level) {
         final long encoded = WarlockeryEntityData.get(creature).getLongOr(HEARTH_POSITION, Long.MIN_VALUE);
         if (encoded != Long.MIN_VALUE) {
             final BlockPos position = BlockPos.of(encoded);

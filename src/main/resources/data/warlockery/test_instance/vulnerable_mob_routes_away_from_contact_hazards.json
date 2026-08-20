@@ -2,7 +2,7 @@
   "type": "minecraft:function",
   "function": "warlockery:vulnerable_mob_routes_away_from_contact_hazards",
   "environment": "minecraft:default",
-  "structure": "fabric-gametest-api-v1:empty",
+  "structure": "warlockery:empty3x3x3",
   "max_ticks": 100
 }
 

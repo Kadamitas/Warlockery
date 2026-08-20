@@ -18,7 +18,9 @@ import net.minecraft.world.item.SplashPotionItem;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public final class ReplicationChargeItem extends SplashPotionItem {
     public ReplicationChargeItem(final Properties properties) {
@@ -70,11 +72,14 @@ public final class ReplicationChargeItem extends SplashPotionItem {
                 ).stream().filter(entity -> entity != getOwner())
                     .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(hit.getLocation())))
                     .orElse(null);
+                final Vec3 spawnLocation = hit instanceof BlockHitResult blockHit
+                    ? Vec3.atBottomCenterOf(blockHit.getBlockPos().relative(blockHit.getDirection()))
+                    : hit.getLocation();
                 final var created = ModEntities.ALL.get("glass_doppelganger").get()
                     .create(level, EntitySpawnReason.EVENT);
                 final Mob duplicate = created instanceof Mob mob ? mob : null;
                 if (duplicate != null) {
-                    duplicate.snapTo(hit.getLocation().x, hit.getLocation().y, hit.getLocation().z);
+                    duplicate.snapTo(spawnLocation.x, spawnLocation.y, spawnLocation.z);
                 }
                 final boolean space = duplicate != null && level.noCollision(duplicate);
                 final UtilityDecision decision = ReplicationChargeRules.diagnose(target != null, space);

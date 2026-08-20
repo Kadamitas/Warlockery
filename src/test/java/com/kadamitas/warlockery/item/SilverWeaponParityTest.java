@@ -8,11 +8,20 @@ import com.kadamitas.warlockery.registry.SilverMaterials;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.ToolMaterial;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 final class SilverWeaponParityTest {
     private static final Path DATA = Path.of("src/main/resources/data");
+
+    @BeforeAll
+    static void bootstrapRegistries() {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+    }
 
     @Test
     void silverEquipmentHasPracticalDurabilityAndRepairsFromCommonSilver() {

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:lycan_familiarity_caps_and_evicts_deterministically",
+  "environment": "warlockery:lycan_villager_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 200
+}

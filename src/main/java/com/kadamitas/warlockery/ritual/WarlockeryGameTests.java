@@ -14,6 +14,7 @@ import com.kadamitas.warlockery.brew.custom.CustomBrewFormula;
 import com.kadamitas.warlockery.brew.custom.CustomBrewRuntime;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
 import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
+import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.GoblinHostilityRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
@@ -36,6 +37,7 @@ import com.kadamitas.warlockery.transformation.SupernaturalProgression;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import com.kadamitas.warlockery.transformation.WerewolfProgressionRules;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import java.util.UUID;
 import java.util.List;
 import java.util.Objects;
@@ -119,9 +121,13 @@ public final class WarlockeryGameTests {
     }
 
     public static void ritualCatalogLoads(final GameTestHelper helper) {
-        helper.assertValueEqual(RitualManager.INSTANCE.ids().size(), 108, "loaded ritual count");
+        final List<Identifier> loaded = RitualManager.INSTANCE.ids();
         helper.assertTrue(
-            RitualManager.INSTANCE.ids().contains(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "sanctity")),
+            loaded.size() >= com.kadamitas.warlockery.compat.jei.PackagedJeiCatalog.rituals().size(),
+            "every packaged rite must survive load-time validation"
+        );
+        helper.assertTrue(
+            loaded.contains(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "sanctity")),
             "the built-in ritual catalog must remain loaded"
         );
         helper.succeed();
@@ -131,8 +137,8 @@ public final class WarlockeryGameTests {
         final RitualSessionData sessions = RitualSessionData.get(helper.getLevel());
         final BlockPos center = helper.absolutePos(new BlockPos(1, 1, 1));
         final Identifier ritual = Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "sanctity");
-        helper.assertTrue(sessions.start(center, ritual, UUID.randomUUID(), 40), "first ritual session should start");
-        helper.assertFalse(sessions.start(center, ritual, UUID.randomUUID(), 40), "duplicate ritual session must be rejected");
+        helper.assertTrue(sessions.start(center, ritual, UUID.randomUUID(), 40, 0), "first ritual session should start");
+        helper.assertFalse(sessions.start(center, ritual, UUID.randomUUID(), 40, 0), "duplicate ritual session must be rejected");
         helper.assertTrue(sessions.isActive(center), "session should remain active");
         helper.succeed();
     }
@@ -162,7 +168,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), helper.absolutePos(relativeCenter), null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "sanctity")
-        );
+        , 0);
         helper.assertTrue(
             RitualWardData.get(helper.getLevel()).contains(
                 RitualWardType.SANCTITY,
@@ -180,7 +186,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "summon_imp")
-        );
+        , 0);
         final boolean spawned = !helper.getLevel().getEntitiesOfClass(
             ImpEntity.class, new AABB(center).inflate(8.0)
         ).isEmpty();
@@ -265,7 +271,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, player,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "fertility")
-        );
+        , 0);
 
         helper.assertTrue(helper.getBlockState(cropRelative).getValue(CropBlock.AGE) > 0,
             "fertility must grow tagged crops");
@@ -289,7 +295,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "natures_power")
-        );
+        , 0);
 
         helper.assertBlockPresent(Blocks.GRASS_BLOCK, soilRelative);
         helper.assertBlockPresent(Blocks.SHORT_GRASS, vegetationRelative);
@@ -306,7 +312,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), helper.absolutePos(relativeCenter), null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "part_earth")
-        );
+        , 0);
 
         helper.assertBlockNotPresent(Blocks.STONE, north);
         helper.assertBlockPresent(Blocks.STONE, south);
@@ -335,7 +341,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "volcano")
-        );
+        , 0);
 
         helper.assertTrue(sources.stream().anyMatch(pos -> helper.getLevel().getFluidState(pos).isEmpty()),
             "Earth's Wrath must draw from underground fluid");
@@ -352,7 +358,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "storm")
-        );
+        , 0);
 
         helper.assertTrue(helper.getLevel().getWeatherData().isThundering(), "Sky's Wrath must start thunder");
         helper.assertTrue(!helper.getLevel().getEntitiesOfClass(
@@ -371,7 +377,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "hell_on_earth")
-        );
+        , 0);
 
         helper.assertTrue(!helper.getLevel().getEntities(
             (Entity) null,
@@ -392,7 +398,7 @@ public final class WarlockeryGameTests {
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "forestation")
-        );
+        , 0);
 
         helper.assertTrue(BlockPos.betweenClosedStream(center.offset(-12, -1, -12), center.offset(12, 16, 12))
             .anyMatch(pos -> {
@@ -416,14 +422,16 @@ public final class WarlockeryGameTests {
     public static void goblinsRaidVillagersWhileHobgoblinsRemainFriendly(final GameTestHelper helper) {
         BlockPos.betweenClosedStream(new BlockPos(0, 0, 0), new BlockPos(2, 0, 2))
             .forEach(position -> helper.setBlock(position, Blocks.STONE));
-        final HobgoblinEntity goblin = helper.spawn(
+        final GoblinEntity goblin = helper.spawn(
             ModEntities.GOBLIN.get(), new BlockPos(0, 1, 0), EntitySpawnReason.NATURAL
         );
         final Villager villager = helper.spawn(EntityTypes.VILLAGER, new BlockPos(2, 1, 0));
         final HobgoblinEntity hobgoblin = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 2), EntitySpawnReason.NATURAL
         );
-        helper.runAfterDelay(10, () -> {
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(goblin.creatureKind() == ArcaneCreature.CreatureKind.GOBLIN,
+                "the dedicated goblin body must report the exact goblin kind");
             helper.assertTrue(GoblinHostilityRules.canTarget(goblin.creatureKind(), villager.getType()),
                 "goblins must classify villagers as raid targets");
             helper.assertTrue(!GoblinHostilityRules.canTarget(hobgoblin.creatureKind(), villager.getType()),
@@ -889,7 +897,7 @@ public final class WarlockeryGameTests {
 
     public static void hexBehaviorAppliesAndRemovesItsEffect(final GameTestHelper helper) {
         final Zombie target = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
-        final HexBehavior behavior = HexBehaviors.forTarget("misfortune");
+        final HexBehavior behavior = HexBehaviors.require("misfortune");
         behavior.apply(target, 200);
         helper.assertTrue(target.hasEffect(MobEffects.UNLUCK), "misfortune must apply vanilla Unluck");
         behavior.remove(target);
@@ -934,14 +942,38 @@ public final class WarlockeryGameTests {
         final BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, ModBlocks.ALL.get("spinningwheel").get());
         final MagicMachineBlockEntity machine = helper.getBlockEntity(relative, MagicMachineBlockEntity.class);
-        machine.setItem(0, new ItemStack(Items.STRING, 8));
-        IntStream.range(0, 160).forEach(_ -> MagicMachineBlockEntity.serverTick(
-            helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
-        ));
-        helper.assertTrue(machine.getItem(0).isEmpty(), "spinning wheel must consume eight string");
-        helper.assertTrue(machine.getItem(6).is(Items.WOOL.white()), "spinning wheel must produce white wool");
-        helper.assertValueEqual(machine.getItem(6).getCount(), 1, "spinning wheel output count");
-        helper.succeed();
+        final BlockPos altarRelative = new BlockPos(4, 1, 4);
+        withPoweredAltar(helper, altarRelative, 180, altar -> {
+            machine.setItem(0, new ItemStack(Items.STRING, 8));
+            final int powerBefore = totalAltarPower(helper, altarRelative);
+            IntStream.range(0, 300).forEach(_ -> MagicMachineBlockEntity.serverTick(
+                helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
+            ));
+            helper.assertTrue(machine.getItem(0).isEmpty(), "spinning wheel must consume eight string");
+            helper.assertTrue(machine.getItem(4).is(Items.COBWEB), "spinning wheel must produce a cobweb");
+            helper.assertValueEqual(machine.getItem(4).getCount(), 1, "spinning wheel output count");
+            helper.assertValueEqual(
+                powerBefore - totalAltarPower(helper, altarRelative),
+                180,
+                "spinning consumes exactly 180 altar power across the six-block altar"
+            );
+
+            final BlockPos brazierRelative = new BlockPos(2, 1, 1);
+            helper.setBlock(brazierRelative, ModBlocks.ALL.get("brazier").get());
+            final MagicMachineBlockEntity brazier = helper.getBlockEntity(
+                brazierRelative,
+                MagicMachineBlockEntity.class
+            );
+            brazier.setItem(0, new ItemStack(Items.GUNPOWDER));
+            helper.assertTrue(brazier.igniteBrazier(), "a nonempty brazier accepts a legal ignition");
+            helper.assertTrue(
+                brazier.getItem(3).is(ModItems.ALL.get("ingredient_ash_wood").get()),
+                "ignition immediately places the retained Wood Ash marker"
+            );
+            helper.assertValueEqual(brazier.extinguishBrazier(), 2, "water reset clears reagent and ash");
+            helper.assertTrue(brazier.isEmpty(), "water reset clears every brazier slot");
+            helper.succeed();
+        });
     }
 
     public static void commonMaterialAndWoodTagsArePopulated(final GameTestHelper helper) {
@@ -973,6 +1005,36 @@ public final class WarlockeryGameTests {
         helper.succeed();
     }
 
+    private static void withPoweredAltar(
+        final GameTestHelper helper,
+        final BlockPos relativeAltar,
+        final int power,
+        final java.util.function.Consumer<AltarBlockEntity> assertions
+    ) {
+        BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
+            .forEach(position -> helper.setBlock(position, ModBlocks.ALTAR.get()));
+        helper.runAfterDelay(165L, () -> {
+            final AltarBlockEntity altar = helper.getBlockEntity(relativeAltar, AltarBlockEntity.class);
+            helper.assertTrue(altar.isMultiblockValid(), "the six-block machine altar becomes valid");
+            BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
+                .map(position -> helper.getBlockEntity(position, AltarBlockEntity.class))
+                .forEach(part -> helper.assertTrue(
+                    part.consumePower(part.availablePower()),
+                    "generated altar power is normalized before the exact machine charge"
+                ));
+            helper.assertValueEqual(totalAltarPower(helper, relativeAltar), 0,
+                "the six-block altar starts the machine proof empty");
+            helper.assertValueEqual(altar.receivePower(power), power, "the machine altar accepts its exact charge");
+            assertions.accept(altar);
+        });
+    }
+
+    private static int totalAltarPower(final GameTestHelper helper, final BlockPos relativeAltar) {
+        return BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
+            .mapToInt(position -> helper.getBlockEntity(position, AltarBlockEntity.class).availablePower())
+            .sum();
+    }
+
     public static void pipeAutomationUsesSidedItemHandlers(final GameTestHelper helper) {
         final BlockPos relative = new BlockPos(1, 1, 1);
         final BlockPos absolute = helper.absolutePos(relative);
@@ -997,55 +1059,42 @@ public final class WarlockeryGameTests {
             );
         }
         helper.assertTrue(machine.getItem(0).isEmpty(), "simulated pipe insertion must not mutate inventory");
-        try (Transaction transaction = Transaction.openOuter()) {
-            helper.assertValueEqual(
-                top.insert(ItemVariant.of(Items.STRING), 8, transaction),
-                8L,
-                "top pipe must insert recipe inputs"
-            );
-            transaction.commit();
-        }
-        try (Transaction transaction = Transaction.openOuter()) {
-            helper.assertValueEqual(
-                top.extract(ItemVariant.of(Items.STRING), 1, transaction),
-                0L,
-                "top pipe must not extract recipe inputs"
-            );
-        }
+        final BlockPos altarRelative = new BlockPos(4, 1, 4);
+        withPoweredAltar(helper, altarRelative, 180, altar -> {
+            try (Transaction transaction = Transaction.openOuter()) {
+                helper.assertValueEqual(top.insert(ItemVariant.of(Items.STRING), 8, transaction), 8L,
+                    "top pipe must insert recipe inputs");
+                transaction.commit();
+            }
+            try (Transaction transaction = Transaction.openOuter()) {
+                helper.assertValueEqual(top.extract(ItemVariant.of(Items.STRING), 1, transaction), 0L,
+                    "top pipe must not extract recipe inputs");
+            }
+            final int powerBefore = totalAltarPower(helper, altarRelative);
+            IntStream.range(0, 300).forEach(_ -> MagicMachineBlockEntity.serverTick(
+                helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
+            ));
 
-        IntStream.range(0, 160).forEach(_ -> MagicMachineBlockEntity.serverTick(
-            helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
-        ));
-
-        final Storage<ItemVariant> bottom = Objects.requireNonNull(
-            ItemStorage.SIDED.find(helper.getLevel(), absolute, Direction.DOWN),
-            "Missing bottom item storage"
-        );
-        final ItemVariant whiteWool = ItemVariant.of(Items.WOOL.white());
-        try (Transaction transaction = Transaction.openOuter()) {
-            helper.assertValueEqual(
-                bottom.insert(ItemVariant.of(Items.STRING), 1, transaction),
-                0L,
-                "bottom pipe must reject insertion"
+            final Storage<ItemVariant> bottom = Objects.requireNonNull(
+                ItemStorage.SIDED.find(helper.getLevel(), absolute, Direction.DOWN),
+                "Missing bottom item storage"
             );
-        }
-        try (Transaction transaction = Transaction.openOuter()) {
-            helper.assertValueEqual(
-                bottom.extract(whiteWool, 1, transaction),
-                1L,
-                "bottom pipe must expose finished output"
-            );
-        }
-        helper.assertTrue(machine.getItem(6).is(Items.WOOL.white()), "simulated extraction must preserve output");
-        try (Transaction transaction = Transaction.openOuter()) {
-            helper.assertValueEqual(
-                bottom.extract(whiteWool, 1, transaction),
-                1L,
-                "bottom pipe must extract finished output"
-            );
-            transaction.commit();
-        }
-        helper.assertTrue(machine.getItem(6).isEmpty(), "real extraction must remove output");
+            final ItemVariant cobweb = ItemVariant.of(Items.COBWEB);
+            try (Transaction transaction = Transaction.openOuter()) {
+                helper.assertValueEqual(bottom.insert(ItemVariant.of(Items.STRING), 1, transaction), 0L,
+                    "bottom pipe must reject insertion");
+                helper.assertValueEqual(bottom.extract(cobweb, 1, transaction), 1L,
+                    "bottom pipe must expose finished output");
+            }
+            helper.assertTrue(machine.getItem(4).is(Items.COBWEB), "simulated extraction must preserve output");
+            try (Transaction transaction = Transaction.openOuter()) {
+                helper.assertValueEqual(bottom.extract(cobweb, 1, transaction), 1L,
+                    "bottom pipe must extract finished output");
+                transaction.commit();
+            }
+            helper.assertTrue(machine.getItem(4).isEmpty(), "real extraction must remove output");
+            helper.assertValueEqual(powerBefore - totalAltarPower(helper, altarRelative), 180,
+                "automated spinning consumes exactly 180 altar power across the six-block altar");
 
         final BlockPos ovenRelative = new BlockPos(2, 1, 1);
         helper.setBlock(ovenRelative, ModBlocks.ALL.get("alchemical_oven").get());
@@ -1069,6 +1118,7 @@ public final class WarlockeryGameTests {
         helper.assertTrue(cauldron.canPlaceItem(0, customBrew),
             "reloadable custom brew components must enter cauldron input slots");
         helper.succeed();
+        });
     }
 
     public static void fluidPipesConnectToLiquidMachines(final GameTestHelper helper) {
@@ -1164,6 +1214,6 @@ public final class WarlockeryGameTests {
         new EmbeddedChannel(connection);
         final CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
         helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 }

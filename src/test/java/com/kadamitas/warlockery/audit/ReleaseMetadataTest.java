@@ -17,7 +17,7 @@ final class ReleaseMetadataTest {
     @Test
     void stableVersionMatchesUpdateFeedAndChangelog() throws IOException {
         final String version = property("mod_version");
-        assertEquals("1.4.0", version);
+        assertEquals("1.5.0", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
@@ -28,7 +28,7 @@ final class ReleaseMetadataTest {
         final String changelog = read("changelog.txt");
         assertTrue(changelog.startsWith("Warlockery " + version));
         assertFalse(changelog.contains("alpha"));
-        assertTrue(changelog.contains("NeoForge-only `1.4.0-LlaGuiT0-26.2.0.45` supporter build"));
+        assertTrue(changelog.contains("NeoForge-only `1.5.0-LlaGuiT0-26.2.0.45` supporter build"));
         assertTrue(changelog.contains("[26.2.0.45-beta,26.2.0.46-beta)"));
     }
 
@@ -84,7 +84,7 @@ final class ReleaseMetadataTest {
         assertEquals("warlockery-fabric", property("archives_base_name"));
         assertEquals("1.17.19", property("loom_version"));
         assertEquals("0.19.3", property("loader_version"));
-        assertEquals("0.157.0+26.2", property("fabric_api_version"));
+        assertEquals("0.158.0+26.2", property("fabric_api_version"));
 
         final String wrapper = read("gradle/wrapper/gradle-wrapper.properties");
         assertTrue(wrapper.contains("gradle-9.5.1-bin.zip"));

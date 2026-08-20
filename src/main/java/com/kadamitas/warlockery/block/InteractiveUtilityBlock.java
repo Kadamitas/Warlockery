@@ -478,6 +478,9 @@ public final class InteractiveUtilityBlock extends Block {
             player.getName()
         ));
         reflection.setTarget(player);
+        WarlockeryEntityData.get(reflection).putString(
+            "WarlockeryReflectedTarget", player.getStringUUID()
+        );
         reflection.setPersistenceRequired();
         level.addFreshEntity(reflection);
         player.sendOverlayMessage(Component.translatable("message.warlockery.mirror.reflection_emerged")

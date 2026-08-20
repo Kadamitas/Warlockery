@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.item;
 
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.entity.CreatureBehaviorState;
+import com.kadamitas.warlockery.entity.BrambleColossusEntity;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
@@ -21,21 +22,24 @@ public final class TreefydSeedItem extends Item {
         }
         final var spawn = context.getClickedPos().relative(context.getClickedFace());
         if (!level.getBlockState(spawn).canBeReplaced()) {
-            context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.missing_space"));
+            if (context.getPlayer() != null) context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.missing_space"));
             return InteractionResult.FAIL;
         }
         final var treefyd = ModEntities.ALL.get("bramble_colossus").get().create(level, EntitySpawnReason.EVENT);
         if (treefyd == null) {
-            context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.failed"));
+            if (context.getPlayer() != null) context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.failed"));
             return InteractionResult.FAIL;
         }
         treefyd.snapTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
+        if (treefyd instanceof BrambleColossusEntity colossus) colossus.recordPost(spawn);
         if (context.getPlayer() != null) {
             CreatureBehaviorState.bind(treefyd, context.getPlayer().getUUID());
         }
         level.addFreshEntity(treefyd);
-        context.getItemInHand().consume(1, context.getPlayer());
-        context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.awakened"));
+        if (context.getPlayer() != null) {
+            context.getItemInHand().consume(1, context.getPlayer());
+            context.getPlayer().sendOverlayMessage(Component.translatable("message.warlockery.treefyd.awakened"));
+        }
         return InteractionResult.SUCCESS;
     }
 }

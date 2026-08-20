@@ -29,13 +29,13 @@ final class GobliniteEconomyTest {
     @Test
     void goblinitePurchasesUseScarceMaterialPrices() {
         final List<GoblinTradeCatalog.OfferSpec> miner = GoblinTradeCatalog.coreOffers(
-            HobgoblinEntity.GoblinProfession.MINER
+            GoblinProfession.MINER
         );
         final List<GoblinTradeCatalog.OfferSpec> smith = GoblinTradeCatalog.coreOffers(
-            HobgoblinEntity.GoblinProfession.SMITH
+            GoblinProfession.SMITH
         );
         final List<GoblinTradeCatalog.OfferSpec> prospector = GoblinTradeCatalog.coreOffers(
-            HobgoblinEntity.GoblinProfession.PROSPECTOR
+            GoblinProfession.PROSPECTOR
         );
 
         assertAll(
@@ -52,7 +52,7 @@ final class GobliniteEconomyTest {
     @Test
     void gobliniteNuggetRequiresEighteenDust() {
         final List<GoblinTradeCatalog.OfferSpec> prospector = GoblinTradeCatalog.coreOffers(
-            HobgoblinEntity.GoblinProfession.PROSPECTOR
+            GoblinProfession.PROSPECTOR
         );
 
         assertTrue(hasOffer(prospector, "warlockery:ingredient_delvealloydust", 18,

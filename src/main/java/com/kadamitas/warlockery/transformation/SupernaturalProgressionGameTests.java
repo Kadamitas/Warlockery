@@ -11,6 +11,7 @@ import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -341,7 +342,7 @@ public final class SupernaturalProgressionGameTests {
         new EmbeddedChannel(connection);
         final CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
         helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     private static java.util.List<Mob> vampiresNear(final GameTestHelper helper, final BlockPos relativePosition) {

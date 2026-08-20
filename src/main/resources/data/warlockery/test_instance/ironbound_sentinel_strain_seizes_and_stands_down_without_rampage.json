@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:ironbound_sentinel_strain_seizes_and_stands_down_without_rampage",
+  "environment": "warlockery:ironbound_sentinel_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 600
+}

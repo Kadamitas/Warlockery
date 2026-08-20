@@ -2,9 +2,33 @@ package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import java.util.Objects;
+import java.util.Set;
 
 public final class TacticalCombatRules {
+    /**
+     * Kinds whose dedicated family runtime owns navigation and target arbitration outright, so no
+     * instance of them can ever reach {@link TacticalCombatRuntime}. F03 Vampire Court, F04 Lycan
+     * Pack and F05 Lycan Villager each schedule approach, cover and withdrawal against their own
+     * cadence, route-failure counters and claim or path budgets; a generic doctrine would name a
+     * maneuver set that cannot run and, if it ever did run, would issue a second navigation request
+     * outside that accounting. Retiring the rows keeps the table honest the way F13 retired the
+     * ARCANE_STUDY ambient row, and {@link #profile} now refuses these kinds loudly instead of
+     * handing out a doctrine nobody executes.
+     */
+    private static final Set<CreatureKind> WITHOUT_GENERIC_DOCTRINE = Set.of(
+        CreatureKind.BLOOD_THRALL,
+        CreatureKind.LYCAN_VILLAGER,
+        CreatureKind.VAMPIRE,
+        CreatureKind.WEREWOLF
+    );
+
     private TacticalCombatRules() {
+    }
+
+    /** Whether this kind still reaches the generic tactical layer and therefore declares a doctrine. */
+    public static boolean usesGenericTacticalLayer(final CreatureKind kind) {
+        Objects.requireNonNull(kind, "kind");
+        return !WITHOUT_GENERIC_DOCTRINE.contains(kind);
     }
 
     public static Profile profile(final CreatureKind kind) {
@@ -14,11 +38,13 @@ public final class TacticalCombatRules {
                 Doctrine.RANGED;
             case HEX_BAT, BANSHEE, IMP, LOST_SOUL, OWL, POLTERGEIST, SPIRIT, STORM_SIMIAN ->
                 Doctrine.AERIAL;
-            case CAT, FAMILIAR, HELLHOUND, ILLUSION_SPIDER, LYCAN_VILLAGER, NIGHTMARE, PALE_STEED,
-                WEREWOLF -> Doctrine.PACK;
+            case CAT, FAMILIAR, HELLHOUND, ILLUSION_SPIDER, NIGHTMARE, PALE_STEED -> Doctrine.PACK;
             case GOBLIN, HOBGOBLIN -> Doctrine.SKIRMISHER;
-            case BLOOD_THRALL, DEATH, ECHO_SHADE, GLASS_DOPPELGANGER, NAAMAH, SPECTRE, UMBRAL_SIGIL,
-                VAMPIRE -> Doctrine.STALKER;
+            case DEATH, ECHO_SHADE, GLASS_DOPPELGANGER, NAAMAH, SPECTRE, UMBRAL_SIGIL ->
+                Doctrine.STALKER;
+            case BLOOD_THRALL, LYCAN_VILLAGER, VAMPIRE, WEREWOLF -> throw new IllegalArgumentException(
+                "No generic combat doctrine is declared for " + kind + "; its family runtime owns combat"
+            );
             case BRAMBLE_COLOSSUS, DREAMROOT, ENT, FORGEWARDEN, IRONBOUND_SENTINEL, STONEBROKER ->
                 Doctrine.GUARD;
             case ABYSSAL_REGENT, CORPSE, DEMON, EMBERHORN_ARCHFIEND, ILLUSION_CREEPER,

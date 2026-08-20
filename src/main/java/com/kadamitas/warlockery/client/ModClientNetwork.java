@@ -58,11 +58,15 @@ public final class ModClientNetwork {
     }
 
     public static void requestRefresh(final BlockPos center) {
-        send(new ModNetwork.RitualActionPayload(center, "", false));
+        send(new ModNetwork.RitualActionPayload(center, "", false, false));
     }
 
     public static void requestActivation(final BlockPos center, final String ritualId) {
-        send(new ModNetwork.RitualActionPayload(center, ritualId, true));
+        send(new ModNetwork.RitualActionPayload(center, ritualId, true, false));
+    }
+
+    public static void requestCancellation(final BlockPos center) {
+        send(new ModNetwork.RitualActionPayload(center, "", false, true));
     }
 
     private static void send(final CustomPacketPayload payload) {

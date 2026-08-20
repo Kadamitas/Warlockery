@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:hay_block",
+    "#c:storage_blocks/wheat"
+  ]
+}
+
+

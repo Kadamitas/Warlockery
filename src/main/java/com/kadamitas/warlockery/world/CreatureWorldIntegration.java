@@ -2,17 +2,24 @@ package com.kadamitas.warlockery.world;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.config.WarlockeryConfig;
+import com.kadamitas.warlockery.entity.GoblinEntity;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
+import com.kadamitas.warlockery.entity.LycanPackRules;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModVillagers;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,6 +42,9 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 
 public final class CreatureWorldIntegration {
+    public static final int MAX_RAW_ARMING_VISITS = LycanPackRules.MAX_RAW_ARMING_VISITS;
+    public static final int MAX_RETAINED_ARMING = LycanPackRules.MAX_RETAINED_ARMING;
+
     private CreatureWorldIntegration() {
     }
 
@@ -88,9 +98,15 @@ public final class CreatureWorldIntegration {
         if (sites.containsCamp(region)) {
             return;
         }
+        // The exact Goblin and the exact Hobgoblin are each their own body, so both must be
+        // scanned or this founding guard under-reports resident density.
+        final AABB residentBounds = new AABB(origin).inflate(64, 24, 64);
         final boolean residentsNearby = !level.getEntitiesOfClass(
+            GoblinEntity.class,
+            residentBounds
+        ).isEmpty() || !level.getEntitiesOfClass(
             HobgoblinEntity.class,
-            new AABB(origin).inflate(64, 24, 64)
+            residentBounds
         ).isEmpty();
         final boolean clear = clearHutFootprint(level, origin);
         if (!HobgoblinCampRules.canFound(level.isVillage(origin), residentsNearby, clear, distance)) {
@@ -104,8 +120,12 @@ public final class CreatureWorldIntegration {
         final int residents = HobgoblinCampRules.residents(level.getRandom().nextInt());
         for (int index = 0; index < residents; index++) {
             final BlockPos spawn = origin.offset(index % 2 * 2 - 1, 0, 3 + index / 2);
-            final HobgoblinEntity hobgoblin = ModEntities.HOBGOBLIN.get().spawn(level, spawn, EntitySpawnReason.EVENT);
-            if (hobgoblin != null) hobgoblin.assignProfessionFromVillage();
+            final HobgoblinEntity hobgoblin =
+                ModEntities.HOBGOBLIN.get().spawn(level, spawn, EntitySpawnReason.EVENT);
+            if (hobgoblin != null) {
+                hobgoblin.setGoblinProfession(com.kadamitas.warlockery.entity.GoblinProfession
+                    .values()[level.getRandom().nextInt(4)]);
+            }
         }
         Warlockery.LOGGER.info("Travelling hobgoblins raised a wilderness hut at {}", origin);
     }
@@ -383,27 +403,153 @@ public final class CreatureWorldIntegration {
 
     private static void spawnSilverHunt(final ServerLevel level, final ServerPlayer player) {
         final BlockPos origin = surface(level, player.blockPosition().offset(20 + level.getRandom().nextInt(12), 0, level.getRandom().nextInt(25) - 12));
-        final WerewolfEntity werewolf = ModEntities.WEREWOLF.get().spawn(level, origin, EntitySpawnReason.EVENT);
-        final WerewolfHunterEntity hunter = ModEntities.WEREWOLF_HUNTER.get().spawn(level, surface(level, origin.offset(9, 0, 2)), EntitySpawnReason.PATROL);
-        final Pillager pillager = EntityTypes.PILLAGER.spawn(level, surface(level, origin.offset(11, 0, -2)), EntitySpawnReason.PATROL);
-        if (werewolf == null || hunter == null) return;
-        hunter.setTarget(werewolf);
-        werewolf.setTarget(hunter);
-        if (pillager != null) {
-            equipSilver(pillager);
-            pillager.setTarget(werewolf);
-        }
+        runSilverHuntTransaction(level, origin, false);
     }
 
-    private static void armNearbyPillagers(final ServerLevel level, final ServerPlayer player) {
-        final List<WerewolfEntity> werewolves = level.getEntitiesOfClass(WerewolfEntity.class,
-            new AABB(player.blockPosition()).inflate(48));
-        if (werewolves.isEmpty()) return;
-        level.getEntitiesOfClass(Pillager.class, new AABB(player.blockPosition()).inflate(48)).forEach(pillager -> {
-            final WerewolfEntity target = werewolves.stream().min(Comparator.comparingDouble(pillager::distanceToSqr)).orElseThrow();
+    public static SilverHuntReport runSilverHuntTransaction(
+        final ServerLevel level,
+        final BlockPos origin,
+        final boolean injectConstructionFailure
+    ) {
+        final long now = level.getGameTime();
+        final SilverHuntData hunts = SilverHuntData.get(level);
+        hunts.reconcile(now);
+        final Optional<UUID> reserved = hunts.reserve(origin, now);
+        if (reserved.isEmpty()) {
+            return new SilverHuntReport(false, Optional.empty(), false, 0);
+        }
+        final UUID huntId = reserved.orElseThrow();
+        final int[] spawnReadBudget = {com.kadamitas.warlockery.entity.WerewolfHunterRules.MAX_SPAWN_BLOCK_READS};
+        final Optional<BlockPos> quarrySite = findHuntSpawnSite(level, origin, spawnReadBudget);
+        final Optional<BlockPos> hunterSite = findHuntSpawnSite(level, origin.offset(9, 0, 2), spawnReadBudget);
+        if (quarrySite.isEmpty() || hunterSite.isEmpty()) {
+            hunts.discard(huntId);
+            return new SilverHuntReport(true, Optional.of(huntId), false, 0);
+        }
+        final WerewolfEntity quarry = ModEntities.WEREWOLF.get()
+            .spawn(level, quarrySite.orElseThrow(), EntitySpawnReason.EVENT);
+        final WerewolfHunterEntity hunter = injectConstructionFailure
+            ? null
+            : ModEntities.WEREWOLF_HUNTER.get().spawn(
+                level, hunterSite.orElseThrow(), EntitySpawnReason.EVENT
+            );
+        final int constructed = (quarry == null ? 0 : 1) + (hunter == null ? 0 : 1);
+        if (quarry == null || hunter == null) {
+            if (quarry != null) quarry.discard();
+            if (hunter != null) hunter.discard();
+            hunts.discard(huntId);
+            return new SilverHuntReport(true, Optional.of(huntId), false, constructed);
+        }
+        com.kadamitas.warlockery.entity.WerewolfHunterRuntime.assignHuntEvent(
+            hunter, huntId, quarry.getUUID(), origin, now
+        );
+        hunts.activate(huntId, hunter.getUUID(), quarry.getUUID());
+        return new SilverHuntReport(true, Optional.of(huntId), true, constructed);
+    }
+
+    static Optional<BlockPos> findHuntSpawnSite(
+        final ServerLevel level,
+        final BlockPos around,
+        final int[] readBudget
+    ) {
+        for (final BlockPos candidate : List.of(
+            around, around.offset(2, 0, 0), around.offset(-2, 0, 0),
+            around.offset(0, 0, 2), around.offset(0, 0, -2)
+        )) {
+            if (readBudget[0] < 3) return Optional.empty();
+            if (!level.hasChunkAt(candidate)) continue;
+            readBudget[0] -= 3;
+            final BlockPos site = surface(level, candidate);
+            if (level.getBlockState(site.below()).blocksMotion()
+                && level.getBlockState(site).getCollisionShape(level, site).isEmpty()
+                && level.getBlockState(site.above()).getCollisionShape(level, site.above()).isEmpty()) {
+                return Optional.of(site);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public record SilverHuntReport(
+        boolean reserved,
+        Optional<UUID> huntId,
+        boolean committed,
+        int constructedParticipants
+    ) {
+    }
+
+    public static ArmingReport armNearbyPillagers(final ServerLevel level, final ServerPlayer player) {
+        final AABB bounds = new AABB(player.blockPosition()).inflate(48);
+        final List<WerewolfEntity> rawLycans = new ArrayList<>();
+        com.kadamitas.warlockery.entity.BoundedEntityQuery.visit(level, EntityTypeTest.forClass(WerewolfEntity.class), bounds, candidate -> {
+            rawLycans.add(candidate);
+            return rawLycans.size() >= MAX_RAW_ARMING_VISITS
+                ? AbortableIterationConsumer.Continuation.ABORT
+                : AbortableIterationConsumer.Continuation.CONTINUE;
+        });
+        final List<WerewolfEntity> retainedLycans = rawLycans.stream()
+            .filter(LivingEntity::isAlive)
+            .sorted(Comparator.<WerewolfEntity>comparingDouble(player::distanceToSqr)
+                .thenComparing(WerewolfEntity::getUUID, LycanPackRules.unsignedUuidOrder()))
+            .limit(MAX_RETAINED_ARMING)
+            .toList();
+        if (retainedLycans.isEmpty()) {
+            return new ArmingReport(rawLycans.size(), 0, 0, 0, 0);
+        }
+        final List<Pillager> rawPillagers = new ArrayList<>();
+        com.kadamitas.warlockery.entity.BoundedEntityQuery.visit(level, EntityTypeTest.forClass(Pillager.class), bounds, candidate -> {
+            rawPillagers.add(candidate);
+            return rawPillagers.size() >= MAX_RAW_ARMING_VISITS
+                ? AbortableIterationConsumer.Continuation.ABORT
+                : AbortableIterationConsumer.Continuation.CONTINUE;
+        });
+        final List<Pillager> retainedPillagers = rawPillagers.stream()
+            .filter(LivingEntity::isAlive)
+            .filter(candidate -> !(candidate instanceof WerewolfHunterEntity))
+            .sorted(Comparator.<Pillager>comparingDouble(player::distanceToSqr)
+                .thenComparing(Pillager::getUUID, LycanPackRules.unsignedUuidOrder()))
+            .limit(MAX_RETAINED_ARMING)
+            .toList();
+        int armed = 0;
+        for (final Pillager pillager : retainedPillagers) {
+            final WerewolfEntity target = retainedLycans.stream()
+                .min(Comparator.<WerewolfEntity>comparingDouble(pillager::distanceToSqr)
+                    .thenComparing(WerewolfEntity::getUUID, LycanPackRules.unsignedUuidOrder()))
+                .orElseThrow();
             equipSilver(pillager);
             pillager.setTarget(target);
-        });
+            armed++;
+        }
+        return new ArmingReport(
+            rawLycans.size(), retainedLycans.size(), rawPillagers.size(), retainedPillagers.size(), armed
+        );
+    }
+
+    public static List<ArmingCandidate> retainNearestToAnchor(final List<ArmingCandidate> visited) {
+        return visited.stream()
+            .limit(MAX_RAW_ARMING_VISITS)
+            .sorted(Comparator.comparingDouble(ArmingCandidate::distanceSqr)
+                .thenComparing(ArmingCandidate::id, LycanPackRules.unsignedUuidOrder()))
+            .limit(MAX_RETAINED_ARMING)
+            .toList();
+    }
+
+    public static Optional<UUID> nearestRetainedLycan(final List<ArmingCandidate> retained) {
+        return retained.stream()
+            .min(Comparator.comparingDouble(ArmingCandidate::distanceSqr)
+                .thenComparing(ArmingCandidate::id, LycanPackRules.unsignedUuidOrder()))
+            .map(ArmingCandidate::id);
+    }
+
+    public record ArmingCandidate(UUID id, double distanceSqr) {
+    }
+
+    public record ArmingReport(
+        int rawLycanVisits,
+        int retainedLycans,
+        int rawPillagerVisits,
+        int retainedPillagers,
+        int armedPillagers
+    ) {
     }
 
     private static void equipSilver(final Pillager pillager) {

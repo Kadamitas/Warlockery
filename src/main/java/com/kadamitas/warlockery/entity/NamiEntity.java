@@ -1,35 +1,57 @@
 package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.ritual.marriage.MarriageData;
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.Relative;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.control.MoveControl;
+import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public final class NamiEntity extends PathfinderMob {
     private static final double FOLLOW_DISTANCE = 9.0;
     private static final double TELEPORT_DISTANCE = 1024.0;
+    private final MoveControl walkingControl;
+    private final MoveControl swimmingControl;
+    private NamiLifeState lifeState = NamiLifeState.empty();
+    private long fullDecisions;
+    private long targetDiscoveries;
+    private long blockStatesExamined;
+    private int maximumBlockStatesPerDiscovery;
+    private long socialCandidatesAppraised;
+    private long threatCandidatesAppraised;
+    private long navigationRequests;
 
     public NamiEntity(final EntityType<? extends PathfinderMob> type, final Level level) {
         super(type, level);
+        // Nami is led to a drowned monument to become Naamah, so following her spouse underwater
+        // is the whole journey, not a corner case. Water carries no pathfinding penalty, and she
+        // swims with the control the aquatic mobs use only while she is actually in water: that
+        // control also governs walking, and driving her overland with it makes her stop short of
+        // a destination she is supposed to arrive at.
+        setPathfindingMalus(PathType.WATER, 0.0F);
+        walkingControl = moveControl;
+        swimmingControl = new SmoothSwimmingMoveControl<>(this, 85, 10, 0.02F, 0.1F, true);
         setCustomName(Component.translatable("entity.warlockery.nami"));
         setCustomNameVisible(true);
         setPersistenceRequired();
@@ -37,24 +59,39 @@ public final class NamiEntity extends PathfinderMob {
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(0, new FloatGoal(this));
-        goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
+        // No FloatGoal: it forces a mob to bob at the surface, which would strand her above a
+        // spouse who has swum down. No WaterAvoidingRandomStrollGoal either, for the same reason
+        // in reverse; she must be willing to idle in water she is meant to live in.
+        goalSelector.addGoal(5, new RandomStrollGoal(this, 0.8));
         goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
     }
 
     @Override
     protected void customServerAiStep(final ServerLevel level) {
+        moveControl = isInWater() ? swimmingControl : walkingControl;
         super.customServerAiStep(level);
         if (HazardEscapeRuntime.tick(this, level)) {
+            NamiLifeRuntime.interruptForHazard(this, level);
             return;
         }
-        spouse(level).ifPresent(player -> {
-            CreatureBehaviorState.bind(this, player.getUUID());
-            defend(level, player);
-            if (!SpouseAmbientRuntime.tick(this, level, player)) {
-                follow(player);
-            }
-        });
+        NamiLifeRuntime.tick(this, level);
+    }
+
+    @Override
+    protected PathNavigation createNavigation(final Level level) {
+        return new AmphibiousPathNavigation(this, level);
+    }
+
+    /** She is a creature of the water; drowning on the way to her own transformation is absurd. */
+    @Override
+    public boolean canBreatheUnderwater() {
+        return true;
+    }
+
+    /** A current must not shove her out of a monument corridor she is trying to hold station in. */
+    @Override
+    public boolean isPushedByFluid() {
+        return false;
     }
 
     @Override
@@ -69,7 +106,21 @@ public final class NamiEntity extends PathfinderMob {
         if (amount >= getHealth() && rescueAtSpouseBed(level)) {
             return true;
         }
-        return super.hurtServer(level, source, amount);
+        final boolean hurt = super.hurtServer(level, source, amount);
+        final Entity attacker = source.getEntity();
+        if (hurt && attacker != null) {
+            NamiLifeRuntime.recordAggressor(this, level, attacker);
+        }
+        return hurt;
+    }
+
+    @Override
+    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND && player instanceof ServerPlayer serverPlayer
+            && NamiLifeRuntime.greet(this, (ServerLevel) serverPlayer.level(), serverPlayer)) {
+            return InteractionResult.SUCCESS_SERVER;
+        }
+        return super.mobInteract(player, hand);
     }
 
     public void acceptMarriage(final ServerPlayer player, final String spouseName) {
@@ -94,7 +145,7 @@ public final class NamiEntity extends PathfinderMob {
             .map(level.getServer().getPlayerList()::getPlayer);
     }
 
-    private void follow(final ServerPlayer player) {
+    void follow(final ServerPlayer player) {
         if (player.level() != level()) {
             teleportTo(
                 (ServerLevel) player.level(),
@@ -116,25 +167,6 @@ public final class NamiEntity extends PathfinderMob {
         } else {
             getNavigation().stop();
         }
-    }
-
-    private void defend(final ServerLevel level, final ServerPlayer player) {
-        if (tickCount % 20 == 0) {
-            level.getEntitiesOfClass(
-                    Monster.class,
-                    new AABB(player.blockPosition()).inflate(18.0),
-                    enemy -> enemy.isAlive() && enemy.getTarget() == player
-                ).stream()
-                .min(Comparator.comparingDouble(this::distanceToSqr))
-                .ifPresent(this::setTarget);
-        }
-        final LivingEntity target = getTarget();
-        if (target == null || !target.isAlive() || distanceToSqr(target) > 576.0 || tickCount % 30 != 0) {
-            return;
-        }
-        target.hurtServer(level, level.damageSources().indirectMagic(this, this), 6.0F);
-        level.sendParticles(ParticleTypes.ENCHANTED_HIT, target.getX(), target.getEyeY(), target.getZ(), 18, 0.35, 0.45, 0.35, 0.08);
-        level.playSound(null, blockPosition(), SoundEvents.EVOKER_CAST_SPELL, SoundSource.NEUTRAL, 0.8F, 1.15F);
     }
 
     private boolean rescueAtSpouseBed(final ServerLevel currentLevel) {
@@ -170,5 +202,64 @@ public final class NamiEntity extends PathfinderMob {
             false
         );
         return true;
+    }
+
+    NamiLifeState lifeState() {
+        return lifeState;
+    }
+
+    void setLifeState(final NamiLifeState state) {
+        lifeState = state;
+    }
+
+    NamiLifeRuntime.Counters lifeCounters() {
+        return new NamiLifeRuntime.Counters(
+            fullDecisions,
+            targetDiscoveries,
+            blockStatesExamined,
+            maximumBlockStatesPerDiscovery,
+            socialCandidatesAppraised,
+            threatCandidatesAppraised,
+            navigationRequests
+        );
+    }
+
+    void recordFullDecision() {
+        fullDecisions++;
+    }
+
+    void recordDiscovery() {
+        targetDiscoveries++;
+    }
+
+    void recordBlockDiscovery(final int examined) {
+        blockStatesExamined += examined;
+        maximumBlockStatesPerDiscovery = Math.max(maximumBlockStatesPerDiscovery, examined);
+    }
+
+    void recordSocialCandidates(final int appraised) {
+        socialCandidatesAppraised += appraised;
+    }
+
+    void recordThreatCandidates(final int appraised) {
+        threatCandidatesAppraised += appraised;
+    }
+
+    void recordNavigationRequest() {
+        navigationRequests++;
+    }
+
+    @Override
+    protected void addAdditionalSaveData(final ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.store("WarlockeryNamiLife", CompoundTag.CODEC, lifeState.write());
+    }
+
+    @Override
+    protected void readAdditionalSaveData(final ValueInput input) {
+        super.readAdditionalSaveData(input);
+        lifeState = input.read("WarlockeryNamiLife", CompoundTag.CODEC)
+            .map(tag -> NamiLifeState.read(tag, level().getGameTime()))
+            .orElse(NamiLifeState.empty());
     }
 }

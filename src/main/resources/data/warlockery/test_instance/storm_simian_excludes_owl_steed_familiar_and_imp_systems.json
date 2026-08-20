@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:storm_simian_excludes_owl_steed_familiar_and_imp_systems",
+  "environment": "warlockery:storm_simian_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 200
+}

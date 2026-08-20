@@ -6,6 +6,7 @@
     { "ingredient": "#warlockery:brazier/focused_will" }
   ],
   "outputs": [{ "item": "warlockery:ingredient_ash_wood" }],
-  "processing_time": 600,
-  "altar_power": 1600
+  "processing_time": 900,
+  "altar_power": 900,
+  "power_mode": "continuous"
 }

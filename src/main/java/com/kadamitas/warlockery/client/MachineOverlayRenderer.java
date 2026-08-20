@@ -8,6 +8,7 @@ import com.kadamitas.warlockery.crafting.MachineRecipeManager;
 import com.kadamitas.warlockery.crafting.MachineStatus;
 import com.kadamitas.warlockery.crafting.MachineUiState;
 import com.kadamitas.warlockery.brew.custom.CustomBrewCauldronState;
+import com.kadamitas.warlockery.util.ItemDisplayNames;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.List;
@@ -134,6 +135,7 @@ public final class MachineOverlayRenderer
             ).withColor(0x55FFFF);
             case NO_HEAT -> Component.translatable("overlay.warlockery.cauldron.no_heat").withColor(0xFFAA00);
             case NO_FUEL -> Component.translatable("overlay.warlockery.cauldron.no_fuel").withColor(0xFFAA00);
+            case NO_ALTAR_POWER -> Component.translatable("overlay.warlockery.machine.no_altar_power").withColor(0xFFAA00);
             case NO_FAMILIAR -> Component.translatable("overlay.warlockery.machine.no_familiar").withColor(0xFFAA00);
             case NO_IGNITION -> Component.translatable("overlay.warlockery.machine.no_ignition").withColor(0xFFAA00);
             case OUTPUT_BLOCKED -> Component.translatable("overlay.warlockery.cauldron.output_blocked").withColor(0xFF5555);

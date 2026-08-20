@@ -1,0 +1,17 @@
+{
+  "machine": "distillery",
+  "inputs": [
+    { "ingredient": "minecraft:blaze_powder" },
+    { "ingredient": "#c:gunpowders" },
+    { "ingredient": "warlockery:ingredient_clay_jar" }
+  ],
+  "outputs": [
+    { "item": "minecraft:glowstone_dust" },
+    { "item": "minecraft:glowstone_dust" },
+    { "item": "warlockery:ingredient_reek_of_misfortune" }
+  ],
+  "processing_time": 800,
+  "altar_power": 480,
+  "power_mode": "continuous"
+}
+

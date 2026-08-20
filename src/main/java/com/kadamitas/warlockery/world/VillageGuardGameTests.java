@@ -1,10 +1,17 @@
 package com.kadamitas.warlockery.world;
 
+import com.kadamitas.warlockery.entity.ArcaneCreature;
+import com.kadamitas.warlockery.entity.GoblinEntity;
+import com.kadamitas.warlockery.entity.HobgoblinJourneyRules;
+import com.kadamitas.warlockery.entity.HobgoblinJourneyRules.Mode;
+import com.kadamitas.warlockery.entity.HobgoblinJourneyRuntime;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
-import com.kadamitas.warlockery.entity.GoblinSettlementLifeRuntime;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
@@ -19,8 +26,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.phys.AABB;
 
 public final class VillageGuardGameTests {
@@ -35,7 +42,22 @@ public final class VillageGuardGameTests {
         );
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.LEATHER_CHESTPLATE));
 
-        helper.assertTrue(!VillageGuardRuntime.isCommissionableTarget(hobgoblin),
+        // The commissioning handler's own guard is `event.getTarget() instanceof Villager`, and the
+        // exact hobgoblin is an AbstractVillager that is not a Villager, so it is rejected one step
+        // earlier than before and never reaches isCommissionableTarget at all. The vanilla villager
+        // is the positive control: without it this pair would only restate a type relation and
+        // could not fail if the predicate itself were ever broken.
+        //
+        // The control is discarded immediately. A loaded human villager inside the traveler's
+        // 12-block signal radius IS village space, and village exit correctly closes an open trade,
+        // so leaving it standing would fail this fixture for the right reason at the wrong time.
+        final Villager control = helper.spawn(EntityTypes.VILLAGER, new BlockPos(2, 1, 1));
+        helper.assertTrue(VillageGuardRuntime.isCommissionableTarget(control),
+            "a vanilla villager must stay commissionable, or the hobgoblin exclusion proves nothing");
+        control.discard();
+
+        final AbstractVillager trader = hobgoblin;
+        helper.assertTrue(!(trader instanceof Villager),
             "hobgoblins must bypass vanilla village guard commissioning");
         player.interactOn(hobgoblin, InteractionHand.MAIN_HAND, hobgoblin.position());
         helper.assertTrue(hobgoblin.isAlive() && !hobgoblin.isRemoved(),
@@ -50,7 +72,7 @@ public final class VillageGuardGameTests {
     public static void goblinTradingRetainsItsCustomer(final GameTestHelper helper) {
         helper.setBlock(new BlockPos(1, 0, 1), Blocks.STONE);
         final ServerPlayer player = connectedSurvivalPlayer(helper);
-        final HobgoblinEntity goblin = helper.spawn(
+        final GoblinEntity goblin = helper.spawn(
             ModEntities.GOBLIN.get(), new BlockPos(1, 1, 1), EntitySpawnReason.NATURAL
         );
 
@@ -64,7 +86,7 @@ public final class VillageGuardGameTests {
         final HobgoblinEntity hobgoblinChild = createBaby(
             helper, ModEntities.HOBGOBLIN.get(), new BlockPos(0, 1, 0), new BlockPos(1, 1, 0), new BlockPos(2, 1, 0)
         );
-        final HobgoblinEntity goblinChild = createBaby(
+        final GoblinEntity goblinChild = createBaby(
             helper, ModEntities.GOBLIN.get(), new BlockPos(0, 1, 2), new BlockPos(1, 1, 2), new BlockPos(2, 1, 2)
         );
         helper.assertTrue(hobgoblinChild.isBaby(), "hobgoblin offspring must use the synchronized baby state");
@@ -87,24 +109,47 @@ public final class VillageGuardGameTests {
         villager.setNoAi(true);
 
         final int spawned = GoblinRaidRuntime.spawnWave(helper.getLevel(), center, 1, 4);
+        // A goblin raid wave is built from the dedicated F10 body now, so its assault membership,
+        // not the legacy Hobgoblin raid marker, is what groups it.
         final var raiders = helper.getLevel().getEntitiesOfClass(
-            HobgoblinEntity.class,
+            GoblinEntity.class,
             new AABB(center).inflate(16.0),
-            HobgoblinEntity::isVillageRaider
+            GoblinEntity::isAssaultMember
         );
-        raiders.forEach(goblin -> GoblinRaidRuntime.coordinate(goblin, helper.getLevel()));
 
         helper.assertValueEqual(spawned, GoblinRaidRules.waveSize(1), "first goblin raid wave size");
         helper.assertValueEqual(raiders.size(), GoblinRaidRules.waveSize(1), "tracked goblin raid group size");
-        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.raidCenter().filter(center::equals).isPresent()),
+        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.assaultCenter().filter(center::equals).isPresent()),
             "every wave member must share the village raid center");
-        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.raidWave() == 1),
+        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.assaultWave() == 1),
             "every wave member must retain its wave number");
-        helper.assertValueEqual(raiders.stream().filter(HobgoblinEntity::isRaidLeader).count(), 1L,
+        helper.assertValueEqual(raiders.stream().filter(GoblinEntity::isAssaultLeader).count(), 1L,
             "a goblin raid wave must have exactly one leader");
-        helper.assertTrue(raiders.stream().allMatch(goblin -> goblin.getTarget() == villager),
-            "the raid group must coordinate on the same human villager target");
-        helper.succeed();
+
+        // Targeting belongs to GoblinEnclaveRuntime and is observed under live AI rather than by
+        // calling a coordinator by hand, which is a stronger check than the legacy fixture made.
+        // Each body seeds its decision (<=20 ticks) and perception (<=40 ticks) cadences from a
+        // stable UUID offset inside its own first tick, so the wave has acquired by tick 60 at the
+        // latest. The objective is kept topped up because the subject here is shared acquisition,
+        // not lethality: three raiders would otherwise kill the villager inside that window and
+        // the targets would clear before the assertion ran. Both callbacks are registered from the
+        // test body, never from inside one another.
+        final boolean[] coordinated = {false};
+        helper.onEachTick(() -> {
+            villager.setHealth(villager.getMaxHealth());
+            coordinated[0] |= !raiders.isEmpty()
+                && raiders.stream().allMatch(goblin -> goblin.getTarget() == villager);
+        });
+        // Tick 60 is the earliest the whole wave can have acquired, and every member has to be
+        // holding the villager on the same tick for this to latch, not merely to have acquired at
+        // some point. Eighty ticks left almost no margin over that worst case, so a wave whose
+        // UUID offsets happened to spread wide never lined up inside the window. The assertion is
+        // unchanged: every raider must still share the one target simultaneously.
+        helper.runAfterDelay(200, () -> {
+            helper.assertTrue(coordinated[0],
+                "the raid group must coordinate on the same human villager target");
+            helper.succeed();
+        });
     }
 
     public static void hobgoblinsFleeHumanVillagersAndKeepCustomProfessions(final GameTestHelper helper) {
@@ -115,30 +160,50 @@ public final class VillageGuardGameTests {
         );
         final Villager villager = helper.spawn(EntityTypes.VILLAGER, new BlockPos(2, 1, 1));
         villager.setNoAi(true);
-        final double startingDistance = hobgoblin.distanceToSqr(villager);
 
+        // The visible profession name survives the split unchanged. The internal VillagerData the
+        // 1.4 body carried does not exist on an AbstractVillager, so the invariant is asserted
+        // against the displayed translation key that VillagerData only ever mirrored.
         helper.assertTrue(hobgoblin.hasCustomName() && hobgoblin.isCustomNameVisible(),
             "a naturally spawned hobgoblin must expose its assigned goblin profession");
-        helper.assertTrue(!hobgoblin.getVillagerData().profession().is(VillagerProfession.NITWIT),
-            "a hobgoblin's internal profession must never be nitwit");
-        helper.assertTrue(hobgoblin.getVillagerData().profession().is(hobgoblin.goblinProfession().engineProfession()),
-            "a hobgoblin's internal profession must match its visible custom profession");
-        final boolean[] escaped = {false};
+        final Component name = hobgoblin.getCustomName();
+        helper.assertTrue(name != null
+                && name.getContents() instanceof TranslatableContents contents
+                && contents.getKey().equals(
+                    "entity.warlockery.hobgoblin.profession." + hobgoblin.goblinProfession().id()),
+            "the visible name must be exactly this hobgoblin's own assigned profession key");
+
+        // The 1.4 flee goal is replaced by the village-exclusion policy: a loaded human villager
+        // inside the signal radius IS village space, and VILLAGE_EXIT outranks every non-emergency
+        // intent. Displacement itself is deliberately NOT asserted: an accepted exit must land in
+        // the 12-to-24 block outward band, which this arena's floor cannot host, so requiring the
+        // hobgoblin to actually move would assert the arena rather than the policy.
+        helper.assertTrue(HobgoblinJourneyRules.villageExcluded(false, true, false),
+            "a human villager inside the signal radius must count as village space");
+        hobgoblin.journeyTransient().resetForLoad();
+        final boolean[] excluded = {false};
         helper.onEachTick(() -> {
             helper.assertTrue(hobgoblin.getTarget() == null,
                 "friendly hobgoblins must never target human villagers");
-            escaped[0] |= hobgoblin.distanceToSqr(villager) > startingDistance + 4.0;
+            excluded[0] |= hobgoblin.journeyTransient().insideExcludedSpace();
         });
         helper.runAfterDelay(80, () -> {
-            helper.assertTrue(escaped[0],
-                "friendly hobgoblins must flee nearby human villagers");
+            helper.assertTrue(excluded[0],
+                "a hobgoblin beside a human villager must observe itself inside excluded space");
+            helper.assertValueEqual(hobgoblin.journeyState().mode(), Mode.VILLAGE_EXIT,
+                "village exit must outrank every non-emergency intent");
+            helper.assertTrue(hobgoblin.journeyCounters().villageExitSearches() >= 1L,
+                "observing village space must arm and run at least one exit search");
+            helper.assertTrue(!HobgoblinJourneyRuntime.safeToTrade(hobgoblin),
+                "a hobgoblin inside village space must refuse to trade");
             helper.succeed();
         });
     }
 
-    private static HobgoblinEntity createBaby(
+    @SuppressWarnings("unchecked")
+    private static <T extends AbstractVillager & ArcaneCreature> T createBaby(
         final GameTestHelper helper,
-        final EntityType<HobgoblinEntity> type,
+        final EntityType<T> type,
         final BlockPos firstPosition,
         final BlockPos secondPosition,
         final BlockPos childPosition
@@ -146,14 +211,14 @@ public final class VillageGuardGameTests {
         helper.setBlock(firstPosition.below(), Blocks.STONE);
         helper.setBlock(secondPosition.below(), Blocks.STONE);
         helper.setBlock(childPosition.below(), Blocks.STONE);
-        final HobgoblinEntity first = helper.spawn(type, firstPosition, EntitySpawnReason.NATURAL);
-        final HobgoblinEntity second = helper.spawn(type, secondPosition, EntitySpawnReason.NATURAL);
+        final T first = helper.spawn(type, firstPosition, EntitySpawnReason.NATURAL);
+        final T second = helper.spawn(type, secondPosition, EntitySpawnReason.NATURAL);
         first.getInventory().addItem(new ItemStack(Items.BREAD, 3));
         second.getInventory().addItem(new ItemStack(Items.BREAD, 3));
         final var created = first.getBreedOffspring(helper.getLevel(), second);
-        helper.assertTrue(created instanceof HobgoblinEntity,
-            "goblinfolk breeding must create a Warlockery child instead of a vanilla villager");
-        final HobgoblinEntity child = (HobgoblinEntity) created;
+        helper.assertTrue(created != null && created.getType() == type,
+            "goblinfolk breeding must create a Warlockery child of its own exact species");
+        final T child = (T) created;
         child.setAge(-24_000);
         final BlockPos absolute = helper.absolutePos(childPosition);
         child.snapTo(absolute.getX() + 0.5D, absolute.getY(), absolute.getZ() + 0.5D, 0.0F, 0.0F);
@@ -166,7 +231,7 @@ public final class VillageGuardGameTests {
     private static void finishPersistentTradeTest(
         final GameTestHelper helper,
         final ServerPlayer player,
-        final HobgoblinEntity trader,
+        final AbstractVillager trader,
         final String species
     ) {
         helper.assertTrue(trader.isAlive() && !trader.isRemoved(), species + " trader must remain alive");
@@ -187,6 +252,6 @@ public final class VillageGuardGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(new BlockPos(1, 1, 2));
         player.teleportTo(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 }

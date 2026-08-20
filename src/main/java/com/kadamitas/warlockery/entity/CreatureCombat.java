@@ -49,8 +49,10 @@ public final class CreatureCombat {
                 silver,
                 wooden,
                 holy,
-                creature instanceof SpiritMob,
-                isWerewolfTarget(event.getEntity())
+                creature instanceof SpiritMob || creature instanceof EldritchWatcherEntity
+                    || creature instanceof UmbralSigilEntity,
+                isWerewolfTarget(event.getEntity()),
+                LycanDamageTypes.isHarmWerewolves(event.getSource())
             ));
             applyPairedPatronProtection(event, creature.creatureKind());
         } else if (silver && isWerewolfTarget(event.getEntity())) {
@@ -90,22 +92,27 @@ public final class CreatureCombat {
         final boolean holy,
         final boolean spirit
     ) {
-        return adjustedDamage(kind, baseDamage, silver, wooden, holy, spirit, isWerewolfKind(kind));
+        return adjustedDamage(kind, baseDamage, silver, wooden, holy, spirit, isWerewolfKind(kind), false);
     }
 
-    private static float adjustedDamage(
+    public static float adjustedDamage(
         final ArcaneCreature.CreatureKind kind,
         final float baseDamage,
         final boolean silver,
         final boolean wooden,
         final boolean holy,
         final boolean spirit,
-        final boolean werewolfTarget
+        final boolean werewolfTarget,
+        final boolean antiWerewolfTyped
     ) {
         final boolean silverWeakness = silver && werewolfTarget;
         final boolean woodenWeakness = wooden && kind.isWoodenVulnerable();
-        final boolean consecratedWeakness = holy && (kind.isUndead() || kind.isDemonic() || spirit);
-        float damage = kind.isSupernatural() && !silverWeakness && !woodenWeakness && !consecratedWeakness
+        final boolean consecratedWeakness = holy
+            && (kind.isUndead() || kind.isDemonic() || spirit
+                || kind == ArcaneCreature.CreatureKind.HEX_BAT);
+        final boolean typedBypass = antiWerewolfTyped && werewolfTarget;
+        float damage = kind.isSupernatural()
+            && !silverWeakness && !woodenWeakness && !consecratedWeakness && !typedBypass
             ? Math.max(0.25F, baseDamage * 0.15F)
             : baseDamage;
         if (silverWeakness) damage *= 2.0F;
@@ -160,6 +167,14 @@ public final class CreatureCombat {
         final LivingDamageContext event,
         final ArcaneCreature.CreatureKind kind
     ) {
+        // The F12 ward stance is the complete protection model for the dedicated patron bodies,
+        // so the 1.4 symmetric reduction must not compose with it: nobody chose the combined
+        // number. The guard is deliberately the narrowest available, an exact instanceof against
+        // the F12 body contract, so a patron that is still the shared 1.4 body keeps 1.4
+        // behaviour exactly and nothing outside this one family is touched.
+        if (event.getEntity() instanceof GoblinPatronRuntime.PatronBody) {
+            return;
+        }
         final var counterpart = GoblinBossRules.counterpart(kind);
         if (counterpart.isEmpty() || !(event.getEntity().level() instanceof ServerLevel level)) {
             return;

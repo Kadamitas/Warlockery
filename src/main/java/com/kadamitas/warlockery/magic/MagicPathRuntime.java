@@ -4,6 +4,8 @@ import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.fabric.event.LivingDamageContext;
 import com.kadamitas.warlockery.util.DataParsing;
 import com.kadamitas.warlockery.entity.ArcaneCreature;
+import com.kadamitas.warlockery.entity.CorpseEntity;
+import com.kadamitas.warlockery.entity.CorpseRuntime;
 import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import com.kadamitas.warlockery.item.InfernalPactEffects;
 import com.kadamitas.warlockery.ritual.ManifestationRuntime;
@@ -270,7 +272,8 @@ public final class MagicPathRuntime {
         level.getEntitiesOfClass(
             Mob.class,
             player.getBoundingBox().inflate(48.0),
-            mob -> player.getStringUUID().equals(WarlockeryEntityData.get(mob).getStringOr(GRAVE_OWNER, ""))
+            mob -> !(mob instanceof CorpseEntity)
+                && player.getStringUUID().equals(WarlockeryEntityData.get(mob).getStringOr(GRAVE_OWNER, ""))
         ).forEach(thrall -> {
             if (level.getGameTime() >= WarlockeryEntityData.get(thrall).getLongOr(GRAVE_EXPIRATION, 0L)
                 || !MagicPathState.has(player, MagicPath.GRAVE)) {
@@ -532,6 +535,9 @@ public final class MagicPathRuntime {
         WarlockeryEntityData.get(mob).putLong(GRAVE_EXPIRATION, player.level().getGameTime() + 144_000L);
         mob.setTarget(null);
         mob.setPersistenceRequired();
+        if (mob instanceof CorpseEntity corpse) {
+            CorpseRuntime.notifyGraveBind(corpse, (ServerLevel) player.level());
+        }
         return succeed(player, MagicPath.GRAVE, decision);
     }
 
@@ -643,13 +649,17 @@ public final class MagicPathRuntime {
         final List<Mob> owned = level.getEntitiesOfClass(
             Mob.class,
             player.getBoundingBox().inflate(32.0),
-            mob -> player.getStringUUID().equals(WarlockeryEntityData.get(mob).getStringOr(ownerKey, ""))
+            mob -> !(mob instanceof CorpseEntity)
+                && player.getStringUUID().equals(WarlockeryEntityData.get(mob).getStringOr(ownerKey, ""))
         );
+        final List<CorpseEntity> bodies = GRAVE_OWNER.equals(ownerKey)
+            ? boundedOwnedBodies(player, level)
+            : List.of();
         final MagicPathRules.Decision decision = decision(
             player,
             path,
             MagicPathRules.ActionKind.WORLD,
-            !owned.isEmpty()
+            !owned.isEmpty() || !bodies.isEmpty()
         );
         if (!decision.success()) {
             return fail(player, path, decision);
@@ -658,7 +668,41 @@ public final class MagicPathRuntime {
             mob.setTarget(null);
             mob.getNavigation().moveTo(position.getX() + 0.5, position.getY() + 1.0, position.getZ() + 0.5, 1.1);
         });
+        for (final CorpseEntity body : bodies) {
+            if (!CorpseRuntime.takeGraveDirectiveToken(level)) {
+                break;
+            }
+            CorpseRuntime.deliverGraveDirective(body, level, position);
+        }
         return succeed(player, path, decision);
+    }
+
+    /**
+     * Bounded exact-Body Grave command discovery: at most two scans per level tick,
+     * a raw snapshot of at most 64 Bodies inside the existing 32-block box before
+     * owner filtering, deterministic UUID ordering, and normal failure when the
+     * budget is exhausted or no owned Body is inside the bounded snapshot.
+     */
+    private static List<CorpseEntity> boundedOwnedBodies(final ServerPlayer player, final ServerLevel level) {
+        if (!CorpseRuntime.takeGraveScanToken(level)) {
+            return List.of();
+        }
+        final java.util.ArrayList<CorpseEntity> raw = new java.util.ArrayList<>();
+        com.kadamitas.warlockery.entity.BoundedEntityQuery.visit(level,
+            net.minecraft.world.level.entity.EntityTypeTest.forClass(CorpseEntity.class),
+            player.getBoundingBox().inflate(32.0),
+            body -> {
+                raw.add(body);
+                return raw.size() >= 64
+                    ? net.minecraft.util.AbortableIterationConsumer.Continuation.ABORT
+                    : net.minecraft.util.AbortableIterationConsumer.Continuation.CONTINUE;
+            }
+        );
+        return raw.stream()
+            .filter(body -> player.getStringUUID().equals(
+                WarlockeryEntityData.get(body).getStringOr(GRAVE_OWNER, "")))
+            .sorted(Comparator.comparing(CorpseEntity::getUUID))
+            .toList();
     }
 
     private static InteractionResult lightWall(

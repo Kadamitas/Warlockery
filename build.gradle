@@ -58,6 +58,31 @@ abstract class ReleaseBundleTask extends DefaultTask {
     }
 }
 
+abstract class GenerateEmptyGameTestStructure extends DefaultTask {
+    @Input abstract Property<Integer> getStructureSize()
+    @Input abstract Property<Integer> getDataVersion()
+    @OutputFile abstract RegularFileProperty getOutputFile()
+    @TaskAction void generate() {
+        def output = outputFile.get().asFile.toPath()
+        java.nio.file.Files.createDirectories(output.parent)
+        new java.io.DataOutputStream(new java.util.zip.GZIPOutputStream(java.nio.file.Files.newOutputStream(output))).withCloseable { data ->
+            int size = structureSize.get(); data.writeByte(10); data.writeUTF('')
+            GenerateEmptyGameTestStructure.writeIntList(data, 'size', size, size, size)
+            GenerateEmptyGameTestStructure.writeCompoundList(data, 'entities', 0)
+            GenerateEmptyGameTestStructure.writeCompoundList(data, 'blocks', size * size * size)
+            for (int y=0;y<size;y++) for (int x=0;x<size;x++) for (int z=0;z<size;z++) {
+                GenerateEmptyGameTestStructure.writeIntList(data, 'pos', x, y, z)
+                data.writeByte(3); data.writeUTF('state'); data.writeInt(0); data.writeByte(0)
+            }
+            GenerateEmptyGameTestStructure.writeCompoundList(data, 'palette', 1)
+            data.writeByte(8); data.writeUTF('Name'); data.writeUTF('minecraft:air'); data.writeByte(0)
+            data.writeByte(3); data.writeUTF('DataVersion'); data.writeInt(dataVersion.get()); data.writeByte(0)
+        }
+    }
+    private static void writeIntList(java.io.DataOutputStream data,String name,int... values){data.writeByte(9);data.writeUTF(name);data.writeByte(3);data.writeInt(values.length);values.each{data.writeInt(it)}}
+    private static void writeCompoundList(java.io.DataOutputStream data,String name,int size){data.writeByte(9);data.writeUTF(name);data.writeByte(10);data.writeInt(size)}
+}
+
 version = project.mod_version
 group = project.maven_group
 
@@ -72,7 +97,17 @@ java {
     withSourcesJar()
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+def generatedGameTestResources = layout.buildDirectory.dir('generated/gameTestResources')
+def generateEmptyGameTestStructure = tasks.register('generateEmptyGameTestStructure', GenerateEmptyGameTestStructure) {
+    structureSize.set(3); dataVersion.set(4_903)
+    outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty3x3x3.nbt') })
+}
+def generateLargeGameTestStructure = tasks.register('generateLargeGameTestStructure', GenerateEmptyGameTestStructure) {
+    structureSize.set(15); dataVersion.set(4_903)
+    outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty15x15x15.nbt') })
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources'; srcDir generatedGameTestResources }
 
 loom {
     runs {
@@ -109,10 +144,17 @@ dependencies {
 }
 
 tasks.named('processResources', ProcessResources) {
+    dependsOn generateEmptyGameTestStructure
+    dependsOn generateLargeGameTestStructure
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
     }
+}
+
+tasks.named('sourcesJar') {
+    dependsOn generateEmptyGameTestStructure
+    dependsOn generateLargeGameTestStructure
 }
 
 tasks.named('test', Test) {
