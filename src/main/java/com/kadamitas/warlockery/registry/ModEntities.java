@@ -160,9 +160,10 @@ public final class ModEntities {
         "spirit",
         "hellhound",
         "mandrake",
-        "dreamroot"
+        "dreamroot",
+        "owl"
     );
-    private static final Set<String> PASSIVE_SPAWN_IDS = Set.of("ent", "goblin", "hobgoblin", "spirit");
+    private static final Set<String> PASSIVE_SPAWN_IDS = Set.of("ent", "goblin", "hobgoblin", "spirit", "owl");
     private static final List<AttributeFactoryRule> ATTRIBUTE_FACTORY_RULES = List.of(
         AttributeFactoryRule.exact("corpse", _ -> CorpseEntity.createAttributes().build()),
         AttributeFactoryRule.exact("death", _ -> DeathEntity.createAttributes().build()),
@@ -493,9 +494,15 @@ public final class ModEntities {
 
     private static EntityType<?> createGround(final EntityRegistration registration) {
         final boolean passive = PASSIVE_GROUND_KINDS.contains(registration.kind());
+        final EntityType.EntityFactory<ArcaneMob> factory = switch (registration.kind()) {
+            case CAT -> com.kadamitas.warlockery.entity.FamiliarCatEntity::new;
+            case OWL -> com.kadamitas.warlockery.entity.OwlEntity::new;
+            case TOAD -> com.kadamitas.warlockery.entity.ToadEntity::new;
+            default -> (EntityType<ArcaneMob> type, net.minecraft.world.level.Level level) ->
+                new ArcaneMob(type, level, registration.kind());
+        };
         final var builder = EntityType.Builder.of(
-            (EntityType<ArcaneMob> type, net.minecraft.world.level.Level level) ->
-                new ArcaneMob(type, level, registration.kind()),
+            factory,
             passive ? MobCategory.CREATURE : MobCategory.MONSTER
         ).sized(registration.width(), registration.height());
         if (!passive) {
@@ -586,6 +593,8 @@ public final class ModEntities {
             case "hellhound" ->
                 attributes.add(Attributes.MAX_HEALTH, 36).add(Attributes.ATTACK_DAMAGE, 7).add(Attributes.MOVEMENT_SPEED, 0.3)
                     .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "owl" -> attributes.add(Attributes.FLYING_SPEED,
+                com.kadamitas.warlockery.entity.OwlEntity.FLYING_SPEED);
             case "bramble_colossus" ->
                 attributes.add(Attributes.MAX_HEALTH, 36).add(Attributes.ATTACK_DAMAGE, 7).add(Attributes.MOVEMENT_SPEED, 0.3);
             default -> attributes;

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:familiar_home_claim_reaches_past_the_innermost_ring",
+  "environment": "warlockery:animal_familiar_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 200
+}

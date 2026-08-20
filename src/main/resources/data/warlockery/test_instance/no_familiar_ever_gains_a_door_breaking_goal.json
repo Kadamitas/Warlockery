@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:no_familiar_ever_gains_a_door_breaking_goal",
+  "environment": "warlockery:animal_familiar_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 100
+}

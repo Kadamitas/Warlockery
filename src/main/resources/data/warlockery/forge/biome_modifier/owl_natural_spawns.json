@@ -1,0 +1,12 @@
+{
+  "type": "forge:add_spawns",
+  "biomes": "#warlockery:owl_natural_spawns",
+  "spawners": [
+    {
+      "type": "warlockery:owl",
+      "weight": 1,
+      "minCount": 1,
+      "maxCount": 1
+    }
+  ]
+}

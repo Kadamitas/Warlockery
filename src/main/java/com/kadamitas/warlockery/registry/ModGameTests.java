@@ -5,6 +5,7 @@ import com.kadamitas.warlockery.brew.CauldronChalkCircleGameTests;
 import com.kadamitas.warlockery.brew.SolidifyingBrewGameTests;
 import com.kadamitas.warlockery.dream.SpiritWorldGameTests;
 import com.kadamitas.warlockery.entity.TacticalCombatGameTests;
+import com.kadamitas.warlockery.entity.AnimalFamiliarGameTests;
 import com.kadamitas.warlockery.entity.VampireCourtGameTests;
 import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
@@ -59,6 +60,30 @@ public final class ModGameTests {
         DeferredRegister.create(Registries.TEST_FUNCTION, Warlockery.MOD_ID);
 
     static {
+        REGISTRY.register("animal_familiars_are_three_distinct_bodies",
+            () -> AnimalFamiliarGameTests::animalFamiliarsAreThreeDistinctBodies);
+        REGISTRY.register("familiar_binding_honours_the_vanilla_latch_and_refuses_the_contract_one",
+            () -> AnimalFamiliarGameTests::familiarBindingHonoursTheVanillaLatchAndRefusesTheContractOne);
+        REGISTRY.register("familiar_cat_claims_a_household_and_patrols_it",
+            () -> AnimalFamiliarGameTests::familiarCatClaimsAHouseholdAndPatrolsIt);
+        REGISTRY.register("owl_perch_and_toad_shelter_stay_species_specific",
+            () -> AnimalFamiliarGameTests::owlPerchAndToadShelterStaySpeciesSpecific);
+        REGISTRY.register("familiar_owner_defence_is_one_lease_and_reload_never_replays",
+            () -> AnimalFamiliarGameTests::familiarOwnerDefenceIsOneLeaseAndReloadNeverReplays);
+        REGISTRY.register("familiar_home_claim_reaches_past_the_innermost_ring",
+            () -> AnimalFamiliarGameTests::familiarHomeClaimReachesPastTheInnermostRing);
+        REGISTRY.register("unbound_familiars_persist_and_no_latch_is_disturbed",
+            () -> AnimalFamiliarGameTests::unboundFamiliarsPersistAndNoLatchIsDisturbed);
+        REGISTRY.register("a_summoned_familiar_acts_on_what_it_is_given",
+            () -> AnimalFamiliarGameTests::aSummonedFamiliarActsOnWhatItIsGiven);
+        REGISTRY.register("no_familiar_ever_gains_a_door_breaking_goal",
+            () -> AnimalFamiliarGameTests::noFamiliarEverGainsADoorBreakingGoal);
+        REGISTRY.register("the_three_species_reach_ins_are_three_different_questions",
+            () -> AnimalFamiliarGameTests::theThreeSpeciesReachInsAreThreeDifferentQuestions);
+        REGISTRY.register("familiar_binding_converts_vanilla_cat_and_frog_transactionally",
+            () -> AnimalFamiliarGameTests::familiarBindingConvertsVanillaCatAndFrogTransactionally);
+        REGISTRY.register("owl_natural_spawn_contract_is_forest_only_and_sparse",
+            () -> AnimalFamiliarGameTests::owlNaturalSpawnContractIsForestOnlyAndSparse);
         REGISTRY.register("ritual_catalog_loads", () -> WarlockeryGameTests::ritualCatalogLoads);
         REGISTRY.register("ritual_heat_metal_target_reaches_persistent_hex",
             () -> HexMetalRitualGameTests::heatMetalRitualTargetReachesThePersistentHex);

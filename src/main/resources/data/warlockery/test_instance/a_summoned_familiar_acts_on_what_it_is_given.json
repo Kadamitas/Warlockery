@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:a_summoned_familiar_acts_on_what_it_is_given",
+  "environment": "warlockery:animal_familiar_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 200
+}

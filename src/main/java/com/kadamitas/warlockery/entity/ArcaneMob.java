@@ -73,8 +73,19 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
     @Override
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
-        behavior.tick(this, level);
+        tickProfiledBehavior(level);
         tickSpecializedActivity(level);
+    }
+
+    /**
+     * Narrow specialization seam for bodies whose dedicated runtime replaces the generic profiled
+     * companion layer. That layer writes owner follow, emergency owner teleport, the owner aura and
+     * the owner's attacker as a target, so a body that owns those decisions itself has to be able
+     * to decline it rather than compete with it for the same tick. Behaviour is unchanged for every
+     * body that does not override this.
+     */
+    protected void tickProfiledBehavior(final ServerLevel level) {
+        behavior.tick(this, level);
     }
 
     /**

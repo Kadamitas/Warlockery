@@ -82,6 +82,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "goblin_patron_isolated.json"
     );
+    private static final Path ANIMAL_FAMILIAR_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "animal_familiar_isolated.json"
+    );
     private static final Path DEATH_ENVIRONMENT = Path.of(
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "death_isolated.json"
@@ -299,6 +303,20 @@ final class GameTestInstanceContractTest {
         "forgewarden_commission_ward_and_combat_doctrine",
         "goblin_patrons_accord_navigation_and_cleanup",
         "goblin_patrons_structural_caps_and_foreign_boundaries"
+    );
+    private static final Set<String> ISOLATED_ANIMAL_FAMILIAR = Set.of(
+        "animal_familiars_are_three_distinct_bodies",
+        "familiar_binding_honours_the_vanilla_latch_and_refuses_the_contract_one",
+        "familiar_cat_claims_a_household_and_patrols_it",
+        "owl_perch_and_toad_shelter_stay_species_specific",
+        "familiar_owner_defence_is_one_lease_and_reload_never_replays",
+        "familiar_home_claim_reaches_past_the_innermost_ring",
+        "unbound_familiars_persist_and_no_latch_is_disturbed",
+        "a_summoned_familiar_acts_on_what_it_is_given",
+        "no_familiar_ever_gains_a_door_breaking_goal",
+        "the_three_species_reach_ins_are_three_different_questions",
+        "familiar_binding_converts_vanilla_cat_and_frog_transactionally",
+        "owl_natural_spawn_contract_is_forest_only_and_sparse"
     );
     private static final Set<String> ISOLATED_DEATH = Set.of(
         "death_appointment_telegraphs_and_reaps_once",
@@ -832,7 +850,9 @@ final class GameTestInstanceContractTest {
                                                                                     ? "warlockery:hobgoblin_isolated"
                                                                                     : ISOLATED_GOBLIN_PATRON.contains(registration.id())
                                                                                         ? "warlockery:goblin_patron_isolated"
-                                                                                        : ISOLATED_COVEN_ATTRIBUTION.contains(registration.id())
+                                                                                        : ISOLATED_ANIMAL_FAMILIAR.contains(registration.id())
+                                                                                            ? "warlockery:animal_familiar_isolated"
+                                                                                            : ISOLATED_COVEN_ATTRIBUTION.contains(registration.id())
                                                                                             ? "warlockery:coven_attribution_isolated"
                                                                                             : ISOLATED_STORM_SIMIAN.contains(registration.id())
                                                                                                 ? "warlockery:storm_simian_isolated"

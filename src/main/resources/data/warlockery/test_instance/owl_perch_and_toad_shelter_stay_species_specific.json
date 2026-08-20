@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:owl_perch_and_toad_shelter_stay_species_specific",
+  "environment": "warlockery:animal_familiar_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}

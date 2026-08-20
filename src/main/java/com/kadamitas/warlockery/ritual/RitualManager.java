@@ -23,6 +23,8 @@ import com.kadamitas.warlockery.magic.MagicPath;
 import com.kadamitas.warlockery.magic.MagicPathRuntime;
 import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import com.kadamitas.warlockery.entity.CreatureBehaviorTags;
+import com.kadamitas.warlockery.entity.AnimalFamiliarBindingRules;
+import com.kadamitas.warlockery.entity.AnimalFamiliarBindingRuntime;
 import com.kadamitas.warlockery.entity.DeathImpersonationRules;
 import com.kadamitas.warlockery.entity.FamiliarRecallRules;
 import com.kadamitas.warlockery.entity.NamiEntity;
@@ -398,7 +400,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         }
         final boolean present = definition.target().equals("spectral")
             ? spectralBindingReady(level, center, definition.radius())
-            : bindingCandidate(level, center, definition.radius(), definition.target()).isPresent();
+            : caster != null && bindingCandidate(level, center, definition.radius(), definition.target(), caster).isPresent();
         return Optional.of(new RequirementStatus(
             "condition",
             "nearby_" + definition.target(),
@@ -2313,17 +2315,11 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         if (caster == null) {
             return false;
         }
-        return bindingCandidate(level, center, definition.radius(), definition.target())
-            .map(entity -> {
-                CreatureBehaviorState.bind(entity, caster.getUUID());
-                entity.setPersistenceRequired();
-                entity.setTarget(null);
-                entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, definition.duration(), 1));
-                entity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, definition.duration(), 0));
-                return true;
-            })
+        return bindingCandidate(level, center, definition.radius(), definition.target(), caster)
+            .map(entity -> AnimalFamiliarBindingRuntime.bind(level, entity, caster, definition.duration()))
             .orElse(false);
     }
+
 
     private static boolean spectralBindingReady(
         final ServerLevel level,
@@ -2439,13 +2435,25 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         final ServerLevel level,
         final BlockPos center,
         final int radius,
-        final String target
+        final String target,
+        final Player caster
     ) {
         return RitualBindTarget.find(target).stream()
             .flatMap(bindTarget -> level
                 .getEntitiesOfClass(Mob.class, new AABB(center).inflate(radius), Mob::isAlive).stream()
-                .filter(bindTarget::matches))
-            .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(Vec3.atCenterOf(center))));
+                .filter(entity -> bindTarget.matches(entity)
+                    || bindTarget == RitualBindTarget.FAMILIAR
+                        && (entity instanceof net.minecraft.world.entity.animal.feline.Cat
+                            || entity instanceof net.minecraft.world.entity.animal.frog.Frog)))
+            .filter(entity -> AnimalFamiliarBindingRules.outcome(new AnimalFamiliarBindingRules.Candidate(
+                AnimalFamiliarBindingRuntime.kind(entity),
+                entity.distanceToSqr(Vec3.atCenterOf(center)),
+                entity.getUUID(),
+                AnimalFamiliarBindingRuntime.tameOwner(entity),
+                entity.isLeashed(), entity.isPassenger(), entity.isVehicle()
+            ), caster.getUUID()) != AnimalFamiliarBindingRules.Outcome.REJECT)
+            .min(Comparator.comparingDouble((Mob entity) -> entity.distanceToSqr(Vec3.atCenterOf(center)))
+                .thenComparing(entity -> entity.getUUID().toString()));
     }
 
     private static boolean bindItem(
