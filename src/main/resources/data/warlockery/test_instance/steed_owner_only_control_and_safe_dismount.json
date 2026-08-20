@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:steed_owner_only_control_and_safe_dismount",
+  "environment": "warlockery:spectral_steeds_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}
+
+

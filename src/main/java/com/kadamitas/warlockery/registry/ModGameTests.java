@@ -19,6 +19,7 @@ import com.kadamitas.warlockery.entity.PoltergeistGameTests;
 import com.kadamitas.warlockery.entity.IronboundSentinelGameTests;
 import com.kadamitas.warlockery.entity.StormSimianGameTests;
 import com.kadamitas.warlockery.entity.EchoShadeSpectreGameTests;
+import com.kadamitas.warlockery.entity.SpectralSteedGameTests;
 import com.kadamitas.warlockery.entity.UmbralSigilGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
@@ -647,6 +648,20 @@ public final class ModGameTests {
             () -> EchoShadeSpectreGameTests::echoSpectreReloadDoesNotReplay);
         REGISTRY.register("echo_spectre_families_stay_isolated",
             () -> EchoShadeSpectreGameTests::echoSpectreFamiliesStayIsolated);
+        REGISTRY.register("steed_owner_only_control_and_safe_dismount",
+            () -> SpectralSteedGameTests::steedOwnerOnlyControlAndSafeDismount);
+        REGISTRY.register("pale_steed_bond_gait_fatigue_and_rest",
+            () -> SpectralSteedGameTests::paleSteedBondGaitFatigueAndRest);
+        REGISTRY.register("pale_steed_balks_without_fear_or_ejection",
+            () -> SpectralSteedGameTests::paleSteedBalksWithoutFearOrEjection);
+        REGISTRY.register("nightmare_accelerates_and_warns_only_legal_hostiles",
+            () -> SpectralSteedGameTests::nightmareAcceleratesAndWarnsOnlyLegalHostiles);
+        REGISTRY.register("unbound_nightmare_remains_dream_hostile",
+            () -> SpectralSteedGameTests::unboundNightmareRemainsDreamHostile);
+        REGISTRY.register("steed_rest_releases_lost_support_without_hay_mutation",
+            () -> SpectralSteedGameTests::steedRestReleasesLostSupportWithoutHayMutation);
+        REGISTRY.register("steed_two_player_caps_auras_and_owl_isolation",
+            () -> SpectralSteedGameTests::steedTwoPlayerCapsAurasAndOwlIsolation);
         REGISTRY.register("umbral_sigil_traces_three_vertices_and_strikes_once",
             () -> UmbralSigilGameTests::umbralSigilTracesThreeVerticesAndStrikesOnce);
         REGISTRY.register("umbral_sigil_target_escape_breaks_unfinished_seal",

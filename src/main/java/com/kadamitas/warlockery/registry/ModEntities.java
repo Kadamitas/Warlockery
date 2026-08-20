@@ -32,6 +32,7 @@ import com.kadamitas.warlockery.entity.CorpseEntity;
 import com.kadamitas.warlockery.entity.DeathEntity;
 import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
 import com.kadamitas.warlockery.entity.SpectreEntity;
+import com.kadamitas.warlockery.entity.SpectralSteedEntity;
 import com.kadamitas.warlockery.entity.SpiritEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.SpectralFamiliarEntity;
@@ -147,7 +148,9 @@ public final class ModEntities {
         Map.entry(CreatureKind.FAMILIAR, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralFamiliar),
         Map.entry(CreatureKind.LOUSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createParasyticLouse),
         Map.entry(CreatureKind.IRONBOUND_SENTINEL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIronboundSentinel),
-        Map.entry(CreatureKind.UMBRAL_SIGIL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createUmbralSigil)
+        Map.entry(CreatureKind.UMBRAL_SIGIL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createUmbralSigil),
+        Map.entry(CreatureKind.PALE_STEED, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralSteed),
+        Map.entry(CreatureKind.NIGHTMARE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralSteed)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -514,6 +517,16 @@ public final class ModEntities {
             builder.fireImmune();
         }
         return builder.build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createSpectralSteed(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<SpectralSteedEntity> type, net.minecraft.world.level.Level level) ->
+                new SpectralSteedEntity(type, level, registration.kind()),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
     }
 
     private static EntityType<?> createSpirit(final EntityRegistration registration) {

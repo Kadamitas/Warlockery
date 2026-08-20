@@ -82,6 +82,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "goblin_patron_isolated.json"
     );
+    private static final Path SPECTRAL_STEEDS_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "spectral_steeds_isolated.json"
+    );
     private static final Path ANIMAL_FAMILIAR_ENVIRONMENT = Path.of(
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "animal_familiar_isolated.json"
@@ -315,6 +319,15 @@ final class GameTestInstanceContractTest {
         "forgewarden_commission_ward_and_combat_doctrine",
         "goblin_patrons_accord_navigation_and_cleanup",
         "goblin_patrons_structural_caps_and_foreign_boundaries"
+    );
+    private static final Set<String> ISOLATED_SPECTRAL_STEEDS = Set.of(
+        "steed_owner_only_control_and_safe_dismount",
+        "pale_steed_bond_gait_fatigue_and_rest",
+        "pale_steed_balks_without_fear_or_ejection",
+        "nightmare_accelerates_and_warns_only_legal_hostiles",
+        "unbound_nightmare_remains_dream_hostile",
+        "steed_rest_releases_lost_support_without_hay_mutation",
+        "steed_two_player_caps_auras_and_owl_isolation"
     );
     private static final Set<String> ISOLATED_ANIMAL_FAMILIAR = Set.of(
         "animal_familiars_are_three_distinct_bodies",
@@ -648,6 +661,23 @@ final class GameTestInstanceContractTest {
     }
 
     @Test
+    void onlyTheExactSpectralSteedFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(SPECTRAL_STEEDS_ENVIRONMENT),
+            "the isolated F27 Spectral Steeds environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(SPECTRAL_STEEDS_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F27 Spectral Steeds environment must not mutate shared world state");
+        assertEquals(7, ISOLATED_SPECTRAL_STEEDS.size());
+        final Set<String> registeredSteeds = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registeredSteeds.containsAll(ISOLATED_SPECTRAL_STEEDS),
+            "all seven exact F27 Spectral Steed GameTests must be registered");
+    }
+
+    @Test
     void onlyTheExactGoblinEnclaveFixturesUseTheRegisteredNoOpEnvironment() {
         assertTrue(Files.exists(GOBLIN_ENVIRONMENT),
             "the isolated F10 Goblin environment resource must exist");
@@ -888,7 +918,9 @@ final class GameTestInstanceContractTest {
                                                                                                         ? "warlockery:ironbound_sentinel_isolated"
                                                                                                         : ISOLATED_SPECTRAL_FAMILIAR.contains(registration.id())
                                                                                                             ? "warlockery:spectral_familiar_isolated"
-                                                                                                            : "minecraft:default",
+                                                                                                            : ISOLATED_SPECTRAL_STEEDS.contains(registration.id())
+                                                                                                                ? "warlockery:spectral_steeds_isolated"
+                                                                                                                : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );
