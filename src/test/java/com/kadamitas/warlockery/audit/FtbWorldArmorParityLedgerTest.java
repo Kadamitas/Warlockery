@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.kadamitas.warlockery.block.MagicalPlantBlock;
 import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
+import com.kadamitas.warlockery.entity.BansheeRuntime;
 import com.kadamitas.warlockery.entity.CreatureBehaviorRuntime;
 import com.kadamitas.warlockery.entity.GoblinBossRules;
 import com.kadamitas.warlockery.item.EquipmentSetEffects;
@@ -36,7 +37,7 @@ final class FtbWorldArmorParityLedgerTest {
         world("Alder Sapling", MagicalPlantBlock.class, "alder growth, harvesting, and fume resources"),
         world("Apothecary's Shop", CreatureWorldIntegration.class, "village apothecary equivalent and warlock trades"),
         world("Baba Yaga", CreatureBehaviorRuntime.class, "mobile hedge crone boss behavior"),
-        world("Banshee", CreatureBehaviorRuntime.class, "spectral weakness and fatigue aura"),
+        world("Banshee", BansheeRuntime.class, "dedicated harmless warning and lament vigil"),
         world("Belladonna", MagicalPlantBlock.class, "harvestable herb and recipe integration"),
         world("Blacksmith", CreatureWorldIntegration.class, "modern village smith integration"),
         world("Blood Poppy", MagicalPlantBlock.class, "taglock-linked blood flower behavior"),

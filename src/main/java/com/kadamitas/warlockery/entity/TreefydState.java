@@ -11,24 +11,37 @@ public final class TreefydState {
     private TreefydState() {
     }
 
+    public enum ToggleResult { ADDED, REMOVED, FULL }
+
     public static boolean toggleAllowed(final Entity treefyd, final SympatheticBinding binding) {
+        return toggleAllowedResult(treefyd, binding) == ToggleResult.ADDED;
+    }
+
+    public static ToggleResult toggleAllowedResult(final Entity treefyd, final SympatheticBinding binding) {
         final int existing = indexOf(treefyd, binding.targetId());
         if (existing >= 0) {
             clearSlot(treefyd, existing);
             compact(treefyd);
-            return false;
+            return ToggleResult.REMOVED;
         }
         final int empty = firstEmpty(treefyd);
         if (empty < 0) {
-            return false;
+            return ToggleResult.FULL;
         }
         treefyd.getPersistentData().putString(key(empty, "Uuid"), binding.targetId().toString());
         treefyd.getPersistentData().putString(key(empty, "Name"), binding.targetName());
-        return true;
+        return ToggleResult.ADDED;
     }
 
     public static boolean isAllowed(final Entity treefyd, final UUID target) {
         return indexOf(treefyd, target) >= 0;
+    }
+
+    public static UUID allowedAt(final Entity treefyd, final int index) {
+        if (index < 0 || index >= MAX_ALLOWLIST) return null;
+        final String stored = treefyd.getPersistentData().getStringOr(key(index, "Uuid"), "");
+        try { return UUID.fromString(stored); }
+        catch (IllegalArgumentException ignored) { return null; }
     }
 
     public static boolean toggleWandering(final Entity treefyd) {
@@ -44,8 +57,13 @@ public final class TreefydState {
 
     private static int indexOf(final Entity treefyd, final UUID target) {
         for (int index = 0; index < MAX_ALLOWLIST; index++) {
-            if (target.toString().equals(treefyd.getPersistentData().getStringOr(key(index, "Uuid"), ""))) {
-                return index;
+            final String stored = treefyd.getPersistentData().getStringOr(key(index, "Uuid"), "");
+            try {
+                if (target.equals(UUID.fromString(stored))) {
+                    return index;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // A corrupt slot is absent; it never aliases a real party.
             }
         }
         return -1;

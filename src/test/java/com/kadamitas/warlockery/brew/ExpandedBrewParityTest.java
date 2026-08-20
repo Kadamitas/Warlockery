@@ -14,6 +14,9 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 final class ExpandedBrewParityTest {
@@ -54,6 +57,12 @@ final class ExpandedBrewParityTest {
         Map.entry("vines", BrewBehavior.PLACE_VINES),
         Map.entry("wasting", BrewBehavior.WASTE)
     );
+
+    @BeforeAll
+    static void bootstrapRegistries() {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+    }
 
     @Test
     void everyExpandedBrewHasAVisibleRuntimeOutcome() {

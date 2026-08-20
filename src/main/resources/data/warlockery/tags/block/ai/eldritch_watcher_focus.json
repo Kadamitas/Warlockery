@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#c:bookshelves",
+    "minecraft:lectern",
+    "minecraft:enchanting_table",
+    "#warlockery:ambient/arcane_workstations",
+    "warlockery:mirrorblock",
+    "warlockery:mirrorblock2",
+    "warlockery:mirrorwall"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:parasytic_louse_term_expires_and_grooming_frees_the_host",
+  "environment": "warlockery:parasytic_louse_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 400
+}

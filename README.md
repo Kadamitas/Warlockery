@@ -2,13 +2,13 @@
 
 [Releases](https://github.com/Kadamitas/Warlockery/releases) | [Issue tracker](https://github.com/Kadamitas/Warlockery/issues) | [MIT license](LICENSE)
 
-Warlockery 1.4.0 is a standalone ritual magic mod by Kadamitas for Minecraft 26.2, Java 25, and NeoForge 26.2.0.59 or newer.
+Warlockery 1.5.0 is a standalone ritual magic mod by Kadamitas for Minecraft 26.2, Java 25, and NeoForge 26.2.0.64 or newer.
 
 It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, goblin village enclaves, silver hunting equipment, and Netherite-tier Goblinite gear.
 
 ## Installation
 
-1. Install Minecraft 26.2 with Java 25 and NeoForge 26.2.0.59 or newer.
+1. Install Minecraft 26.2 with Java 25 and NeoForge 26.2.0.64 or newer.
 2. Download the matching Warlockery release and copy its JAR into the instance or server `mods` folder.
 3. Install the same Warlockery version on the client and server.
 4. Start Minecraft and confirm that Warlockery appears in the Mods screen.

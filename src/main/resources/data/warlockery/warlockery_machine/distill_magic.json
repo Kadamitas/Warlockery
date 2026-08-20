@@ -8,8 +8,10 @@
   "outputs": [
     { "item": "warlockery:ingredient_tear_of_the_goddess" },
     { "item": "warlockery:ingredient_whiff_of_magic" },
+    { "item": "minecraft:slime_ball" },
     { "item": "warlockery:ingredient_foul_fume" }
   ],
-  "processing_time": 360,
-  "requires_fuel": true
+  "processing_time": 800,
+  "altar_power": 480,
+  "power_mode": "continuous"
 }

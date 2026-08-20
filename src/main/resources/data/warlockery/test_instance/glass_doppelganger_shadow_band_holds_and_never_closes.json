@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:glass_doppelganger_shadow_band_holds_and_never_closes",
+  "environment": "warlockery:glass_doppelganger_isolated",
+  "structure": "warlockery:empty15x15x15",
+  "max_ticks": 400
+}
+

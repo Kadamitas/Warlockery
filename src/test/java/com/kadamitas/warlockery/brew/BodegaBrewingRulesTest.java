@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +43,17 @@ final class BodegaBrewingRulesTest {
         assertTrue(recipe.contains("#warlockery:bodega_thorn_brews"));
         assertTrue(recipe.contains("#warlockery:bodega_owl_wings"));
         assertFalse(recipe.contains("ingredient_brew_hitchcock"));
+    }
+
+    @Test
+    void aBystandersFamiliarCannotAuthorizeTheBrewersRecipe() {
+        final UUID brewer = UUID.fromString("10000000-0000-0000-0000-000000000001");
+        final UUID bystander = UUID.fromString("20000000-0000-0000-0000-000000000002");
+
+        assertTrue(BodegaBrewingRules.ownedByBrewer(true, Optional.of(brewer), brewer));
+        assertFalse(BodegaBrewingRules.ownedByBrewer(true, Optional.of(bystander), brewer));
+        assertFalse(BodegaBrewingRules.ownedByBrewer(true, Optional.empty(), brewer));
+        assertFalse(BodegaBrewingRules.ownedByBrewer(false, Optional.of(brewer), brewer));
     }
 
     private static String read(final Path path) {

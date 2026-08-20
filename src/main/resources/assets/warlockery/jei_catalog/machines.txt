@@ -14,7 +14,9 @@ cauldron_verdant_catalyst_prime
 distill_condensed_fear
 distill_diamond_vapour
 distill_ender_dew
+distill_glowstone
 distill_infernal_blood
+distill_infernal_blood_from_netherrack
 distill_magic
 distill_refined_evil
 distill_vitriol

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:thorned_pursuer_snares_once_and_presses_on_cadence",
+  "environment": "warlockery:thorned_pursuer_isolated",
+  "structure": "warlockery:empty15x15x15",
+  "max_ticks": 12000
+}

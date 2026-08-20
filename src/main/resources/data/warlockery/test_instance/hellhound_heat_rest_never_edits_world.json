@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:hellhound_heat_rest_never_edits_world",
+  "environment": "warlockery:hellhound_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 400
+}

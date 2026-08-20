@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:logs",
+    "minecraft:stone",
+    "minecraft:deepslate",
+    "minecraft:cobblestone",
+    "minecraft:cobbled_deepslate",
+    "minecraft:stone_bricks",
+    "minecraft:deepslate_bricks",
+    "minecraft:bricks",
+    "minecraft:tuff",
+    "minecraft:dripstone_block"
+  ]
+}

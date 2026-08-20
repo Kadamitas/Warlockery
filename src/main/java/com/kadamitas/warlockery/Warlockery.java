@@ -151,7 +151,7 @@ public final class Warlockery {
         NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> HexState.copyAfterClone(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> FlyingBroomItem.handleLogin(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> FlyingBroomItem.handleLogout(event));
-        LOGGER.info("Loading Warlockery 1.4.0 for Minecraft 26.2 with NeoForge 26.2.0.59");
+        LOGGER.info("Loading Warlockery 1.5.0 for Minecraft 26.2 with NeoForge 26.2.0.64");
     }
 
 }

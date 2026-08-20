@@ -81,6 +81,64 @@ final class MachineInputAcceptanceTest {
         assertFalse(MachineRecipeManager.INSTANCE.acceptsInput(OVEN, stack(Items.BIRCH_SAPLING)));
     }
 
+    @Test
+    void dedicatedContainerSlotRejectsIngredientsAndOtherSlotsRejectContainers() {
+        final MachineProfile profile = new MachineProfile(
+            "distillery", 3, 3, 4, -1, false, true, true, "distilleryidle",
+            Optional.of("minecraft:glass_bottle"), false
+        );
+        final MachineRecipeDefinition recipe = new MachineRecipeDefinition(
+            "distillery",
+            List.of(
+                new MachineRecipeDefinition.Input("minecraft:blaze_powder", 1),
+                new MachineRecipeDefinition.Input("minecraft:gunpowder", 1),
+                new MachineRecipeDefinition.Input("minecraft:glass_bottle", 1)
+            ),
+            List.of(new MachineRecipeDefinition.Output("minecraft:glowstone_dust", 2)),
+            800,
+            false,
+            Optional.empty(),
+            0
+        );
+        MachineRecipeManager.INSTANCE.apply(
+            Map.of(Identifier.parse("warlockery:test_distillery_roles"), recipe),
+            null,
+            null
+        );
+
+        assertTrue(MachineRecipeManager.INSTANCE.acceptsInput(profile, 0, stack(Items.BLAZE_POWDER)));
+        assertFalse(MachineRecipeManager.INSTANCE.acceptsInput(profile, 0, stack(Items.GLASS_BOTTLE)));
+        assertTrue(MachineRecipeManager.INSTANCE.acceptsInput(profile, 2, stack(Items.GLASS_BOTTLE)));
+        assertFalse(MachineRecipeManager.INSTANCE.acceptsInput(profile, 2, stack(Items.GUNPOWDER)));
+    }
+
+    @Test
+    void primaryFiberSlotIsDistinctFromModifierSlots() {
+        final MachineRecipeDefinition recipe = new MachineRecipeDefinition(
+            "spinningwheel",
+            List.of(
+                new MachineRecipeDefinition.Input("minecraft:birch_sapling", 1),
+                new MachineRecipeDefinition.Input("minecraft:coal", 1)
+            ),
+            List.of(new MachineRecipeDefinition.Output("minecraft:string", 1)),
+            300,
+            false,
+            Optional.empty(),
+            0
+        );
+        MachineRecipeManager.INSTANCE.apply(
+            Map.of(Identifier.parse("warlockery:test_spinning_roles"), recipe),
+            null,
+            null
+        );
+        final MachineProfile profile = MachineProfiles.forBlock("spinningwheel");
+
+        assertTrue(MachineRecipeManager.INSTANCE.acceptsInput(profile, 0, stack(Items.BIRCH_SAPLING)));
+        assertFalse(MachineRecipeManager.INSTANCE.acceptsInput(profile, 0, stack(Items.COAL)));
+        assertTrue(MachineRecipeManager.INSTANCE.acceptsInput(profile, 1, stack(Items.COAL)));
+        assertFalse(MachineRecipeManager.INSTANCE.acceptsInput(profile, 1, stack(Items.BIRCH_SAPLING)));
+    }
+
     private static boolean accepts(
         final int slot,
         final net.minecraft.world.level.ItemLike item,

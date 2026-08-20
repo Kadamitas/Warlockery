@@ -152,8 +152,9 @@ final class ResourceAcquisitionResourcesTest {
         );
         assertTrue(readString(MACHINES.resolve("oven_fume_breath_of_the_goddess.json"))
             .contains("minecraft:birch_sapling"));
-        assertTrue(readString(MACHINES.resolve("distill_condensed_fear.json"))
-            .contains("#warlockery:spirit"));
+        final String condensedFear = readString(MACHINES.resolve("distill_condensed_fear.json"));
+        assertTrue(condensedFear.contains("warlockery:bucketspirit"));
+        assertTrue(condensedFear.contains("minecraft:bucket"));
     }
 
     @Test

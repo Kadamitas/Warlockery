@@ -51,6 +51,10 @@ final class VampireProgressionRulesTest {
         );
         assertTrue(quests.stream().allMatch(quest -> !quest.description().isBlank()));
         assertTrue(quests.stream().anyMatch(quest -> quest.description().contains("Naamah")));
+        final String bloodAudience = quests.getFirst().description();
+        assertTrue(bloodAudience.contains("Bring an unmarried Nami"));
+        assertTrue(bloodAudience.contains("Ocean Monument"));
+        assertTrue(bloodAudience.contains("Elder Guardians"));
         assertTrue(quests.stream().map(Quest::description).noneMatch(text -> text.contains("Lilith")));
     }
 

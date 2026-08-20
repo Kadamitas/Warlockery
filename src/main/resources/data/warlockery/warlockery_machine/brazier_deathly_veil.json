@@ -6,6 +6,7 @@
     { "ingredient": "#warlockery:brazier/blaze_rods" }
   ],
   "outputs": [{ "item": "warlockery:ingredient_ash_wood" }],
-  "processing_time": 100,
-  "altar_power": 1200
+  "processing_time": 12000,
+  "altar_power": 12000,
+  "power_mode": "continuous"
 }

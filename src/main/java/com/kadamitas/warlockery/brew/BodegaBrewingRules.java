@@ -4,6 +4,7 @@ import com.kadamitas.warlockery.entity.CreatureBehaviorState;
 import com.kadamitas.warlockery.registry.ModEntities;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -19,20 +20,32 @@ public final class BodegaBrewingRules {
     private BodegaBrewingRules() {
     }
 
-    public static boolean allows(final ServerLevel level, final BlockPos pos, final Identifier recipe) {
-        return requiredFamiliar(recipe).map(id -> hasBoundFamiliar(level, pos, id)).orElse(true);
+    public static boolean allows(
+        final ServerLevel level,
+        final BlockPos pos,
+        final Identifier recipe,
+        final Optional<UUID> brewer
+    ) {
+        return requiredFamiliar(recipe)
+            .map(id -> brewer.filter(owner -> hasBoundFamiliar(level, pos, id, owner)).isPresent())
+            .orElse(true);
     }
 
-    public static boolean hasBoundOwl(final ServerLevel level, final BlockPos pos) {
-        return hasBoundFamiliar(level, pos, "owl");
-    }
-
-    public static boolean hasBoundFamiliar(final ServerLevel level, final BlockPos pos, final String id) {
+    public static boolean hasBoundFamiliar(
+        final ServerLevel level,
+        final BlockPos pos,
+        final String id,
+        final UUID brewer
+    ) {
         return !level.getEntities(
             ModEntities.ALL.get(id).get(),
             new AABB(pos).inflate(16.0),
-            familiar -> familiar.isAlive() && CreatureBehaviorState.owner(familiar).isPresent()
+            familiar -> ownedByBrewer(familiar.isAlive(), CreatureBehaviorState.owner(familiar), brewer)
         ).isEmpty();
+    }
+
+    static boolean ownedByBrewer(final boolean alive, final Optional<UUID> owner, final UUID brewer) {
+        return alive && owner.filter(brewer::equals).isPresent();
     }
 
     static boolean requiresFamiliar(final Identifier recipe) {

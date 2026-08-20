@@ -32,6 +32,7 @@ final class MinedrakeMutationParityTest {
                 )),
                 DynamicTest.dynamicTest("timing signal", () -> {
                     assertEquals(60, MinedrakeCombatRules.BULB_WAKE_TICKS);
+                    assertEquals(4, MinedrakeCombatRules.BULB_PER_WAKE_BATCH);
                     assertTrue(MinedrakeCombatRules.TARGET_RANGE >= 24.0);
                 }),
                 DynamicTest.dynamicTest("success", () -> assertTrue(
@@ -60,7 +61,9 @@ final class MinedrakeMutationParityTest {
         assertEquals(AuditStatus.COMPLETE, minedrake.auditStatus());
         assertEquals(AuditStatus.COMPLETE, toad.auditStatus());
         assertTrue(minedrake.has(Feature.MUTATION_CREATED));
-        assertTrue(minedrake.has(Feature.SAFE_BLAST));
+        assertFalse(minedrake.has(Feature.SAFE_BLAST));
+        assertTrue(minedrake.has(Feature.ROOTED_DRAIN));
+        assertTrue(minedrake.has(Feature.HEART_EMPOWERMENT));
         assertTrue(toad.has(Feature.MUTATION_CREATED));
     }
 

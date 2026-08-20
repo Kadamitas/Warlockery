@@ -234,9 +234,5 @@ public final class RitualWardData extends SavedData {
             Codec.LONG.fieldOf("expiration").forGetter(Ward::expiration),
             Codec.BOOL.optionalFieldOf("powered", false).forGetter(Ward::powered)
         ).apply(instance, Ward::new));
-
-        public Ward(final RitualWardType type, final long center, final int radius, final long expiration) {
-            this(type, center, radius, expiration, false);
-        }
     }
 }

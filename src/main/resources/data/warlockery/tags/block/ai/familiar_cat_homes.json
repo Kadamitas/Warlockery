@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:beds",
+    "#c:chests",
+    "minecraft:barrel",
+    "minecraft:campfire",
+    "minecraft:hay_block"
+  ]
+}

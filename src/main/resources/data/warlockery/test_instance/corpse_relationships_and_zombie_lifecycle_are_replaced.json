@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:corpse_relationships_and_zombie_lifecycle_are_replaced",
+  "environment": "warlockery:corpse_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 400
+}

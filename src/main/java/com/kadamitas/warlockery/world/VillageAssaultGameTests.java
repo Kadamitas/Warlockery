@@ -2,12 +2,12 @@ package com.kadamitas.warlockery.world;
 
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.CreatureCombat;
-import com.kadamitas.warlockery.entity.HobgoblinEntity;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
+import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import com.kadamitas.warlockery.world.VillageAssaultData.AssaultState;
 import com.kadamitas.warlockery.world.VillageAssaultRules.AssaultKind;
 import com.kadamitas.warlockery.world.VillageAssaultRules.SettlementKind;
@@ -241,6 +241,27 @@ public final class VillageAssaultGameTests {
             return state.getBlock() instanceof FenceGateBlock && !state.getValue(FenceGateBlock.OPEN);
         }), "approach fixture must start with every fortification gate closed");
 
+        // Barrier shell so the live bat and wolf approach forms cannot wander out of the
+        // ticking area and batch neighbors cannot wander into the reveal region. The shell
+        // sits at horizontal radius 3, outside the radius-1 fort and the center +/-2
+        // terrain snapshot, so gate and terrain assertions are untouched.
+        final int shellRadius = 3;
+        final int shellTop = layout.deckY() + 5;
+        for (int dx = -shellRadius; dx <= shellRadius; dx++) {
+            for (int dz = -shellRadius; dz <= shellRadius; dz++) {
+                final boolean edge = Math.abs(dx) == shellRadius || Math.abs(dz) == shellRadius;
+                for (int y = center.getY(); y <= shellTop; y++) {
+                    if (edge || y == shellTop) {
+                        level.setBlock(
+                            new BlockPos(center.getX() + dx, y, center.getZ() + dz),
+                            Blocks.BARRIER.defaultBlockState(),
+                            3
+                        );
+                    }
+                }
+            }
+        }
+
         final Map<BlockPos, BlockState> terrainBefore = snapshotBlocks(
             helper,
             center.offset(-2, -1, -2),
@@ -266,6 +287,10 @@ public final class VillageAssaultGameTests {
         );
         helper.assertTrue(bat instanceof Bat && wolf instanceof Wolf,
             "vampire and werewolf assaults must begin as bat and wolf approach forms");
+        // Start the bat at cruising height so it does not spend dozens of ticks climbing
+        // while vanilla Bat AI wanders it into walls or the revealed werewolf's reach.
+        // The horizontal wall crossing under test is unchanged.
+        bat.snapTo(bat.getX(), layout.deckY() + 3.0, bat.getZ(), bat.getYRot(), bat.getXRot());
         final long gameTime = level.getGameTime();
         final AssaultState state = new AssaultState(
             center,
@@ -500,7 +525,7 @@ public final class VillageAssaultGameTests {
         VillageAssaultRuntime.markRaider(
             vampire, center, 3, AssaultKind.VAMPIRE, SettlementKind.HOBGOBLIN, true, true
         );
-        final HobgoblinEntity fedResident = helper.spawn(
+        final var fedResident = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(1, 1, 1), EntitySpawnReason.NATURAL
         );
         helper.assertTrue(VillageAssaultRuntime.feedOnVillager(level, vampire, fedResident, 2.0F).newlyCounted(),
@@ -519,7 +544,7 @@ public final class VillageAssaultGameTests {
         VillageAssaultRuntime.markRaider(
             werewolf, center, 3, AssaultKind.WEREWOLF, SettlementKind.HOBGOBLIN, true, true
         );
-        final HobgoblinEntity huntedResident = helper.spawn(
+        final var huntedResident = helper.spawn(
             ModEntities.HOBGOBLIN.get(), new BlockPos(1, 1, 2), EntitySpawnReason.NATURAL
         );
         helper.assertTrue(VillageAssaultRuntime.recordWerewolfObjective(level, werewolf, huntedResident),
@@ -762,7 +787,7 @@ public final class VillageAssaultGameTests {
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(new BlockPos(1, 1, 1));
         player.teleportTo(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D);
-        return player;
+        return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 
     private static Map<BlockPos, BlockState> snapshotBlocks(

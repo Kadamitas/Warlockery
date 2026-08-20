@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:illusion_zombie_absorbs_without_reward_or_alert",
+  "environment": "warlockery:illusion_copies_isolated",
+  "structure": "warlockery:empty15x15x15",
+  "max_ticks": 400
+}
+

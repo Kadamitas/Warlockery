@@ -58,6 +58,10 @@ final class UtilityDeviceParityTest {
         assertTrue(UtilityDeviceBlockFactory.supports("alluringskull"));
         assertTagContains("item/alluring_skull_activators", "warlockery:ingredient_necro_stone");
         assertTagContains("entity_type/alluring_skull_targets", "minecraft:zombie");
+        final String skullTargets = read(DATA.resolve("tags/entity_type/alluring_skull_targets.json"));
+        assertFalse(skullTargets.contains("warlockery:corpse"),
+            "the dedicated Body is no longer lured by the Alluring Skull");
+        assertTrue(skullTargets.contains("#warlockery:spectral"));
         assertTrue(read(DATA.resolve("recipe/alluringskull.json")).contains("#c:bones"));
         assertTrue(read(ASSETS.resolve("blockstates/alluringskull.json")).contains("active=true"));
     }

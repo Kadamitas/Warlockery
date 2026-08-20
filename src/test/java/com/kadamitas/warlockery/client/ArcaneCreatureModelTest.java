@@ -10,6 +10,105 @@ import org.junit.jupiter.api.Test;
 
 final class ArcaneCreatureModelTest {
     @Test
+    void hexBatRoostAndSwoopPosesComeOnlyFromSynchronizedFacts() {
+        final var neutral = ArcaneCreatureModel.hexBatPose(
+            com.kadamitas.warlockery.client.CreatureModelProfile.Variant.HEX_BAT, false, false
+        );
+        assertFalse(neutral.overrides(), "ordinary flight keeps the existing flap animation");
+        final var roost = ArcaneCreatureModel.hexBatPose(
+            com.kadamitas.warlockery.client.CreatureModelProfile.Variant.HEX_BAT, true, false
+        );
+        assertTrue(roost.overrides());
+        assertTrue(roost.bodyXRot() > 3.0F, "the roost pose hangs the body upside down");
+        assertTrue(roost.wingFoldZRot() > 0.0F, "the roost pose folds the wings");
+        final var swoop = ArcaneCreatureModel.hexBatPose(
+            com.kadamitas.warlockery.client.CreatureModelProfile.Variant.HEX_BAT, false, true
+        );
+        assertTrue(swoop.overrides());
+        assertTrue(swoop.bodyXRot() > 0.0F && swoop.bodyXRot() < 1.5F,
+            "the swoop pose pitches the body forward without flipping it");
+        assertTrue(swoop.wingFoldZRot() < 0.0F, "the swoop pose sweeps and narrows the wings");
+    }
+
+    @Test
+    void nonHexAvianVariantsNeverReceiveAHexBatPose() {
+        for (final var variant : com.kadamitas.warlockery.client.CreatureModelProfile.Variant.values()) {
+            if (variant == com.kadamitas.warlockery.client.CreatureModelProfile.Variant.HEX_BAT) continue;
+            assertFalse(ArcaneCreatureModel.hexBatPose(variant, true, false).overrides(),
+                variant + " must not roost like a Hex Bat");
+            assertFalse(ArcaneCreatureModel.hexBatPose(variant, false, true).overrides(),
+                variant + " must not swoop like a Hex Bat");
+        }
+    }
+
+    @Test
+    void hedgeCroneAndCircleMagePosesComeOnlyFromSynchronizedFacts() {
+        final var croneVariant = CreatureModelProfile.Variant.HEDGE_CRONE;
+        final var mageVariant = CreatureModelProfile.Variant.CIRCLE_MAGE;
+
+        assertFalse(ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.IDLE, false
+        ).overrides(), "a calm unwarded Crone keeps the existing animation exactly");
+        assertFalse(ArcaneCreatureModel.hedgeCronePose(croneVariant, null, false).overrides(),
+            "an absent synchronized fact never poses anything");
+
+        final var warning = ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.WARNING, false);
+        assertTrue(warning.overrides());
+        assertTrue(warning.rightArmXRot() < 0.0F, "the warning raises the staff arm");
+
+        final var preparing = ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.PREPARING, false);
+        assertTrue(preparing.bodyXRot() > 0.0F, "preparation lowers the Crone toward the workstation");
+
+        final var casting = ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.CASTING, false);
+        assertTrue(casting.rightArmXRot() < preparing.rightArmXRot(),
+            "the cast uses a deliberate extended staff arm pose");
+
+        assertTrue(ArcaneCreatureModel.hedgeCronePose(
+            croneVariant, com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.IDLE, true
+        ).leftArmZRot() < 0.0F, "a prepared ward is visible on the off hand");
+
+        assertFalse(ArcaneCreatureModel.circleMagePose(
+            mageVariant, com.kadamitas.warlockery.entity.CircleMageRules.Mode.IDLE, false
+        ).overrides());
+        final var studying = ArcaneCreatureModel.circleMagePose(
+            mageVariant, com.kadamitas.warlockery.entity.CircleMageRules.Mode.STUDYING, false);
+        assertTrue(studying.leftArmXRot() < 0.0F && studying.headXRot() > 0.0F,
+            "study presents the book-facing rehearsal pose");
+        final var bolt = ArcaneCreatureModel.circleMagePose(
+            mageVariant, com.kadamitas.warlockery.entity.CircleMageRules.Mode.DEFENDING, false);
+        assertTrue(bolt.rightArmXRot() < studying.rightArmXRot(),
+            "the bolt cast is a distinct forward staff pose");
+        assertTrue(ArcaneCreatureModel.circleMagePose(
+            mageVariant, com.kadamitas.warlockery.entity.CircleMageRules.Mode.IDLE, true
+        ).leftArmZRot() < 0.0F, "a prepared focus is visible on the off hand");
+
+        assertTrue(warning.rightArmXRot() != bolt.rightArmXRot()
+                || warning.headXRot() != bolt.headXRot(),
+            "the two practitioners never read as the same mob");
+    }
+
+    @Test
+    void noOtherVariantEverReceivesAnF13PractitionerPose() {
+        for (final var variant : CreatureModelProfile.Variant.values()) {
+            if (variant != CreatureModelProfile.Variant.HEDGE_CRONE) {
+                for (final var mode : com.kadamitas.warlockery.entity.HedgeCroneRules.Mode.values()) {
+                    assertFalse(ArcaneCreatureModel.hedgeCronePose(variant, mode, true).overrides(),
+                        variant + " must not pose like a Hedge Crone");
+                }
+            }
+            if (variant != CreatureModelProfile.Variant.CIRCLE_MAGE) {
+                for (final var mode : com.kadamitas.warlockery.entity.CircleMageRules.Mode.values()) {
+                    assertFalse(ArcaneCreatureModel.circleMagePose(variant, mode, true).overrides(),
+                        variant + " must not pose like a Circle Mage");
+                }
+            }
+        }
+    }
+
+    @Test
     void everyArchetypeBakesAHeadBodyAndMultipleSolidParts() {
         for (final Archetype archetype : Archetype.values()) {
             final ModelPart root = ArcaneCreatureModel.createLayer(archetype).bakeRoot();
@@ -42,5 +141,111 @@ final class ArcaneCreatureModelTest {
 
     private static long solidPartCount(final ModelPart root) {
         return root.getAllParts().stream().filter(part -> !part.isEmpty()).count();
+    }
+
+    @Test
+    void bansheeGeometryKeepsItsHoodVeilAndClaws() {
+        final ModelPart root = ArcaneCreatureModel.createLayer(bansheeProfile()).bakeRoot();
+        assertFalse(root.getChild("hood_top").isEmpty());
+        assertFalse(root.getChild("hair_veil").isEmpty());
+        assertFalse(root.getChild("right_banshee_claw").isEmpty());
+        assertFalse(root.getChild("left_banshee_claw").isEmpty());
+    }
+
+    @Test
+    void bansheePresentationPosesAreExactAndPoseOnly() {
+        final ArcaneCreatureModel model = ArcaneCreatureModel.create(bansheeProfile());
+        final Pose baseline = pose(model, null, 0, 1.0F);
+        final Pose vigil = pose(model, com.kadamitas.warlockery.entity.BansheeRules.Mode.VIGIL, 0, 1.0F);
+        org.junit.jupiter.api.Assertions.assertEquals(baseline, vigil,
+            "vigil and recovery keep the ordinary spirit hover");
+        org.junit.jupiter.api.Assertions.assertEquals(baseline,
+            pose(model, com.kadamitas.warlockery.entity.BansheeRules.Mode.RECOVERY, 0, 1.0F));
+
+        final Pose approach = pose(model, com.kadamitas.warlockery.entity.BansheeRules.Mode.APPROACH, 0, 1.0F);
+        assertExact(baseline.bodyX() + ArcaneCreatureModel.BANSHEE_APPROACH_LEAN, approach.bodyX());
+        assertExact(baseline.headX() - ArcaneCreatureModel.BANSHEE_APPROACH_LEAN * 0.5F, approach.headX());
+
+        final Pose warningHold = pose(model, com.kadamitas.warlockery.entity.BansheeRules.Mode.WARNING, 0, 1.0F);
+        assertExact(baseline.rightArmZ() + ArcaneCreatureModel.BANSHEE_WARNING_ARM_DRAW, warningHold.rightArmZ());
+        assertExact(baseline.leftArmZ() - ArcaneCreatureModel.BANSHEE_WARNING_ARM_DRAW, warningHold.leftArmZ());
+        final Pose warningPulse = pose(model, com.kadamitas.warlockery.entity.BansheeRules.Mode.WARNING, 1, 1.0F);
+        assertExact(
+            baseline.rightArmZ() + ArcaneCreatureModel.BANSHEE_WARNING_ARM_DRAW
+                - ArcaneCreatureModel.BANSHEE_WARNING_PULSE_FLARE,
+            warningPulse.rightArmZ()
+        );
+
+        final Pose lament = pose(model, com.kadamitas.warlockery.entity.BansheeRules.Mode.LAMENT, 0, 1.0F);
+        assertExact(baseline.headX() + ArcaneCreatureModel.BANSHEE_LAMENT_HEAD_DROP, lament.headX());
+        assertExact(baseline.bodyX() + ArcaneCreatureModel.BANSHEE_LAMENT_SHOULDER_DROP, lament.bodyX());
+        assertExact(baseline.rightWingZ() * 0.5F, lament.rightWingZ());
+
+        final Pose recoil = pose(model, com.kadamitas.warlockery.entity.BansheeRules.Mode.RECOIL, 0, 1.0F);
+        assertExact(baseline.bodyX() + ArcaneCreatureModel.BANSHEE_RECOIL_COMPRESSION, recoil.bodyX());
+        assertExact(
+            baseline.rightWingZ()
+                - net.minecraft.util.Mth.sin(1.0F * 1.3F) * ArcaneCreatureModel.BANSHEE_RECOIL_WING_BEAT,
+            recoil.rightWingZ()
+        );
+    }
+
+    @Test
+    void nonBansheePosesAreIsolatedFromThePresentationChannel() {
+        final ArcaneCreatureModel spectre = ArcaneCreatureModel.create(CreatureModelProfile.forEntity(
+            "spectre",
+            com.kadamitas.warlockery.entity.CreatureVisualProfile
+                .forKind(com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind.SPECTRE)
+        ));
+        final Pose plain = pose(spectre, null, 0, 1.0F);
+        final Pose withStaleFacts = pose(spectre, null, 7, 1.0F);
+        org.junit.jupiter.api.Assertions.assertEquals(plain, withStaleFacts,
+            "a non-Banshee render state never consumes the Banshee presentation channel");
+    }
+
+    private static CreatureModelProfile bansheeProfile() {
+        return CreatureModelProfile.forEntity(
+            "banshee",
+            com.kadamitas.warlockery.entity.CreatureVisualProfile
+                .forKind(com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind.BANSHEE)
+        );
+    }
+
+    private static Pose pose(
+        final ArcaneCreatureModel model,
+        final com.kadamitas.warlockery.entity.BansheeRules.Mode activity,
+        final int pulseSequence,
+        final float ageInTicks
+    ) {
+        final TexturedCreatureRenderers.ArcaneState state = new TexturedCreatureRenderers.ArcaneState();
+        state.bansheeActivity = activity;
+        state.bansheePulseSequence = pulseSequence;
+        state.ageInTicks = ageInTicks;
+        state.walkAnimationPos = 0.0F;
+        state.walkAnimationSpeed = 0.0F;
+        model.setupAnim(state);
+        final ModelPart root = model.root();
+        return new Pose(
+            root.getChild("head").xRot,
+            root.getChild("body").xRot,
+            root.getChild("right_arm").zRot,
+            root.getChild("left_arm").zRot,
+            root.getChild("right_wing").zRot,
+            root.getChild("left_wing").zRot
+        );
+    }
+
+    private static void assertExact(final float expected, final float actual) {
+        assertTrue(Math.abs(expected - actual) < 1.0E-6F, expected + " != " + actual);
+    }
+
+    private record Pose(
+        float headX,
+        float bodyX,
+        float rightArmZ,
+        float leftArmZ,
+        float rightWingZ,
+        float leftWingZ
+    ) {
     }
 }

@@ -119,7 +119,7 @@ abstract class GenerateEmptyGameTestStructure extends DefaultTask {
     }
 }
 
-version = '1.4.0'
+version = '1.5.0'
 group = 'com.kadamitas.warlockery'
 
 base {
@@ -138,6 +138,12 @@ def generateEmptyGameTestStructure = tasks.register('generateEmptyGameTestStruct
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty3x3x3.nbt') })
 }
 
+def generateLargeGameTestStructure = tasks.register('generateLargeGameTestStructure', GenerateEmptyGameTestStructure) {
+    structureSize.set(15)
+    dataVersion.set(4_903)
+    outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty15x15x15.nbt') })
+}
+
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
     srcDir generatedGameTestResources
@@ -145,6 +151,7 @@ sourceSets.main.resources {
 
 tasks.named('processResources', ProcessResources) {
     dependsOn generateEmptyGameTestStructure
+    dependsOn generateLargeGameTestStructure
     inputs.property 'modVersion', project.version
     filesMatching('META-INF/neoforge.mods.toml') {
         expand mod_version: project.version
@@ -158,13 +165,14 @@ tasks.named('processResources', ProcessResources) {
 
 tasks.named('sourcesJar', Jar) {
     dependsOn generateEmptyGameTestStructure
+    dependsOn generateLargeGameTestStructure
 }
 
 sourceSets.test.compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
 
 neoForge {
-    version = '26.2.0.59'
+    version = '26.2.0.64'
 
     runs {
         configureEach {

@@ -22,7 +22,7 @@ silver-equipped Werewolf Hunters, and modern ore progression.'''
 [[dependencies.warlockery]]
     modId="neoforge"
     type="required"
-    versionRange="[26.2.0.59,)"
+    versionRange="[26.2.0.64,)"
     ordering="NONE"
     side="BOTH"
 

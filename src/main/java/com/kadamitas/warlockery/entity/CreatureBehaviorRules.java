@@ -59,12 +59,18 @@ public final class CreatureBehaviorRules {
             && Math.floorMod(tickCount, 400) == 0;
     }
 
+    /**
+     * Water puts the sun out. Vanilla's own undead stop burning the moment they are in water or
+     * standing in rain, and a sunlight-weak creature that kept burning while submerged would be
+     * unable to survive the one place Naamah's line is at home.
+     */
     public static boolean shouldBurnInSun(
         final boolean daylight,
         final boolean skyVisible,
-        final boolean fireResistant
+        final boolean fireResistant,
+        final boolean wet
     ) {
-        return daylight && skyVisible && !fireResistant;
+        return daylight && skyVisible && !fireResistant && !wet;
     }
 
     public static int cauldronRangeBonus(final int nearbyCauldrons) {

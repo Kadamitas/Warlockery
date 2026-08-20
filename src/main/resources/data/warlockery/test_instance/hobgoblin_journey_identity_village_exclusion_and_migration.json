@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:hobgoblin_journey_identity_village_exclusion_and_migration",
+  "environment": "warlockery:hobgoblin_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 400
+}

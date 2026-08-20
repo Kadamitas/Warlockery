@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:unbound_familiars_persist_and_no_latch_is_disturbed",
+  "environment": "warlockery:animal_familiar_isolated",
+  "structure": "warlockery:empty3x3x3",
+  "max_ticks": 200
+}

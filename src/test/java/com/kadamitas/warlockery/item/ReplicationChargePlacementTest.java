@@ -9,13 +9,15 @@ import org.junit.jupiter.api.Test;
 
 final class ReplicationChargePlacementTest {
     @Test
-    void collisionIsCheckedAfterPlacementAtTheImpact() throws IOException {
+    void collisionIsCheckedAfterPlacementInTheAdjacentFreeCell() throws IOException {
         final String source = Files.readString(Path.of(
             "src/main/java/com/kadamitas/warlockery/item/ReplicationChargeItem.java"
         ));
-        final int placement = source.indexOf("duplicate.snapTo(hit.getLocation().x");
+        final int adjacent = source.indexOf("blockHit.getBlockPos().relative(blockHit.getDirection())");
+        final int placement = source.indexOf("duplicate.snapTo(spawnLocation.x");
         final int collision = source.indexOf("level.noCollision(duplicate)");
-        assertTrue(placement >= 0);
+        assertTrue(adjacent >= 0);
+        assertTrue(placement > adjacent);
         assertTrue(collision > placement);
     }
 }

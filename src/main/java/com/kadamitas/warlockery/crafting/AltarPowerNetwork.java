@@ -20,8 +20,15 @@ public final class AltarPowerNetwork {
     private AltarPowerNetwork() {
     }
 
+    /**
+     * The power the richest reachable altar can actually spend here.
+     *
+     * <p>Reported from spendable power rather than held power, because an altar holding power promised to a
+     * rite in progress has none of it to give this network. Quoting the held figure told a machine it could
+     * run and told the player it had fuel, and the consumption that followed refused.</p>
+     */
     public static int available(final ServerLevel level, final BlockPos center) {
-        return best(level, center).map(AltarBlockEntity::getPower).orElse(0);
+        return best(level, center).map(AltarBlockEntity::availablePower).orElse(0);
     }
 
     public static boolean consume(final ServerLevel level, final BlockPos center, final int amount) {
@@ -56,6 +63,9 @@ public final class AltarPowerNetwork {
             .map(AltarBlockEntity.class::cast)
             .filter(AltarBlockEntity::isMultiblockValid)
             .filter(altar -> !focusedPositions.contains(altar.getBlockPos()) || altar.hasRangeFocus())
-            .max(Comparator.comparingInt(AltarBlockEntity::getPower));
+            // Ranked by spendable power for the same reason the ritual altar search is: an altar whose power
+            // is already promised to a cast would otherwise win the comparison on the strength of power it
+            // cannot pay out, and the poorer altar standing beside it, which could have paid, is never asked.
+            .max(Comparator.comparingInt(AltarBlockEntity::availablePower));
     }
 }

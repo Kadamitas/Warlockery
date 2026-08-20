@@ -10,14 +10,21 @@ import org.junit.jupiter.api.Test;
 
 class HazardEscapeRulesTest {
     @Test
-    void demonsAndNaamahDoNotFleeFireOrLava() {
+    void demonicKindsRetainFireAndLavaResistance() {
         EnumSet.allOf(CreatureKind.class).stream()
-            .filter(kind -> kind.isDemonic() || kind == CreatureKind.NAAMAH)
+            .filter(CreatureKind::isDemonic)
             .forEach(kind -> {
                 assertTrue(HazardEscapeRules.isFireResistant(kind));
                 assertFalse(HazardEscapeRules.shouldEscape(kind, Hazard.FIRE));
                 assertFalse(HazardEscapeRules.shouldEscape(kind, Hazard.LAVA));
             });
+    }
+
+    @Test
+    void naamahEscapesFireAndLavaLikeOtherVulnerableCreatures() {
+        assertFalse(HazardEscapeRules.isFireResistant(CreatureKind.NAAMAH));
+        assertTrue(HazardEscapeRules.shouldEscape(CreatureKind.NAAMAH, Hazard.FIRE));
+        assertTrue(HazardEscapeRules.shouldEscape(CreatureKind.NAAMAH, Hazard.LAVA));
     }
 
     @Test
