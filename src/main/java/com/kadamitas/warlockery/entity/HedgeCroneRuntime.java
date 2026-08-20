@@ -303,13 +303,13 @@ public final class HedgeCroneRuntime {
         final List<Candidate> inspected = new ArrayList<>();
         int visits = 0;
         int sightChecks = 0;
-        for (final Player player : level.getEntitiesOfClass(
+        for (final Player player : BoundedEntityQuery.collect(
+            level,
             Player.class,
-            new AABB(crone.blockPosition()).inflate(HedgeCroneRules.PERCEPTION_RADIUS)
+            new AABB(crone.blockPosition()).inflate(HedgeCroneRules.PERCEPTION_RADIUS),
+            player -> true,
+            HedgeCroneRules.MAX_CANDIDATES_VISITED
         )) {
-            if (visits >= HedgeCroneRules.MAX_CANDIDATES_VISITED) {
-                break;
-            }
             visits++;
             crone.croneCounters().candidateVisits++;
             if (!legalTarget(crone, player)) {

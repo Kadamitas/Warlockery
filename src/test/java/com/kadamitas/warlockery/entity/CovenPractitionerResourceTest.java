@@ -121,17 +121,6 @@ final class CovenPractitionerResourceTest {
     }
 
     @Test
-    void theIsolatedFixtureEnvironmentExistsAndMutatesNoSharedWorldState() {
-        final Path environment = RESOURCES.resolve(Path.of(
-            "data", "warlockery", "test_environment", "coven_practitioners_isolated.json"));
-        assertTrue(Files.exists(environment),
-            "the isolated F13 Coven Practitioners environment resource must exist");
-        final JsonObject json = read(environment);
-        assertEquals("minecraft:all_of", json.get("type").getAsString());
-        assertTrue(json.getAsJsonArray("definitions").isEmpty());
-    }
-
-    @Test
     void everyPlannedLiveFixtureNamesBothPractitionersExactlyOnce() {
         final List<String> fixtures = List.of(
             "hedge_crone_warns_intruders_and_casts_contextual_hex",

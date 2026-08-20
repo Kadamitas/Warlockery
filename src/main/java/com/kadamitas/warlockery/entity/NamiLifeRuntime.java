@@ -248,14 +248,15 @@ public final class NamiLifeRuntime {
         if (visitor.isPresent()) {
             return visitor;
         }
-        final java.util.List<LivingEntity> candidates = level.getEntitiesOfClass(
+        final java.util.List<LivingEntity> candidates = BoundedEntityQuery.collect(
+            level,
             LivingEntity.class,
             nami.getBoundingBox().inflate(NamiLifeRules.SOCIAL_RADIUS),
-            entity -> entity != nami && entity.isAlive() && (entity instanceof Villager || entity instanceof NamiEntity)
+            entity -> entity != nami && entity.isAlive() && (entity instanceof Villager || entity instanceof NamiEntity),
+            NamiLifeRules.MAX_SOCIAL_CANDIDATES
         );
-        final int appraised = Math.min(candidates.size(), NamiLifeRules.MAX_SOCIAL_CANDIDATES);
-        nami.recordSocialCandidates(appraised);
-        return candidates.stream().limit(NamiLifeRules.MAX_SOCIAL_CANDIDATES)
+        nami.recordSocialCandidates(candidates.size());
+        return candidates.stream()
             .min(Comparator.comparingDouble(nami::distanceToSqr))
             .map(Entity::getUUID);
     }
@@ -265,13 +266,15 @@ public final class NamiLifeRuntime {
         final ServerLevel level,
         final Optional<ServerPlayer> spouse
     ) {
-        final java.util.List<Monster> candidates = level.getEntitiesOfClass(
+        final java.util.List<Monster> candidates = BoundedEntityQuery.collect(
+            level,
             Monster.class,
             nami.getBoundingBox().inflate(Math.sqrt(WARD_RANGE_SQUARED)),
-            monster -> actionableThreat(nami, spouse, monster)
+            monster -> actionableThreat(nami, spouse, monster),
+            NamiLifeRules.MAX_SOCIAL_CANDIDATES
         );
-        nami.recordThreatCandidates(Math.min(candidates.size(), NamiLifeRules.MAX_SOCIAL_CANDIDATES));
-        return candidates.stream().limit(NamiLifeRules.MAX_SOCIAL_CANDIDATES)
+        nami.recordThreatCandidates(candidates.size());
+        return candidates.stream()
             .min(Comparator.comparingDouble(nami::distanceToSqr))
             .map(LivingEntity.class::cast);
     }

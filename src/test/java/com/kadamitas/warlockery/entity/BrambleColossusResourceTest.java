@@ -19,16 +19,6 @@ final class BrambleColossusResourceTest {
         assertEquals(7, BrambleColossusEntity.BASE_ATTACK_DAMAGE);
         assertEquals(.3, BrambleColossusEntity.BASE_MOVEMENT_SPEED);
     }
-    @Test void allSixIsolatedDescriptorsExist() {
-        for(String name:new String[]{"post_sweep_displays_then_threshes","allowlist_and_maker_are_never_struck","circuit_and_stance_stay_inside_the_post","nerve_falters_and_recovers_deterministically","hazard_escape_and_cancellation_are_deterministic","save_reload_and_zombie_lifecycle_are_replaced"}) {
-            var descriptor=readJson("src/main/resources/data/warlockery/test_instance/bramble_colossus_"+name+".json");
-            assertEquals("minecraft:function",descriptor.get("type").getAsString());
-            assertEquals("warlockery:bramble_colossus_"+name,descriptor.get("function").getAsString());
-            assertEquals("warlockery:bramble_colossus_isolated",descriptor.get("environment").getAsString());
-            assertEquals("forge:empty15x15x15",descriptor.get("structure").getAsString());
-            assertTrue(descriptor.get("max_ticks").getAsInt()>=80);
-        }
-    }
     @Test void routeFailureBackoffRebasesOnTheExactThirdFailure() throws java.io.IOException {
         String runtime=Files.readString(Path.of("src/main/java/com/kadamitas/warlockery/entity/BrambleColossusRuntime.java"));
         assertTrue(runtime.contains("recordPost(mob.blockPosition())"));

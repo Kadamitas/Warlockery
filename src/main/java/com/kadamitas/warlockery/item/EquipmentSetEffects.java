@@ -33,6 +33,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingGetProjectileEvent;
+import org.jspecify.annotations.Nullable;
 
 public final class EquipmentSetEffects {
     private static final String STONEBROKER_QUIVER_SHOT = "WarlockeryStonebrokerQuiverShot";
@@ -151,17 +152,32 @@ public final class EquipmentSetEffects {
 
     public static List<ItemStack> enhanceMachineOutputs(
         final ServerLevel level,
+        final @Nullable Player brewer,
+        final String recipeType,
+        final List<ItemStack> outputs
+    ) {
+        if (brewer == null || !brewer.isAlive()) {
+            return BrewingGarbRules.duplicate(outputs, 0);
+        }
+        final boolean brewOutput = outputs.stream().anyMatch(stack -> stack.is(WarlockeryTags.Items.BREWS));
+        final List<Integer> chances = machineYieldChances(brewer, brewOutput, recipeType);
+        final List<Integer> rolls = chances.stream().map(_ -> level.getRandom().nextInt(100)).toList();
+        final int additionalCopies = BrewingGarbRules.additionalCopies(chances, rolls);
+        return BrewingGarbRules.duplicate(outputs, additionalCopies);
+    }
+
+    public static List<ItemStack> enhanceNearbyMachineOutputs(
+        final ServerLevel level,
         final BlockPos position,
         final String recipeType,
         final List<ItemStack> outputs
     ) {
         final boolean brewOutput = outputs.stream().anyMatch(stack -> stack.is(WarlockeryTags.Items.BREWS));
-        final List<Player> nearby = level.getEntitiesOfClass(
+        final int additionalCopies = level.getEntitiesOfClass(
             Player.class,
             new AABB(position).inflate(8.0),
             Player::isAlive
-        );
-        final int additionalCopies = nearby.stream().mapToInt(player -> {
+        ).stream().mapToInt(player -> {
             final List<Integer> chances = machineYieldChances(player, brewOutput, recipeType);
             final List<Integer> rolls = chances.stream().map(_ -> level.getRandom().nextInt(100)).toList();
             return BrewingGarbRules.additionalCopies(chances, rolls);

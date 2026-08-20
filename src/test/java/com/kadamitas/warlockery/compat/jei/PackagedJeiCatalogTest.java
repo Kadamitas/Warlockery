@@ -22,9 +22,9 @@ final class PackagedJeiCatalogTest {
     }
 
     @Test
-    void packagedCatalogDecodesEveryMachineRecipe() {
+    void packagedCatalogDecodesEveryMachineRecipe() throws IOException {
         final var recipes = PackagedJeiCatalog.machines();
-        assertEquals(178, recipes.size());
+        assertEquals(packagedFileCount(DATA_ROOT.resolve("warlockery_machine")), recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(recipe -> recipe.id()).distinct().count());
         assertTrue(recipes.stream().allMatch(recipe -> MachineProfiles.supportsRecipeType(recipe.recipe().machine())));
         assertTrue(recipes.stream().allMatch(recipe -> !recipe.recipe().inputs().isEmpty()));
@@ -32,10 +32,8 @@ final class PackagedJeiCatalogTest {
     }
 
 
-    private static long packagedRitualFileCount() throws java.io.IOException {
-        try (var paths = java.nio.file.Files.list(
-            java.nio.file.Path.of("src/main/resources/data/warlockery/ritual")
-        )) {
+    private static long packagedFileCount(final Path directory) throws IOException {
+        try (var paths = Files.list(directory)) {
             return paths.filter(path -> path.toString().endsWith(".json")).count();
         }
     }
@@ -43,7 +41,7 @@ final class PackagedJeiCatalogTest {
     @Test
     void packagedCatalogDecodesEveryCircleRite() throws java.io.IOException {
         final var rituals = PackagedJeiCatalog.rituals();
-        assertEquals(packagedRitualFileCount(), rituals.size());
+        assertEquals(packagedFileCount(DATA_ROOT.resolve("ritual")), rituals.size());
         assertEquals(rituals.size(), rituals.stream().map(ritual -> ritual.id()).distinct().count());
         assertTrue(rituals.stream().allMatch(ritual -> !ritual.definition().title().isBlank()));
         assertTrue(rituals.stream().allMatch(ritual -> !ritual.definition().description().isBlank()));

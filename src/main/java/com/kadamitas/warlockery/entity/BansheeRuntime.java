@@ -838,13 +838,12 @@ public final class BansheeRuntime {
         final AABB bounds = banshee.getBoundingBox().inflate(BansheeRules.FEEDBACK_RADIUS);
         final List<UUID> neighbours = new ArrayList<>();
         int inspected = 0;
-        for (final BansheeEntity other : level.getEntitiesOfClass(
+        for (final BansheeEntity other : BoundedEntityQuery.collect(
+            level,
             BansheeEntity.class, bounds,
-            candidate -> candidate != banshee && candidate.isAlive()
+            candidate -> candidate != banshee && candidate.isAlive(),
+            BansheeRules.MAX_FEEDBACK_NEIGHBOURS - 1
         )) {
-            if (inspected >= BansheeRules.MAX_FEEDBACK_NEIGHBOURS - 1) {
-                break;
-            }
             inspected++;
             banshee.bansheeCounters().candidateVisits++;
             final BansheeState theirs = other.bansheeState();

@@ -1154,14 +1154,13 @@ public final class GoblinPatronRuntime {
         }
         final AbstractGoblinMerchantEntity body = patron.body();
         int inspected = 0;
-        for (final LivingEntity living : level.getEntitiesOfClass(
+        for (final LivingEntity living : BoundedEntityQuery.collect(
+            level,
             LivingEntity.class,
             body.getBoundingBox().inflate(GoblinPatronRules.SURGE_RADIUS),
-            living -> living != body
+            living -> living != body,
+            GoblinPatronRules.MAX_SURGE_INSPECTIONS
         )) {
-            if (inspected >= GoblinPatronRules.MAX_SURGE_INSPECTIONS) {
-                break;
-            }
             // Charged before any eligibility filter can reject the candidate.
             inspected++;
             if (!living.isAlive() || isProtectedTarget(living)
@@ -1321,14 +1320,13 @@ public final class GoblinPatronRuntime {
     ) {
         final List<GoblinPatronDirective> directives = new ArrayList<>();
         int inspected = 0;
-        for (final AbstractGoblinMerchantEntity candidate : level.getEntitiesOfClass(
+        for (final AbstractGoblinMerchantEntity candidate : BoundedEntityQuery.collect(
+            level,
             AbstractGoblinMerchantEntity.class,
             recipient.getBoundingBox().inflate(GoblinPatronRules.DIRECTIVE_RADIUS),
-            candidate -> candidate != recipient && candidate instanceof PatronBody
+            candidate -> candidate != recipient && candidate instanceof PatronBody,
+            GoblinPatronRules.MAX_DIRECTIVE_INSPECTIONS
         )) {
-            if (inspected >= GoblinPatronRules.MAX_DIRECTIVE_INSPECTIONS) {
-                break;
-            }
             inspected++;
             if (!candidate.isAlive()) {
                 continue;

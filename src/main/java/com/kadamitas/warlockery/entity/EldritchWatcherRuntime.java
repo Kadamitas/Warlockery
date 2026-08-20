@@ -453,7 +453,7 @@ public final class EldritchWatcherRuntime {
         // with nearer strangers and never look at the one person it exists to guard. The cap is
         // unchanged; only who is guaranteed a place inside it.
         CreatureBehaviorState.owner(watcher)
-            .map(level::getPlayerByUUID)
+            .map(level::getEntity)
             .filter(LivingEntity.class::isInstance)
             .map(LivingEntity.class::cast)
             .filter(owner -> owner != watcher && owner.isAlive() && nearby.contains(owner))

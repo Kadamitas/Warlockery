@@ -374,9 +374,9 @@ public final class HexBatRuntime {
         final boolean supportTagged = level.getBlockState(pos.above()).is(WarlockeryTags.Blocks.HEX_BAT_ROOSTS);
         final boolean airSafe = level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()
             && level.getFluidState(pos).isEmpty();
-        final boolean unoccupied = level.getEntitiesOfClass(
-            LivingEntity.class, new AABB(pos), candidate -> candidate != bat
-        ).isEmpty();
+        final boolean unoccupied = !BoundedEntityQuery.any(
+            level, LivingEntity.class, new AABB(pos), candidate -> candidate != bat
+        );
         final Optional<BlockPos> anchor = state.anchor();
         final boolean withinEnvelope = anchor.map(a -> HexBatRules.withinAnchorEnvelope(
             pos.getX() - a.getX(), pos.getY() - a.getY(), pos.getZ() - a.getZ()
@@ -443,9 +443,9 @@ public final class HexBatRuntime {
         if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) return Optional.empty();
         if (!level.getFluidState(pos).isEmpty()) return Optional.empty();
         if (!level.getWorldBorder().isWithinBounds(pos)) return Optional.empty();
-        if (!level.getEntitiesOfClass(
-            LivingEntity.class, new AABB(pos), candidate -> candidate != bat
-        ).isEmpty()) return Optional.empty();
+        if (BoundedEntityQuery.any(
+            level, LivingEntity.class, new AABB(pos), candidate -> candidate != bat
+        )) return Optional.empty();
         return Optional.of(pos.immutable());
     }
 
@@ -550,14 +550,15 @@ public final class HexBatRuntime {
             .map(pos -> bat.blockPosition().closerThan(pos, HexBatRules.ROOST_GUARD_RANGE))
             .orElse(false);
         if (sortie || nearRoost || !preseeded.isEmpty()) {
-            final List<LivingEntity> nearby = level.getEntitiesOfClass(
+            final List<LivingEntity> nearby = BoundedEntityQuery.collect(
+                level,
                 LivingEntity.class,
                 bat.getBoundingBox().inflate(HexBatRules.TARGET_QUERY_RADIUS),
-                candidate -> candidate != bat && candidate.isAlive()
+                candidate -> candidate != bat && candidate.isAlive(),
+                HexBatRules.MAX_TARGET_VISITS
             );
             int visited = 0;
             for (final LivingEntity candidate : nearby) {
-                if (visited >= HexBatRules.MAX_TARGET_VISITS) break;
                 visited++;
                 bat.batCounters().targetCandidatesVisited++;
                 if (absolutelyExcluded(bat, candidate)) continue;
@@ -820,16 +821,17 @@ public final class HexBatRuntime {
         if (bat.isRoosting() && state.roost().isPresent()
             && state.deadlines().callDedupeUntil() <= now) {
             final Optional<UUID> callerOwner = CreatureBehaviorState.owner(bat);
-            final List<HexBatEntity> peers = level.getEntitiesOfClass(
+            final List<HexBatEntity> peers = BoundedEntityQuery.collect(
+                level,
                 HexBatEntity.class,
                 bat.getBoundingBox().inflate(HexBatRules.CALL_RADIUS),
-                peer -> peer != bat && peer.isAlive()
+                peer -> peer != bat && peer.isAlive(),
+                HexBatRules.MAX_PEER_VISITS
             );
             int visited = 0;
             int accepted = 0;
             for (final HexBatEntity peer : peers) {
-                if (visited >= HexBatRules.MAX_PEER_VISITS
-                    || accepted >= HexBatRules.MAX_CALL_RECIPIENTS) break;
+                if (accepted >= HexBatRules.MAX_CALL_RECIPIENTS) break;
                 visited++;
                 bat.batCounters().peerVisits++;
                 if (!HexBatRules.callCompatible(callerOwner, CreatureBehaviorState.owner(peer))) continue;
@@ -876,16 +878,17 @@ public final class HexBatRuntime {
         bat.batCounters().callsAttempted++;
         final Optional<UUID> callerOwner = CreatureBehaviorState.owner(bat);
         final String dimension = level.dimension().identifier().toString();
-        final List<HexBatEntity> peers = level.getEntitiesOfClass(
+        final List<HexBatEntity> peers = BoundedEntityQuery.collect(
+            level,
             HexBatEntity.class,
             bat.getBoundingBox().inflate(HexBatRules.CALL_RADIUS),
-            peer -> peer != bat && peer.isAlive()
+            peer -> peer != bat && peer.isAlive(),
+            HexBatRules.MAX_PEER_VISITS
         );
         int visited = 0;
         int accepted = 0;
         for (final HexBatEntity peer : peers) {
-            if (visited >= HexBatRules.MAX_PEER_VISITS
-                || accepted >= HexBatRules.MAX_CALL_RECIPIENTS) break;
+            if (accepted >= HexBatRules.MAX_CALL_RECIPIENTS) break;
             visited++;
             bat.batCounters().peerVisits++;
             if (!HexBatRules.callCompatible(callerOwner, CreatureBehaviorState.owner(peer))) continue;

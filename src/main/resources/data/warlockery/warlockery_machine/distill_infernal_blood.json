@@ -15,12 +15,17 @@
   "outputs": [
     {
       "item": "warlockery:ingredient_infernal_blood",
-      "count": 4
+      "count": 2
+    },
+    {
+      "item": "warlockery:ingredient_infernal_blood",
+      "count": 2
     },
     {
       "item": "warlockery:ingredient_refined_evil"
     }
   ],
-  "processing_time": 500,
-  "requires_fuel": true
+  "processing_time": 800,
+  "altar_power": 480,
+  "power_mode": "continuous"
 }

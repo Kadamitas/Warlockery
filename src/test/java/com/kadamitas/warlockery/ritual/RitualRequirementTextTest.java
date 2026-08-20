@@ -34,6 +34,10 @@ final class RitualRequirementTextTest {
         ).orElseThrow().getString();
         assertTrue(named.contains("circleglyphritual"), "the notice must name the chalk ring: " + named);
         assertTrue(named.contains("requirement.night"), "the notice must name the lapsed condition: " + named);
+        assertEquals(
+            "screen.warlockery.ritual.requirement.cleared_ocean_monument",
+            key(RitualRequirementText.label(condition("cleared_ocean_monument")))
+        );
     }
 
     @Test

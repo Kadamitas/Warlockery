@@ -11,6 +11,7 @@
     { "item": "warlockery:ingredient_foul_fume" },
     { "item": "warlockery:ingredient_refined_evil" }
   ],
-  "processing_time": 500,
-  "requires_fuel": true
+  "processing_time": 800,
+  "altar_power": 480,
+  "power_mode": "continuous"
 }

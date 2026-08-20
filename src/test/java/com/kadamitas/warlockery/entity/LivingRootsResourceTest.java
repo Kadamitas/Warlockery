@@ -34,18 +34,6 @@ final class LivingRootsResourceTest {
         }
     }
 
-    @Test void sixDescriptorsUseOnlyTheExactIsolatedEnvironment() throws IOException {
-        assertEquals("{\"type\":\"minecraft:all_of\",\"definitions\":[]}", read(
-            ROOT.resolve("resources/data/warlockery/test_environment/living_roots_isolated.json")));
-        for (final String fixture : FIXTURES) {
-            final String json = read(ROOT.resolve("resources/data/warlockery/test_instance/" + fixture + ".json"));
-            assertTrue(json.contains("\"function\":\"warlockery:" + fixture + "\""), fixture);
-            assertTrue(json.contains("\"environment\":\"warlockery:living_roots_isolated\""), fixture);
-            assertTrue(json.contains("\"structure\":\"forge:empty3x3x3\""), fixture);
-            assertTrue(json.contains("\"max_ticks\":"), fixture);
-        }
-    }
-
     @Test void acquisitionMutationAndProgressionFilesRemainPresentAndUnalteredInMeaning() throws IOException {
         final String harvest = read(ROOT.resolve("java/com/kadamitas/warlockery/block/MandrakeHarvestRules.java"));
         assertTrue(harvest.contains("DAY_AWAKENING_CHANCE = 0.75F"));

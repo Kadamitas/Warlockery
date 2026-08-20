@@ -253,12 +253,14 @@ public final class ThornedPursuerGameTests {
                         helper.assertTrue(pursuer.position().distanceTo(start) < 16.0D,
                             "course movement is ordinary navigation, never teleportation");
                         quarry.snapTo(quarry.getX() + 2.0D, quarry.getY(), quarry.getZ(), 0.0F, 0.0F);
+                        final long trailWritesBeforeSeam = pursuer.pursuerCounters().trailWrites;
+                        final long trailExpiriesBeforeSeam = pursuer.pursuerCounters().trailExpiries;
                         ThornedPursuerRuntime.seedTrailPoint(pursuer, quarry.blockPosition());
-                        helper.assertValueEqual(pursuer.pursuerCounters().trailWrites, 1L,
+                        helper.assertValueEqual(pursuer.pursuerCounters().trailWrites - trailWritesBeforeSeam, 1L,
                             "the runtime seam installs one cadence-representative stamped point");
                         for (int loadedTick = 0; loadedTick < ThornedPursuerRules.TRAIL_EXPIRY; loadedTick++)
                             ThornedPursuerRuntime.ageTrailLoadedTick(pursuer);
-                        helper.assertValueEqual(pursuer.pursuerCounters().trailExpiries, 1L,
+                        helper.assertValueEqual(pursuer.pursuerCounters().trailExpiries - trailExpiriesBeforeSeam, 1L,
                             "the runtime seam expires the stamped point at exactly 200 loaded ticks");
                         fixture.place(new BlockPos(4, 1, 1), Blocks.BARRIER);
                         fixture.place(new BlockPos(4, 2, 1), Blocks.BARRIER);
@@ -431,8 +433,8 @@ public final class ThornedPursuerGameTests {
             helper.assertValueEqual(pursuer.pursuerCounters().courseModifierApplications, 1L,
                 "the active episode begins with its one transient course modifier");
             long escorts = pursuer.pursuerCounters().escortCreations;
-            long hazardReads = pursuer.pursuerCounters().hazardReads;
             helper.runAfterDelay(2, () -> fixture.step(() -> {
+                final long hazardReads = pursuer.pursuerCounters().hazardReads;
                 pursuer.igniteForSeconds(2.0F);
                 helper.runAfterDelay(1, () -> fixture.step(() -> {
                     helper.assertValueEqual(pursuer.pursuerRuntime().phase(), ThornedPursuerRules.Phase.ESCAPE,

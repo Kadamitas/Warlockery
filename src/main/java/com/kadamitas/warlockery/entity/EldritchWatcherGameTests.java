@@ -222,6 +222,10 @@ public final class EldritchWatcherGameTests {
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 1.0F
             ), "the guard fixture needs one real accepted hit on the owner");
             makeDue(guard);
+            EldritchWatcherRuntime.tick(guard, helper.getLevel());
+            GameTestAssertions.assertPresentValueEqual(
+                helper, guard.watcherState().threatId(), attacker.getUUID(),
+                "the due owner-guard observation records the exact fresh attacker");
             // A full perception cadence, not two ticks. The scan runs on a twenty tick interval
             // that each body staggers from its own id, so a two tick window only ever passed when
             // the guard happened to draw a low offset. The harm stays reported for eighty ticks,

@@ -102,9 +102,11 @@ public final class WerewolfHunterRuntime {
         WerewolfHunterState state = input;
         hunter.hunterCounters().observationScans++;
         final AABB bounds = hunter.getBoundingBox().inflate(WerewolfHunterRules.OBSERVATION_RADIUS);
-        final List<LivingEntity> victims = level.getEntitiesOfClass(
+        final List<LivingEntity> victims = BoundedEntityQuery.collect(
+            level,
             LivingEntity.class, bounds,
-            candidate -> candidate != hunter && isProtectedActor(hunter, candidate)
+            candidate -> candidate != hunter && isProtectedActor(hunter, candidate),
+            WerewolfHunterRules.MAX_RETAINED_CANDIDATES
         );
         final double witnessRangeSqr =
             (double) WerewolfHunterRules.WITNESS_RADIUS * WerewolfHunterRules.WITNESS_RADIUS;
@@ -113,7 +115,6 @@ public final class WerewolfHunterRuntime {
         final List<LivingEntity> observedAttackers = new ArrayList<>();
         int visited = 0;
         for (final LivingEntity victim : victims) {
-            if (visited >= WerewolfHunterRules.MAX_RETAINED_CANDIDATES) break;
             visited++;
             hunter.hunterCounters().candidateVisits++;
             final LivingEntity attacker = victim.getLastHurtByMob();
@@ -561,16 +562,17 @@ public final class WerewolfHunterRuntime {
         final LivingEntity quarry
     ) {
         final AABB corridor = hunter.getBoundingBox().minmax(quarry.getBoundingBox()).inflate(1.0D);
-        final List<LivingEntity> nearby = level.getEntitiesOfClass(
+        final List<LivingEntity> nearby = BoundedEntityQuery.collect(
+            level,
             LivingEntity.class, corridor,
-            candidate -> candidate != hunter && candidate != quarry && isProtectedActor(hunter, candidate)
+            candidate -> candidate != hunter && candidate != quarry && isProtectedActor(hunter, candidate),
+            WerewolfHunterRules.MAX_LINE_OF_SIGHT_CHECKS
         );
         int checks = 0;
         final List<LivingEntity> blocking = new ArrayList<>();
         final Vec3 origin = hunter.getEyePosition();
         final Vec3 aim = quarry.getEyePosition().subtract(origin);
         for (final LivingEntity candidate : nearby) {
-            if (checks >= WerewolfHunterRules.MAX_LINE_OF_SIGHT_CHECKS) break;
             checks++;
             hunter.hunterCounters().lineOfSightChecks++;
             hunter.hunterCounters().candidateVisits++;

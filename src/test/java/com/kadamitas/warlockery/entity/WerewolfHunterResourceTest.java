@@ -42,31 +42,6 @@ final class WerewolfHunterResourceTest {
         }
     }
 
-    @Test
-    void isolatedEnvironmentIsARegisteredNoOpDefinition() {
-        final JsonObject environment = read(RESOURCES.resolve(
-            Path.of("data", "warlockery", "test_environment", "werewolf_hunter_isolated.json")
-        ));
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertEquals(0, environment.getAsJsonArray("definitions").size());
-    }
-
-    @Test
-    void everyHunterFixtureBindsTheIsolatedEnvironmentAndEmptyStructure() {
-        assertEquals(10, FIXTURE_IDS.size());
-        for (final String id : FIXTURE_IDS) {
-            final JsonObject fixture = read(RESOURCES.resolve(
-                Path.of("data", "warlockery", "test_instance", id + ".json")
-            ));
-            assertEquals("minecraft:function", fixture.get("type").getAsString(), id);
-            assertEquals("warlockery:" + id, fixture.get("function").getAsString(), id);
-            assertEquals("warlockery:werewolf_hunter_isolated",
-                fixture.get("environment").getAsString(), id);
-            assertEquals("forge:empty3x3x3", fixture.get("structure").getAsString(), id);
-            assertTrue(fixture.get("max_ticks").getAsInt() > 0, id);
-        }
-    }
-
     private static JsonObject read(final Path path) {
         try {
             return JsonParser.parseString(Files.readString(path)).getAsJsonObject();

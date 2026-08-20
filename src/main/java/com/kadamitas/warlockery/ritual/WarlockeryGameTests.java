@@ -937,14 +937,38 @@ public final class WarlockeryGameTests {
         final BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, ModBlocks.ALL.get("spinningwheel").get());
         final MagicMachineBlockEntity machine = helper.getBlockEntity(relative, MagicMachineBlockEntity.class);
-        machine.setItem(0, new ItemStack(Items.STRING, 8));
-        IntStream.range(0, 160).forEach(_ -> MagicMachineBlockEntity.serverTick(
-            helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
-        ));
-        helper.assertTrue(machine.getItem(0).isEmpty(), "spinning wheel must consume eight string");
-        helper.assertTrue(machine.getItem(6).is(Items.WOOL.white()), "spinning wheel must produce white wool");
-        helper.assertValueEqual(machine.getItem(6).getCount(), 1, "spinning wheel output count");
-        helper.succeed();
+        final BlockPos altarRelative = new BlockPos(4, 1, 4);
+        withPoweredAltar(helper, altarRelative, 180, altar -> {
+            machine.setItem(0, new ItemStack(Items.STRING, 8));
+            final int powerBefore = totalAltarPower(helper, altarRelative);
+            IntStream.range(0, 300).forEach(_ -> MagicMachineBlockEntity.serverTick(
+                helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
+            ));
+            helper.assertTrue(machine.getItem(0).isEmpty(), "spinning wheel must consume eight string");
+            helper.assertTrue(machine.getItem(4).is(Items.COBWEB), "spinning wheel must produce a cobweb");
+            helper.assertValueEqual(machine.getItem(4).getCount(), 1, "spinning wheel output count");
+            helper.assertValueEqual(
+                powerBefore - totalAltarPower(helper, altarRelative),
+                180,
+                "spinning consumes exactly 180 altar power across the six-block altar"
+            );
+
+            final BlockPos brazierRelative = new BlockPos(2, 1, 1);
+            helper.setBlock(brazierRelative, ModBlocks.ALL.get("brazier").get());
+            final MagicMachineBlockEntity brazier = helper.getBlockEntity(
+                brazierRelative,
+                MagicMachineBlockEntity.class
+            );
+            brazier.setItem(0, new ItemStack(Items.GUNPOWDER));
+            helper.assertTrue(brazier.igniteBrazier(), "a nonempty brazier accepts a legal ignition");
+            helper.assertTrue(
+                brazier.getItem(3).is(ModItems.ALL.get("ingredient_ash_wood").get()),
+                "ignition immediately places the retained Wood Ash marker"
+            );
+            helper.assertValueEqual(brazier.extinguishBrazier(), 2, "water reset clears reagent and ash");
+            helper.assertTrue(brazier.isEmpty(), "water reset clears every brazier slot");
+            helper.succeed();
+        });
     }
 
     public static void commonMaterialAndWoodTagsArePopulated(final GameTestHelper helper) {
@@ -989,47 +1013,89 @@ public final class WarlockeryGameTests {
         final ItemStack simulatedRemainder = top.insertItem(0, new ItemStack(Items.STRING, 8), true);
         helper.assertTrue(simulatedRemainder.isEmpty(), "top pipe must simulate accepting recipe inputs");
         helper.assertTrue(machine.getItem(0).isEmpty(), "simulated pipe insertion must not mutate inventory");
-        helper.assertTrue(top.insertItem(0, new ItemStack(Items.STRING, 8), false).isEmpty(),
-            "top pipe must insert recipe inputs");
-        helper.assertTrue(top.extractItem(0, 1, false).isEmpty(), "top pipe must not extract recipe inputs");
 
-        IntStream.range(0, 160).forEach(_ -> MagicMachineBlockEntity.serverTick(
-            helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
-        ));
+        final BlockPos altarRelative = new BlockPos(4, 1, 4);
+        withPoweredAltar(helper, altarRelative, 180, altar -> {
+            helper.assertTrue(top.insertItem(0, new ItemStack(Items.STRING, 8), false).isEmpty(),
+                "top pipe must insert recipe inputs");
+            helper.assertTrue(top.extractItem(0, 1, false).isEmpty(), "top pipe must not extract recipe inputs");
+            final int powerBefore = totalAltarPower(helper, altarRelative);
+            IntStream.range(0, 300).forEach(_ -> MagicMachineBlockEntity.serverTick(
+                helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
+            ));
 
-        final IItemHandler bottom = machine.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN)
-            .orElseThrow(() -> new IllegalStateException("Missing bottom item handler"));
-        helper.assertTrue(bottom.insertItem(0, new ItemStack(Items.STRING), false).is(Items.STRING),
-            "bottom pipe must reject insertion");
-        final ItemStack simulatedOutput = bottom.extractItem(0, 1, true);
-        helper.assertTrue(simulatedOutput.is(Items.WOOL.white()), "bottom pipe must expose finished output");
-        helper.assertTrue(machine.getItem(6).is(Items.WOOL.white()), "simulated extraction must preserve output");
-        final ItemStack output = bottom.extractItem(0, 1, false);
-        helper.assertTrue(output.is(Items.WOOL.white()), "bottom pipe must extract finished output");
-        helper.assertTrue(machine.getItem(6).isEmpty(), "real extraction must remove output");
+            final IItemHandler bottom = machine.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN)
+                .orElseThrow(() -> new IllegalStateException("Missing bottom item handler"));
+            helper.assertTrue(bottom.insertItem(0, new ItemStack(Items.STRING), false).is(Items.STRING),
+                "bottom pipe must reject insertion");
+            final ItemStack simulatedOutput = bottom.extractItem(0, 1, true);
+            helper.assertTrue(simulatedOutput.is(Items.COBWEB), "bottom pipe must expose finished output");
+            helper.assertTrue(machine.getItem(4).is(Items.COBWEB), "simulated extraction must preserve output");
+            final ItemStack output = bottom.extractItem(0, 1, false);
+            helper.assertTrue(output.is(Items.COBWEB), "bottom pipe must extract finished output");
+            helper.assertTrue(machine.getItem(4).isEmpty(), "real extraction must remove output");
+            helper.assertValueEqual(
+                powerBefore - totalAltarPower(helper, altarRelative),
+                180,
+                "automated spinning consumes exactly 180 altar power across the six-block altar"
+            );
 
-        final BlockPos ovenRelative = new BlockPos(2, 1, 1);
-        helper.setBlock(ovenRelative, ModBlocks.ALL.get("alchemical_oven").get());
-        final MagicMachineBlockEntity oven = helper.getBlockEntity(ovenRelative, MagicMachineBlockEntity.class);
-        final ItemStack ovenInput = new ItemStack(ModItems.ALL.get("ingredient_odd_porkchop_raw").get());
-        helper.assertTrue(oven.canPlaceItem(0, ovenInput),
-            "exact recipe ingredients must enter input slots");
-        helper.assertTrue(!oven.canPlaceItem(0, new ItemStack(Items.COAL)),
-            "fuel must not enter ordinary input slots");
-        helper.assertTrue(oven.canPlaceItem(oven.machineProfile().fuelSlot(), new ItemStack(Items.COAL)),
-            "fuel must enter the dedicated fuel slot");
-        helper.assertTrue(!oven.canPlaceItem(oven.machineProfile().fuelSlot(), ovenInput),
-            "non-fuel recipe ingredients must not enter the dedicated fuel slot");
-        helper.assertTrue(!oven.canPlaceItem(oven.machineProfile().outputStart(), ovenInput),
-            "output slots must reject insertion");
+            final BlockPos ovenRelative = new BlockPos(2, 1, 1);
+            helper.setBlock(ovenRelative, ModBlocks.ALL.get("alchemical_oven").get());
+            final MagicMachineBlockEntity oven = helper.getBlockEntity(ovenRelative, MagicMachineBlockEntity.class);
+            final ItemStack ovenInput = new ItemStack(ModItems.ALL.get("ingredient_odd_porkchop_raw").get());
+            helper.assertTrue(oven.canPlaceItem(0, ovenInput),
+                "exact recipe ingredients must enter input slots");
+            helper.assertTrue(!oven.canPlaceItem(0, new ItemStack(Items.COAL)),
+                "fuel must not enter ordinary input slots");
+            helper.assertTrue(oven.canPlaceItem(oven.machineProfile().fuelSlot(), new ItemStack(Items.COAL)),
+                "fuel must enter the dedicated fuel slot");
+            helper.assertTrue(!oven.canPlaceItem(oven.machineProfile().fuelSlot(), ovenInput),
+                "non-fuel recipe ingredients must not enter the dedicated fuel slot");
+            helper.assertTrue(!oven.canPlaceItem(oven.machineProfile().outputStart(), ovenInput),
+                "output slots must reject insertion");
 
-        final BlockPos cauldronRelative = new BlockPos(0, 1, 1);
-        helper.setBlock(cauldronRelative, ModBlocks.ALL.get("cauldron").get());
-        final MagicMachineBlockEntity cauldron = helper.getBlockEntity(cauldronRelative, MagicMachineBlockEntity.class);
-        final ItemStack customBrew = new ItemStack(ModItems.ALL.get("brew_murderous_flock").get());
-        helper.assertTrue(cauldron.canPlaceItem(0, customBrew),
-            "reloadable custom brew components must enter cauldron input slots");
-        helper.succeed();
+            final BlockPos cauldronRelative = new BlockPos(0, 1, 1);
+            helper.setBlock(cauldronRelative, ModBlocks.ALL.get("cauldron").get());
+            final MagicMachineBlockEntity cauldron = helper.getBlockEntity(
+                cauldronRelative,
+                MagicMachineBlockEntity.class
+            );
+            final ItemStack customBrew = new ItemStack(ModItems.ALL.get("brew_murderous_flock").get());
+            helper.assertTrue(cauldron.canPlaceItem(0, customBrew),
+                "reloadable custom brew components must enter cauldron input slots");
+            helper.succeed();
+        });
+    }
+
+    private static void withPoweredAltar(
+        final GameTestHelper helper,
+        final BlockPos relativeAltar,
+        final int power,
+        final java.util.function.Consumer<AltarBlockEntity> assertions
+    ) {
+        BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
+            .forEach(position -> helper.setBlock(position, ModBlocks.ALTAR.get()));
+        helper.runAfterDelay(165L, () -> {
+            final AltarBlockEntity altar = helper.getBlockEntity(relativeAltar, AltarBlockEntity.class);
+            helper.assertTrue(altar.isMultiblockValid(), "the six-block machine altar becomes valid");
+            BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
+                .map(position -> helper.getBlockEntity(position, AltarBlockEntity.class))
+                .forEach(part -> helper.assertTrue(
+                    part.consumePower(part.availablePower()),
+                    "generated altar power is normalized before the exact machine charge"
+                ));
+            helper.assertValueEqual(totalAltarPower(helper, relativeAltar), 0,
+                "the six-block altar starts the machine proof empty");
+            helper.assertValueEqual(altar.receivePower(power), power, "the machine altar accepts its exact charge");
+            assertions.accept(altar);
+        });
+    }
+
+    private static int totalAltarPower(final GameTestHelper helper, final BlockPos relativeAltar) {
+        return BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
+            .mapToInt(position -> helper.getBlockEntity(position, AltarBlockEntity.class).availablePower())
+            .sum();
     }
 
     public static void fluidPipesConnectToLiquidMachines(final GameTestHelper helper) {

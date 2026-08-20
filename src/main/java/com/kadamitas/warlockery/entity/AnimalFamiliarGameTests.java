@@ -849,12 +849,20 @@ public final class AnimalFamiliarGameTests {
         final BlockPos relativeAltar = new BlockPos(10, 2, 2);
         BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
             .forEach(position -> helper.setBlock(position, ModBlocks.ALTAR.get()));
+        BlockPos.betweenClosedStream(relativeAltar.below(), relativeAltar.offset(2, -1, 0))
+            .forEach(position -> helper.setBlock(position, ModBlocks.ALL.get("demonheart").get()));
         helper.runAfterDelay(165L, () -> {
             try {
                 final AltarBlockEntity altar = helper.getLevel().getBlockEntity(
                     helper.absolutePos(relativeAltar)) instanceof AltarBlockEntity found ? found : null;
                 helper.assertTrue(altar != null && altar.isMultiblockValid(),
                     "the six-block ritual altar becomes valid");
+                BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
+                    .map(helper::absolutePos)
+                    .map(helper.getLevel()::getBlockEntity)
+                    .filter(AltarBlockEntity.class::isInstance)
+                    .map(AltarBlockEntity.class::cast)
+                    .forEach(found -> found.consumePower(found.availablePower()));
                 final int ambientPower = altar.getPower();
                 helper.assertValueEqual(altar.receivePower(1_500), 1_500,
                     "the altar accepts exactly one bind-familiar charge");

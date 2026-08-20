@@ -58,27 +58,6 @@ final class LycanPackResourceTest {
     }
 
     @Test
-    void lycanPackIsolatedEnvironmentIsAnExactNoOpBatchKey() {
-        final JsonObject environment = readJson(DATA.resolve(
-            Path.of("test_environment", "lycan_pack_isolated.json")
-        ));
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty());
-    }
-
-    @Test
-    void allEightF04FixturesExistAndUseOnlyTheIsolatedEnvironment() {
-        for (final String fixture : F04_FIXTURES) {
-            final JsonObject descriptor = readJson(DATA.resolve(Path.of("test_instance", fixture + ".json")));
-            assertEquals("minecraft:function", descriptor.get("type").getAsString(), fixture);
-            assertEquals("warlockery:" + fixture, descriptor.get("function").getAsString(), fixture);
-            assertEquals("warlockery:lycan_pack_isolated", descriptor.get("environment").getAsString(), fixture);
-            assertEquals("forge:empty3x3x3", descriptor.get("structure").getAsString(), fixture);
-            assertTrue(descriptor.get("max_ticks").getAsInt() > 0, fixture);
-        }
-    }
-
-    @Test
     void werewolfFamilyEntityTagAndLootRemainExact() {
         final JsonObject tag = readJson(DATA.resolve(Path.of("tags", "entity_type", "werewolves.json")));
         assertFalse(tag.get("replace").getAsBoolean());

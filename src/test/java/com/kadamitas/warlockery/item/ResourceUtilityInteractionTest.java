@@ -224,8 +224,11 @@ final class ResourceUtilityInteractionTest {
 
     private void spiritBucketHasMachineRoute() {
         assertMachineOutput("cauldron_flowing_spirit", "warlockery:bucketspirit");
-        assertTrue(read(DATA.resolve("warlockery/warlockery_machine/distill_condensed_fear.json"))
-            .contains("#warlockery:spirit"));
+        final String distilleryRecipe = read(
+            DATA.resolve("warlockery/warlockery_machine/distill_condensed_fear.json")
+        );
+        assertTrue(distilleryRecipe.contains("warlockery:bucketspirit"));
+        assertTrue(distilleryRecipe.contains("minecraft:bucket"));
     }
 
     private void goblinDustCannotBypassItsFormTag() {

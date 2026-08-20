@@ -76,40 +76,10 @@ final class HexBatResourceTest {
         assertEquals("Hex Bat Spawn Egg", lang.get("item.warlockery.hex_bat_spawn_egg").getAsString());
     }
 
-    @Test
-    void isolatedEnvironmentIsANoOpDefinition() {
-        final JsonObject environment = read(RESOURCES.resolve(
-            Path.of("data", "warlockery", "test_environment", "hex_bat_isolated.json")
-        ));
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertEquals(0, environment.getAsJsonArray("definitions").size());
-    }
-
     private static final List<String> CLOCK_MOVING_FIXTURES = List.of(
         "hex_bat_roosts_by_day_and_sorties_at_night",
         "hex_bat_swoop_marks_and_releases_target_safely"
     );
-
-    @Test
-    void exactlyFourFixturesBindTheIsolatedEnvironmentAndEmptyStructure() {
-        assertEquals(4, FIXTURE_IDS.size());
-        for (final String id : FIXTURE_IDS) {
-            final JsonObject fixture = read(RESOURCES.resolve(
-                Path.of("data", "warlockery", "test_instance", id + ".json")
-            ));
-            assertEquals("minecraft:function", fixture.get("type").getAsString());
-            assertEquals("warlockery:" + id, fixture.get("function").getAsString());
-            // The two fixtures that move the world clock each own a batch. setTime writes the
-            // level clock, which every fixture in a batch shares, so a day/night fixture running
-            // beside one that needs night will flip the sky out from under it. The rest of the
-            // family shares hex_bat_isolated as before.
-            final String environment = fixture.get("environment").getAsString();
-            assertEquals(CLOCK_MOVING_FIXTURES.contains(id) ? "warlockery:" + id : "warlockery:hex_bat_isolated",
-                environment, id + " environment");
-            assertEquals("forge:empty3x3x3", fixture.get("structure").getAsString());
-            assertTrue(fixture.get("max_ticks").getAsInt() <= 400, "fixtures stay time-bounded");
-        }
-    }
 
     @Test
     void protectedTextureHashesAndPathsAreUnchanged() {

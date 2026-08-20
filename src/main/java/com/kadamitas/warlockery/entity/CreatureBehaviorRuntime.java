@@ -81,7 +81,6 @@ public final class CreatureBehaviorRuntime {
             case FORGEWARDEN -> tickGoblinAura(creature, level, true);
             case ABYSSAL_REGENT -> InfernalHierarchyRuntime.tickAbyssalTorment(creature, level);
             case SPECTRE -> pulseFear(creature);
-            case GLASS_DOPPELGANGER -> tickReflection(creature, level);
             case STONEBROKER -> tickStonebroker(creature, level);
 
             case POLTERGEIST -> tickPoltergeist(creature, level);
@@ -805,40 +804,6 @@ public final class CreatureBehaviorRuntime {
                 creature.getNavigation().moveTo(position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 1.2);
                 creature.addEffect(new MobEffectInstance(MobEffects.GLOWING, 80, 0, true, false));
             }));
-    }
-
-    private static void tickReflection(final Mob creature, final ServerLevel level) {
-        final String targetId = creature.getPersistentData().getStringOr("WarlockeryReflectedTarget", "");
-        if (targetId.isBlank()) {
-            return;
-        }
-        final LivingEntity target;
-        try {
-            target = level.getEntity(UUID.fromString(targetId)) instanceof LivingEntity living ? living : null;
-        } catch (IllegalArgumentException exception) {
-            return;
-        }
-        if (target == null || !target.isAlive()) {
-            return;
-        }
-        List.of(
-            EquipmentSlot.MAINHAND,
-            EquipmentSlot.OFFHAND,
-            EquipmentSlot.HEAD,
-            EquipmentSlot.CHEST,
-            EquipmentSlot.LEGS,
-            EquipmentSlot.FEET
-        ).forEach(slot -> {
-            creature.setItemSlot(slot, target.getItemBySlot(slot).copy());
-            creature.setDropChance(slot, 0.0F);
-        });
-        creature.setHealth(Math.min(creature.getMaxHealth(), target.getHealth()));
-        if (target.hasEffect(MobEffects.SPEED)) {
-            creature.addEffect(new MobEffectInstance(MobEffects.SPEED, 60, 1, true, false));
-        }
-        if (target.hasEffect(MobEffects.STRENGTH)) {
-            creature.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 60, 0, true, false));
-        }
     }
 
     private static void tickSunlightWeakness(final Mob creature, final ServerLevel level) {

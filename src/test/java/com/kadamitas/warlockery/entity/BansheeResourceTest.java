@@ -62,7 +62,8 @@ final class BansheeResourceTest {
         );
         assertEquals("brazier", recipe.get("machine").getAsString());
         assertEquals(600, recipe.get("processing_time").getAsInt());
-        assertEquals(1400, recipe.get("altar_power").getAsInt());
+        assertEquals(600, recipe.get("altar_power").getAsInt());
+        assertEquals("continuous", recipe.get("power_mode").getAsString());
         assertEquals(3, recipe.getAsJsonArray("inputs").size());
         assertEquals("warlockery:ingredient_ash_wood",
             recipe.getAsJsonArray("outputs").get(0).getAsJsonObject().get("item").getAsString());
@@ -104,45 +105,6 @@ final class BansheeResourceTest {
             profile.offering().orElseThrow().location().toString(),
             "the exact empowerment item tag stays wired to the Banshee profile");
         assertTrue(profile.has(CreatureBehaviorProfile.Feature.DUST_EMPOWERMENT));
-    }
-
-    @Test
-    void fiveFixtureDescriptorsUseTheIsolatedBansheeEnvironment() {
-        for (final String fixture : FIXTURES) {
-            final JsonObject descriptor = json(DATA.resolve("test_instance").resolve(fixture + ".json"));
-            assertEquals("minecraft:function", descriptor.get("type").getAsString(), fixture);
-            assertEquals("warlockery:" + fixture, descriptor.get("function").getAsString(), fixture);
-            assertEquals("warlockery:banshee_isolated", descriptor.get("environment").getAsString(),
-                fixture);
-            assertEquals("forge:empty3x3x3", descriptor.get("structure").getAsString(), fixture);
-            assertTrue(descriptor.get("max_ticks").getAsInt() > 0, fixture);
-        }
-        final JsonObject environment = json(DATA.resolve("test_environment").resolve("banshee_isolated.json"));
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated Banshee environment must not mutate shared world state");
-    }
-
-    @Test
-    void gameTestMethodsExistForEveryFixtureDescriptor() {
-        final Path source = Path.of("src", "main", "java", "com", "kadamitas", "warlockery",
-            "entity", "BansheeGameTests.java");
-        assertTrue(Files.exists(source));
-        final String text = read(source);
-        for (final String fixture : FIXTURES) {
-            final StringBuilder method = new StringBuilder();
-            boolean upper = false;
-            for (final char letter : fixture.toCharArray()) {
-                if (letter == '_') {
-                    upper = true;
-                } else {
-                    method.append(upper ? Character.toUpperCase(letter) : letter);
-                    upper = false;
-                }
-            }
-            assertTrue(text.contains("public static void " + method + "("),
-                "BansheeGameTests must define " + method);
-        }
     }
 
     @Test

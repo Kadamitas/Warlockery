@@ -474,15 +474,16 @@ public final class GoblinEnclaveRuntime {
             return;
         }
         goblin.setTarget(null);
-        final List<Villager> visited = level.getEntitiesOfClass(
+        final List<Villager> visited = BoundedEntityQuery.collect(
+            level,
             Villager.class,
             goblin.getBoundingBox().inflate(GoblinEnclaveRules.PERCEPTION_RADIUS, 8.0D,
                 GoblinEnclaveRules.PERCEPTION_RADIUS),
-            villager -> villager.isAlive()
+            Villager::isAlive,
+            GoblinEnclaveRules.MAX_ENTITY_VISITS
         );
-        goblin.goblinCounters().entityVisits += Math.min(visited.size(), GoblinEnclaveRules.MAX_ENTITY_VISITS);
+        goblin.goblinCounters().entityVisits += visited.size();
         visited.stream()
-            .limit(GoblinEnclaveRules.MAX_ENTITY_VISITS)
             .filter(villager -> GoblinHostilityRules.isHumanVillager(villager.getType()))
             .filter(goblin::canAttack)
             .limit(GoblinEnclaveRules.MAX_ENTITY_RETAINED)
@@ -1466,14 +1467,14 @@ public final class GoblinEnclaveRuntime {
         }
         final GoblinEnclaveData data = GoblinEnclaveData.get(level);
         data.rememberThreat(key.orElseThrow(), threat.getUUID(), 2);
-        final List<GoblinEntity> responders = level.getEntitiesOfClass(
-                GoblinEntity.class,
-                goblin.getBoundingBox().inflate(GoblinEnclaveRules.ALARM_RECRUIT_RADIUS),
-                candidate -> candidate.isAlive() && !candidate.isBaby()
-                    && enclaveKey(candidate).equals(key)
-            ).stream()
-            .limit(GoblinEnclaveRules.recruitCap(GoblinEnclaveRules.MAX_DEFENDERS))
-            .toList();
+        final List<GoblinEntity> responders = BoundedEntityQuery.collect(
+            level,
+            GoblinEntity.class,
+            goblin.getBoundingBox().inflate(GoblinEnclaveRules.ALARM_RECRUIT_RADIUS),
+            candidate -> candidate.isAlive() && !candidate.isBaby()
+                && enclaveKey(candidate).equals(key),
+            GoblinEnclaveRules.recruitCap(GoblinEnclaveRules.MAX_DEFENDERS)
+        );
         final long epoch = level.getGameTime();
         GoblinEnclaveRules.assignRoles(responders.stream()
             .map(responder -> new Responder(
@@ -1597,12 +1598,14 @@ public final class GoblinEnclaveRuntime {
         final GoblinEntity goblin,
         final ServerLevel level
     ) {
-        final List<ItemEntity> visited = level.getEntitiesOfClass(
+        final List<ItemEntity> visited = BoundedEntityQuery.collect(
+            level,
             ItemEntity.class,
             goblin.getBoundingBox().inflate(GoblinEnclaveRules.LOOSE_ITEM_RADIUS),
-            item -> item.isAlive() && goblin.wantsToPickUp(level, item.getItem())
+            item -> item.isAlive() && goblin.wantsToPickUp(level, item.getItem()),
+            GoblinEnclaveRules.MAX_LOOSE_VISITS
         );
-        goblin.goblinCounters().looseVisits += Math.min(visited.size(), GoblinEnclaveRules.MAX_LOOSE_VISITS);
+        goblin.goblinCounters().looseVisits += visited.size();
         return visited.stream()
             .limit(GoblinEnclaveRules.MAX_LOOSE_RETAINED)
             .min(Comparator.comparingDouble(goblin::distanceToSqr));
@@ -1855,11 +1858,13 @@ public final class GoblinEnclaveRuntime {
         final ServerLevel level
     ) {
         final Optional<Long> key = enclaveKey(child);
-        return level.getEntitiesOfClass(
+        return BoundedEntityQuery.collect(
+            level,
             GoblinEntity.class,
             child.getBoundingBox().inflate(8.0D, 3.0D, 8.0D),
-            candidate -> candidate.isAlive() && candidate.isBaby() && enclaveKey(candidate).equals(key)
-        ).stream().limit(GoblinEnclaveRules.MAX_DANCE_PARTICIPANTS).toList();
+            candidate -> candidate.isAlive() && candidate.isBaby() && enclaveKey(candidate).equals(key),
+            GoblinEnclaveRules.MAX_DANCE_PARTICIPANTS
+        );
     }
 
     private static boolean isGatherableFlower(final BlockState state) {
@@ -2050,12 +2055,13 @@ public final class GoblinEnclaveRuntime {
     }
 
     private static boolean humanVillagerNearby(final ServerLevel level, final BlockPos position) {
-        return !level.getEntitiesOfClass(
+        return BoundedEntityQuery.any(
+            level,
             Villager.class,
             new AABB(position).inflate(GoblinEnclaveRules.MEMBER_RADIUS, 8.0D,
                 GoblinEnclaveRules.MEMBER_RADIUS),
             villager -> GoblinHostilityRules.isHumanVillager(villager.getType())
-        ).isEmpty();
+        );
     }
 
     /**

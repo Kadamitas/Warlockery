@@ -4,6 +4,7 @@ import com.kadamitas.warlockery.crafting.MachineProfile;
 import com.kadamitas.warlockery.crafting.MachineProfiles;
 import com.kadamitas.warlockery.crafting.MachineRecipeDefinition;
 import com.kadamitas.warlockery.crafting.MachineRecipeManager;
+import com.kadamitas.warlockery.crafting.MachineRecipeSlotPlan;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.menu.MachineUiLayout;
 import java.util.Objects;
@@ -19,9 +20,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeManager.Match> {
-    private static final int WIDTH = 176;
-    private static final int HEIGHT = 82;
     private final MachineProfile profile;
+    private final MachineUiLayout layout;
 
     MachineRecipeCategory(
         final String machine,
@@ -36,8 +36,15 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
         final MachineProfile profile,
         final IGuiHelper guiHelper
     ) {
-        super(recipeType, title(profile), icon(profile, guiHelper), WIDTH, HEIGHT);
+        super(
+            recipeType,
+            title(profile),
+            icon(profile, guiHelper),
+            MachineUiLayout.forKind(profile.recipeType()).width(),
+            MachineUiLayout.forKind(profile.recipeType()).statusY() + 28
+        );
         this.profile = profile;
+        layout = MachineUiLayout.forKind(profile.recipeType());
     }
 
     @Override
@@ -47,10 +54,10 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
         final IFocusGroup focuses
     ) {
         final MachineRecipeDefinition recipe = match.recipe();
-        final MachineUiLayout layout = MachineUiLayout.forKind(profile.recipeType());
+        final java.util.List<Integer> inputSlots = MachineRecipeSlotPlan.inputSlots(profile, recipe);
         for (int index = 0; index < recipe.inputs().size(); index++) {
             final MachineRecipeDefinition.Input input = recipe.inputs().get(index);
-            final MachineUiLayout.SlotPosition position = layout.slots().get(index);
+            final MachineUiLayout.SlotPosition position = layout.slots().get(inputSlots.get(index));
             JeiIngredients.addItem(
                 builder.addInputSlot(position.x(), position.y()).setStandardSlotBackground(),
                 input.ingredient(),
@@ -58,7 +65,8 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
             );
         }
         recipe.fluid().ifPresent(fluid -> {
-            final var slot = builder.addInputSlot(70, 16)
+            final int[] fluidPosition = fluidPosition(layout.kind());
+            final var slot = builder.addInputSlot(fluidPosition[0], fluidPosition[1])
                 .setStandardSlotBackground()
                 .setFluidRenderer(fluid.amount(), true, 16, 16);
             JeiIngredients.addFluid(slot, fluid.ingredient(), fluid.amount());
@@ -80,7 +88,8 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
         final IFocusGroup focuses
     ) {
         final MachineRecipeDefinition recipe = match.recipe();
-        builder.addAnimatedRecipeArrow(recipe.processingTime()).setPosition(101, 18);
+        final int[] arrow = arrowPosition(layout.kind());
+        builder.addAnimatedRecipeArrow(recipe.processingTime()).setPosition(arrow[0], arrow[1]);
         Component details = Component.translatable(
             "jei.warlockery.machine.processing_time",
             Math.max(1, recipe.processingTime() / 20)
@@ -97,7 +106,9 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
         if (profile.requiresExternalHeat()) {
             details = details.copy().append("  ").append(Component.translatable("jei.warlockery.machine.heat"));
         }
-        builder.addText(details, WIDTH, 24).setPosition(2, 56).setColor(0xFF404040);
+        builder.addText(details, layout.width() - 4, 24)
+            .setPosition(2, layout.statusY() + 2)
+            .setColor(0xFF404040);
     }
 
     @Override
@@ -125,5 +136,27 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
 
     private static Block block(final MachineProfile profile) {
         return Objects.requireNonNull(ModBlocks.ALL.get(profile.displayBlock()), profile.displayBlock()).get();
+    }
+
+    private static int[] fluidPosition(final String machine) {
+        return switch (machine) {
+            case "distillery" -> new int[] {54, 84};
+            case "kettle" -> new int[] {94, 54};
+            case "cauldron" -> new int[] {70, 56};
+            default -> new int[] {78, 50};
+        };
+    }
+
+    private static int[] arrowPosition(final String machine) {
+        return switch (machine) {
+            case "alchemical_oven" -> new int[] {103, 81};
+            case "distillery" -> new int[] {126, 84};
+            case "kettle" -> new int[] {126, 92};
+            case "cauldron" -> new int[] {154, 85};
+            case "silvervat" -> new int[] {104, 89};
+            case "spinningwheel" -> new int[] {146, 87};
+            case "brazier" -> new int[] {137, 87};
+            default -> new int[] {101, 82};
+        };
     }
 }

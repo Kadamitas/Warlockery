@@ -20,21 +20,6 @@ class ThornedPursuerResourceTest {
         "thorned_pursuer_save_reload_and_zombie_lifecycle_are_replaced");
 
     @Test
-    void sixDescriptorsUseOnlyTheExactIsolatedEmptyEnvironment() throws Exception {
-        JsonObject environment = readJson("data/warlockery/test_environment/thorned_pursuer_isolated.json");
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.get("definitions").isJsonArray());
-        assertEquals(0, environment.getAsJsonArray("definitions").size());
-        for (String name : FIXTURES) {
-            JsonObject descriptor = readJson("data/warlockery/test_instance/" + name + ".json");
-            assertEquals("minecraft:function", descriptor.get("type").getAsString());
-            assertEquals("warlockery:" + name, descriptor.get("function").getAsString());
-            assertEquals("warlockery:thorned_pursuer_isolated", descriptor.get("environment").getAsString());
-            assertEquals("forge:empty15x15x15", descriptor.get("structure").getAsString());
-        }
-    }
-
-    @Test
     void protectedRitualLootAndNamesRemainPresent() throws Exception {
         JsonObject ritual = readJson("data/warlockery/ritual/summon_thorned_pursuer.json");
         String ritualText = ritual.toString();

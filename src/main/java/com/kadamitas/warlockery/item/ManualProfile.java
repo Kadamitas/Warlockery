@@ -154,7 +154,8 @@ public record ManualProfile(
         """);
     private static final List<String> DISTILLING_RECIPE_SECTIONS = entries(MACHINE_RECIPE_PREFIX, """
         distill_magic distill_vitriol distill_diamond_vapour distill_ender_dew distill_refined_evil
-        distill_infernal_blood distill_condensed_fear
+        distill_infernal_blood distill_condensed_fear distill_infernal_blood_from_netherrack
+        distill_glowstone
         """);
     private static final List<String> VAMPIRE_PROGRESSION_SECTIONS = entries("vampire_level_", """
         1 2 3 4 5 6 7 8 9 10

@@ -204,8 +204,21 @@ final class ManualLibraryTest {
         assertTrue(finalTrial.contains("goblet"));
         assertTrue(finalTrial.contains("coffin"));
         assertTrue(translations.get("manual.warlockery.immortal.nami").getAsString().contains("marriage"));
-        assertTrue(translations.get("manual.warlockery.immortal.blood_audience").getAsString()
-            .contains("Naamah"));
+        final String bloodAudience = translations.get("manual.warlockery.immortal.blood_audience").getAsString();
+        assertTrue(bloodAudience.contains("Bring an unmarried Nami"));
+        assertTrue(bloodAudience.contains("Ocean Monument"));
+        assertTrue(bloodAudience.contains("Elder Guardians"));
+        assertTrue(bloodAudience.contains("Naamah"));
+        for (String key : List.of(
+            "ritual.warlockery.blood_audience.description",
+            "message.warlockery.vampire_progression.blood_audience_required",
+            "screen.warlockery.ritual.requirement.cleared_ocean_monument"
+        )) {
+            final String guidance = translations.get(key).getAsString();
+            assertTrue(guidance.contains("Nami"), key);
+            assertTrue(guidance.contains("Ocean Monument"), key);
+            assertTrue(guidance.contains("Elder Guardian"), key);
+        }
     }
 
     private static List<String> ids(final List<ManualProfile> profiles) {

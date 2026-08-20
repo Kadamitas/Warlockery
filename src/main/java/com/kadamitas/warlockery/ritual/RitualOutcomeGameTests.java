@@ -289,8 +289,9 @@ public final class RitualOutcomeGameTests {
             RitualManager.INSTANCE.castingObstacles(helper.getLevel(), center, rite, 0, null);
         helper.assertValueEqual(obstacles.size(), 1, "requirements reported as lapsed");
         helper.assertValueEqual(obstacles.getFirst().label(), "circleglyphritual", "the lapsed requirement");
+        final String namedRequirement = RitualRequirementText.label(obstacles.getFirst()).getString();
         helper.assertTrue(
-            RitualRequirementText.summary(obstacles).orElseThrow().getString().contains("circleglyphritual"),
+            RitualRequirementText.summary(obstacles).orElseThrow().getString().contains(namedRequirement),
             "the notice the caster receives must name the ring that lapsed"
         );
         helper.succeed();

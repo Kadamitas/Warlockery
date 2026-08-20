@@ -55,6 +55,7 @@ import com.kadamitas.warlockery.world.VillageGuardGameTests;
 import com.kadamitas.warlockery.world.GoblinSettlementLifeGameTests;
 import com.kadamitas.warlockery.world.GoblinEnclaveGameTests;
 import com.kadamitas.warlockery.entity.GoblinPatronGameTests;
+import com.kadamitas.warlockery.entity.MimicryGameTests;
 import com.kadamitas.warlockery.world.HobgoblinJourneyGameTests;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.Registries;
@@ -237,6 +238,18 @@ public final class ModGameTests {
             () -> GoblinPatronGameTests::goblinPatronsAccordNavigationAndCleanup);
         REGISTRY.register("goblin_patrons_structural_caps_and_foreign_boundaries",
             () -> GoblinPatronGameTests::goblinPatronsStructuralCapsAndForeignBoundaries);
+        REGISTRY.register("illusion_creeper_tell_collapses_without_blast", () -> MimicryGameTests::illusionCreeperTellCollapsesWithoutBlast);
+        REGISTRY.register("illusion_spider_snare_is_bounded_and_breaks", () -> MimicryGameTests::illusionSpiderSnareIsBoundedAndBreaks);
+        REGISTRY.register("illusion_zombie_absorbs_without_reward_or_alert", () -> MimicryGameTests::illusionZombieAbsorbsWithoutRewardOrAlert);
+        REGISTRY.register("illusion_copies_deal_no_damage_and_never_touch_vanilla_ai", () -> MimicryGameTests::illusionCopiesDealNoDamageAndNeverTouchVanillaAi);
+        REGISTRY.register("illusion_copies_hazard_escape_and_cancellation_are_deterministic", () -> MimicryGameTests::illusionCopiesHazardEscapeAndCancellationAreDeterministic);
+        REGISTRY.register("illusion_copies_save_reload_and_zombie_lifecycle_are_replaced", () -> MimicryGameTests::illusionCopiesSaveReloadAndZombieLifecycleAreReplaced);
+        REGISTRY.register("glass_doppelganger_presents_one_subject_without_copying_data", () -> MimicryGameTests::glassDoppelgangerPresentsOneSubjectWithoutCopyingData);
+        REGISTRY.register("glass_doppelganger_shadow_band_holds_and_never_closes", () -> MimicryGameTests::glassDoppelgangerShadowBandHoldsAndNeverCloses);
+        REGISTRY.register("glass_doppelganger_recognition_ends_the_presentation_and_withdraws", () -> MimicryGameTests::glassDoppelgangerRecognitionEndsThePresentationAndWithdraws);
+        REGISTRY.register("glass_doppelganger_answers_only_attributed_damage", () -> MimicryGameTests::glassDoppelgangerAnswersOnlyAttributedDamage);
+        REGISTRY.register("glass_doppelganger_hazard_escape_and_cancellation_are_deterministic", () -> MimicryGameTests::glassDoppelgangerHazardEscapeAndCancellationAreDeterministic);
+        REGISTRY.register("glass_doppelganger_save_reload_and_zombie_lifecycle_are_replaced", () -> MimicryGameTests::glassDoppelgangerSaveReloadAndZombieLifecycleAreReplaced);
         REGISTRY.register("goblin_raid_wave_is_grouped_and_coordinated",
             () -> VillageGuardGameTests::goblinRaidWaveIsGroupedAndCoordinated);
         REGISTRY.register("hobgoblins_flee_human_villagers_and_keep_custom_professions",

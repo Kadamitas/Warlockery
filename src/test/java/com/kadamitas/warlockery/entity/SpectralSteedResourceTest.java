@@ -124,52 +124,6 @@ final class SpectralSteedResourceTest {
      * previously only markdown in the evidence document, which meant nothing checked them and the
      * first thing to read them would have been a server boot.
      */
-    @Test
-    void theIsolatedGameTestResourcesAreRealFilesWhereverTheyCurrentlySit() {
-        final JsonObject environment = read(RESOURCES.resolve(Path.of(
-            "data", "warlockery", "test_environment", "spectral_steeds_isolated.json"
-        )));
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F27 environment must not mutate shared world state");
-
-        assertEquals(7, FIXTURES.size());
-        for (final Map.Entry<String, Integer> fixture : FIXTURES.entrySet()) {
-            final String id = fixture.getKey();
-            final Path live = INSTANCES.resolve(id + ".json");
-            final Path held = HELD_BACK.resolve(id + ".json");
-            assertTrue(Files.exists(live) || Files.exists(held),
-                "the descriptor for " + id + " must exist as a file, in place or held back");
-            final JsonObject descriptor = read(Files.exists(live) ? live : held);
-            assertEquals("minecraft:function", descriptor.get("type").getAsString(), id);
-            assertEquals("warlockery:" + id, descriptor.get("function").getAsString(), id);
-            assertEquals("warlockery:spectral_steeds_isolated",
-                descriptor.get("environment").getAsString(),
-                "every F27 case runs in the isolated environment and no other: " + id);
-            assertEquals("forge:empty3x3x3", descriptor.get("structure").getAsString(), id);
-            assertEquals(fixture.getValue().intValue(), descriptor.get("max_ticks").getAsInt(), id);
-        }
-    }
-
-    @Test
-    void everyNamedLiveCaseHasACompiledMethod() {
-        final String source = readText(MAIN_JAVA.resolve(Path.of(
-            "com", "kadamitas", "warlockery", "entity", "SpectralSteedGameTests.java"
-        )));
-        for (final String method : List.of(
-            "steedOwnerOnlyControlAndSafeDismount",
-            "paleSteedBondGaitFatigueAndRest",
-            "paleSteedBalksWithoutFearOrEjection",
-            "nightmareAcceleratesAndWarnsOnlyLegalHostiles",
-            "unboundNightmareRemainsDreamHostile",
-            "steedRestReleasesLostSupportWithoutHayMutation",
-            "steedTwoPlayerCapsAurasAndOwlIsolation"
-        )) {
-            assertTrue(source.contains("public static void " + method + "("),
-                "GameTest method must exist: " + method);
-        }
-    }
-
     /**
      * Read from the compiled bodies rather than from their source text. A call is a call whatever
      * the whitespace around it, and a call that has moved into a nested class or a lambda is still
@@ -308,5 +262,4 @@ final class SpectralSteedResourceTest {
         }
     }
 }
-
 

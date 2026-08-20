@@ -142,6 +142,13 @@ public final class InfernalHierarchyRuntime {
             observation = pass.observation();
         }
         state = reconcileLeader(entity, level, state, now);
+        final Intent previousIntent = state.intent();
+        // Group orders must use this tick's leader facts, not an intent retained from the previous
+        // decision. Keep this prediction non-mutating: the real selection below must still happen
+        // exactly once so WARN and other staged transitions cannot advance twice in one tick.
+        final Intent commandIntent = decideIntent(
+            entity, level, state, observation, observed, false, now
+        ).intent();
         boolean commandIssued = false;
         if (entity.hierarchyRank() != Rank.DEMON
             && InfernalHierarchyRules.due(state.cadence().nextGroupRefreshAt(), now)) {
@@ -153,14 +160,13 @@ public final class InfernalHierarchyRuntime {
                 state.cadence().nextNavigationAt(),
                 state.cadence().nextFeedbackAt()
             ));
-            state = refreshGroup(entity, level, state, now);
+            state = refreshGroup(entity, level, state, now, commandIntent);
             commandIssued = state.roster().stream().anyMatch(member -> member.valid(now));
         }
         state = maybeClaimDemonPost(entity, level, state, now);
         state = maybeClaimArchfiendAnchor(entity, level, state, now);
         state = maybeClaimDeepAnchor(entity, level, state, now);
         state = advancePhase(entity, level, state, now);
-        final Intent previousIntent = state.intent();
         state = decideIntent(entity, level, state, observation, observed, commandIssued, now);
         acquireCombatTarget(entity, level, state, observation, now);
         state = applyIntent(entity, level, state, now);
@@ -1369,7 +1375,8 @@ public final class InfernalHierarchyRuntime {
         final InfernalHierarchyEntity leader,
         final ServerLevel level,
         final InfernalHierarchyState input,
-        final long now
+        final long now,
+        final Intent commandIntent
     ) {
         InfernalHierarchyState state = input;
         leader.hierarchyCounters().groupRefreshes++;
@@ -1427,7 +1434,7 @@ public final class InfernalHierarchyRuntime {
         // press-through-focus arm, and the withdraw arm reachable in real play.
         final Optional<UUID> focusTarget = loadedChallenger(level, state, now).map(Entity::getUUID);
         final boolean threatened = state.aggressorId().isPresent() && state.aggressorExpiresAt() > now;
-        final boolean withdrawing = InfernalHierarchyRules.cancelsExecution(state.intent());
+        final boolean withdrawing = InfernalHierarchyRules.cancelsExecution(commandIntent);
         final OrderKind kind;
         Optional<UUID> orderTarget = Optional.empty();
         if (withdrawing) {

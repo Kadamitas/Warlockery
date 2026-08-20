@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:glass_doppelganger_presents_one_subject_without_copying_data",
+  "environment": "warlockery:glass_doppelganger_isolated",
+  "structure": "forge:empty15x15x15",
+  "max_ticks": 2200
+}
+

@@ -486,7 +486,12 @@ public final class InfernalHierarchyGameTests {
                 helper.assertValueEqual(member.hierarchyState().leaderId().orElseThrow(), archfiend.getUUID(),
                     "each squad member records its one leader");
                 final InfernalHierarchyState.Order order = member.hierarchyState().order().orElseThrow();
-                helper.assertValueEqual(order.kind(), OrderKind.HOLD_POST, "the squad order is a squad order");
+                helper.assertValueEqual(order.kind(), OrderKind.HOLD_POST,
+                    "the squad order is a squad order [leaderIntent=" + archfiend.hierarchyState().intent()
+                        + ", health=" + archfiend.getHealth() + "/" + archfiend.getMaxHealth()
+                        + ", underwater=" + archfiend.isUnderWater()
+                        + ", air=" + archfiend.getAirSupply() + "/" + archfiend.getMaxAirSupply()
+                        + ", leaderOrder=" + archfiend.hierarchyState().order() + "]");
                 helper.assertValueEqual(order.issuerRank(), Rank.EMBERHORN_ARCHFIEND, "the issuer is exact");
                 helper.assertTrue(order.expiresAt() <= refreshNow + InfernalHierarchyRules.ARCHFIEND_ORDER_TICKS,
                     "archfiend orders live at most two hundred ticks");
@@ -528,6 +533,7 @@ public final class InfernalHierarchyGameTests {
             // This stage characterizes the helper directly, so the same Archfiend's own live decision
             // cadence is parked to keep the two drivers from racing across the telegraph window.
             parkDecisions(archfiend, helper);
+            archfiend.setHierarchyState(archfiend.hierarchyState().withRouteFailures(0, 0L));
             helper.assertFalse(InfernalHierarchyRuntime.attemptEmberFront(archfiend, helper.getLevel()),
                 "the first eligible call arms the telegraph rather than committing");
             helper.assertValueEqual(archfiend.hierarchyState().intent(), Intent.EMBER_FRONT,

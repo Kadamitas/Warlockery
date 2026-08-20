@@ -659,18 +659,18 @@ public final class HobgoblinJourneyRuntime {
         final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
-        final List<Villager> visited = level.getEntitiesOfClass(
+        final List<Villager> visited = BoundedEntityQuery.collect(
+            level,
             Villager.class,
             traveler.getBoundingBox().inflate(
                 HobgoblinJourneyRules.VILLAGER_SIGNAL_RADIUS, 6.0D,
                 HobgoblinJourneyRules.VILLAGER_SIGNAL_RADIUS
             ),
-            villager -> villager.isAlive()
+            Villager::isAlive,
+            HobgoblinJourneyRules.MAX_ENTITY_VISITS
         );
-        traveler.journeyCounters().entityVisits +=
-            Math.min(visited.size(), HobgoblinJourneyRules.MAX_ENTITY_VISITS);
+        traveler.journeyCounters().entityVisits += visited.size();
         return visited.stream()
-            .limit(HobgoblinJourneyRules.MAX_ENTITY_VISITS)
             .anyMatch(villager -> GoblinHostilityRules.isHumanVillager(villager.getType()));
     }
 
@@ -977,18 +977,18 @@ public final class HobgoblinJourneyRuntime {
         final ServerLevel level
     ) {
         final Optional<Long> key = traveler.journeyState().caravan().key();
-        final List<HobgoblinEntity> visited = level.getEntitiesOfClass(
+        final List<HobgoblinEntity> visited = BoundedEntityQuery.collect(
+            level,
             HobgoblinEntity.class,
             traveler.getBoundingBox().inflate(
                 HobgoblinJourneyRules.DEFEND_RESCUE_RADIUS, 6.0D,
                 HobgoblinJourneyRules.DEFEND_RESCUE_RADIUS
             ),
-            candidate -> candidate != traveler && candidate.isAlive()
+            candidate -> candidate != traveler && candidate.isAlive(),
+            HobgoblinJourneyRules.MAX_ENTITY_VISITS
         );
-        traveler.journeyCounters().entityVisits +=
-            Math.min(visited.size(), HobgoblinJourneyRules.MAX_ENTITY_VISITS);
+        traveler.journeyCounters().entityVisits += visited.size();
         return visited.stream()
-            .limit(HobgoblinJourneyRules.MAX_ENTITY_VISITS)
             .filter(candidate -> candidate.isBaby() || candidate.journeyState().combat().retreating())
             .anyMatch(candidate -> key.isEmpty()
                 || candidate.journeyState().caravan().key()
@@ -1273,13 +1273,14 @@ public final class HobgoblinJourneyRuntime {
         final ServerLevel level,
         final long caravanKey
     ) {
-        final List<HobgoblinEntity> visited = level.getEntitiesOfClass(
+        final List<HobgoblinEntity> visited = BoundedEntityQuery.collect(
+            level,
             HobgoblinEntity.class,
             traveler.getBoundingBox().inflate(8.0D, 4.0D, 8.0D),
-            candidate -> candidate != traveler && candidate.isAlive() && !candidate.isBaby()
+            candidate -> candidate != traveler && candidate.isAlive() && !candidate.isBaby(),
+            HobgoblinJourneyRules.MAX_MEMBER_VISITS
         );
-        traveler.journeyCounters().memberVisits +=
-            Math.min(visited.size(), HobgoblinJourneyRules.MAX_MEMBER_VISITS);
+        traveler.journeyCounters().memberVisits += visited.size();
         return visited.stream()
             .limit(HobgoblinJourneyRules.MAX_MEMBER_RETAINED)
             .filter(candidate -> candidate.journeyState().caravan().key()
@@ -1933,15 +1934,16 @@ public final class HobgoblinJourneyRuntime {
         final HobgoblinEntity traveler,
         final ServerLevel level
     ) {
-        final List<ItemEntity> visited = level.getEntitiesOfClass(
+        final List<ItemEntity> visited = BoundedEntityQuery.collect(
+            level,
             ItemEntity.class,
             traveler.getBoundingBox().inflate(
                 HobgoblinJourneyRules.LOOSE_ITEM_RADIUS, 4.0D, HobgoblinJourneyRules.LOOSE_ITEM_RADIUS
             ),
-            item -> item.isAlive() && traveler.wantsToPickUp(level, item.getItem())
+            item -> item.isAlive() && traveler.wantsToPickUp(level, item.getItem()),
+            HobgoblinJourneyRules.MAX_LOOSE_VISITS
         );
-        traveler.journeyCounters().looseVisits +=
-            Math.min(visited.size(), HobgoblinJourneyRules.MAX_LOOSE_VISITS);
+        traveler.journeyCounters().looseVisits += visited.size();
         return visited.stream()
             .limit(HobgoblinJourneyRules.MAX_LOOSE_RETAINED)
             .min(Comparator.comparingDouble(traveler::distanceToSqr));
@@ -2271,15 +2273,15 @@ public final class HobgoblinJourneyRuntime {
         final ServerLevel level
     ) {
         final Optional<Long> key = child.journeyState().caravan().key();
-        final List<HobgoblinEntity> visited = level.getEntitiesOfClass(
+        final List<HobgoblinEntity> visited = BoundedEntityQuery.collect(
+            level,
             HobgoblinEntity.class,
             child.getBoundingBox().inflate(8.0D, 3.0D, 8.0D),
-            candidate -> candidate.isAlive() && candidate.isBaby()
+            candidate -> candidate.isAlive() && candidate.isBaby(),
+            HobgoblinJourneyRules.MAX_ENTITY_VISITS
         );
-        child.journeyCounters().entityVisits +=
-            Math.min(visited.size(), HobgoblinJourneyRules.MAX_ENTITY_VISITS);
+        child.journeyCounters().entityVisits += visited.size();
         return visited.stream()
-            .limit(HobgoblinJourneyRules.MAX_ENTITY_VISITS)
             .filter(candidate -> key.isEmpty()
                 || candidate.journeyState().caravan().key()
                     .map(member -> member.equals(key.orElseThrow())).orElse(false))

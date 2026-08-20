@@ -481,20 +481,20 @@ public final class SpectralSteedRuntime {
             return state;
         }
         final Optional<UUID> owner = CreatureBehaviorState.owner(steed);
-        final List<LivingEntity> nearby = level.getEntitiesOfClass(
-            LivingEntity.class, steed.getBoundingBox().inflate(SpectralSteedRules.FEAR_RADIUS)
+        final List<LivingEntity> nearby = BoundedEntityQuery.collect(
+            level,
+            LivingEntity.class,
+            steed.getBoundingBox().inflate(SpectralSteedRules.FEAR_RADIUS),
+            candidate -> candidate != steed,
+            SpectralSteedRules.MAX_FEAR_VISITS
         );
         int visits = 0;
         final List<LivingEntity> recipients = new ArrayList<>(SpectralSteedRules.MAX_FEAR_RECIPIENTS);
         for (int index = 0; index < nearby.size(); index++) {
-            if (visits >= SpectralSteedRules.MAX_FEAR_VISITS
-                || recipients.size() >= SpectralSteedRules.MAX_FEAR_RECIPIENTS) {
+            if (recipients.size() >= SpectralSteedRules.MAX_FEAR_RECIPIENTS) {
                 break;
             }
             final LivingEntity candidate = nearby.get(index);
-            if (candidate == steed) {
-                continue;
-            }
             visits++;
             if (!SpectralSteedRules.warningReaches(
                 candidate.isAlive(),

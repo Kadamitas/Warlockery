@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:illusion_copies_deal_no_damage_and_never_touch_vanilla_ai",
+  "environment": "warlockery:illusion_copies_isolated",
+  "structure": "forge:empty15x15x15",
+  "max_ticks": 2200
+}
+

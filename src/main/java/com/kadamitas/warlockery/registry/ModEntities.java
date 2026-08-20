@@ -10,6 +10,10 @@ import com.kadamitas.warlockery.entity.BrambleColossusEntity;
 import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.entity.CircleMageEntity;
 import com.kadamitas.warlockery.entity.HedgeCroneEntity;
+import com.kadamitas.warlockery.entity.GlassDoppelgangerEntity;
+import com.kadamitas.warlockery.entity.IllusionCreeperEntity;
+import com.kadamitas.warlockery.entity.IllusionSpiderEntity;
+import com.kadamitas.warlockery.entity.IllusionZombieEntity;
 import com.kadamitas.warlockery.entity.IronboundSentinelEntity;
 import com.kadamitas.warlockery.entity.HexBatEntity;
 import com.kadamitas.warlockery.entity.HexBatRules;
@@ -157,7 +161,11 @@ public final class ModEntities {
         Map.entry(CreatureKind.DREAMROOT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createDreamroot),
         Map.entry(CreatureKind.BRAMBLE_COLOSSUS, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createBrambleColossus),
         Map.entry(CreatureKind.PALE_STEED, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralSteed),
-        Map.entry(CreatureKind.NIGHTMARE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralSteed)
+        Map.entry(CreatureKind.NIGHTMARE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralSteed),
+        Map.entry(CreatureKind.ILLUSION_CREEPER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIllusionCreeper),
+        Map.entry(CreatureKind.ILLUSION_SPIDER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIllusionSpider),
+        Map.entry(CreatureKind.ILLUSION_ZOMBIE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIllusionZombie),
+        Map.entry(CreatureKind.GLASS_DOPPELGANGER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createGlassDoppelganger)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -432,6 +440,30 @@ public final class ModEntities {
             .build(REGISTRY.key(registration.id()));
     }
 
+    private static EntityType<?> createIllusionCreeper(final EntityRegistration registration) {
+        return EntityType.Builder.of(IllusionCreeperEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height()).notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createIllusionSpider(final EntityRegistration registration) {
+        return EntityType.Builder.of(IllusionSpiderEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height()).notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createIllusionZombie(final EntityRegistration registration) {
+        return EntityType.Builder.of(IllusionZombieEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height()).notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createGlassDoppelganger(final EntityRegistration registration) {
+        return EntityType.Builder.of(GlassDoppelgangerEntity::new, MobCategory.MONSTER)
+            .sized(registration.width(), registration.height()).notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
     private static EntityType<?> createParasyticLouse(final EntityRegistration registration) {
         return EntityType.Builder.of(
             (EntityType<ParasyticLouseEntity> type, net.minecraft.world.level.Level level) ->
@@ -672,6 +704,8 @@ public final class ModEntities {
                 .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
             case "naamah" -> attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11)
                 .add(Attributes.ARMOR, 8).add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+            case "illusion_creeper", "illusion_spider", "illusion_zombie", "glass_doppelganger" ->
+                attributes.add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
             case "hedge_crone" -> attributes.add(Attributes.MAX_HEALTH, 60).add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.ARMOR, 6);
             case "demon" -> attributes.add(Attributes.MAX_HEALTH, 60)
                 .add(Attributes.ATTACK_DAMAGE, 9)

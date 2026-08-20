@@ -6,6 +6,6 @@
     { "ingredient": "#warlockery:brazier/graveyard_dust" }
   ],
   "outputs": [{ "item": "warlockery:ingredient_ash_wood" }],
-  "processing_time": 100,
+  "processing_time": 1200,
   "altar_power": 0
 }

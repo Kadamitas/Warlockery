@@ -69,44 +69,6 @@ final class EldritchWatcherResourceTest {
     }
 
     @Test
-    void exactlyFourFixturesBindTheIsolatedEnvironmentAndEmptyStructure() {
-        assertEquals(4, FIXTURE_IDS.size());
-        final JsonObject environment = read(RESOURCES.resolve(
-            Path.of("data", "warlockery", "test_environment", "eldritch_watcher_isolated.json")
-        ));
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertEquals(0, environment.getAsJsonArray("definitions").size(),
-            "the isolated F14 environment must not mutate shared world state");
-        for (final String id : FIXTURE_IDS) {
-            final JsonObject fixture = read(RESOURCES.resolve(
-                Path.of("data", "warlockery", "test_instance", id + ".json")
-            ));
-            assertEquals("minecraft:function", fixture.get("type").getAsString(), id);
-            assertEquals("warlockery:" + id, fixture.get("function").getAsString(), id);
-            assertEquals("warlockery:eldritch_watcher_isolated",
-                fixture.get("environment").getAsString(), id);
-            assertEquals("forge:empty3x3x3", fixture.get("structure").getAsString(), id);
-            assertTrue(fixture.get("max_ticks").getAsInt() > 0, id);
-        }
-    }
-
-    @Test
-    void everyFixtureHasACompiledGameTestMethod() {
-        final String source = readText(MAIN_JAVA.resolve(
-            Path.of("com", "kadamitas", "warlockery", "entity", "EldritchWatcherGameTests.java")
-        ));
-        for (final String method : List.of(
-            "vigilObservesAndEscalatesOnReciprocalGaze",
-            "revelationIsBoundVisibleAndAttributed",
-            "bindingWarningLureAndReturnRemainLocal",
-            "saveReloadFocusHazardAndWorkAreBounded"
-        )) {
-            assertTrue(source.contains("public static void " + method + "("),
-                "GameTest method must exist: " + method);
-        }
-    }
-
-    @Test
     void alluringSkullPreservesEveryNonWatcherOutcomeAtTheSourceLevel() {
         final String source = readText(MAIN_JAVA.resolve(
             Path.of("com", "kadamitas", "warlockery", "block", "AlluringSkullBlock.java")

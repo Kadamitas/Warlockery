@@ -661,14 +661,13 @@ public final class SpiritRuntime {
         Player closest = null;
         double closestDistance = Double.MAX_VALUE;
         int visited = 0;
-        for (final Player player : level.getEntitiesOfClass(
+        for (final Player player : BoundedEntityQuery.collect(
+            level,
             Player.class,
             spirit.getBoundingBox().inflate(SpiritRules.SEPARATION_RANGE),
-            player -> player.isAlive() && !player.isSpectator()
+            player -> player.isAlive() && !player.isSpectator(),
+            SpiritRules.MAX_PROXIMITY_CANDIDATES
         )) {
-            if (visited >= SpiritRules.MAX_PROXIMITY_CANDIDATES) {
-                break;
-            }
             visited++;
             spirit.spiritCounters().proximityVisits++;
             final double distanceSquared = spirit.distanceToSqr(player);

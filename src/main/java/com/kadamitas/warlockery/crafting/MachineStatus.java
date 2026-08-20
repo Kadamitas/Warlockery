@@ -10,6 +10,7 @@ public enum MachineStatus implements StringIdentified {
     INCOMPLETE("incomplete", false, false),
     NO_HEAT("no_heat", false, false),
     NO_FUEL("no_fuel", false, false),
+    NO_ALTAR_POWER("no_altar_power", false, false),
     NO_FAMILIAR("no_familiar", false, false),
     NO_IGNITION("no_ignition", false, false),
     OUTPUT_BLOCKED("output_blocked", false, false),

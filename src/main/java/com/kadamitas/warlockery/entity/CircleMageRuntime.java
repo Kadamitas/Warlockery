@@ -518,15 +518,14 @@ public final class CircleMageRuntime {
             return List.of();
         }
         final List<UUID> peers = new ArrayList<>();
-        for (final CircleMageEntity peer : level.getEntitiesOfClass(
+        for (final CircleMageEntity peer : BoundedEntityQuery.collect(
+            level,
             CircleMageEntity.class,
             owner.getBoundingBox().inflate(CircleMageRules.FORMATION_QUERY_RADIUS),
             other -> other != mage && other.isAlive()
-                && CreatureBehaviorState.owner(other).equals(ownerId)
+                && CreatureBehaviorState.owner(other).equals(ownerId),
+            CircleMageRules.MAX_FORMATION_PEERS_VISITED
         )) {
-            if (peers.size() >= CircleMageRules.MAX_FORMATION_PEERS_VISITED) {
-                break;
-            }
             mage.mageCounters().peerVisits++;
             peers.add(peer.getUUID());
         }
@@ -591,15 +590,14 @@ public final class CircleMageRuntime {
         }
         final List<Candidate> inspected = new ArrayList<>();
         final List<CircleMageEntity> loaded = new ArrayList<>();
-        for (final CircleMageEntity peer : level.getEntitiesOfClass(
+        for (final CircleMageEntity peer : BoundedEntityQuery.collect(
+            level,
             CircleMageEntity.class,
             mage.getBoundingBox().inflate(CircleMageRules.PEER_RADIUS),
             other -> other != mage && other.isAlive()
-                && CreatureBehaviorState.owner(other).equals(ownerId)
+                && CreatureBehaviorState.owner(other).equals(ownerId),
+            CircleMageRules.MAX_PEERS_VISITED
         )) {
-            if (inspected.size() >= CircleMageRules.MAX_PEERS_VISITED) {
-                break;
-            }
             mage.mageCounters().peerVisits++;
             loaded.add(peer);
             inspected.add(new Candidate(
@@ -794,14 +792,13 @@ public final class CircleMageRuntime {
         }
         final List<UUID> eligible = new ArrayList<>();
         int visited = 0;
-        for (final CircleMageEntity peer : level.getEntitiesOfClass(
+        for (final CircleMageEntity peer : BoundedEntityQuery.collect(
+            level,
             CircleMageEntity.class,
             new AABB(workstation).inflate(CircleMageRules.CONCLAVE_RADIUS),
-            other -> other != mage && other.isAlive()
+            other -> other != mage && other.isAlive(),
+            CircleMageRules.MAX_PEERS_VISITED
         )) {
-            if (visited >= CircleMageRules.MAX_PEERS_VISITED) {
-                break;
-            }
             visited++;
             mage.mageCounters().peerVisits++;
             if (CircleMageRules.conclaveAdmits(

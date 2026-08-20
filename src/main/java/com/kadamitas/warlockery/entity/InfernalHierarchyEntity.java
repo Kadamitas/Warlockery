@@ -159,12 +159,29 @@ public final class InfernalHierarchyEntity extends ArcaneMob {
         final EntitySpawnReason reason,
         final @Nullable SpawnGroupData groupData
     ) {
+        final LivingEntity authoredTarget = getTargetUnchecked();
+        final boolean authoredPersistence = isPersistenceRequired();
         final SpawnGroupData sanitized = groupData != null
             ? groupData
             : new Zombie.ZombieGroupData(false, false);
         final SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, sanitized);
         normalizeHierarchyIdentity();
+        if (authoredTarget != null) setTarget(authoredTarget);
+        if (authoredPersistence) setPersistenceRequired();
         return result;
+    }
+
+    @Override
+    protected @Nullable LivingEntity asValidTarget(final @Nullable LivingEntity target) {
+        return target instanceof Player player && (player.isCreative() || player.isSpectator())
+            ? null
+            : target;
+    }
+
+    @Override
+    public @Nullable LivingEntity getTarget() {
+        final LivingEntity target = getTargetUnchecked();
+        return target != null && canAttack(target) ? target : null;
     }
 
     private void normalizeHierarchyIdentity() {

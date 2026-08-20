@@ -138,7 +138,10 @@ class AmbientActivityRulesTest {
             // the last kind on SOUL_LANTERN_VIGIL and with it the row itself.
             CreatureKind.UMBRAL_SIGIL,
             CreatureKind.MANDRAKE,
-            CreatureKind.DREAMROOT
+            CreatureKind.DREAMROOT,
+            CreatureKind.ILLUSION_CREEPER,
+            CreatureKind.ILLUSION_SPIDER,
+            CreatureKind.ILLUSION_ZOMBIE
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))

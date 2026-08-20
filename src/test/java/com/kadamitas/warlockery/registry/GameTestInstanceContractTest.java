@@ -29,125 +29,15 @@ final class GameTestInstanceContractTest {
     private static final Path INSTANCES = Path.of(
         "src", "main", "resources", "data", "warlockery", "test_instance"
     );
-    private static final Path VAMPIRE_COURT_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "vampire_court_isolated.json"
-    );
-    private static final Path LYCAN_VILLAGER_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "lycan_villager_isolated.json"
-    );
-    private static final Path LYCAN_PACK_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "lycan_pack_isolated.json"
-    );
-    private static final Path WEREWOLF_HUNTER_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "werewolf_hunter_isolated.json"
-    );
-    private static final Path INFERNAL_HIERARCHY_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "infernal_hierarchy_isolated.json"
-    );
-    private static final Path IMP_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "imp_isolated.json"
-    );
-    private static final Path ELDRITCH_WATCHER_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "eldritch_watcher_isolated.json"
-    );
-    private static final Path CORPSE_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "corpse_isolated.json"
-    );
-    private static final Path HELLHOUND_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "hellhound_isolated.json"
-    );
-    private static final Path HEX_BAT_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "hex_bat_isolated.json"
-    );
-    private static final Path BANSHEE_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "banshee_isolated.json"
-    );
-    private static final Path GOBLIN_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "goblin_isolated.json"
-    );
-
-    private static final Path GOBLIN_PATRON_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "goblin_patron_isolated.json"
-    );
-    private static final Path SPECTRAL_STEEDS_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "spectral_steeds_isolated.json"
-    );
-    private static final Path ANIMAL_FAMILIAR_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "animal_familiar_isolated.json"
-    );
-    private static final Path DEATH_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "death_isolated.json"
-    );
-    private static final Path LOST_SOUL_SPIRIT_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "lost_soul_spirit_isolated.json"
-    );
-    private static final Path COVEN_PRACTITIONERS_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "coven_practitioners_isolated.json"
-    );
-    private static final Path POLTERGEIST_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "poltergeist_isolated.json"
-    );
-    private static final Path ECHO_SPECTRE_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "echo_spectre_isolated.json"
-    );
-    private static final Path IRONBOUND_SENTINEL_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "ironbound_sentinel_isolated.json"
-    );
-    private static final Path STORM_SIMIAN_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "storm_simian_isolated.json"
-    );
-    private static final Path COVEN_ATTRIBUTION_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "coven_attribution_isolated.json"
-    );
-    private static final Path PARASYTIC_LOUSE_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "parasytic_louse_isolated.json"
-    );
-    private static final Path UMBRAL_SIGIL_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "umbral_sigil_isolated.json"
-    );
-    private static final Path SPECTRAL_FAMILIAR_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "spectral_familiar_isolated.json"
-    );
-    private static final Path ENT_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment", "ent_isolated.json"
-    );
-    private static final Path THORNED_PURSUER_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment", "thorned_pursuer_isolated.json"
-    );
-    private static final Path LIVING_ROOTS_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment", "living_roots_isolated.json"
-    );
-    private static final Path BRAMBLE_COLOSSUS_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment", "bramble_colossus_isolated.json"
+    private static final Path ENVIRONMENTS = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment"
     );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
+    );
+    private static final Set<String> LARGE_MACHINE_FIXTURES = Set.of(
+        "machine_profile_processes_a_real_inventory",
+        "pipe_automation_uses_sided_item_handlers"
     );
     private static final Set<String> ISOLATED_SPECTRAL_FAMILIAR = Set.of(
         "spectral_familiar_surveys_sample_and_returns",
@@ -336,11 +226,6 @@ final class GameTestInstanceContractTest {
         "banshee_save_reload_and_acquisition_contracts_are_preserved",
         "banshee_flight_hazard_feedback_and_work_are_bounded"
     );
-    private static final Path HOBGOBLIN_ENVIRONMENT = Path.of(
-        "src", "main", "resources", "data", "warlockery", "test_environment",
-        "hobgoblin_isolated.json"
-    );
-
     private static final Set<String> ISOLATED_HOBGOBLIN_JOURNEY = Set.of(
         "hobgoblin_journey_identity_village_exclusion_and_migration",
         "hobgoblin_journey_trade_contract_and_relations",
@@ -363,6 +248,22 @@ final class GameTestInstanceContractTest {
         "forgewarden_commission_ward_and_combat_doctrine",
         "goblin_patrons_accord_navigation_and_cleanup",
         "goblin_patrons_structural_caps_and_foreign_boundaries"
+    );
+    private static final Set<String> ISOLATED_ILLUSION_COPIES = Set.of(
+        "illusion_creeper_tell_collapses_without_blast",
+        "illusion_spider_snare_is_bounded_and_breaks",
+        "illusion_zombie_absorbs_without_reward_or_alert",
+        "illusion_copies_deal_no_damage_and_never_touch_vanilla_ai",
+        "illusion_copies_hazard_escape_and_cancellation_are_deterministic",
+        "illusion_copies_save_reload_and_zombie_lifecycle_are_replaced"
+    );
+    private static final Set<String> ISOLATED_GLASS_DOPPELGANGER = Set.of(
+        "glass_doppelganger_presents_one_subject_without_copying_data",
+        "glass_doppelganger_shadow_band_holds_and_never_closes",
+        "glass_doppelganger_recognition_ends_the_presentation_and_withdraws",
+        "glass_doppelganger_answers_only_attributed_damage",
+        "glass_doppelganger_hazard_escape_and_cancellation_are_deterministic",
+        "glass_doppelganger_save_reload_and_zombie_lifecycle_are_replaced"
     );
     private static final Set<String> ISOLATED_SPECTRAL_STEEDS = Set.of(
         "steed_owner_only_control_and_safe_dismount",
@@ -473,42 +374,60 @@ final class GameTestInstanceContractTest {
         "parasytic_louse_reload_replaces_the_zombie_lifecycle"
     );
 
+    private static final List<FixtureFamily> ISOLATED_FAMILIES = List.of(
+        new FixtureFamily("vampire_court_isolated", ISOLATED_VAMPIRE_COURT),
+        new FixtureFamily("lycan_villager_isolated", ISOLATED_LYCAN_VILLAGER),
+        new FixtureFamily("lycan_pack_isolated", ISOLATED_LYCAN_PACK),
+        new FixtureFamily("werewolf_hunter_isolated", ISOLATED_WEREWOLF_HUNTER),
+        new FixtureFamily("infernal_hierarchy_isolated", ISOLATED_INFERNAL_HIERARCHY),
+        new FixtureFamily("imp_isolated", ISOLATED_IMP),
+        new FixtureFamily("eldritch_watcher_isolated", ISOLATED_ELDRITCH_WATCHER),
+        new FixtureFamily("corpse_isolated", ISOLATED_CORPSE),
+        new FixtureFamily("hellhound_isolated", ISOLATED_HELLHOUND),
+        new FixtureFamily("hex_bat_isolated", ISOLATED_HEX_BAT),
+        new FixtureFamily("banshee_isolated", ISOLATED_BANSHEE),
+        new FixtureFamily("goblin_isolated", ISOLATED_GOBLIN_ENCLAVE),
+        new FixtureFamily("hobgoblin_isolated", ISOLATED_HOBGOBLIN_JOURNEY),
+        new FixtureFamily("goblin_patron_isolated", ISOLATED_GOBLIN_PATRON),
+        new FixtureFamily("illusion_copies_isolated", ISOLATED_ILLUSION_COPIES),
+        new FixtureFamily("glass_doppelganger_isolated", ISOLATED_GLASS_DOPPELGANGER),
+        new FixtureFamily("spectral_steeds_isolated", ISOLATED_SPECTRAL_STEEDS),
+        new FixtureFamily("animal_familiar_isolated", ISOLATED_ANIMAL_FAMILIAR),
+        new FixtureFamily("death_isolated", ISOLATED_DEATH),
+        new FixtureFamily("lost_soul_spirit_isolated", ISOLATED_LOST_SOUL_SPIRIT),
+        new FixtureFamily("coven_practitioners_isolated", ISOLATED_COVEN_PRACTITIONERS),
+        new FixtureFamily("coven_attribution_isolated", ISOLATED_COVEN_ATTRIBUTION),
+        new FixtureFamily("poltergeist_isolated", ISOLATED_POLTERGEIST),
+        new FixtureFamily("echo_spectre_isolated", ISOLATED_ECHO_SPECTRE),
+        new FixtureFamily("umbral_sigil_isolated", ISOLATED_UMBRAL_SIGIL),
+        new FixtureFamily("ironbound_sentinel_isolated", ISOLATED_IRONBOUND_SENTINEL),
+        new FixtureFamily("storm_simian_isolated", ISOLATED_STORM_SIMIAN),
+        new FixtureFamily("parasytic_louse_isolated", ISOLATED_PARASYTIC_LOUSE),
+        new FixtureFamily("spectral_familiar_isolated", ISOLATED_SPECTRAL_FAMILIAR),
+        new FixtureFamily("ent_isolated", ISOLATED_ENT),
+        new FixtureFamily("thorned_pursuer_isolated", ISOLATED_THORNED_PURSUER),
+        new FixtureFamily("living_roots_isolated", ISOLATED_LIVING_ROOTS),
+        new FixtureFamily("bramble_colossus_isolated", ISOLATED_BRAMBLE_COLOSSUS)
+    );
+    private static final Map<String, String> ISOLATED_ENVIRONMENT_BY_FIXTURE = isolatedEnvironments();
+
     @Test
-    void exactDedicatedPlantFamilyFixturesUseTheirRegisteredNoOpEnvironments() {
-        final Map<Path, Set<String>> families = Map.of(
-            ENT_ENVIRONMENT, ISOLATED_ENT,
-            THORNED_PURSUER_ENVIRONMENT, ISOLATED_THORNED_PURSUER,
-            LIVING_ROOTS_ENVIRONMENT, ISOLATED_LIVING_ROOTS,
-            BRAMBLE_COLOSSUS_ENVIRONMENT, ISOLATED_BRAMBLE_COLOSSUS
-        );
+    void isolatedFixtureFamiliesUseRegisteredNoOpEnvironments() {
         final Set<String> registered = registrations().stream()
             .map(Registration::id)
             .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        families.forEach((path, ids) -> {
-            assertTrue(Files.exists(path), () -> "missing dedicated plant environment " + path);
+        final Set<String> assigned = new LinkedHashSet<>();
+        for (final FixtureFamily family : ISOLATED_FAMILIES) {
+            final Path path = ENVIRONMENTS.resolve(family.environment() + ".json");
+            assertTrue(Files.exists(path), () -> "missing isolated environment " + path);
             final JsonObject environment = JsonParser.parseString(read(path)).getAsJsonObject();
             assertEquals("minecraft:all_of", environment.get("type").getAsString(), path.toString());
             assertTrue(environment.getAsJsonArray("definitions").isEmpty(), path.toString());
-            assertEquals(6, ids.size(), path.toString());
-            assertTrue(registered.containsAll(ids), () -> "missing registrations for " + path);
-        });
-    }
-
-    @Test
-    void onlyTheExactParasyticLouseFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(PARASYTIC_LOUSE_ENVIRONMENT),
-            "the isolated F31 Parasytic Louse environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(PARASYTIC_LOUSE_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F31 Parasytic Louse environment must not mutate shared world state");
-        assertEquals(5, ISOLATED_PARASYTIC_LOUSE.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_PARASYTIC_LOUSE),
-            "all five exact F31 Parasytic Louse GameTests must be registered");
+            assertTrue(registered.containsAll(family.fixtures()),
+                () -> "missing registrations for " + family.environment());
+            assertTrue(family.fixtures().stream().allMatch(assigned::add),
+                () -> "fixture assigned to multiple isolated environments: " + family.environment());
+        }
     }
 
     @Test
@@ -528,478 +447,21 @@ final class GameTestInstanceContractTest {
         registrations.forEach(this::assertFixtureAndMethod);
     }
 
-    @Test
-    void onlyTheExactVampireCourtFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(VAMPIRE_COURT_ENVIRONMENT),
-            "the isolated Vampire Court environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(VAMPIRE_COURT_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated Vampire Court environment must not mutate shared world state");
-    }
-
-    @Test
-    void onlyTheExactLycanVillagerFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(LYCAN_VILLAGER_ENVIRONMENT));
-        final JsonObject environment = JsonParser.parseString(read(LYCAN_VILLAGER_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty());
-        assertEquals(15, ISOLATED_LYCAN_VILLAGER.size());
-    }
-
-    @Test
-    void onlyTheExactLycanPackFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(LYCAN_PACK_ENVIRONMENT),
-            "the isolated F04 Lycan Pack environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(LYCAN_PACK_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F04 Lycan Pack environment must not mutate shared world state");
-        assertEquals(8, ISOLATED_LYCAN_PACK.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_LYCAN_PACK),
-            "all eight exact F04 Lycan Pack GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactWerewolfHunterFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(WEREWOLF_HUNTER_ENVIRONMENT),
-            "the isolated F06 Werewolf Hunter environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(WEREWOLF_HUNTER_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F06 Werewolf Hunter environment must not mutate shared world state");
-        assertEquals(10, ISOLATED_WEREWOLF_HUNTER.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_WEREWOLF_HUNTER),
-            "all ten exact F06 Werewolf Hunter GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactInfernalHierarchyFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(INFERNAL_HIERARCHY_ENVIRONMENT),
-            "the isolated F07 Infernal Hierarchy environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(INFERNAL_HIERARCHY_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F07 Infernal Hierarchy environment must not mutate shared world state");
-        assertEquals(10, ISOLATED_INFERNAL_HIERARCHY.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_INFERNAL_HIERARCHY),
-            "all ten exact F07 Infernal Hierarchy GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactImpFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(IMP_ENVIRONMENT),
-            "the isolated F08 Imp environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(IMP_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F08 Imp environment must not mutate shared world state");
-        assertEquals(12, ISOLATED_IMP.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_IMP),
-            "all twelve exact F08 Imp GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactEldritchWatcherFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(ELDRITCH_WATCHER_ENVIRONMENT),
-            "the isolated F14 Eldritch Watcher environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(ELDRITCH_WATCHER_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F14 Eldritch Watcher environment must not mutate shared world state");
-        assertEquals(4, ISOLATED_ELDRITCH_WATCHER.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_ELDRITCH_WATCHER),
-            "all four exact F14 Eldritch Watcher GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactCorpseFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(CORPSE_ENVIRONMENT),
-            "the isolated F17 Corpse environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(CORPSE_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F17 Corpse environment must not mutate shared world state");
-        assertEquals(6, ISOLATED_CORPSE.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_CORPSE),
-            "all six exact F17 Corpse GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactHellhoundFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(HELLHOUND_ENVIRONMENT),
-            "the isolated F09 Hellhound environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(HELLHOUND_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F09 Hellhound environment must not mutate shared world state");
-        assertEquals(12, ISOLATED_HELLHOUND.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_HELLHOUND),
-            "all twelve exact F09 Hellhound GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactHexBatFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(HEX_BAT_ENVIRONMENT),
-            "the isolated F15 Hex Bat environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(HEX_BAT_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F15 Hex Bat environment must not mutate shared world state");
-        assertEquals(4, ISOLATED_HEX_BAT.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_HEX_BAT),
-            "all four exact F15 Hex Bat GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactBansheeFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(BANSHEE_ENVIRONMENT),
-            "the isolated F16 Banshee environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(BANSHEE_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F16 Banshee environment must not mutate shared world state");
-        assertEquals(5, ISOLATED_BANSHEE.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_BANSHEE),
-            "all five exact F16 Banshee GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactHobgoblinJourneyFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(HOBGOBLIN_ENVIRONMENT),
-            "the isolated F11 Hobgoblin environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(HOBGOBLIN_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F11 Hobgoblin environment must not mutate shared world state");
-        assertEquals(5, ISOLATED_HOBGOBLIN_JOURNEY.size());
-        final Set<String> registeredJourney = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registeredJourney.containsAll(ISOLATED_HOBGOBLIN_JOURNEY),
-            "all five exact F11 Hobgoblin GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactGoblinPatronFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(GOBLIN_PATRON_ENVIRONMENT),
-            "the isolated F12 Goblin Patron environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(GOBLIN_PATRON_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F12 Goblin Patron environment must not mutate shared world state");
-        assertEquals(5, ISOLATED_GOBLIN_PATRON.size());
-        final Set<String> registeredPatrons = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registeredPatrons.containsAll(ISOLATED_GOBLIN_PATRON),
-            "all five exact F12 Goblin Patron GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactSpectralSteedFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(SPECTRAL_STEEDS_ENVIRONMENT),
-            "the isolated F27 Spectral Steeds environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(SPECTRAL_STEEDS_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F27 Spectral Steeds environment must not mutate shared world state");
-        assertEquals(7, ISOLATED_SPECTRAL_STEEDS.size());
-        final Set<String> registeredSteeds = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registeredSteeds.containsAll(ISOLATED_SPECTRAL_STEEDS),
-            "all seven exact F27 Spectral Steed GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactGoblinEnclaveFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(GOBLIN_ENVIRONMENT),
-            "the isolated F10 Goblin environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(GOBLIN_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F10 Goblin environment must not mutate shared world state");
-        assertEquals(5, ISOLATED_GOBLIN_ENCLAVE.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_GOBLIN_ENCLAVE),
-            "all five exact F10 Goblin GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactDeathFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(DEATH_ENVIRONMENT),
-            "the isolated F18 Death environment resource must exist");
-        final JsonObject environment = JsonParser.parseString(read(DEATH_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F18 Death environment must not mutate shared world state");
-        assertEquals(6, ISOLATED_DEATH.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_DEATH),
-            "all six exact F18 Death GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactLostSoulAndSpiritFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(LOST_SOUL_SPIRIT_ENVIRONMENT),
-            "the isolated F19 Lost Soul and Spirit environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(LOST_SOUL_SPIRIT_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F19 environment must not mutate shared world state");
-        assertEquals(6, ISOLATED_LOST_SOUL_SPIRIT.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_LOST_SOUL_SPIRIT),
-            "all six exact F19 Lost Soul and Spirit GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactCovenPractitionerFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(COVEN_PRACTITIONERS_ENVIRONMENT),
-            "the isolated F13 Coven Practitioner environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(COVEN_PRACTITIONERS_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F13 environment must not mutate shared world state");
-        assertEquals(6, ISOLATED_COVEN_PRACTITIONERS.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_COVEN_PRACTITIONERS),
-            "all six exact F13 Coven Practitioner GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactPoltergeistFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(POLTERGEIST_ENVIRONMENT),
-            "the isolated F20 Poltergeist environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(POLTERGEIST_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F20 environment must not mutate shared world state");
-        assertEquals(6, ISOLATED_POLTERGEIST.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_POLTERGEIST),
-            "all six exact F20 Poltergeist GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactIronboundSentinelFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(IRONBOUND_SENTINEL_ENVIRONMENT),
-            "the isolated F36 Ironbound Sentinel environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(IRONBOUND_SENTINEL_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F36 environment must not mutate shared world state");
-        assertEquals(6, ISOLATED_IRONBOUND_SENTINEL.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_IRONBOUND_SENTINEL),
-            "all six exact F36 Ironbound Sentinel GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactEchoShadeAndSpectreFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(ECHO_SPECTRE_ENVIRONMENT),
-            "the isolated F21 Echo Shade and Spectre environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(ECHO_SPECTRE_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F21 environment must not mutate shared world state");
-        assertEquals(8, ISOLATED_ECHO_SPECTRE.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_ECHO_SPECTRE),
-            "all eight exact F21 Echo Shade and Spectre GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactCovenAttributionFixtureUsesTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(COVEN_ATTRIBUTION_ENVIRONMENT),
-            "the isolated coven attribution environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(COVEN_ATTRIBUTION_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated coven attribution environment must not mutate shared world state");
-        assertEquals(1, ISOLATED_COVEN_ATTRIBUTION.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_COVEN_ATTRIBUTION),
-            "the cross-coven attribution GameTest must remain registered");
-    }
-
-    @Test
-    void onlyTheExactStormSimianFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(STORM_SIMIAN_ENVIRONMENT),
-            "the isolated F28 Storm Simian environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(STORM_SIMIAN_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F28 environment must not mutate shared world state");
-        assertEquals(9, ISOLATED_STORM_SIMIAN.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_STORM_SIMIAN),
-            "all nine exact F28 Storm Simian GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactUmbralSigilFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(UMBRAL_SIGIL_ENVIRONMENT),
-            "the isolated F22 Umbral Sigil environment resource must exist");
-        final JsonObject environment =
-            JsonParser.parseString(read(UMBRAL_SIGIL_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
-            "the isolated F22 environment must not mutate shared world state");
-        assertEquals(6, ISOLATED_UMBRAL_SIGIL.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_UMBRAL_SIGIL),
-            "all six exact F22 Umbral Sigil GameTests must be registered");
-    }
-
-    @Test
-    void onlyTheExactSpectralFamiliarFixturesUseTheRegisteredNoOpEnvironment() {
-        assertTrue(Files.exists(SPECTRAL_FAMILIAR_ENVIRONMENT));
-        final JsonObject environment =
-            JsonParser.parseString(read(SPECTRAL_FAMILIAR_ENVIRONMENT)).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertTrue(environment.getAsJsonArray("definitions").isEmpty());
-        assertEquals(6, ISOLATED_SPECTRAL_FAMILIAR.size());
-        final Set<String> registered = registrations().stream()
-            .map(Registration::id)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        assertTrue(registered.containsAll(ISOLATED_SPECTRAL_FAMILIAR));
-    }
-
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
         assertEquals("warlockery:" + registration.id(), fixture.get("function").getAsString(), registration.id());
         assertEquals(
-            CLOCK_ISOLATED.contains(registration.id())
-                ? "warlockery:" + registration.id()
-                : ISOLATED_VAMPIRE_COURT.contains(registration.id())
-                ? "warlockery:vampire_court_isolated"
-                : ISOLATED_LYCAN_VILLAGER.contains(registration.id())
-                    ? "warlockery:lycan_villager_isolated"
-                    : ISOLATED_LYCAN_PACK.contains(registration.id())
-                        ? "warlockery:lycan_pack_isolated"
-                        : ISOLATED_WEREWOLF_HUNTER.contains(registration.id())
-                            ? "warlockery:werewolf_hunter_isolated"
-                            : ISOLATED_INFERNAL_HIERARCHY.contains(registration.id())
-                                ? "warlockery:infernal_hierarchy_isolated"
-                                : ISOLATED_IMP.contains(registration.id())
-                                    ? "warlockery:imp_isolated"
-                                    : ISOLATED_ELDRITCH_WATCHER.contains(registration.id())
-                                        ? "warlockery:eldritch_watcher_isolated"
-                                        : ISOLATED_CORPSE.contains(registration.id())
-                                            ? "warlockery:corpse_isolated"
-                                            : ISOLATED_HELLHOUND.contains(registration.id())
-                                                ? "warlockery:hellhound_isolated"
-                                                : ISOLATED_HEX_BAT.contains(registration.id())
-                                                    ? "warlockery:hex_bat_isolated"
-                                                    : ISOLATED_BANSHEE.contains(registration.id())
-                                                        ? "warlockery:banshee_isolated"
-                                                        : ISOLATED_DEATH.contains(registration.id())
-                                                            ? "warlockery:death_isolated"
-                                                            : ISOLATED_LOST_SOUL_SPIRIT.contains(registration.id())
-                                                                ? "warlockery:lost_soul_spirit_isolated"
-                                                                : ISOLATED_GOBLIN_ENCLAVE.contains(registration.id())
-                                                                    ? "warlockery:goblin_isolated"
-                                                                    : ISOLATED_COVEN_PRACTITIONERS.contains(registration.id())
-                                                                        ? "warlockery:coven_practitioners_isolated"
-                                                                        : ISOLATED_POLTERGEIST.contains(registration.id())
-                                                                            ? "warlockery:poltergeist_isolated"
-                                                                            : ISOLATED_ECHO_SPECTRE.contains(registration.id())
-                                                                                ? "warlockery:echo_spectre_isolated"
-                                                                                : ISOLATED_UMBRAL_SIGIL.contains(registration.id())
-                                                                                    ? "warlockery:umbral_sigil_isolated"
-                                                                                    : ISOLATED_HOBGOBLIN_JOURNEY.contains(registration.id())
-                                                                                    ? "warlockery:hobgoblin_isolated"
-                                                                                    : ISOLATED_GOBLIN_PATRON.contains(registration.id())
-                                                                                        ? "warlockery:goblin_patron_isolated"
-                                                                                        : ISOLATED_ANIMAL_FAMILIAR.contains(registration.id())
-                                                                                            ? "warlockery:animal_familiar_isolated"
-                                                                                            : ISOLATED_COVEN_ATTRIBUTION.contains(registration.id())
-                                                                                            ? "warlockery:coven_attribution_isolated"
-                                                                                            : ISOLATED_STORM_SIMIAN.contains(registration.id())
-                                                                                                ? "warlockery:storm_simian_isolated"
-                                                                                                : ISOLATED_PARASYTIC_LOUSE.contains(registration.id())
-                                                                                                    ? "warlockery:parasytic_louse_isolated"
-                                                                                                    : ISOLATED_IRONBOUND_SENTINEL.contains(registration.id())
-                                                                                                        ? "warlockery:ironbound_sentinel_isolated"
-                                                                                                        : ISOLATED_SPECTRAL_FAMILIAR.contains(registration.id())
-                                                                                                            ? "warlockery:spectral_familiar_isolated"
-                                                                                                            : ISOLATED_SPECTRAL_STEEDS.contains(registration.id())
-                                                                                                                ? "warlockery:spectral_steeds_isolated"
-                                                                                                                : ISOLATED_ENT.contains(registration.id())
-                                                                                                                    ? "warlockery:ent_isolated"
-                                                                                                                    : ISOLATED_THORNED_PURSUER.contains(registration.id())
-                                                                                                                        ? "warlockery:thorned_pursuer_isolated"
-                                                                                                                        : ISOLATED_LIVING_ROOTS.contains(registration.id())
-                                                                                                                            ? "warlockery:living_roots_isolated"
-                                                                                                                            : ISOLATED_BRAMBLE_COLOSSUS.contains(registration.id())
-                                                                                                                                ? "warlockery:bramble_colossus_isolated"
-                                                                                                                                : "minecraft:default",
+            expectedEnvironment(registration.id()),
             fixture.get("environment").getAsString(),
             registration.id()
         );
         assertEquals(
             ISOLATED_THORNED_PURSUER.contains(registration.id())
                 || ISOLATED_BRAMBLE_COLOSSUS.contains(registration.id())
+                || ISOLATED_ILLUSION_COPIES.contains(registration.id())
+                || ISOLATED_GLASS_DOPPELGANGER.contains(registration.id())
+                || LARGE_MACHINE_FIXTURES.contains(registration.id())
                 ? "forge:empty15x15x15"
                 : "forge:empty3x3x3",
             fixture.get("structure").getAsString(),
@@ -1056,6 +518,30 @@ final class GameTestInstanceContractTest {
         return JsonParser.parseString(read(INSTANCES.resolve(id + ".json"))).getAsJsonObject();
     }
 
+    private static String expectedEnvironment(final String fixture) {
+        if (CLOCK_ISOLATED.contains(fixture)) {
+            return "warlockery:" + fixture;
+        }
+        final String environment = ISOLATED_ENVIRONMENT_BY_FIXTURE.get(fixture);
+        return environment == null ? "minecraft:default" : "warlockery:" + environment;
+    }
+
+    private static Path environment(final String id) {
+        return ENVIRONMENTS.resolve(id + ".json");
+    }
+
+    private static Map<String, String> isolatedEnvironments() {
+        final Map<String, String> environments = new LinkedHashMap<>();
+        for (final FixtureFamily family : ISOLATED_FAMILIES) {
+            for (final String fixture : family.fixtures()) {
+                if (environments.put(fixture, family.environment()) != null) {
+                    throw new IllegalStateException("Fixture assigned twice: " + fixture);
+                }
+            }
+        }
+        return Map.copyOf(environments);
+    }
+
     private static String read(final Path path) {
         try {
             return Files.readString(path);
@@ -1065,5 +551,8 @@ final class GameTestInstanceContractTest {
     }
 
     private record Registration(String id, String owner, String method) {
+    }
+
+    private record FixtureFamily(String environment, Set<String> fixtures) {
     }
 }

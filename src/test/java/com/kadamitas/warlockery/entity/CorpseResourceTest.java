@@ -90,35 +90,6 @@ final class CorpseResourceTest {
     }
 
     @Test
-    void corpseIsolatedEnvironmentIsOneEmptyAllOfDefinition() {
-        final JsonObject environment = JsonParser.parseString(
-            read(DATA.resolve("test_environment/corpse_isolated.json"))
-        ).getAsJsonObject();
-        assertEquals("minecraft:all_of", environment.get("type").getAsString());
-        assertEquals(0, environment.getAsJsonArray("definitions").size());
-    }
-
-    @Test
-    void exactlySixCorpseDescriptorsUseTheIsolatedEnvironment() throws IOException {
-        for (final String descriptor : DESCRIPTORS) {
-            final JsonObject instance = JsonParser.parseString(
-                read(DATA.resolve("test_instance/" + descriptor + ".json"))
-            ).getAsJsonObject();
-            assertEquals("minecraft:function", instance.get("type").getAsString());
-            assertEquals("warlockery:" + descriptor, instance.get("function").getAsString());
-            assertEquals("warlockery:corpse_isolated", instance.get("environment").getAsString());
-        }
-        try (var files = Files.list(DATA.resolve("test_instance"))) {
-            final long corpseDescriptors = files
-                .map(path -> path.getFileName().toString())
-                .filter(name -> name.startsWith("corpse_"))
-                .count();
-            assertEquals(DESCRIPTORS.size(), corpseDescriptors,
-                "exactly the six approved F17 descriptors exist");
-        }
-    }
-
-    @Test
     void protectedCorpseNameLootAndAcquisitionResourcesRemainExact() {
         final String language = read(ASSETS.resolve("lang/en_us.json"));
         assertTrue(language.contains("\"entity.warlockery.corpse\": \"Body\""));

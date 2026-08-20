@@ -60,8 +60,7 @@ public record AmbientActivityProfile(
         profile(ActivityType.FAMILIAR_HOME, Set.of(CreatureKind.CAT, CreatureKind.FAMILIAR), 300, 8, 3_600, 0),
         profile(ActivityType.THORN_GARDEN,
             Set.of(CreatureKind.THORNED_PURSUER, CreatureKind.BRAMBLE_COLOSSUS), 300, 8, 3_600, 0),
-        profile(ActivityType.MIRROR_GAZE, Set.of(CreatureKind.GLASS_DOPPELGANGER,
-            CreatureKind.ILLUSION_CREEPER, CreatureKind.ILLUSION_SPIDER, CreatureKind.ILLUSION_ZOMBIE),
+        profile(ActivityType.MIRROR_GAZE, Set.of(CreatureKind.GLASS_DOPPELGANGER),
             300, 10, 3_600, 0),
         // F05 superseded the LYCAN_VILLAGER share of MOON_GAZE with its own MOON_WATCH intent, which
         // gates on a full moon, clear sky, a safe schedule and an anchor before it raises the same

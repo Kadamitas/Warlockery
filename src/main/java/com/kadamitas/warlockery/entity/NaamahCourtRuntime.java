@@ -557,13 +557,13 @@ public final class NaamahCourtRuntime {
         naamah.courtCounters().surgesCalled++;
         final AABB area = new AABB(target.blockPosition()).inflate(NaamahCourtRules.SURGE_RADIUS);
         int struck = 0;
-        for (final LivingEntity caught : level.getEntitiesOfClass(LivingEntity.class, area)) {
-            if (struck >= NaamahCourtRules.MAX_CANDIDATES) {
-                break;
-            }
-            if (caught == naamah || !caught.isAlive() || !eligibleTarget(naamah, caught)) {
-                continue;
-            }
+        for (final LivingEntity caught : BoundedEntityQuery.collect(
+            level,
+            LivingEntity.class,
+            area,
+            candidate -> candidate != naamah && candidate.isAlive() && eligibleTarget(naamah, candidate),
+            NaamahCourtRules.MAX_CANDIDATES
+        )) {
             struck++;
             naamah.courtCounters().surgeVictims++;
             caught.hurtServer(level, level.damageSources().indirectMagic(naamah, naamah),

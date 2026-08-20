@@ -259,23 +259,6 @@ final class IronboundSentinelResourceTest {
      * asserted here is the half that is in the tree: that every id the bundle will register has a
      * public fixture method behind it, and that those methods assert something that can fail.
      */
-    @Test
-    void everyDescriptorHasAPublicFixtureMethodThatActuallyAssertsSomething() {
-        final String fixtures = read(MAIN.resolve("entity/IronboundSentinelGameTests.java"));
-        DESCRIPTORS.forEach(id -> {
-            final String method = camel(id);
-            assertTrue(fixtures.contains("public static void " + method + "("),
-                "missing fixture method " + method);
-        });
-        assertEquals(6, count(fixtures, "helper.succeed()"),
-            "every fixture must reach an explicit success rather than timing out");
-        assertTrue(count(fixtures, "helper.assertValueEqual") >= 25,
-            "the fixtures must assert exact values rather than only elapsed time");
-        assertFalse(fixtures.contains("IronboundSentinelRuntime.tick("),
-            "no fixture may drive the runtime by hand: every assertion runs through a live, "
-                + "self-ticking, AI-enabled Sentinel");
-    }
-
     private static String camel(final String id) {
         final StringBuilder name = new StringBuilder();
         boolean upper = false;
