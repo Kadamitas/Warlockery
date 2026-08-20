@@ -37,7 +37,7 @@ final class CreatureBehaviorParityTest {
         mob("circle_mage", CreatureKind.CIRCLE_MAGE, Feature.COVEN_RECRUITMENT),
         mob("death", CreatureKind.DEATH, Feature.DEATH_DISGUISE),
         mob("demon", CreatureKind.DEMON, Feature.INFERNAL_BARTER),
-        mob("ent", CreatureKind.ENT, Feature.PROXIMITY_AGGRESSION),
+        mob("ent", CreatureKind.ENT, Feature.BIOME_VARIANTS),
         mob("familiar_cat", CreatureKind.CAT, Feature.FAMILIAR_BOND),
         mob("imp", CreatureKind.IMP, Feature.FIRE_MELEE),
         mob("storm_simian", CreatureKind.STORM_SIMIAN, Feature.WAYSTONE_TRAVEL),
@@ -138,6 +138,10 @@ final class CreatureBehaviorParityTest {
                 "the Banshee profile is compatibility metadata only: its mob-specific behavior "
                     + "lives in the dedicated BansheeRuntime, and no generic SCREECH or PHASED "
                     + "claim may return");
+        } else if (testCase.kind() == CreatureKind.ENT) {
+            assertEquals(Set.of(Feature.BIOME_VARIANTS), profile.features(),
+                "the Ent profile keeps variant compatibility metadata only; its behavior lives "
+                    + "in the dedicated EntRuntime and generic proximity aggression may not return");
         } else {
             assertTrue(profile.features().size() >= 2);
         }

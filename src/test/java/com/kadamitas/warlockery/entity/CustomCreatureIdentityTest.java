@@ -22,6 +22,91 @@ final class CustomCreatureIdentityTest {
         Bootstrap.bootStrap();
     }
 
+
+    @Test
+    void entIsADedicatedPathfinderWithNoGolemOrGenericControllerIdentity() {
+        assertEquals(net.minecraft.world.entity.PathfinderMob.class, EntEntity.class.getSuperclass());
+        assertTrue(ArcaneCreature.class.isAssignableFrom(EntEntity.class));
+        assertFalse(net.minecraft.world.entity.animal.golem.IronGolem.class.isAssignableFrom(EntEntity.class));
+        assertFalse(net.minecraft.world.entity.animal.golem.AbstractGolem.class.isAssignableFrom(EntEntity.class));
+        assertFalse(ArcaneMob.class.isAssignableFrom(EntEntity.class));
+        assertEquals(200.0D, EntEntity.BASE_MAX_HEALTH);
+        assertEquals(15.0D, EntEntity.BASE_ATTACK_DAMAGE);
+        assertEquals(0.25D, EntEntity.BASE_MOVEMENT_SPEED);
+        assertEquals(2.0D, EntEntity.BASE_ARMOR);
+        assertEquals(16.0D, EntEntity.BASE_FOLLOW_RANGE);
+        assertEquals(0, EntEntity.BASE_XP_REWARD);
+    }
+
+    @Test
+    void thornedPursuerIsADedicatedAdultEmptyMonster() {
+        assertEquals(net.minecraft.world.entity.monster.Monster.class,
+            ThornedPursuerEntity.class.getSuperclass());
+        assertTrue(java.lang.reflect.Modifier.isFinal(ThornedPursuerEntity.class.getModifiers()));
+        assertTrue(ArcaneCreature.class.isAssignableFrom(ThornedPursuerEntity.class));
+        assertFalse(net.minecraft.world.entity.monster.zombie.Zombie.class
+            .isAssignableFrom(ThornedPursuerEntity.class));
+        assertFalse(ArcaneMob.class.isAssignableFrom(ThornedPursuerEntity.class));
+        assertEquals(100.0D, ThornedPursuerEntity.BASE_MAX_HEALTH);
+        assertEquals(11.0D, ThornedPursuerEntity.BASE_ATTACK_DAMAGE);
+        assertEquals(8.0D, ThornedPursuerEntity.BASE_ARMOR);
+        assertEquals(35.0D, ThornedPursuerEntity.BASE_FOLLOW_RANGE);
+        assertEquals(0.23D, ThornedPursuerEntity.BASE_MOVEMENT_SPEED);
+        assertEquals(0.0D, ThornedPursuerEntity.BASE_REINFORCEMENT_CHANCE);
+        assertEquals(5, ThornedPursuerEntity.BASE_XP);
+        assertEquals(0, ThornedPursuerEntity.LIFECYCLE_EQUIPMENT_SLOTS);
+        assertEquals(java.util.Set.of(
+            "minecraft:baby", "minecraft:random_spawn_bonus", "minecraft:zombie_random_spawn_bonus",
+            "minecraft:leader_zombie_bonus", "minecraft:reinforcement_caller_charge",
+            "minecraft:reinforcement_callee_charge", "warlockery:thorned_pursuer_course"),
+            ThornedPursuerEntity.lifecycleModifierIds());
+        assertTrue(java.util.Arrays.stream(ThornedPursuerEntity.class.getDeclaredMethods())
+            .anyMatch(method -> method.getName().equals("remove")),
+            "removal must own transient and escort teardown");
+        assertTrue(java.util.Arrays.stream(ThornedPursuerEntity.class.getDeclaredMethods())
+            .anyMatch(method -> method.getName().equals("teleport")),
+            "external teleport and dimension change must own full transient teardown");
+    }
+
+    @Test
+    void livingRootsAreSeparateDedicatedNonZombieMonstersWithExactPublicBodies() {
+        for (final Class<?> type : java.util.List.of(MandrakeEntity.class, DreamrootEntity.class)) {
+            assertEquals(net.minecraft.world.entity.monster.Monster.class, type.getSuperclass());
+            assertTrue(ArcaneCreature.class.isAssignableFrom(type));
+            assertTrue(java.lang.reflect.Modifier.isFinal(type.getModifiers()));
+            assertFalse(net.minecraft.world.entity.monster.zombie.Zombie.class.isAssignableFrom(type));
+            assertFalse(ArcaneMob.class.isAssignableFrom(type));
+        }
+        assertEquals(20.0D, MandrakeEntity.BASE_MAX_HEALTH);
+        assertEquals(35.0D, MandrakeEntity.BASE_FOLLOW_RANGE);
+        assertEquals(0.23D, MandrakeEntity.BASE_MOVEMENT_SPEED);
+        assertEquals(3.0D, MandrakeEntity.BASE_ATTACK_DAMAGE);
+        assertEquals(2.0D, MandrakeEntity.BASE_ARMOR);
+        assertEquals(5, MandrakeEntity.XP_REWARD);
+        assertEquals(MandrakeEntity.BASE_MAX_HEALTH, DreamrootEntity.BASE_MAX_HEALTH);
+        assertEquals(MandrakeEntity.BASE_FOLLOW_RANGE, DreamrootEntity.BASE_FOLLOW_RANGE);
+        assertEquals(MandrakeEntity.BASE_MOVEMENT_SPEED, DreamrootEntity.BASE_MOVEMENT_SPEED);
+        assertEquals(MandrakeEntity.BASE_ATTACK_DAMAGE, DreamrootEntity.BASE_ATTACK_DAMAGE);
+        assertEquals(MandrakeEntity.BASE_ARMOR, DreamrootEntity.BASE_ARMOR);
+        assertEquals(MandrakeEntity.XP_REWARD, DreamrootEntity.XP_REWARD);
+        assertEquals(0.55F, CreatureVisualProfile.forKind(CreatureKind.MANDRAKE).width());
+        assertEquals(0.85F, CreatureVisualProfile.forKind(CreatureKind.MANDRAKE).height());
+        assertEquals(0.9F, CreatureVisualProfile.forKind(CreatureKind.DREAMROOT).width());
+        assertEquals(1.7F, CreatureVisualProfile.forKind(CreatureKind.DREAMROOT).height());
+    }
+
+    @Test
+    void brambleColossusIsADedicatedNonZombieMonster() {
+        assertEquals(net.minecraft.world.entity.monster.Monster.class, BrambleColossusEntity.class.getSuperclass());
+        assertFalse(net.minecraft.world.entity.monster.zombie.Zombie.class.isAssignableFrom(BrambleColossusEntity.class));
+        assertFalse(ArcaneMob.class.isAssignableFrom(BrambleColossusEntity.class));
+        assertTrue(ArcaneCreature.class.isAssignableFrom(BrambleColossusEntity.class));
+        assertEquals(36.0D, BrambleColossusEntity.BASE_MAX_HEALTH);
+        assertEquals(7.0D, BrambleColossusEntity.BASE_ATTACK_DAMAGE);
+        assertEquals(0.3D, BrambleColossusEntity.BASE_MOVEMENT_SPEED);
+        assertEquals(1.3F, CreatureVisualProfile.forKind(CreatureKind.BRAMBLE_COLOSSUS).width());
+        assertEquals(2.6F, CreatureVisualProfile.forKind(CreatureKind.BRAMBLE_COLOSSUS).height());
+    }
     @Test
     void hexBatIsADedicatedNonVexNonSpiritMonster() {
         assertEquals(net.minecraft.world.entity.monster.Monster.class, HexBatEntity.class.getSuperclass());

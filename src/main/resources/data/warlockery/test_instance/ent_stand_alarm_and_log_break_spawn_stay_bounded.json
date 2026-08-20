@@ -1,0 +1,1 @@
+{"type":"minecraft:function","function":"warlockery:ent_stand_alarm_and_log_break_spawn_stay_bounded","environment":"warlockery:ent_isolated","structure":"forge:empty3x3x3","max_ticks":400}

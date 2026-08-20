@@ -22,6 +22,10 @@ import com.kadamitas.warlockery.entity.EchoShadeSpectreGameTests;
 import com.kadamitas.warlockery.entity.SpectralSteedGameTests;
 import com.kadamitas.warlockery.entity.UmbralSigilGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
+import com.kadamitas.warlockery.entity.EntGameTests;
+import com.kadamitas.warlockery.entity.ThornedPursuerGameTests;
+import com.kadamitas.warlockery.entity.LivingRootsGameTests;
+import com.kadamitas.warlockery.entity.BrambleColossusGameTests;
 import com.kadamitas.warlockery.entity.CorpseGameTests;
 import com.kadamitas.warlockery.entity.DeathGameTests;
 import com.kadamitas.warlockery.entity.InfernalHierarchyGameTests;
@@ -702,6 +706,54 @@ public final class ModGameTests {
             () -> ParasyticLouseGameTests::parasyticLouseRedirectRouteIsBoundedAndFiresOnce);
         REGISTRY.register("parasytic_louse_reload_replaces_the_zombie_lifecycle",
             () -> ParasyticLouseGameTests::parasyticLouseReloadReplacesTheZombieLifecycle);
+        REGISTRY.register("ent_felling_rouses_warns_then_strikes_within_its_stand",
+            () -> EntGameTests::entFellingRousesWarnsThenStrikesWithinItsStand);
+        REGISTRY.register("ent_ignores_presence_and_settles_to_its_anchor",
+            () -> EntGameTests::entIgnoresPresenceAndSettlesToItsAnchor);
+        REGISTRY.register("ent_stand_alarm_and_log_break_spawn_stay_bounded",
+            () -> EntGameTests::entStandAlarmAndLogBreakSpawnStayBounded);
+        REGISTRY.register("ent_grove_tending_is_bounded_and_respects_mobgriefing",
+            () -> EntGameTests::entGroveTendingIsBoundedAndRespectsMobgriefing);
+        REGISTRY.register("ent_hazard_escape_and_cancellation_are_deterministic",
+            () -> EntGameTests::entHazardEscapeAndCancellationAreDeterministic);
+        REGISTRY.register("ent_save_reload_variants_and_golem_lifecycle_are_replaced",
+            () -> EntGameTests::entSaveReloadVariantsAndGolemLifecycleAreReplaced);
+        REGISTRY.register("thorned_pursuer_bays_before_it_commits_to_a_course",
+            () -> ThornedPursuerGameTests::thornedPursuerBaysBeforeItCommitsToACourse);
+        REGISTRY.register("thorned_pursuer_courses_by_trail_and_never_teleports",
+            () -> ThornedPursuerGameTests::thornedPursuerCoursesByTrailAndNeverTeleports);
+        REGISTRY.register("thorned_pursuer_snares_once_and_presses_on_cadence",
+            () -> ThornedPursuerGameTests::thornedPursuerSnaresOnceAndPressesOnCadence);
+        REGISTRY.register("thorned_pursuer_escort_is_owned_capped_and_released",
+            () -> ThornedPursuerGameTests::thornedPursuerEscortIsOwnedCappedAndReleased);
+        REGISTRY.register("thorned_pursuer_breaks_recovers_and_cancels_deterministically",
+            () -> ThornedPursuerGameTests::thornedPursuerBreaksRecoversAndCancelsDeterministically);
+        REGISTRY.register("thorned_pursuer_save_reload_and_zombie_lifecycle_are_replaced",
+            () -> ThornedPursuerGameTests::thornedPursuerSaveReloadAndZombieLifecycleAreReplaced);
+        REGISTRY.register("mandrake_extraction_wail_and_resettle_are_bounded",
+            () -> LivingRootsGameTests::mandrakeExtractionWailAndResettleAreBounded);
+        REGISTRY.register("mandrake_disturbance_requires_fresh_attribution_and_sight",
+            () -> LivingRootsGameTests::mandrakeDisturbanceRequiresFreshAttributionAndSight);
+        REGISTRY.register("dreamroot_threshold_dream_requires_rooted_ground",
+            () -> LivingRootsGameTests::dreamrootThresholdDreamRequiresRootedGround);
+        REGISTRY.register("dreamroot_bulb_population_and_mutation_stay_capped",
+            () -> LivingRootsGameTests::dreamrootBulbPopulationAndMutationStayCapped);
+        REGISTRY.register("living_roots_hazard_escape_and_cancellation_are_deterministic",
+            () -> LivingRootsGameTests::livingRootsHazardEscapeAndCancellationAreDeterministic);
+        REGISTRY.register("living_roots_save_reload_and_zombie_lifecycle_are_replaced",
+            () -> LivingRootsGameTests::livingRootsSaveReloadAndZombieLifecycleAreReplaced);
+        REGISTRY.register("bramble_colossus_post_sweep_displays_then_threshes",
+            () -> BrambleColossusGameTests::brambleColossusPostSweepDisplaysThenThreshes);
+        REGISTRY.register("bramble_colossus_allowlist_and_maker_are_never_struck",
+            () -> BrambleColossusGameTests::brambleColossusAllowlistAndMakerAreNeverStruck);
+        REGISTRY.register("bramble_colossus_circuit_and_stance_stay_inside_the_post",
+            () -> BrambleColossusGameTests::brambleColossusCircuitAndStanceStayInsideThePost);
+        REGISTRY.register("bramble_colossus_nerve_falters_and_recovers_deterministically",
+            () -> BrambleColossusGameTests::brambleColossusNerveFaltersAndRecoversDeterministically);
+        REGISTRY.register("bramble_colossus_hazard_escape_and_cancellation_are_deterministic",
+            () -> BrambleColossusGameTests::brambleColossusHazardEscapeAndCancellationAreDeterministic);
+        REGISTRY.register("bramble_colossus_save_reload_and_zombie_lifecycle_are_replaced",
+            () -> BrambleColossusGameTests::brambleColossusSaveReloadAndZombieLifecycleAreReplaced);
     }
 
     private ModGameTests() {

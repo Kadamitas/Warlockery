@@ -134,6 +134,18 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "spectral_familiar_isolated.json"
     );
+    private static final Path ENT_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment", "ent_isolated.json"
+    );
+    private static final Path THORNED_PURSUER_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment", "thorned_pursuer_isolated.json"
+    );
+    private static final Path LIVING_ROOTS_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment", "living_roots_isolated.json"
+    );
+    private static final Path BRAMBLE_COLOSSUS_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment", "bramble_colossus_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
     );
@@ -144,6 +156,38 @@ final class GameTestInstanceContractTest {
         "spectral_familiar_reload_does_not_replay_signal",
         "spectral_familiar_two_player_ownership_isolated",
         "spectral_familiar_neighbors_and_world_stay_untouched"
+    );
+    private static final Set<String> ISOLATED_ENT = Set.of(
+        "ent_felling_rouses_warns_then_strikes_within_its_stand",
+        "ent_ignores_presence_and_settles_to_its_anchor",
+        "ent_stand_alarm_and_log_break_spawn_stay_bounded",
+        "ent_grove_tending_is_bounded_and_respects_mobgriefing",
+        "ent_hazard_escape_and_cancellation_are_deterministic",
+        "ent_save_reload_variants_and_golem_lifecycle_are_replaced"
+    );
+    private static final Set<String> ISOLATED_THORNED_PURSUER = Set.of(
+        "thorned_pursuer_bays_before_it_commits_to_a_course",
+        "thorned_pursuer_courses_by_trail_and_never_teleports",
+        "thorned_pursuer_snares_once_and_presses_on_cadence",
+        "thorned_pursuer_escort_is_owned_capped_and_released",
+        "thorned_pursuer_breaks_recovers_and_cancels_deterministically",
+        "thorned_pursuer_save_reload_and_zombie_lifecycle_are_replaced"
+    );
+    private static final Set<String> ISOLATED_LIVING_ROOTS = Set.of(
+        "mandrake_extraction_wail_and_resettle_are_bounded",
+        "mandrake_disturbance_requires_fresh_attribution_and_sight",
+        "dreamroot_threshold_dream_requires_rooted_ground",
+        "dreamroot_bulb_population_and_mutation_stay_capped",
+        "living_roots_hazard_escape_and_cancellation_are_deterministic",
+        "living_roots_save_reload_and_zombie_lifecycle_are_replaced"
+    );
+    private static final Set<String> ISOLATED_BRAMBLE_COLOSSUS = Set.of(
+        "bramble_colossus_post_sweep_displays_then_threshes",
+        "bramble_colossus_allowlist_and_maker_are_never_struck",
+        "bramble_colossus_circuit_and_stance_stay_inside_the_post",
+        "bramble_colossus_nerve_falters_and_recovers_deterministically",
+        "bramble_colossus_hazard_escape_and_cancellation_are_deterministic",
+        "bramble_colossus_save_reload_and_zombie_lifecycle_are_replaced"
     );
     private static final Pattern IMPORT = Pattern.compile(
         "import\\s+(com\\.kadamitas\\.warlockery\\.[\\w.]+);"
@@ -428,6 +472,27 @@ final class GameTestInstanceContractTest {
         "parasytic_louse_redirect_route_is_bounded_and_fires_once",
         "parasytic_louse_reload_replaces_the_zombie_lifecycle"
     );
+
+    @Test
+    void exactDedicatedPlantFamilyFixturesUseTheirRegisteredNoOpEnvironments() {
+        final Map<Path, Set<String>> families = Map.of(
+            ENT_ENVIRONMENT, ISOLATED_ENT,
+            THORNED_PURSUER_ENVIRONMENT, ISOLATED_THORNED_PURSUER,
+            LIVING_ROOTS_ENVIRONMENT, ISOLATED_LIVING_ROOTS,
+            BRAMBLE_COLOSSUS_ENVIRONMENT, ISOLATED_BRAMBLE_COLOSSUS
+        );
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        families.forEach((path, ids) -> {
+            assertTrue(Files.exists(path), () -> "missing dedicated plant environment " + path);
+            final JsonObject environment = JsonParser.parseString(read(path)).getAsJsonObject();
+            assertEquals("minecraft:all_of", environment.get("type").getAsString(), path.toString());
+            assertTrue(environment.getAsJsonArray("definitions").isEmpty(), path.toString());
+            assertEquals(6, ids.size(), path.toString());
+            assertTrue(registered.containsAll(ids), () -> "missing registrations for " + path);
+        });
+    }
 
     @Test
     void onlyTheExactParasyticLouseFixturesUseTheRegisteredNoOpEnvironment() {
@@ -920,11 +985,26 @@ final class GameTestInstanceContractTest {
                                                                                                             ? "warlockery:spectral_familiar_isolated"
                                                                                                             : ISOLATED_SPECTRAL_STEEDS.contains(registration.id())
                                                                                                                 ? "warlockery:spectral_steeds_isolated"
-                                                                                                                : "minecraft:default",
+                                                                                                                : ISOLATED_ENT.contains(registration.id())
+                                                                                                                    ? "warlockery:ent_isolated"
+                                                                                                                    : ISOLATED_THORNED_PURSUER.contains(registration.id())
+                                                                                                                        ? "warlockery:thorned_pursuer_isolated"
+                                                                                                                        : ISOLATED_LIVING_ROOTS.contains(registration.id())
+                                                                                                                            ? "warlockery:living_roots_isolated"
+                                                                                                                            : ISOLATED_BRAMBLE_COLOSSUS.contains(registration.id())
+                                                                                                                                ? "warlockery:bramble_colossus_isolated"
+                                                                                                                                : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );
-        assertEquals("forge:empty3x3x3", fixture.get("structure").getAsString(), registration.id());
+        assertEquals(
+            ISOLATED_THORNED_PURSUER.contains(registration.id())
+                || ISOLATED_BRAMBLE_COLOSSUS.contains(registration.id())
+                ? "forge:empty15x15x15"
+                : "forge:empty3x3x3",
+            fixture.get("structure").getAsString(),
+            registration.id()
+        );
         assertTrue(fixture.get("max_ticks").getAsInt() > 0, registration.id());
 
         final Path source = sourceFor(registration.owner());

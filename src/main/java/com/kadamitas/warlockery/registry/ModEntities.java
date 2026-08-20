@@ -6,6 +6,7 @@ import com.kadamitas.warlockery.entity.EchoShadeEntity;
 import com.kadamitas.warlockery.entity.EldritchWatcherEntity;
 import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.BansheeEntity;
+import com.kadamitas.warlockery.entity.BrambleColossusEntity;
 import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.entity.CircleMageEntity;
 import com.kadamitas.warlockery.entity.HedgeCroneEntity;
@@ -19,6 +20,7 @@ import com.kadamitas.warlockery.entity.ForgewardenEntity;
 import com.kadamitas.warlockery.entity.ImpEntity;
 import com.kadamitas.warlockery.entity.GoblinBossRules;
 import com.kadamitas.warlockery.entity.LostSoulEntity;
+import com.kadamitas.warlockery.entity.MandrakeEntity;
 import com.kadamitas.warlockery.entity.LycanVillagerEntity;
 import com.kadamitas.warlockery.entity.LycanVillagerRules;
 import com.kadamitas.warlockery.entity.NamiEntity;
@@ -30,6 +32,7 @@ import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.HellhoundEntity;
 import com.kadamitas.warlockery.entity.CorpseEntity;
 import com.kadamitas.warlockery.entity.DeathEntity;
+import com.kadamitas.warlockery.entity.DreamrootEntity;
 import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
 import com.kadamitas.warlockery.entity.SpectreEntity;
 import com.kadamitas.warlockery.entity.SpectralSteedEntity;
@@ -37,6 +40,7 @@ import com.kadamitas.warlockery.entity.SpiritEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
 import com.kadamitas.warlockery.entity.SpectralFamiliarEntity;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
+import com.kadamitas.warlockery.entity.ThornedPursuerEntity;
 import com.kadamitas.warlockery.entity.UmbralSigilEntity;
 import com.kadamitas.warlockery.entity.UmbralSigilRules;
 import com.kadamitas.warlockery.entity.VampireCourtEntity;
@@ -55,7 +59,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -149,6 +152,10 @@ public final class ModEntities {
         Map.entry(CreatureKind.LOUSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createParasyticLouse),
         Map.entry(CreatureKind.IRONBOUND_SENTINEL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIronboundSentinel),
         Map.entry(CreatureKind.UMBRAL_SIGIL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createUmbralSigil),
+        Map.entry(CreatureKind.THORNED_PURSUER, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createThornedPursuer),
+        Map.entry(CreatureKind.MANDRAKE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createMandrake),
+        Map.entry(CreatureKind.DREAMROOT, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createDreamroot),
+        Map.entry(CreatureKind.BRAMBLE_COLOSSUS, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createBrambleColossus),
         Map.entry(CreatureKind.PALE_STEED, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralSteed),
         Map.entry(CreatureKind.NIGHTMARE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralSteed)
     );
@@ -173,7 +180,34 @@ public final class ModEntities {
         AttributeFactoryRule.exact("corpse", _ -> CorpseEntity.createAttributes().build()),
         AttributeFactoryRule.exact("death", _ -> DeathEntity.createAttributes().build()),
         AttributeFactoryRule.exact("parasytic_louse", _ -> ParasyticLouseEntity.createAttributes().build()),
-        AttributeFactoryRule.exact("ent", _ -> IronGolem.createAttributes().build()),
+        AttributeFactoryRule.exact("ent", _ -> Mob.createMobAttributes()
+            .add(Attributes.MAX_HEALTH, EntEntity.BASE_MAX_HEALTH)
+            .add(Attributes.ATTACK_DAMAGE, EntEntity.BASE_ATTACK_DAMAGE)
+            .add(Attributes.MOVEMENT_SPEED, EntEntity.BASE_MOVEMENT_SPEED)
+            .add(Attributes.ARMOR, EntEntity.BASE_ARMOR)
+            .add(Attributes.FOLLOW_RANGE, EntEntity.BASE_FOLLOW_RANGE)
+            .add(Attributes.KNOCKBACK_RESISTANCE, EntEntity.BASE_KNOCKBACK_RESISTANCE)
+            .add(Attributes.STEP_HEIGHT, EntEntity.BASE_STEP_HEIGHT)
+            .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D)
+            .build()),
+        AttributeFactoryRule.exact("thorned_pursuer", _ -> Monster.createMonsterAttributes()
+            .add(Attributes.MAX_HEALTH, ThornedPursuerEntity.BASE_MAX_HEALTH)
+            .add(Attributes.ATTACK_DAMAGE, ThornedPursuerEntity.BASE_ATTACK_DAMAGE)
+            .add(Attributes.ARMOR, ThornedPursuerEntity.BASE_ARMOR)
+            .add(Attributes.FOLLOW_RANGE, ThornedPursuerEntity.BASE_FOLLOW_RANGE)
+            .add(Attributes.MOVEMENT_SPEED, ThornedPursuerEntity.BASE_MOVEMENT_SPEED)
+            .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, ThornedPursuerEntity.BASE_REINFORCEMENT_CHANCE)
+            .build()),
+        AttributeFactoryRule.exact("mandrake", _ -> MandrakeEntity.createAttributes().build()),
+        AttributeFactoryRule.exact("dreamroot", _ -> DreamrootEntity.createAttributes().build()),
+        AttributeFactoryRule.exact("bramble_colossus", _ -> Monster.createMonsterAttributes()
+            .add(Attributes.MAX_HEALTH, BrambleColossusEntity.BASE_MAX_HEALTH)
+            .add(Attributes.ATTACK_DAMAGE, BrambleColossusEntity.BASE_ATTACK_DAMAGE)
+            .add(Attributes.MOVEMENT_SPEED, BrambleColossusEntity.BASE_MOVEMENT_SPEED)
+            .add(Attributes.FOLLOW_RANGE, 35.0D)
+            .add(Attributes.ARMOR, 2.0D)
+            .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D)
+            .build()),
         AttributeFactoryRule.exact("forgewarden", _ -> patronAttributes(CreatureKind.FORGEWARDEN)),
         AttributeFactoryRule.exact("stonebroker", _ -> patronAttributes(CreatureKind.STONEBROKER)),
         AttributeFactoryRule.exact("goblin", _ -> Villager.createAttributes()
@@ -519,6 +553,46 @@ public final class ModEntities {
         return builder.build(REGISTRY.key(registration.id()));
     }
 
+    private static EntityType<?> createThornedPursuer(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<ThornedPursuerEntity> type, net.minecraft.world.level.Level level) ->
+                new ThornedPursuerEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createMandrake(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<MandrakeEntity> type, net.minecraft.world.level.Level level) ->
+                new MandrakeEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createDreamroot(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<DreamrootEntity> type, net.minecraft.world.level.Level level) ->
+                new DreamrootEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createBrambleColossus(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<BrambleColossusEntity> type, net.minecraft.world.level.Level level) ->
+                new BrambleColossusEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
     private static EntityType<?> createSpectralSteed(final EntityRegistration registration) {
         return EntityType.Builder.of(
             (EntityType<SpectralSteedEntity> type, net.minecraft.world.level.Level level) ->
@@ -592,8 +666,6 @@ public final class ModEntities {
                 .add(Attributes.ATTACK_DAMAGE, AbyssalRegentRules.ATTACK_DAMAGE)
                 .add(Attributes.ARMOR, AbyssalRegentRules.ARMOR)
                 .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
-            case "thorned_pursuer" ->
-                attributes.add(Attributes.MAX_HEALTH, 100).add(Attributes.ATTACK_DAMAGE, 11).add(Attributes.ARMOR, 8);
             case "emberhorn_archfiend" -> attributes.add(Attributes.MAX_HEALTH, 100)
                 .add(Attributes.ATTACK_DAMAGE, 11)
                 .add(Attributes.ARMOR, 8)
@@ -620,8 +692,6 @@ public final class ModEntities {
                     .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
             case "owl" -> attributes.add(Attributes.FLYING_SPEED,
                 com.kadamitas.warlockery.entity.OwlEntity.FLYING_SPEED);
-            case "bramble_colossus" ->
-                attributes.add(Attributes.MAX_HEALTH, 36).add(Attributes.ATTACK_DAMAGE, 7).add(Attributes.MOVEMENT_SPEED, 0.3);
             default -> attributes;
         };
     }

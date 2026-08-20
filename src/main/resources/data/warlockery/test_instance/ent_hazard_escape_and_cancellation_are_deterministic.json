@@ -1,0 +1,1 @@
+{"type":"minecraft:function","function":"warlockery:ent_hazard_escape_and_cancellation_are_deterministic","environment":"warlockery:ent_isolated","structure":"forge:empty3x3x3","max_ticks":400}

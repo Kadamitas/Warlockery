@@ -5,7 +5,6 @@ import com.kadamitas.warlockery.entity.CreatureBehaviorProfile.Feature;
 import com.kadamitas.warlockery.item.BeastSpeechCharmItem;
 import com.kadamitas.warlockery.item.SympatheticBinding;
 import com.kadamitas.warlockery.item.WaystoneState;
-import com.kadamitas.warlockery.item.ResourceCompatibilityTags;
 import com.kadamitas.warlockery.item.SeerCovenRuntime;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
@@ -29,14 +28,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -83,11 +79,8 @@ public final class CreatureBehaviorRuntime {
             case HEDGE_CRONE -> tickHedgeCrone(creature);
             case DEATH -> creature.heal(1.0F);
             case FORGEWARDEN -> tickGoblinAura(creature, level, true);
-            case THORNED_PURSUER -> tickThornedPursuer(creature, level);
             case ABYSSAL_REGENT -> InfernalHierarchyRuntime.tickAbyssalTorment(creature, level);
             case SPECTRE -> pulseFear(creature);
-            case MANDRAKE -> pulseScreech(creature);
-            case DREAMROOT, BRAMBLE_COLOSSUS -> tickRootedDrain(creature, level);
             case GLASS_DOPPELGANGER -> tickReflection(creature, level);
             case STONEBROKER -> tickStonebroker(creature, level);
 
@@ -121,7 +114,6 @@ public final class CreatureBehaviorRuntime {
             case GOBLIN, HOBGOBLIN -> bindCompanion(creature, player, held, profile);
             case IMP -> ImpContractRuntime.interact(creature, player, held, profile);
             case STORM_SIMIAN -> interactStormSimian(creature, level, player, held, profile);
-            case BRAMBLE_COLOSSUS -> interactTreefyd(creature, player, held, profile);
             case FORGEWARDEN, DREAMROOT, STONEBROKER ->
                 empowerWithHeart(creature, player, held, profile);
             case NAAMAH -> interactNaamah(creature, player, hand, profile);
@@ -153,13 +145,6 @@ public final class CreatureBehaviorRuntime {
         if (profile.kind() == CreatureKind.DEMON
             && target instanceof Player player
             && BeastSpeechCharmItem.pacifiesDemon(player, creature)) {
-            return false;
-        }
-        if (profile.kind() == CreatureKind.BRAMBLE_COLOSSUS && !TreefydRules.canAttack(
-            CreatureBehaviorState.isOwnedBy(creature, target.getUUID()),
-            TreefydState.isAllowed(creature, target.getUUID()),
-            target instanceof ArcaneCreature arcane && arcane.creatureKind() == CreatureKind.BRAMBLE_COLOSSUS
-        )) {
             return false;
         }
         if (creature instanceof InfernalHierarchyEntity hierarchy) {
@@ -517,35 +502,6 @@ public final class CreatureBehaviorRuntime {
         return InteractionResult.SUCCESS;
     }
 
-    private static InteractionResult interactTreefyd(
-        final Mob creature,
-        final Player player,
-        final ItemStack held,
-        final CreatureBehaviorProfile profile
-    ) {
-        if (!CreatureBehaviorState.isOwnedBy(creature, player.getUUID())) {
-            send(player, "message.warlockery.creature.owner_required", creature.getDisplayName());
-            return InteractionResult.FAIL;
-        }
-        final Optional<SympatheticBinding> binding = SympatheticBinding.read(held);
-        if (binding.isPresent()) {
-            final boolean allowed = TreefydState.toggleAllowed(creature, binding.orElseThrow());
-            send(player, allowed
-                ? "message.warlockery.creature.treefyd.allowed"
-                : "message.warlockery.creature.treefyd.removed", binding.orElseThrow().targetName());
-            return InteractionResult.SUCCESS;
-        }
-        if (held.is(ResourceCompatibilityTags.Items.SAFE_MAGICAL_PLANT_TOOLS)) {
-            final boolean wandering = TreefydState.toggleWandering(creature);
-            creature.setNoAi(!wandering);
-            send(player, wandering
-                ? "message.warlockery.creature.treefyd.wandering"
-                : "message.warlockery.creature.treefyd.guardian");
-            return InteractionResult.SUCCESS;
-        }
-        return empowerWithHeart(creature, player, held, profile);
-    }
-
     private static InteractionResult initiateVampire(
         final Player player,
         final InteractionHand hand,
@@ -735,10 +691,6 @@ public final class CreatureBehaviorRuntime {
         ));
     }
 
-    private static void pulseScreech(final Mob creature) {
-        pulseEffects(creature, 10.0, MobEffects.NAUSEA, MobEffects.SLOWNESS);
-    }
-
     private static void pulseFear(final Mob creature) {
         pulseEffects(creature, 10.0, MobEffects.DARKNESS, MobEffects.WEAKNESS);
     }
@@ -797,43 +749,6 @@ public final class CreatureBehaviorRuntime {
         ).stream().min(java.util.Comparator.comparingDouble(creature::distanceToSqr));
     }
 
-    private static void tickThornedPursuer(final Mob creature, final ServerLevel level) {
-        final LivingEntity target = creature.getTarget();
-        final double distanceSquared = target == null ? 0.0 : creature.distanceToSqr(target);
-        if (target != null && CreatureBehaviorRules.shouldUseRangedAttack(
-            distanceSquared,
-            creature.getSensing().hasLineOfSight(target)
-        )) {
-            fireArrow(creature, target, level, 5.0, 1.6F, 5.0F, 0.8F);
-        } else if (target != null && distanceSquared > 196.0) {
-            final Vec3 direction = target.position().subtract(creature.position()).normalize().scale(-2.0);
-            creature.randomTeleport(
-                target.getX() + direction.x,
-                target.getY(),
-                target.getZ() + direction.z,
-                true
-            );
-        }
-        final List<Wolf> wolves = level.getEntitiesOfClass(Wolf.class, creature.getBoundingBox().inflate(24.0));
-        if (!CreatureBehaviorRules.shouldSummonWolves(
-            creature.getHealth(),
-            creature.getMaxHealth(),
-            wolves.size(),
-            creature.tickCount
-        )) {
-            return;
-        }
-        final int count = Math.min(2, 4 - wolves.size());
-        for (int index = 0; index < count; index++) {
-            final BlockPos position = creature.blockPosition().offset(index == 0 ? -2 : 2, 0, 1);
-            final Wolf wolf = EntityTypes.WOLF.spawn(level, position, EntitySpawnReason.EVENT);
-            if (wolf != null) {
-                wolf.setTarget(target);
-                wolf.setPersistenceRequired();
-            }
-        }
-    }
-
     private static void fireArrow(
         final Mob creature,
         final LivingEntity target,
@@ -857,16 +772,6 @@ public final class CreatureBehaviorRuntime {
             inaccuracy
         ));
         creature.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, pitch);
-    }
-
-    private static void tickRootedDrain(final Mob creature, final ServerLevel level) {
-        if (level.getBlockState(creature.blockPosition().below()).is(CreatureBehaviorTags.Blocks.LIVING_GROUND)) {
-            creature.heal(1.0F + CreatureBehaviorState.empowerment(creature) * 0.5F);
-        }
-        final LivingEntity target = creature.getTarget();
-        if (target != null && creature.distanceToSqr(target) <= 36.0) {
-            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0));
-        }
     }
 
     private static void tickPoltergeist(final Mob creature, final ServerLevel level) {

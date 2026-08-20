@@ -136,13 +136,29 @@ class AmbientActivityRulesTest {
             CreatureKind.LOUSE,
             // F22: the dedicated UmbralSigilRuntime owns the whole seal, and its removal retired
             // the last kind on SOUL_LANTERN_VIGIL and with it the row itself.
-            CreatureKind.UMBRAL_SIGIL
+            CreatureKind.UMBRAL_SIGIL,
+            CreatureKind.MANDRAKE,
+            CreatureKind.DREAMROOT
         );
         final Set<CreatureKind> missing = java.util.Arrays.stream(CreatureKind.values())
             .filter(kind -> !delegated.contains(kind))
             .filter(kind -> AmbientActivityProfile.forKind(kind).isEmpty())
             .collect(java.util.stream.Collectors.toSet());
         assertEquals(Set.of(), missing);
+    }
+
+    @Test
+    void livingRootsUseDedicatedRuntimesAndLeaveTheThornGardenPairExact() {
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.MANDRAKE).isEmpty());
+        assertTrue(AmbientActivityProfile.forKind(CreatureKind.DREAMROOT).isEmpty());
+        final AmbientActivityProfile thornGarden =
+            AmbientActivityProfile.forType(ActivityType.THORN_GARDEN);
+        assertEquals(Set.of(CreatureKind.THORNED_PURSUER, CreatureKind.BRAMBLE_COLOSSUS),
+            thornGarden.kinds());
+        assertEquals(300, thornGarden.checkIntervalTicks());
+        assertEquals(8, thornGarden.chanceDenominator());
+        assertEquals(3_600, thornGarden.cooldownTicks());
+        assertEquals(0, thornGarden.localChangeCap());
     }
 
     @Test
