@@ -102,6 +102,10 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "echo_spectre_isolated.json"
     );
+    private static final Path IRONBOUND_SENTINEL_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "ironbound_sentinel_isolated.json"
+    );
     private static final Path STORM_SIMIAN_ENVIRONMENT = Path.of(
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "storm_simian_isolated.json"
@@ -331,6 +335,14 @@ final class GameTestInstanceContractTest {
         "poltergeist_dense_candidates_stay_capped_and_stable",
         "poltergeist_hazard_and_three_route_failures_cancel",
         "poltergeist_reload_does_not_replay_and_families_stay_isolated"
+    );
+    private static final Set<String> ISOLATED_IRONBOUND_SENTINEL = Set.of(
+        "ironbound_sentinel_charge_wakes_stands_down_and_resumes",
+        "ironbound_sentinel_ward_bars_and_repels_only_within_sight",
+        "ironbound_sentinel_permitted_parties_are_never_bound_or_repelled",
+        "ironbound_sentinel_strain_seizes_and_stands_down_without_rampage",
+        "ironbound_sentinel_hazard_preempts_episode_and_keeps_its_station",
+        "ironbound_sentinel_save_reload_and_zombie_lifecycle_are_replaced"
     );
     private static final Set<String> ISOLATED_ECHO_SPECTRE = Set.of(
         "echo_shade_records_and_replays_one_vector",
@@ -677,6 +689,23 @@ final class GameTestInstanceContractTest {
     }
 
     @Test
+    void onlyTheExactIronboundSentinelFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(IRONBOUND_SENTINEL_ENVIRONMENT),
+            "the isolated F36 Ironbound Sentinel environment resource must exist");
+        final JsonObject environment =
+            JsonParser.parseString(read(IRONBOUND_SENTINEL_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty(),
+            "the isolated F36 environment must not mutate shared world state");
+        assertEquals(6, ISOLATED_IRONBOUND_SENTINEL.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_IRONBOUND_SENTINEL),
+            "all six exact F36 Ironbound Sentinel GameTests must be registered");
+    }
+
+    @Test
     void onlyTheExactEchoShadeAndSpectreFixturesUseTheRegisteredNoOpEnvironment() {
         assertTrue(Files.exists(ECHO_SPECTRE_ENVIRONMENT),
             "the isolated F21 Echo Shade and Spectre environment resource must exist");
@@ -778,7 +807,9 @@ final class GameTestInstanceContractTest {
                                                                                                 ? "warlockery:storm_simian_isolated"
                                                                                                 : ISOLATED_PARASYTIC_LOUSE.contains(registration.id())
                                                                                                     ? "warlockery:parasytic_louse_isolated"
-                                                                                                    : "minecraft:default",
+                                                                                                    : ISOLATED_IRONBOUND_SENTINEL.contains(registration.id())
+                                                                                                        ? "warlockery:ironbound_sentinel_isolated"
+                                                                                                        : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

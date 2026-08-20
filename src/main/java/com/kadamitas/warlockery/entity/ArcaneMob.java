@@ -12,8 +12,6 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -36,10 +34,11 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
         super(type, level);
         this.kind = kind;
         this.behavior = CreatureBehaviorFactory.create(kind);
-        // F13: CIRCLE_MAGE is no longer ever constructed as an ArcaneMob -- the dedicated
-        // CircleMageEntity owns that kind and normalizes loot pickup off deliberately, so the
-        // former CIRCLE_MAGE clause here was unreachable and is dropped rather than left to rot.
-        this.setCanPickUpLoot(kind == CreatureKind.IRONBOUND_SENTINEL);
+        // F13 dropped the CIRCLE_MAGE disjunct when CircleMageEntity took that kind, and F36 has
+        // now done the same for IRONBOUND_SENTINEL: both kinds are built by dedicated bodies that
+        // normalize loot pickup off, so no construction path reaches this gate with either kind
+        // and the expression had no remaining true branch. No arcane ground mob picks up loot.
+        this.setCanPickUpLoot(false);
         if (kind == CreatureKind.OWL || kind == CreatureKind.TOAD || kind == CreatureKind.CAT) {
             this.goalSelector.removeAllGoals(goal -> true);
             this.targetSelector.removeAllGoals(goal -> true);
@@ -49,10 +48,6 @@ public class ArcaneMob extends Zombie implements ArcaneCreature {
             if (CompanionCombatRules.requiresDedicatedMeleeGoal(kind)) {
                 this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.15, true));
             }
-        } else if (kind == CreatureKind.IRONBOUND_SENTINEL) {
-            this.targetSelector.removeAllGoals(goal -> true);
-            this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Monster.class, true,
-                (target, serverLevel) -> !(target instanceof ArcaneCreature)));
         }
     }
 

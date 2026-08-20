@@ -14,6 +14,7 @@ import com.kadamitas.warlockery.entity.CovenPractitionerGameTests;
 import com.kadamitas.warlockery.entity.LostSoulSpiritGameTests;
 import com.kadamitas.warlockery.entity.ParasyticLouseGameTests;
 import com.kadamitas.warlockery.entity.PoltergeistGameTests;
+import com.kadamitas.warlockery.entity.IronboundSentinelGameTests;
 import com.kadamitas.warlockery.entity.StormSimianGameTests;
 import com.kadamitas.warlockery.entity.EchoShadeSpectreGameTests;
 import com.kadamitas.warlockery.entity.EldritchWatcherGameTests;
@@ -579,6 +580,18 @@ public final class ModGameTests {
             () -> PoltergeistGameTests::poltergeistHazardAndThreeRouteFailuresCancel);
         REGISTRY.register("poltergeist_reload_does_not_replay_and_families_stay_isolated",
             () -> PoltergeistGameTests::poltergeistReloadDoesNotReplayAndFamiliesStayIsolated);
+        REGISTRY.register("ironbound_sentinel_charge_wakes_stands_down_and_resumes",
+            () -> IronboundSentinelGameTests::ironboundSentinelChargeWakesStandsDownAndResumes);
+        REGISTRY.register("ironbound_sentinel_ward_bars_and_repels_only_within_sight",
+            () -> IronboundSentinelGameTests::ironboundSentinelWardBarsAndRepelsOnlyWithinSight);
+        REGISTRY.register("ironbound_sentinel_permitted_parties_are_never_bound_or_repelled",
+            () -> IronboundSentinelGameTests::ironboundSentinelPermittedPartiesAreNeverBoundOrRepelled);
+        REGISTRY.register("ironbound_sentinel_strain_seizes_and_stands_down_without_rampage",
+            () -> IronboundSentinelGameTests::ironboundSentinelStrainSeizesAndStandsDownWithoutRampage);
+        REGISTRY.register("ironbound_sentinel_hazard_preempts_episode_and_keeps_its_station",
+            () -> IronboundSentinelGameTests::ironboundSentinelHazardPreemptsEpisodeAndKeepsItsStation);
+        REGISTRY.register("ironbound_sentinel_save_reload_and_zombie_lifecycle_are_replaced",
+            () -> IronboundSentinelGameTests::ironboundSentinelSaveReloadAndZombieLifecycleAreReplaced);
         REGISTRY.register("echo_shade_records_and_replays_one_vector",
             () -> EchoShadeSpectreGameTests::echoShadeRecordsOneVectorAndAnswersIt);
         REGISTRY.register("echo_shade_never_copies_player_state",

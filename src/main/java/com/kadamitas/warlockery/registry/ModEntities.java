@@ -9,6 +9,7 @@ import com.kadamitas.warlockery.entity.BansheeEntity;
 import com.kadamitas.warlockery.entity.BroomEntity;
 import com.kadamitas.warlockery.entity.CircleMageEntity;
 import com.kadamitas.warlockery.entity.HedgeCroneEntity;
+import com.kadamitas.warlockery.entity.IronboundSentinelEntity;
 import com.kadamitas.warlockery.entity.HexBatEntity;
 import com.kadamitas.warlockery.entity.HexBatRules;
 import com.kadamitas.warlockery.entity.HobgoblinEntity;
@@ -140,7 +141,8 @@ public final class ModEntities {
         Map.entry(CreatureKind.POLTERGEIST, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createPoltergeist),
         Map.entry(CreatureKind.ECHO_SHADE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createEchoShade),
         Map.entry(CreatureKind.SPECTRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectre),
-        Map.entry(CreatureKind.LOUSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createParasyticLouse)
+        Map.entry(CreatureKind.LOUSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createParasyticLouse),
+        Map.entry(CreatureKind.IRONBOUND_SENTINEL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIronboundSentinel)
     );
     public static final Set<String> SPIRIT_IDS = ARCANE_KINDS.entrySet().stream()
         .filter(entry -> isSpiritKind(entry.getValue()))
@@ -418,6 +420,16 @@ public final class ModEntities {
         return EntityType.Builder.of(
             (EntityType<HedgeCroneEntity> type, net.minecraft.world.level.Level level) ->
                 new HedgeCroneEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createIronboundSentinel(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<IronboundSentinelEntity> type, net.minecraft.world.level.Level level) ->
+                new IronboundSentinelEntity(type, level),
             MobCategory.MONSTER
         ).sized(registration.width(), registration.height())
             .notInPeaceful()
