@@ -34,6 +34,7 @@ import com.kadamitas.warlockery.entity.InfernalHierarchyEntity;
 import com.kadamitas.warlockery.entity.SpectreEntity;
 import com.kadamitas.warlockery.entity.SpiritEntity;
 import com.kadamitas.warlockery.entity.SpiritMob;
+import com.kadamitas.warlockery.entity.SpectralFamiliarEntity;
 import com.kadamitas.warlockery.entity.StormSimianEntity;
 import com.kadamitas.warlockery.entity.UmbralSigilEntity;
 import com.kadamitas.warlockery.entity.UmbralSigilRules;
@@ -143,6 +144,7 @@ public final class ModEntities {
         Map.entry(CreatureKind.POLTERGEIST, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createPoltergeist),
         Map.entry(CreatureKind.ECHO_SHADE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createEchoShade),
         Map.entry(CreatureKind.SPECTRE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectre),
+        Map.entry(CreatureKind.FAMILIAR, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createSpectralFamiliar),
         Map.entry(CreatureKind.LOUSE, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createParasyticLouse),
         Map.entry(CreatureKind.IRONBOUND_SENTINEL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createIronboundSentinel),
         Map.entry(CreatureKind.UMBRAL_SIGIL, (ContentFactory<EntityRegistration, EntityType<?>>) ModEntities::createUmbralSigil)
@@ -525,6 +527,16 @@ public final class ModEntities {
             builder.notInPeaceful();
         }
         return builder.build(REGISTRY.key(registration.id()));
+    }
+
+    private static EntityType<?> createSpectralFamiliar(final EntityRegistration registration) {
+        return EntityType.Builder.of(
+            (EntityType<SpectralFamiliarEntity> type, net.minecraft.world.level.Level level) ->
+                new SpectralFamiliarEntity(type, level),
+            MobCategory.MONSTER
+        ).sized(registration.width(), registration.height())
+            .notInPeaceful()
+            .build(REGISTRY.key(registration.id()));
     }
 
     private static <T extends EntityType<?>> RegistryObject<T> register(final String id, final java.util.function.Supplier<T> factory) {

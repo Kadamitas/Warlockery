@@ -6,6 +6,7 @@ import com.kadamitas.warlockery.brew.SolidifyingBrewGameTests;
 import com.kadamitas.warlockery.dream.SpiritWorldGameTests;
 import com.kadamitas.warlockery.entity.TacticalCombatGameTests;
 import com.kadamitas.warlockery.entity.AnimalFamiliarGameTests;
+import com.kadamitas.warlockery.entity.SpectralFamiliarGameTests;
 import com.kadamitas.warlockery.entity.VampireCourtGameTests;
 import com.kadamitas.warlockery.entity.LycanVillagerGameTests;
 import com.kadamitas.warlockery.entity.LycanPackGameTests;
@@ -60,6 +61,18 @@ public final class ModGameTests {
         DeferredRegister.create(Registries.TEST_FUNCTION, Warlockery.MOD_ID);
 
     static {
+        REGISTRY.register("spectral_familiar_surveys_sample_and_returns",
+            () -> SpectralFamiliarGameTests::spectralFamiliarSurveysSampleAndReturns);
+        REGISTRY.register("spectral_familiar_owner_defense_interrupts_then_returns",
+            () -> SpectralFamiliarGameTests::spectralFamiliarOwnerDefenseInterruptsThenReturns);
+        REGISTRY.register("spectral_familiar_scan_and_route_caps_hold",
+            () -> SpectralFamiliarGameTests::spectralFamiliarScanAndRouteCapsHold);
+        REGISTRY.register("spectral_familiar_reload_does_not_replay_signal",
+            () -> SpectralFamiliarGameTests::spectralFamiliarReloadDoesNotReplaySignal);
+        REGISTRY.register("spectral_familiar_two_player_ownership_isolated",
+            () -> SpectralFamiliarGameTests::spectralFamiliarTwoPlayerOwnershipIsolated);
+        REGISTRY.register("spectral_familiar_neighbors_and_world_stay_untouched",
+            () -> SpectralFamiliarGameTests::spectralFamiliarNeighborsAndWorldStayUntouched);
         REGISTRY.register("animal_familiars_are_three_distinct_bodies",
             () -> AnimalFamiliarGameTests::animalFamiliarsAreThreeDistinctBodies);
         REGISTRY.register("familiar_binding_honours_the_vanilla_latch_and_refuses_the_contract_one",

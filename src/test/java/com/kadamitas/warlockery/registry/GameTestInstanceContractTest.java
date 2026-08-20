@@ -126,8 +126,20 @@ final class GameTestInstanceContractTest {
         "src", "main", "resources", "data", "warlockery", "test_environment",
         "umbral_sigil_isolated.json"
     );
+    private static final Path SPECTRAL_FAMILIAR_ENVIRONMENT = Path.of(
+        "src", "main", "resources", "data", "warlockery", "test_environment",
+        "spectral_familiar_isolated.json"
+    );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
+    );
+    private static final Set<String> ISOLATED_SPECTRAL_FAMILIAR = Set.of(
+        "spectral_familiar_surveys_sample_and_returns",
+        "spectral_familiar_owner_defense_interrupts_then_returns",
+        "spectral_familiar_scan_and_route_caps_hold",
+        "spectral_familiar_reload_does_not_replay_signal",
+        "spectral_familiar_two_player_ownership_isolated",
+        "spectral_familiar_neighbors_and_world_stay_untouched"
     );
     private static final Pattern IMPORT = Pattern.compile(
         "import\\s+(com\\.kadamitas\\.warlockery\\.[\\w.]+);"
@@ -803,6 +815,20 @@ final class GameTestInstanceContractTest {
             "all six exact F22 Umbral Sigil GameTests must be registered");
     }
 
+    @Test
+    void onlyTheExactSpectralFamiliarFixturesUseTheRegisteredNoOpEnvironment() {
+        assertTrue(Files.exists(SPECTRAL_FAMILIAR_ENVIRONMENT));
+        final JsonObject environment =
+            JsonParser.parseString(read(SPECTRAL_FAMILIAR_ENVIRONMENT)).getAsJsonObject();
+        assertEquals("minecraft:all_of", environment.get("type").getAsString());
+        assertTrue(environment.getAsJsonArray("definitions").isEmpty());
+        assertEquals(6, ISOLATED_SPECTRAL_FAMILIAR.size());
+        final Set<String> registered = registrations().stream()
+            .map(Registration::id)
+            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        assertTrue(registered.containsAll(ISOLATED_SPECTRAL_FAMILIAR));
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
@@ -860,7 +886,9 @@ final class GameTestInstanceContractTest {
                                                                                                     ? "warlockery:parasytic_louse_isolated"
                                                                                                     : ISOLATED_IRONBOUND_SENTINEL.contains(registration.id())
                                                                                                         ? "warlockery:ironbound_sentinel_isolated"
-                                                                                                        : "minecraft:default",
+                                                                                                        : ISOLATED_SPECTRAL_FAMILIAR.contains(registration.id())
+                                                                                                            ? "warlockery:spectral_familiar_isolated"
+                                                                                                            : "minecraft:default",
             fixture.get("environment").getAsString(),
             registration.id()
         );

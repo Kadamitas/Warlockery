@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:spectral_familiar_neighbors_and_world_stay_untouched",
+  "environment": "warlockery:spectral_familiar_isolated",
+  "structure": "forge:empty3x3x3",
+  "max_ticks": 400
+}
+
+

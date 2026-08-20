@@ -38,7 +38,15 @@ public class SpiritMob extends Vex implements ArcaneCreature {
     @Override
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
+        tickProfiledBehavior(level);
+        tickSpecializedActivity(level);
+    }
+
+    protected void tickProfiledBehavior(final ServerLevel level) {
         behavior.tick(this, level);
+    }
+
+    protected void tickSpecializedActivity(final ServerLevel level) {
         TacticalCombatRuntime.tick(this, level, kind);
         AmbientActivityRuntime.tick(this, level, kind);
     }
