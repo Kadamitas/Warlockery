@@ -104,10 +104,10 @@ public final class TacticalCombatGameTests {
     }
 
     public static void meleeCreatureDisengagesFromUnreachableAttackSlit(final GameTestHelper helper) {
-        buildFloor(helper, -1, 7, -3, 3);
-        for (int x = 2; x <= 6; x++) {
+        buildFloor(helper, -3, 14, -4, 4);
+        for (int x = -2; x <= 2; x++) {
             for (int z = -2; z <= 2; z++) {
-                if (x == 2 || x == 6 || z == -2 || z == 2) {
+                if (x == -2 || x == 2 || z == -2 || z == 2) {
                     for (int y = 1; y <= 3; y++) {
                         if (!(x == 2 && y == 2 && z == 0)) {
                             helper.setBlock(new BlockPos(x, y, z), Blocks.STONE_BRICKS);
@@ -118,13 +118,8 @@ public final class TacticalCombatGameTests {
         }
         final ServerPlayer player = connectedPlayer(helper, new BlockPos(0, 1, 0));
         player.setInvulnerable(true);
-        // The melee subject is an ordinary ArcaneMob whose specialization seam is the generic one,
-        // so this fixture drives a doctrine its kind really reaches. The Werewolf it used to spawn
-        // never runs TacticalCombatRuntime: LycanPackRuntime owns that family's combat and the
-        // WEREWOLF doctrine row is retired, so a hand-driven werewolf here would have demonstrated a
-        // maneuver no werewolf can perform.
-        final ArcaneMob melee = (ArcaneMob) helper.spawn(
-            ModEntities.ALL.get("illusion_zombie").get(), new BlockPos(4, 1, 0), EntitySpawnReason.EVENT
+        final WerewolfHunterEntity melee = helper.spawn(
+            ModEntities.WEREWOLF_HUNTER.get(), new BlockPos(4, 1, 0), EntitySpawnReason.EVENT
         );
         melee.setTarget(player);
         helper.runAfterDelay(2, () -> verifyBlockedMeleeDisengagement(helper, player, melee));
@@ -133,7 +128,7 @@ public final class TacticalCombatGameTests {
     private static void verifyBlockedMeleeDisengagement(
         final GameTestHelper helper,
         final ServerPlayer player,
-        final ArcaneMob melee
+        final WerewolfHunterEntity melee
     ) {
         helper.assertTrue(!TacticalCombatRuntime.routeReaches(melee, player),
             "the attack slit must block the melee creature's path to the player");
