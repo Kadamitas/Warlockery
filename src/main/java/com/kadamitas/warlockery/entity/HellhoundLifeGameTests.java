@@ -527,7 +527,7 @@ public final class HellhoundLifeGameTests {
     }
 
     private static void buildFloor(final GameTestHelper helper) {
-        // The descriptor structure is forge:empty3x3x3; every relative position must stay
+        // The descriptor structure is warlockery:empty3x3x3; every relative position must stay
         // within 0..2 so nothing sits inside the framework's barrier enclosure.
         BlockPos.betweenClosedStream(new BlockPos(0, 0, 0), new BlockPos(2, 0, 2))
             .forEach(position -> helper.setBlock(position, Blocks.STONE));

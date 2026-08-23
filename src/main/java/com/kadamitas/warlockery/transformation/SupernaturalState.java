@@ -12,6 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.MoonPhase;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -67,14 +68,17 @@ public final class SupernaturalState {
         }
         final SupernaturalForm form = getForm(player);
         final var currentPath = SupernaturalProgression.Path.forForm(form);
-        if (currentPath.isEmpty() || isWeakness(form, event)) {
+        if (currentPath.isEmpty()) {
+            return;
+        }
+        final SupernaturalProgression.Path path = currentPath.orElseThrow();
+        if (isWeakness(form, event)) {
             return;
         }
         if (form == SupernaturalForm.WEREWOLF
             && SupernaturalProgression.werewolfShape(player) == WerewolfShape.HUMAN) {
             return;
         }
-        final SupernaturalProgression.Path path = currentPath.orElseThrow();
         final int reserve = SupernaturalProgression.resource(player, path);
         if (reserve <= 0) {
             return;
@@ -84,15 +88,32 @@ public final class SupernaturalState {
         final float protection = Math.min(maximumProtection, reserve / (float) cost * maximumProtection);
         SupernaturalProgression.spend(player, path, Math.min(reserve, cost));
         final float protectedDamage = Math.max(0.25F, event.getNewDamage() * (1.0F - protection));
-        if (protectedDamage >= player.getHealth()
-            && SupernaturalProgression.spend(player, path, form.deathWardCost())) {
-            event.setNewDamage(0.0F);
-            player.clearFire();
-            player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 1, true, false));
-            player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 0, true, false));
+        if (activateDeathWard(event, player, path, form, protectedDamage)) {
             return;
         }
         event.setNewDamage(protectedDamage);
+    }
+
+    private static boolean activateDeathWard(
+        final LivingDamageEvent.Pre event,
+        final Player player,
+        final SupernaturalProgression.Path path,
+        final SupernaturalForm form,
+        final float damage
+    ) {
+        if (damage < player.getHealth()
+            || !SupernaturalProgression.spend(player, path, form.deathWardCost())) {
+            return false;
+        }
+        if (form == SupernaturalForm.VAMPIRE) {
+            event.setNewDamage(Math.max(0.0F, player.getHealth() - 1.0F));
+            return true;
+        }
+        event.setNewDamage(0.0F);
+        player.clearFire();
+        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 1, true, false));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 0, true, false));
+        return true;
     }
 
     public static void tick(final Player player) {
@@ -134,42 +155,49 @@ public final class SupernaturalState {
                 target -> target != player && target.isAlive() && target.getHealth() < target.getMaxHealth()
             ).forEach(target -> target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 30, 0, true, false)));
         }
-        final long dayTime = player.level().getOverworldClockTime() % 24_000L;
-        final boolean day = dayTime < 13_000L || dayTime > 23_000L;
-        if (player.tickCount % 20 == 0
-            && day
-            && player.level().canSeeSky(player.blockPosition())
-            && player.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
-            if (SupernaturalAbilityRules.resistsSun(level)) {
-                final int sunlightCost = SupernaturalAbilityRules.sunlightBloodCost(
-                    level,
-                    SupernaturalProgression.maximumResource(SupernaturalProgression.Path.VAMPIRE, level)
-                );
-                if (player.tickCount % 40 == 0) {
-                    if (SupernaturalProgression.spend(
-                        player,
-                        SupernaturalProgression.Path.VAMPIRE,
-                        sunlightCost
-                    )) {
-                        player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 3, true, false));
-                        player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 0, true, false));
-                        player.addEffect(new MobEffectInstance(MobEffects.MINING_FATIGUE, 60, 0, true, false));
-                    } else {
-                        SupernaturalProgression.setResource(player, SupernaturalProgression.Path.VAMPIRE, 0);
-                        player.igniteForSeconds(3.0F);
-                    }
-                } else if (SupernaturalProgression.resource(player, SupernaturalProgression.Path.VAMPIRE) == 0) {
-                    player.igniteForSeconds(3.0F);
-                }
-            } else {
-                SupernaturalProgression.setResource(player, SupernaturalProgression.Path.VAMPIRE, 0);
-                player.igniteForSeconds(3.0F);
-            }
+        if (player.tickCount % 20 == 0 && VampireSunlightRules.exposed(new VampireSunlightRules.Exposure(
+            player.level().environmentAttributes().getValue(EnvironmentAttributes.MONSTERS_BURN, player.position())
+                || player.level().dimensionTypeRegistration().is(VampireSunlightRules.SUNLIGHT),
+            player.level().dimensionTypeRegistration().is(VampireSunlightRules.SUNLIGHT_EXEMPT),
+            player.level().canSeeSky(player.blockPosition()),
+            player.level().environmentAttributes().getValue(EnvironmentAttributes.SKY_LIGHT_LEVEL, player.position()) > 8.0F,
+            player.getItemBySlot(EquipmentSlot.HEAD).isEmpty(),
+            player.isInWaterOrRain(),
+            player.level().isRainingAt(player.blockPosition()),
+            player.level().getBlockState(player.blockPosition()).is(Blocks.POWDER_SNOW)
+        ))) {
+            applyVampireSunlight(player, level);
         }
         if (SupernaturalProgression.batSwarmUntil(player) > player.level().getGameTime()) {
             player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 10, 0, true, false));
             player.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 10, 0, true, false));
         }
+    }
+
+    static void applyVampireSunlight(final Player player, final int level) {
+        final int blood = SupernaturalProgression.resource(player, SupernaturalProgression.Path.VAMPIRE);
+        final boolean chargeDue = player.tickCount % 40 == 0;
+        final VampireSunlightRules.Protection protection = VampireSunlightRules.protection(
+            level,
+            blood,
+            SupernaturalProgression.maximumResource(SupernaturalProgression.Path.VAMPIRE, level),
+            chargeDue
+        );
+        final boolean paid = protection.bloodCost() == 0 || SupernaturalProgression.spend(
+            player, SupernaturalProgression.Path.VAMPIRE, protection.bloodCost()
+        );
+        if (protection.preventsDamage() && paid) {
+            if (protection.bloodCost() > 0) {
+                player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 3, true, false));
+                player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 0, true, false));
+                player.addEffect(new MobEffectInstance(MobEffects.MINING_FATIGUE, 60, 0, true, false));
+            }
+            return;
+        }
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            player.hurtServer(serverLevel, VampireDamageTypes.sunlight(serverLevel), 1.0F);
+        }
+        player.setRemainingFireTicks(Math.max(player.getRemainingFireTicks(), 8));
     }
 
     private static void tickWerewolf(final Player player, final int level) {
@@ -210,6 +238,9 @@ public final class SupernaturalState {
             return true;
         }
         if (form == SupernaturalForm.VAMPIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) {
+            return true;
+        }
+        if (form == SupernaturalForm.VAMPIRE && event.getSource().is(VampireDamageTypes.VAMPIRE_SUNLIGHT)) {
             return true;
         }
         if (CreatureCombat.isSilverDamage(event)) {

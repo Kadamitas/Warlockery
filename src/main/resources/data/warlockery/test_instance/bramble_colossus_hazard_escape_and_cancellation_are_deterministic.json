@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:bramble_colossus_hazard_escape_and_cancellation_are_deterministic","environment":"warlockery:bramble_colossus_isolated","structure":"warlockery:empty15x15x15","max_ticks":100}
+{"type":"minecraft:function","function":"warlockery:bramble_colossus_hazard_escape_and_cancellation_are_deterministic","environment":{"type":"warlockery:isolated","id":"bramble_colossus_hazard_escape_and_cancellation_are_deterministic","delegate":"warlockery:bramble_colossus_isolated"},"structure":"warlockery:empty15x15x15","max_ticks":100}

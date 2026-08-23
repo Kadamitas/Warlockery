@@ -110,6 +110,23 @@ final class CommonTagResourcesTest {
     }
 
     @Test
+    void supernaturalSunlightAndPreyFamiliesAreDataPackExtensible() {
+        assertTag(tag(
+            "warlockery/tags/entity_type/werewolf_prey.json",
+            "minecraft:cow", "minecraft:pig", "minecraft:sheep", "minecraft:chicken",
+            "minecraft:rabbit", "minecraft:goat"
+        ));
+        assertTag(tag("warlockery/tags/damage_type/magical_damage.json", "warlockery:vampire_sunlight"));
+        final JsonObject exempt = readJson(DATA.resolve(
+            "warlockery/tags/dimension_type/vampire_sunlight_exempt.json"
+        ));
+        final String values = exempt.getAsJsonArray("values").toString();
+        assertTrue(values.contains("minecraft:the_nether"));
+        assertTrue(values.contains("minecraft:the_end"));
+        assertTrue(values.contains("warlockery:abyss"));
+    }
+
+    @Test
     void recipesUseCanonicalTagsWithoutLegacyForgeIngredients() throws IOException {
         try (var paths = Files.walk(DATA.resolve("warlockery"))) {
             final List<Path> jsonFiles = paths.filter(path -> path.toString().endsWith(".json")).toList();

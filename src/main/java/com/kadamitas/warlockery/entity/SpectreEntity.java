@@ -1,9 +1,13 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.entity.SpectreRules.Phase;
 import java.util.EnumSet;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -51,6 +55,8 @@ import org.jspecify.annotations.Nullable;
  */
 public final class SpectreEntity extends Monster implements ArcaneCreature {
     static final String STATE_KEY = "WarlockerySpectre";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(SpectreEntity.class, EntityDataSerializers.BYTE);
 
     private final ApparitionEpisodeRuntime.Counters apparitionCounters =
         new ApparitionEpisodeRuntime.Counters();
@@ -76,6 +82,26 @@ public final class SpectreEntity extends Monster implements ArcaneCreature {
 
     public void setSpectreState(final SpectreState updated) {
         state = updated == null ? SpectreState.empty() : updated;
+        syncPresentation(state.phase());
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_PRESENTATION_PHASE, (byte) Phase.DRIFT.ordinal());
+    }
+
+    public Phase presentationPhase() {
+        final int stored = entityData.get(DATA_PRESENTATION_PHASE);
+        final Phase[] phases = Phase.values();
+        return stored >= 0 && stored < phases.length ? phases[stored] : Phase.DRIFT;
+    }
+
+    private void syncPresentation(final Phase phase) {
+        final byte encoded = (byte) phase.ordinal();
+        if (entityData.get(DATA_PRESENTATION_PHASE) != encoded) {
+            entityData.set(DATA_PRESENTATION_PHASE, encoded);
+        }
     }
 
     public SpectreRuntime.Counters spectreCounters() {
@@ -216,6 +242,7 @@ public final class SpectreEntity extends Monster implements ArcaneCreature {
         state = input.read(STATE_KEY, CompoundTag.CODEC)
             .map(tag -> SpectreState.read(tag, dimension))
             .orElse(SpectreState.empty());
+        syncPresentation(state.phase());
         scratch.resetForLoad();
         normalizeEquipment();
         setNoGravity(true);

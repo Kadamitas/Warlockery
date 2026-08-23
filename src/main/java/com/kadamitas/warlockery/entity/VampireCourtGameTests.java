@@ -237,11 +237,12 @@ public final class VampireCourtGameTests {
               net.minecraft.world.entity.EntityTypes.VILLAGER,
               new BlockPos(2, 1, 1), EntitySpawnReason.EVENT
           );
+          objective.setNoAi(true);
           final BlockPos laneStart = helper.absolutePos(new BlockPos(0, 1, 1));
           final BlockPos laneEnd = helper.absolutePos(new BlockPos(2, 1, 1));
           objectiveLeader.snapTo(laneStart.getX() + 0.1D, laneStart.getY(), laneStart.getZ() + 0.5D,
               0.0F, 0.0F);
-          objective.snapTo(laneEnd.getX() + 0.9D, laneEnd.getY(), laneEnd.getZ() + 0.5D,
+          objective.snapTo(laneEnd.getX() + 0.99D, laneEnd.getY(), laneEnd.getZ() + 0.5D,
               0.0F, 0.0F);
           final Villager unassigned = fixture.spawn(
               net.minecraft.world.entity.EntityTypes.VILLAGER,

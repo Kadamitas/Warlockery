@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:goblin_patrons_structural_caps_and_foreign_boundaries",
-  "environment": "warlockery:goblin_patron_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "goblin_patrons_structural_caps_and_foreign_boundaries",
+    "delegate": "warlockery:goblin_patron_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

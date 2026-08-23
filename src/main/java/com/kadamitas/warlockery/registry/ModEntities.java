@@ -220,6 +220,9 @@ public final class ModEntities {
             .build()),
         AttributeFactoryRule.exact("forgewarden", _ -> patronAttributes(CreatureKind.FORGEWARDEN)),
         AttributeFactoryRule.exact("stonebroker", _ -> patronAttributes(CreatureKind.STONEBROKER)),
+        AttributeFactoryRule.exact("hobgoblin", _ -> Villager.createAttributes()
+            .add(Attributes.ATTACK_DAMAGE, 3.0)
+            .build()),
         AttributeFactoryRule.exact("goblin", _ -> Villager.createAttributes()
             .add(Attributes.ATTACK_DAMAGE, 3.0)
             .add(Attributes.FOLLOW_RANGE, 24.0)

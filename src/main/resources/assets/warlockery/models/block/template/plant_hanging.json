@@ -1,0 +1,17 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": { "particle": "#plant", "plant": "minecraft:block/vine" },
+  "elements": [
+    {
+      "from": [1, 0, 8], "to": [15, 16, 8],
+      "rotation": { "origin": [8, 8, 8], "axis": "y", "angle": 45 },
+      "faces": { "north": { "uv": [1, 0, 15, 16], "texture": "#plant" }, "south": { "uv": [1, 0, 15, 16], "texture": "#plant" } }
+    },
+    {
+      "from": [1, 0, 8], "to": [15, 16, 8],
+      "rotation": { "origin": [8, 8, 8], "axis": "y", "angle": -45 },
+      "faces": { "north": { "uv": [1, 0, 15, 16], "texture": "#plant" }, "south": { "uv": [1, 0, 15, 16], "texture": "#plant" } }
+    }
+  ]
+}

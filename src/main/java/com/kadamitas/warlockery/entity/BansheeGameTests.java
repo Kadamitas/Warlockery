@@ -35,30 +35,36 @@ import net.minecraft.world.phys.Vec3;
  * dispatched entities, cleans up all created entities and blocks in {@code finally} including
  * mid-sequence stages, and uses exact counter assertions instead of elapsed-time guesses.
  *
- * <p>Arena geometry: the framework seals the {@code forge:empty3x3x3} cell in a barrier shell,
+ * <p>Arena geometry: the framework seals the {@code warlockery:empty3x3x3} cell in a barrier shell,
  * so close-quarters fixtures keep every entity inside relative 0..2 at y=1. The two fixtures
  * that need real standoff distances (6..10 blocks) open the framework shell inside their own
  * pass-local radius-five arena, mirroring the accepted F15 Hex Bat precedent, and restore every
  * block on close in reverse order so the framework shell ends byte-identical.</p>
  */
 public final class BansheeGameTests {
+    private static final int ARENA_CENTER = 16;
+
     private BansheeGameTests() {
     }
 
     public static void bansheeWarnsAtRiskPlayerWithoutCausingHarm(final GameTestHelper helper) {
         final FixtureScope fixture = new FixtureScope(helper);
         try {
-            openFrameworkShell(fixture);
             erectArenaShell(fixture);
             // The banshee and its at-risk subject start eight blocks apart (already inside the
             // 6..10 warning standoff band centered on the shared arena anchor (1,1,1)) so the
             // very first observation holds in place: the WITHDRAW/APPROACH standoff search never
             // has to route toward a point beyond the arena's own five-block-radius wall.
-            final BansheeEntity banshee = spawnBanshee(fixture, new BlockPos(-3, 1, 1));
-            final ServerPlayer atRisk = fixture.connectedPlayer(new BlockPos(5, 1, 1), GameType.SURVIVAL);
+            final BansheeEntity banshee = spawnBanshee(fixture, arena(-4, 1, 0));
+            final ServerPlayer atRisk = fixture.connectedPlayer(arena(4, 1, 0), GameType.SURVIVAL);
             atRisk.setHealth(atRisk.getMaxHealth() * 0.3F);
-            final ServerPlayer healthy = fixture.connectedPlayer(new BlockPos(-3, 1, 0), GameType.SURVIVAL);
-            final ServerPlayer creative = fixture.connectedPlayer(new BlockPos(0, 1, -3), GameType.CREATIVE);
+            // Keep vanilla natural regeneration from turning the warning subject into a
+            // recovered subject before this fixture can assert the Banshee's non-harm contract.
+            // Seventeen food is below the regeneration threshold and above starvation.
+            atRisk.getFoodData().setFoodLevel(17);
+            atRisk.getFoodData().setSaturation(0.0F);
+            final ServerPlayer healthy = fixture.connectedPlayer(arena(-4, 1, -1), GameType.SURVIVAL);
+            final ServerPlayer creative = fixture.connectedPlayer(arena(-1, 1, -4), GameType.CREATIVE);
             creative.setHealth(creative.getMaxHealth() * 0.1F);
             final float atRiskHealth = atRisk.getHealth();
             makeDue(banshee);
@@ -272,8 +278,8 @@ public final class BansheeGameTests {
             helper.assertValueEqual(banshee.getAttributeValue(Attributes.ATTACK_DAMAGE), 4.0D, "attack 4");
             helper.assertValueEqual(banshee.getAttributeValue(Attributes.FOLLOW_RANGE), 16.0D, "follow 16");
             helper.assertTrue(Math.abs(banshee.getType().getDimensions().width() - 0.65F) < 1.0E-6F
-                    && Math.abs(banshee.getType().getDimensions().height() - 1.8F) < 1.0E-6F,
-                "exact 0.65 by 1.8 dimensions");
+                    && Math.abs(banshee.getType().getDimensions().height() - 1.98F) < 1.0E-6F,
+                "exact approved 0.65 by 1.98 dimensions");
             helper.assertValueEqual(banshee.operationalTargetGoalCount(), 0,
                 "the target selector is empty");
             for (final EquipmentSlot slot : EquipmentSlot.values()) {
@@ -354,9 +360,8 @@ public final class BansheeGameTests {
     public static void bansheeFlightHazardFeedbackAndWorkAreBounded(final GameTestHelper helper) {
         final FixtureScope fixture = new FixtureScope(helper);
         try {
-            openFrameworkShell(fixture);
             erectArenaShell(fixture);
-            final BansheeEntity banshee = spawnBanshee(fixture, new BlockPos(1, 1, 1));
+            final BansheeEntity banshee = spawnBanshee(fixture, arena(0, 1, 0));
             banshee.setNoAi(true);
             helper.assertTrue(!banshee.noPhysics,
                 "the dedicated Banshee never phases: collision stays enabled");
@@ -368,7 +373,7 @@ public final class BansheeGameTests {
             helper.assertTrue(baselineReads <= BansheeRules.MAX_HAZARD_READS,
                 "one hazard observation charges at most twenty-seven block reads");
 
-            final BlockPos fireRelative = new BlockPos(2, 1, 1);
+            final BlockPos fireRelative = arena(1, 1, 0);
             helper.setBlock(fireRelative, Blocks.FIRE.defaultBlockState());
             fixture.onClose(() -> helper.setBlock(fireRelative, Blocks.AIR.defaultBlockState()));
             makeDue(banshee);
@@ -382,7 +387,7 @@ public final class BansheeGameTests {
                 "hazard handling never converts or reidentifies the entity");
             helper.setBlock(fireRelative, Blocks.AIR.defaultBlockState());
 
-            final ServerPlayer subject = fixture.connectedPlayer(new BlockPos(-3, 1, -3), GameType.SURVIVAL);
+            final ServerPlayer subject = fixture.connectedPlayer(arena(-4, 1, -4), GameType.SURVIVAL);
             subject.setHealth(subject.getMaxHealth() * 0.3F);
             // Sixteen chorus members, every one genuinely in the 6..10 warning band of the one
             // shared subject with clear line of sight inside the opened arena.
@@ -394,7 +399,7 @@ public final class BansheeGameTests {
             final List<BansheeEntity> chorus = new ArrayList<>();
             for (final int[] offset : bandOffsets) {
                 final BansheeEntity member = spawnBanshee(fixture, new BlockPos(
-                    -3 + offset[0], 1, -3 + offset[1]
+                    ARENA_CENTER - 4 + offset[0], 1, ARENA_CENTER - 4 + offset[1]
                 ));
                 member.setNoAi(true);
                 member.setBansheeState(member.bansheeState()
@@ -443,7 +448,7 @@ public final class BansheeGameTests {
                     "line-of-sight rays stay within the declared discovery and subject budget");
             }
 
-            final BansheeEntity wayworn = spawnBanshee(fixture, new BlockPos(2, 1, 0));
+            final BansheeEntity wayworn = spawnBanshee(fixture, arena(1, 1, -1));
             wayworn.setNoAi(true);
             wayworn.setBansheeState(wayworn.bansheeState()
                 .withSubject(BansheeState.Subject.acquired(
@@ -512,32 +517,8 @@ public final class BansheeGameTests {
         return banshee;
     }
 
-    /**
-     * Opens the framework's own barrier shell around the {@code forge:empty3x3x3} cell (the box
-     * faces at relative -1 and 3, floor excluded) so the fixture's arena is one connected
-     * space. Every removed barrier is restored on close, after the arena shell is removed.
-     */
-    private static void openFrameworkShell(final FixtureScope fixture) {
-        final GameTestHelper helper = fixture.helper;
-        final List<BlockPos> removed = new ArrayList<>();
-        for (int dx = -1; dx <= 3; dx++) {
-            for (int dy = 0; dy <= 3; dy++) {
-                for (int dz = -1; dz <= 3; dz++) {
-                    final boolean face = dx == -1 || dx == 3 || dy == 3 || dz == -1 || dz == 3;
-                    if (!face) {
-                        continue;
-                    }
-                    final BlockPos pos = helper.absolutePos(new BlockPos(dx, dy, dz));
-                    if (helper.getLevel().getBlockState(pos).is(Blocks.BARRIER)) {
-                        helper.getLevel().setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-                        removed.add(pos);
-                    }
-                }
-            }
-        }
-        fixture.onClose(() -> removed.forEach(pos -> helper.getLevel().setBlock(
-            pos, Blocks.BARRIER.defaultBlockState(), 3
-        )));
+    private static BlockPos arena(final int dx, final int y, final int dz) {
+        return new BlockPos(ARENA_CENTER + dx, y, ARENA_CENTER + dz);
     }
 
     /**
@@ -548,7 +529,7 @@ public final class BansheeGameTests {
      */
     private static void erectArenaShell(final FixtureScope fixture) {
         final GameTestHelper helper = fixture.helper;
-        final BlockPos center = helper.absolutePos(new BlockPos(1, 1, 1));
+        final BlockPos center = helper.absolutePos(arena(0, 1, 0));
         final int radius = 5;
         final int height = 6;
         final List<BlockPos> placed = new ArrayList<>();

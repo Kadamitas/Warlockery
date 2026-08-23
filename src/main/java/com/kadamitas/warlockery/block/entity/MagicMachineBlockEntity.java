@@ -908,7 +908,12 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
 
     @Override
     public void setItem(final int slot, final ItemStack stack) {
-        super.setItem(slot, stack);
+        setItem(slot, stack, false);
+    }
+
+    @Override
+    public void setItem(final int slot, final ItemStack stack, final boolean insideTransaction) {
+        super.setItem(slot, stack, insideTransaction);
         invalidateRecipeCache();
     }
 

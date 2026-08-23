@@ -7,8 +7,8 @@ version="${mod_version}"
 displayName="Warlockery"
 displayURL="https://github.com/Kadamitas/Warlockery"
 updateJSONURL="https://raw.githubusercontent.com/Kadamitas/Warlockery/neoforge-main/update.json"
-logoFile="warlockery-icon.png"
-logoBlur=false
+iconFile="warlockery-icon.png"
+iconBlur=false
 authors="Kadamitas"
 
 description='''A standalone ritual-magic mod for NeoForge and Minecraft 26.2.

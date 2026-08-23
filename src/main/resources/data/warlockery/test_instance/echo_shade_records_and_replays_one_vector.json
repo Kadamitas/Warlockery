@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:echo_shade_records_and_replays_one_vector",
-  "environment": "warlockery:echo_spectre_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "echo_shade_records_and_replays_one_vector",
+    "delegate": "warlockery:echo_spectre_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:vampire_sunlight_ignores_fire_resistance",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "vampire_sunlight_ignores_fire_resistance",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 100
+}

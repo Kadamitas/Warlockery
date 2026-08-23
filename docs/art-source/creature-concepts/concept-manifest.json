@@ -1,38 +1,28 @@
 {
-  "generation_mode": "OpenAI built-in image generation",
-  "common_prompt": "Original Warlockery voxel creature concept art for low-resolution Minecraft cuboid models and 64x64 pixel textures, orthographic three-quarter full-body presentation on a neutral charcoal studio board, readable separated silhouettes, no text, logos, watermarks, commercial mod resemblance, vanilla recolors, photorealism, or geometry that cannot be built from rectangular model parts.",
   "sheets": {
     "occult-humanoids.png": {
-      "creatures": ["circle_mage", "hedge_crone", "vampire", "blood_thrall", "corpse", "glass_doppelganger", "werewolf_hunter", "lycan_villager"],
-      "prompt": "Two clean rows of eight occult humanoids using ritual violet and parchment, moss and bone, burgundy and black, crimson and iron, grave cloth, silver-blue glass facets, brown silver-equipped hunter clothing, and practical moon-blue lycan village clothing."
+      "creatures": ["circle_mage", "hedge_crone", "vampire", "blood_thrall", "corpse", "glass_doppelganger", "werewolf_hunter", "lycan_villager"]
     },
     "spectral-entities.png": {
-      "creatures": ["banshee", "umbral_sigil", "eldritch_watcher", "spectral_familiar", "poltergeist", "spectre", "spirit", "lost_soul", "echo_shade"],
-      "prompt": "Nine spectral forms with no shared silhouette: moon-white banshee, black-violet rune sigil, teal many-eyed watcher, pale animal familiar, animated copper-blue debris, hooded spectre, mint spirit, amber soul, and ink-black violet-rimmed echo shade."
+      "creatures": ["banshee", "umbral_sigil", "eldritch_watcher", "spectral_familiar", "poltergeist", "spectre", "spirit", "lost_soul", "echo_shade"]
     },
     "lycans-and-mounts.png": {
-      "creatures": ["werewolf", "feral_lycan", "hellhound", "pale_steed", "nightmare"],
-      "prompt": "Five distinct lycan and mount forms: upright scarred gray werewolf, low reddish feral lycan with broken chains, ember-cracked horned hellhound, bone-white moon-blue pale steed, and black brass-armored nightmare with an ember mane."
+      "creatures": ["werewolf", "feral_lycan", "hellhound", "pale_steed", "nightmare"]
     },
     "familiars-and-vermin.png": {
-      "creatures": ["familiar_cat", "owl", "toad", "hex_bat", "parasytic_louse"],
-      "prompt": "Five compact familiar and vermin forms: midnight moon-charmed cat, cream and chestnut broad-browed owl, gold-eyed moss toad, angular violet-black rune bat, and pale segmented hooked louse with a red feeding core."
+      "creatures": ["familiar_cat", "owl", "toad", "hex_bat", "parasytic_louse"]
     },
     "infernal-and-bosses.png": {
-      "creatures": ["demon", "emberhorn_archfiend", "naamah", "abyssal_regent", "death", "ironbound_sentinel"],
-      "prompt": "Six boss silhouettes: obsidian-brass demon soldier, massive lava-armored archfiend, flame-crowned Naamah, coral-crowned abyssal regent, bone-masked Death with an original crescent scythe, and shield-shouldered rune sentinel."
+      "creatures": ["demon", "emberhorn_archfiend", "naamah", "abyssal_regent", "death", "ironbound_sentinel"]
     },
     "verdant-creatures.png": {
-      "creatures": ["ent", "mandrake", "dreamroot", "bramble_colossus", "thorned_pursuer"],
-      "prompt": "Five plant creatures: asymmetric branch-antlered ent, shouting root-child mandrake, indigo bulb-crowned dreamroot, huge hooked bramble colossus, and agile antler-masked vine-whip pursuer."
+      "creatures": ["ent", "mandrake", "dreamroot", "bramble_colossus", "thorned_pursuer"]
     },
     "goblin-clans.png": {
-      "creatures": ["hobgoblin", "goblin", "stonebroker", "forgewarden"],
-      "prompt": "Four fully clothed mining villagers: lamp-helmet prospector with pick harness, smaller ore runner with satchel, stocky geode-armored Stonebroker with ledger pouch, and dark goblinite Forgewarden with brass furnace mask and tool belt."
+      "creatures": ["hobgoblin", "goblin", "stonebroker", "forgewarden"]
     },
     "illusions-and-anomalies.png": {
-      "creatures": ["illusion_creeper", "illusion_spider", "illusion_zombie"],
-      "prompt": "Three prism anomalies with displaced afterimage studies: separated cyan-violet creeper plates, mirrored ink-and-glass spider with ghost legs, and asymmetric masked zombie with an offset violet duplicate torso."
+      "creatures": ["illusion_creeper", "illusion_spider", "illusion_zombie"]
     }
   },
   "existing_reference": {

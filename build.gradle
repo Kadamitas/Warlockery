@@ -119,7 +119,7 @@ abstract class GenerateEmptyGameTestStructure extends DefaultTask {
     }
 }
 
-version = '1.5.0-LlaGuiT0-26.2.0.45'
+version = '1.5.1-LlaGuiT0-26.2.0.45'
 group = 'com.kadamitas.warlockery'
 
 base {
@@ -243,6 +243,26 @@ tasks.named('test', Test) {
 afterEvaluate {
     tasks.named('test', Test) {
         workingDir = rootProject.projectDir
+    }
+}
+
+tasks.register('bakeCreatureTextures', JavaExec) {
+    group = 'warlockery assets'
+    description = 'Projects approved creature concept views onto the dedicated models real UV faces.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.kadamitas.warlockery.client.texture.ConceptTextureBatchTool'
+    if (project.hasProperty('creature')) {
+        args '--entity', project.property('creature')
+    }
+    if (project.hasProperty('creatureTextureOutput')) {
+        args '--output-root', project.property('creatureTextureOutput')
+    }
+    if (project.hasProperty('installCreatureTextures')) {
+        args '--install'
+    }
+    if (project.hasProperty('checkCreatureTextures')) {
+        args '--check'
     }
 }
 

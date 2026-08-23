@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:goblin_patrons_accord_navigation_and_cleanup",
-  "environment": "warlockery:goblin_patron_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "goblin_patrons_accord_navigation_and_cleanup",
+    "delegate": "warlockery:goblin_patron_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

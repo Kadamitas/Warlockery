@@ -43,7 +43,7 @@ import net.minecraft.world.phys.Vec3;
  * be bound. Every fixture that binds anything asserts the bound identity by UUID rather than by a
  * count, and says so in its failure message, so contamination fails loudly instead of passing.</p>
  *
- * <p>Arena geometry: the framework seals the {@code forge:empty3x3x3} cell, so every entity and
+ * <p>Arena geometry: the framework seals the {@code warlockery:empty3x3x3} cell, so every entity and
  * every destination stays inside relative 0..2 at y=1. The Sentinel never paths outside its tether
  * and its station is its own spawn position, so no fixture can ask it to navigate through the shell
  * and stall on stale state.</p>

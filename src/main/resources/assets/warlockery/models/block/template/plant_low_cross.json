@@ -1,0 +1,23 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": { "particle": "#plant", "plant": "minecraft:block/short_grass" },
+  "elements": [
+    {
+      "from": [0, 0, 8], "to": [16, 10, 8],
+      "rotation": { "origin": [8, 5, 8], "axis": "y", "angle": 45 },
+      "faces": {
+        "north": { "uv": [0, 6, 16, 16], "texture": "#plant" },
+        "south": { "uv": [0, 6, 16, 16], "texture": "#plant" }
+      }
+    },
+    {
+      "from": [0, 0, 8], "to": [16, 10, 8],
+      "rotation": { "origin": [8, 5, 8], "axis": "y", "angle": -45 },
+      "faces": {
+        "north": { "uv": [0, 6, 16, 16], "texture": "#plant" },
+        "south": { "uv": [0, 6, 16, 16], "texture": "#plant" }
+      }
+    }
+  ]
+}

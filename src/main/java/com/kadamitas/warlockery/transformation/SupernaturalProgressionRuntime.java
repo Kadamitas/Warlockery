@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.lang.reflect.Field;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -52,6 +53,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -77,6 +79,7 @@ public final class SupernaturalProgressionRuntime {
     private static final SupernaturalProgression.Path VAMPIRE = SupernaturalProgression.Path.VAMPIRE;
     private static final SupernaturalProgression.Path WEREWOLF = SupernaturalProgression.Path.WEREWOLF;
     private static boolean registered;
+    private static final Field FOOD_EXHAUSTION = foodExhaustionField();
 
     private SupernaturalProgressionRuntime() {
     }
@@ -87,6 +90,7 @@ public final class SupernaturalProgressionRuntime {
         }
         registered = true;
         PlayerWolfVisualSync.registerEvents();
+        NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Pre event) -> prepareVampireFood(event.getEntity()));
         NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Post event) -> tick(event.getEntity()));
         NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> SupernaturalState.handleDamage(event));
         NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Pre event) -> handleDamage(event));
@@ -96,6 +100,12 @@ public final class SupernaturalProgressionRuntime {
         NeoForge.EVENT_BUS.addListener((PlayerEvent.BreakSpeed event) -> handleBreakSpeed(event));
         NeoForge.EVENT_BUS.addListener((BreakBlockEvent event) -> handleBlockBreak(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> copyAfterClone(event));
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> {
+            WerewolfPreyDriveRuntime.release(event.getOriginal());
+            WerewolfPreyDriveRuntime.release(event.getEntity());
+        });
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) ->
+            WerewolfPreyDriveRuntime.release(event.getEntity()));
     }
 
     public static void cyclePower(final ServerPlayer player) {
@@ -334,13 +344,14 @@ public final class SupernaturalProgressionRuntime {
     }
 
     public static ModNetwork.SupernaturalSnapshot snapshot(final ServerPlayer player) {
+        SupernaturalProgression.reconcileSanguine(player);
         final SupernaturalForm form = SupernaturalState.getForm(player);
         final Optional<SupernaturalProgression.Path> path = SupernaturalProgression.Path.forForm(form);
         final MagicDisplay magic = magicDisplay(player);
         if (path.isEmpty()) {
             return new ModNetwork.SupernaturalSnapshot(
                 "", 0, 0, 0, "", "", "", "", -1, 0,
-                magic.path(), magic.resource(), magic.maximum()
+                magic.path(), magic.resource(), magic.maximum(), false, -1
             );
         }
         final SupernaturalProgression.Path active = path.orElseThrow();
@@ -362,7 +373,9 @@ public final class SupernaturalProgressionRuntime {
             powerCooldown(player, power),
             magic.path(),
             magic.resource(),
-            magic.maximum()
+            magic.maximum(),
+            SupernaturalProgression.sanguine(player),
+            WerewolfPreyDriveRuntime.targetEntityId(player)
         );
     }
 
@@ -397,6 +410,8 @@ public final class SupernaturalProgressionRuntime {
             return;
         }
         SupernaturalState.tick(serverPlayer);
+        tickVampireSustenance(serverPlayer);
+        WerewolfPreyDriveRuntime.tick(serverPlayer);
         tickBatFlight(serverPlayer);
         tickSummons(serverPlayer);
         tickMesmerized(serverPlayer);
@@ -455,7 +470,7 @@ public final class SupernaturalProgressionRuntime {
         }
         player.removeEffect(MobEffects.POISON);
         player.setAirSupply(player.getMaxAirSupply());
-        if (SupernaturalProgression.resource(player, VAMPIRE) == 0 && player.getFoodData().getFoodLevel() == 0) {
+        if (SupernaturalProgression.resource(player, VAMPIRE) == 0) {
             player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 3, true, false));
             player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 1, true, false));
             player.addEffect(new MobEffectInstance(MobEffects.MINING_FATIGUE, 60, 1, true, false));
@@ -564,7 +579,6 @@ public final class SupernaturalProgressionRuntime {
         );
         target.getPersistentData().putInt(BLOOD_REMAINING, remaining - amount);
         SupernaturalProgression.addResource(player, VAMPIRE, amount);
-        player.getFoodData().eat(Math.max(1, amount / 5), 0.5F);
         if (target.getHealth() > 1.0F) {
             target.hurtServer(player.level(), target.damageSources().playerAttack(player), 1.0F);
         }
@@ -601,6 +615,57 @@ public final class SupernaturalProgressionRuntime {
             SupernaturalProgression.maximumResource(VAMPIRE, SupernaturalProgression.level(player, VAMPIRE))
         ).withStyle(ChatFormatting.DARK_RED));
         sync(player);
+    }
+
+    static void prepareVampireFood(final Player player) {
+        if (player.level().isClientSide() || SupernaturalState.getForm(player) != SupernaturalForm.VAMPIRE) {
+            return;
+        }
+        player.getFoodData().setFoodLevel(VampireSustenanceRules.NEUTRAL_FOOD_LEVEL);
+        player.getFoodData().setSaturation(0.0F);
+        try {
+            FOOD_EXHAUSTION.setFloat(player.getFoodData(), 0.0F);
+        } catch (IllegalAccessException exception) {
+            throw new IllegalStateException("Unable to neutralize vampire hunger exhaustion", exception);
+        }
+    }
+
+    static void tickVampireSustenance(final ServerPlayer player) {
+        final boolean vampire = SupernaturalState.getForm(player) == SupernaturalForm.VAMPIRE;
+        if (!vampire) {
+            if (SupernaturalProgression.sanguine(player)) {
+                SupernaturalProgression.setSanguine(player, false);
+            }
+            return;
+        }
+        final int level = SupernaturalProgression.level(player, VAMPIRE);
+        final int maximum = SupernaturalProgression.maximumResource(VAMPIRE, level);
+        final int blood = SupernaturalProgression.resource(player, VAMPIRE);
+        final boolean sanguine = SupernaturalProgression.reconcileSanguine(player);
+        prepareVampireFood(player);
+        final int cost = VampireSustenanceRules.regenerationBloodCost(maximum);
+        if (blood >= cost && VampireSustenanceRules.shouldRegenerate(
+            player.level().getGameRules().get(GameRules.NATURAL_HEALTH_REGENERATION),
+            sanguine,
+            player.isHurt(),
+            player.tickCount
+        )) {
+            final float health = player.getHealth();
+            player.heal(1.0F);
+            if (player.getHealth() > health) {
+                SupernaturalProgression.spend(player, VAMPIRE, cost);
+            }
+        }
+    }
+
+    private static Field foodExhaustionField() {
+        try {
+            final Field field = net.minecraft.world.food.FoodData.class.getDeclaredField("exhaustionLevel");
+            field.setAccessible(true);
+            return field;
+        } catch (NoSuchFieldException | RuntimeException exception) {
+            throw new ExceptionInInitializerError(exception);
+        }
     }
 
     private static void handleDamage(final LivingDamageEvent.Pre event) {
@@ -674,6 +739,9 @@ public final class SupernaturalProgressionRuntime {
     }
 
     private static void handleDeath(final LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer dyingPlayer) {
+            WerewolfPreyDriveRuntime.release(dyingPlayer);
+        }
         if (!(event.getSource().getEntity() instanceof ServerPlayer killer)) {
             return;
         }

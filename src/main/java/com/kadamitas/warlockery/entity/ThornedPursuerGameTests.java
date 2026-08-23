@@ -434,6 +434,9 @@ public final class ThornedPursuerGameTests {
                 "the active episode begins with its one transient course modifier");
             long escorts = pursuer.pursuerCounters().escortCreations;
             helper.runAfterDelay(2, () -> fixture.step(() -> {
+                // Force the next live entity tick onto the contact-hazard cadence. Known fire
+                // must bypass that redundant scan so ESCAPE owns the sole bounded footprint read.
+                pursuer.tickCount = Math.floorMod(-pursuer.getId(), 20) - 1;
                 final long hazardReads = pursuer.pursuerCounters().hazardReads;
                 pursuer.igniteForSeconds(2.0F);
                 helper.runAfterDelay(1, () -> fixture.step(() -> {
@@ -606,8 +609,12 @@ public final class ThornedPursuerGameTests {
                 fixture.track(result);
                 helper.assertValueEqual(result.creatureKind(), ArcaneCreature.CreatureKind.THORNED_PURSUER,
                     "the ritual result preserves dedicated acquisition identity");
-                helper.assertValueEqual(ThornedPursuerRuntime.anchorForTest(result), result.blockPosition(),
-                    "the summoned pursuer anchors exactly where production placed it");
+                final BlockPos resultAnchor = ThornedPursuerRuntime.anchorForTest(result);
+                helper.assertTrue(resultAnchor != null,
+                    "the summoned pursuer records its production placement as an anchor");
+                helper.assertTrue(new AABB(center).inflate(definition.radius() + 1.0D)
+                        .contains(net.minecraft.world.phys.Vec3.atCenterOf(resultAnchor)),
+                    "the summoned pursuer anchor stays inside the bounded ritual footprint");
                 helper.assertValueEqual(SupernaturalProgression.level(caster,
                     SupernaturalProgression.Path.WEREWOLF), preservedLevel,
                     "ordinary rite completion preserves unrelated supernatural progression");

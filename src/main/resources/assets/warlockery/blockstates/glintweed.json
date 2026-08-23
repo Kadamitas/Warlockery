@@ -4,8 +4,7 @@
       "model": "warlockery:block/glintweed"
     },
     "hanging=true": {
-      "model": "warlockery:block/glintweed",
-      "x": 180
+      "model": "warlockery:block/glintweed_hanging"
     }
   }
 }

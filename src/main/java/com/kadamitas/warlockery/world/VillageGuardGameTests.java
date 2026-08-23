@@ -101,9 +101,9 @@ public final class VillageGuardGameTests {
     }
 
     public static void goblinRaidWaveIsGroupedAndCoordinated(final GameTestHelper helper) {
-        BlockPos.betweenClosedStream(new BlockPos(-6, 0, -6), new BlockPos(8, 0, 8))
+        final BlockPos relativeCenter = new BlockPos(16, 1, 16);
+        BlockPos.betweenClosedStream(relativeCenter.offset(-7, -1, -7), relativeCenter.offset(7, -1, 7))
             .forEach(position -> helper.setBlock(position, Blocks.STONE));
-        final BlockPos relativeCenter = new BlockPos(1, 1, 1);
         final BlockPos center = helper.absolutePos(relativeCenter);
         final Villager villager = helper.spawn(EntityTypes.VILLAGER, relativeCenter);
         villager.setNoAi(true);

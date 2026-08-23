@@ -153,8 +153,17 @@ public final class SpectralSteedGameTests {
                 "every applied band change is counted");
 
             owner.stopRiding();
+            final BlockPos landmark = helper.absolutePos(new BlockPos(2, 1, 2));
             helper.setBlock(new BlockPos(2, 1, 2), Blocks.HAY_BLOCK);
             steed.setSteedState(steed.steedState().withFatigue(SpectralSteedRules.MAX_FATIGUE));
+            final BlockPos searchOrigin = steed.blockPosition();
+            helper.assertTrue(Math.abs(landmark.getX() - searchOrigin.getX())
+                    <= SpectralSteedRules.REST_HORIZONTAL_RADIUS
+                    && Math.abs(landmark.getZ() - searchOrigin.getZ())
+                    <= SpectralSteedRules.REST_HORIZONTAL_RADIUS
+                    && Math.abs(landmark.getY() - searchOrigin.getY())
+                    <= SpectralSteedRules.REST_VERTICAL_RADIUS,
+                "the fixture landmark is inside the declared search envelope");
             SpectralSteedRuntime.tick(steed, level);
             helper.assertTrue(steed.steedState().counters().restSearches() >= 1,
                 "a tired unridden steed actually runs a rest search");
@@ -166,11 +175,12 @@ public final class SpectralSteedGameTests {
             helper.assertTrue(steed.steedState().rest().isPresent(),
                 "the hay landmark yields one rest site");
             final BlockPos site = steed.steedState().rest().orElseThrow();
-            final BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
-            helper.assertTrue(Math.abs(site.getX() - origin.getX()) <= SpectralSteedRules.REST_HORIZONTAL_RADIUS
-                    && Math.abs(site.getZ() - origin.getZ()) <= SpectralSteedRules.REST_HORIZONTAL_RADIUS
-                    && Math.abs(site.getY() - origin.getY()) <= SpectralSteedRules.REST_VERTICAL_RADIUS,
-                "the chosen site is inside the declared envelope and not something a neighbour owns");
+            final int siteToLandmarkX = Math.abs(site.getX() - landmark.getX());
+            final int siteToLandmarkZ = Math.abs(site.getZ() - landmark.getZ());
+            helper.assertTrue(site.getY() == landmark.getY()
+                    && siteToLandmarkX + siteToLandmarkZ == 2
+                    && (siteToLandmarkX == 0 || siteToLandmarkZ == 0),
+                "the chosen stance belongs to this fixture's landmark");
 
             steed.snapTo(site.getX() + 0.5, site.getY(), site.getZ() + 0.5, 0.0F, 0.0F);
             SpectralSteedRuntime.tick(steed, level);

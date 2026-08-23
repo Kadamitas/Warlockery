@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:hex_bat_swoop_marks_and_releases_target_safely",
-  "environment": "warlockery:hex_bat_swoop_marks_and_releases_target_safely",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hex_bat_swoop_marks_and_releases_target_safely",
+    "delegate": "warlockery:hex_bat_swoop_marks_and_releases_target_safely"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

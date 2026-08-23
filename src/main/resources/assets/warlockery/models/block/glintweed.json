@@ -1,7 +1,6 @@
 {
-    "parent":  "minecraft:block/cross",
-    "render_type":  "minecraft:cutout",
+    "parent":  "warlockery:block/template/plant_tall_cross",
     "textures":  {
-                     "cross":  "warlockery:block/glint_weed"
+                     "plant":  "warlockery:block/glint_weed"
                  }
 }

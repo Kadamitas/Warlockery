@@ -2,6 +2,9 @@ package com.kadamitas.warlockery.entity;
 
 import java.util.List;
 import java.util.Set;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -34,6 +37,10 @@ public final class ThornedPursuerEntity extends Monster implements ArcaneCreatur
     public static final int BASE_XP = 5;
     public static final int LIFECYCLE_EQUIPMENT_SLOTS = 0;
     private static final String STATE_KEY = "WarlockeryThornedPursuerState";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(ThornedPursuerEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_SNARE_COOLDOWN =
+        SynchedEntityData.defineId(ThornedPursuerEntity.class, EntityDataSerializers.INT);
     private static final Set<String> LIFECYCLE_MODIFIERS = Set.of(
         "minecraft:baby", "minecraft:random_spawn_bonus", "minecraft:zombie_random_spawn_bonus",
         "minecraft:leader_zombie_bonus", "minecraft:reinforcement_caller_charge",
@@ -49,6 +56,14 @@ public final class ThornedPursuerEntity extends Monster implements ArcaneCreatur
         normalizeLifecycle();
     }
 
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_PHASE,
+            EntityPresentationSync.encode(ThornedPursuerRules.Phase.ANCHORED));
+        builder.define(DATA_PRESENTATION_SNARE_COOLDOWN, 0);
+    }
+
     @Override public CreatureKind creatureKind() { return CreatureKind.THORNED_PURSUER; }
 
     @Override protected void registerGoals() {
@@ -62,15 +77,39 @@ public final class ThornedPursuerEntity extends Monster implements ArcaneCreatur
     public int operationalTargetGoalCount() { return targetSelector.getAvailableGoals().size(); }
     public static Set<String> lifecycleModifierIds() { return LIFECYCLE_MODIFIERS; }
     public ThornedPursuerState pursuerState() { return pursuerState; }
-    public void setPursuerState(ThornedPursuerState state) { pursuerState = state == null ? ThornedPursuerState.defaults() : state; }
+    public void setPursuerState(ThornedPursuerState state) {
+        pursuerState = state == null ? ThornedPursuerState.defaults() : state;
+        syncPresentationFromRuntime();
+    }
     public ThornedPursuerRuntime.Transient pursuerRuntime() { return runtime; }
     public ThornedPursuerRuntime.Counters pursuerCounters() { return counters; }
     public void resetPursuerCounters() { counters = new ThornedPursuerRuntime.Counters(); }
+
+    public ThornedPursuerRules.Phase presentationPhase() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE),
+            ThornedPursuerRules.Phase.ANCHORED);
+    }
+
+    public int presentationSnareCooldownRemaining() {
+        return entityData.get(DATA_PRESENTATION_SNARE_COOLDOWN);
+    }
+
+    private void syncPresentationFromRuntime() {
+        byte phase = EntityPresentationSync.encode(runtime.phase());
+        int snareCooldown = pursuerState.snareCooldownRemaining();
+        if (entityData.get(DATA_PRESENTATION_PHASE) != phase) {
+            entityData.set(DATA_PRESENTATION_PHASE, phase);
+        }
+        if (entityData.get(DATA_PRESENTATION_SNARE_COOLDOWN) != snareCooldown) {
+            entityData.set(DATA_PRESENTATION_SNARE_COOLDOWN, snareCooldown);
+        }
+    }
 
     @Override protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
         pursuerState = pursuerState.tickLoaded();
         ThornedPursuerRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
@@ -101,6 +140,7 @@ public final class ThornedPursuerEntity extends Monster implements ArcaneCreatur
             .map(ThornedPursuerState::read).orElseGet(ThornedPursuerState::defaults);
         normalizeLifecycle();
         runtime.resetForLoad(this);
+        syncPresentationFromRuntime();
     }
 
     @Override

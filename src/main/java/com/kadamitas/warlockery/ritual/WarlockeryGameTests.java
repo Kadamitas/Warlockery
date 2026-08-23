@@ -179,7 +179,7 @@ public final class WarlockeryGameTests {
     }
 
     public static void summonImpCreatesWarlockeryCreature(final GameTestHelper helper) {
-        final BlockPos center = helper.absolutePos(new BlockPos(1, 1, 1));
+        final BlockPos center = helper.absolutePos(new BlockPos(16, 1, 16));
         RitualManager.INSTANCE.complete(
             helper.getLevel(), center, null,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "summon_imp")
@@ -365,7 +365,7 @@ public final class WarlockeryGameTests {
     }
 
     public static void hellOnEarthUsesTaggedDemons(final GameTestHelper helper) {
-        final BlockPos center = helper.absolutePos(new BlockPos(1, 1, 1));
+        final BlockPos center = helper.absolutePos(new BlockPos(16, 1, 16));
         RitualTerrainPlan.fireRing(center, 9, 12).forEach(column -> {
             helper.getLevel().setBlockAndUpdate(column.below(), Blocks.STONE.defaultBlockState());
             helper.getLevel().setBlockAndUpdate(column, Blocks.AIR.defaultBlockState());
@@ -1035,6 +1035,8 @@ public final class WarlockeryGameTests {
                 8,
                 "top pipe must insert recipe inputs"
             );
+            helper.assertTrue(machine.getItem(0).is(Items.STRING) && machine.getItem(0).getCount() == 8,
+                "top pipe must commit all eight string to the recipe input slot");
             helper.assertValueEqual(
                 extract(top, 0, ItemResource.of(Items.STRING), 1, true),
                 0,
@@ -1055,7 +1057,11 @@ public final class WarlockeryGameTests {
                 "bottom pipe must reject insertion"
             );
             final ItemResource outputResource = bottom.getResource(0);
-            helper.assertTrue(outputResource.is(Items.COBWEB), "bottom pipe must expose finished output");
+            helper.assertTrue(outputResource.is(Items.COBWEB),
+                "bottom pipe must expose finished output (input=" + machine.getItem(0)
+                    + ", output=" + machine.getItem(4)
+                    + ", progress=" + machine.getProgress()
+                    + ", altar=" + totalAltarPower(helper, altarRelative) + ")");
             helper.assertTrue(machine.getItem(4).is(Items.COBWEB), "simulated extraction must preserve output");
             helper.assertValueEqual(
                 extract(bottom, 0, outputResource, 1, false),

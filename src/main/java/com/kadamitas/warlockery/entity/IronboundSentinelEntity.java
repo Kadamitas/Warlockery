@@ -10,6 +10,9 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -75,6 +78,10 @@ public final class IronboundSentinelEntity extends Monster implements ArcaneCrea
     public static final int XP_REWARD = 5;
 
     static final String STATE_KEY = "WarlockerySentinelState";
+    private static final EntityDataAccessor<Boolean> DATA_PRESENTATION_CHARGED =
+        SynchedEntityData.defineId(IronboundSentinelEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(IronboundSentinelEntity.class, EntityDataSerializers.BYTE);
 
     private static final Identifier BABY_MODIFIER = Identifier.withDefaultNamespace("baby");
     private static final Identifier ZOMBIE_RANDOM_SPAWN_BONUS =
@@ -95,6 +102,13 @@ public final class IronboundSentinelEntity extends Monster implements ArcaneCrea
     }
 
     @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_CHARGED, true);
+        builder.define(DATA_PRESENTATION_PHASE, EntityPresentationSync.encode(Phase.STILLED));
+    }
+
+    @Override
     public CreatureKind creatureKind() {
         return CreatureKind.IRONBOUND_SENTINEL;
     }
@@ -105,6 +119,26 @@ public final class IronboundSentinelEntity extends Monster implements ArcaneCrea
 
     public void setSentinelState(final IronboundSentinelState state) {
         sentinelState = state == null ? IronboundSentinelState.empty() : state;
+        syncPresentationFromRuntime();
+    }
+
+    public boolean presentationCharged() {
+        return entityData.get(DATA_PRESENTATION_CHARGED);
+    }
+
+    public Phase presentationPhase() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE), Phase.STILLED);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final boolean charged = sentinelState.charge().mayAct();
+        final byte phase = EntityPresentationSync.encode(sentinelTransient.phase());
+        if (entityData.get(DATA_PRESENTATION_CHARGED) != charged) {
+            entityData.set(DATA_PRESENTATION_CHARGED, charged);
+        }
+        if (entityData.get(DATA_PRESENTATION_PHASE) != phase) {
+            entityData.set(DATA_PRESENTATION_PHASE, phase);
+        }
     }
 
     public IronboundSentinelRuntime.Counters sentinelCounters() {
@@ -153,6 +187,7 @@ public final class IronboundSentinelEntity extends Monster implements ArcaneCrea
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         IronboundSentinelRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     /**
@@ -318,5 +353,6 @@ public final class IronboundSentinelEntity extends Monster implements ArcaneCrea
         normalizeLifecycle();
         setTarget(null);
         getNavigation().stop();
+        syncPresentationFromRuntime();
     }
 }

@@ -1,9 +1,22 @@
-Warlockery 1.5.0-LlaGuiT0-26.2.0.45
+Warlockery 1.5.1-LlaGuiT0-26.2.0.45
 =====================================
 
 - Supporter compatibility build compiled and tested specifically for NeoForge 26.2.0.45-beta.
 - Uses the exact NeoForge dependency range `[26.2.0.45-beta,26.2.0.46-beta)`.
-- Includes the complete Warlockery 1.5.0 feature set listed below.
+- Includes the complete Warlockery 1.5.1 feature set listed below.
+
+Warlockery 1.5.1
+================
+
+- Isolated Forge GameTests with owned fixtures and scoped environments so neighboring tests cannot leak world state or settings.
+- Reworked vampire sustenance so blood replaces hunger, added a dedicated blood-pool HUD, and introduced Sanguine regeneration for a full reserve.
+- Made vampire sunlight a semantic damage type that bypasses Fire Resistance while respecting head cover, wetness, and sunless dimensions.
+- Corrected vampire death wards so sunlight remains lethal and ordinary lethal hits still land and knock back while leaving one real half-heart, without absorption hearts.
+- Added werewolf prey drive in wolf and wolfman forms, with tagged prey, bounded pursuit, and safety-based cancellation.
+- Rebuilt the creature roster around readable Minecraft silhouettes and coherent material palettes, including native cat and frog rigs, penguin-like goblin clans, a feminine Banshee, distinct vampires, a human Blood Thrall, an elderly Hedge Crone, a robed Death, a compact Storm Simian, and a gray werewolf.
+- Added synchronized third-person wolf and upright werewolf player forms with dedicated first-person forelimb rendering.
+- Rebuilt Mandrake and Dreamroot with dedicated creature models, authored geometry, and matching texture atlases.
+- Redrew magical plants and rebuilt their crossed-plant models, including distinct hanging Glintweed, occupied Grassper, and armed Plantmine states.
 
 Warlockery 1.5.0
 ================

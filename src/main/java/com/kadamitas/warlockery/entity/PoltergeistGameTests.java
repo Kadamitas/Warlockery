@@ -36,7 +36,7 @@ import net.minecraft.world.phys.Vec3;
  * {@code finally}, including mid-sequence stages, and uses exact state and counter assertions
  * instead of elapsed-time guesses.
  *
- * <p>Arena geometry: the framework seals the {@code forge:empty3x3x3} cell in a barrier shell, so
+ * <p>Arena geometry: the framework seals the {@code warlockery:empty3x3x3} cell in a barrier shell, so
  * every entity, bell and computed destination in these fixtures stays inside relative 0..2 at y=1.
  * The mark band is deliberately 1..3 blocks and the lift range five, so the disturbance reaches a
  * real band without ever routing toward a point beyond the shell and freezing on stale state.</p>
@@ -643,7 +643,7 @@ public final class PoltergeistGameTests {
             final net.minecraft.world.level.block.Block block
         ) {
             final BlockPos absolute = helper.absolutePos(position);
-            // The sealed forge:empty3x3x3 cell has no interior floor at relative y=0, so a block
+            // The sealed warlockery:empty3x3x3 cell has no interior floor at relative y=0, so a block
             // that needs support (a floor-attached bell does) is popped off by the neighbour update
             // that setBlock triggers. Give it a floor first, and restore both on close.
             final BlockPos absoluteSupport = absolute.below();

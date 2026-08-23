@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "artifact": "docs/art-source/creature-concepts/production/wave-03c-wiki-fusion-imp-storm-turnarounds.png",
+  "createdOn": "2026-08-21",
+  "dimensions": {
+    "width": 1717,
+    "height": 916
+  },
+  "sha256": "0B598B3AE9845D8A917EBEBCCB1E740BC2BC541C0AE095D65A2652EEE3EF333E",
+  "intendedAtlasSizes": {
+    "imp": "128x128",
+    "storm_simian": "128x128"
+  },
+  "implementationRevision": {
+    "generator": "tools/creature_models/generate_winged_outliers.ps1",
+    "models": {
+      "imp": "src/main/java/com/kadamitas/warlockery/client/model/ImpModel.java",
+      "storm_simian": "src/main/java/com/kadamitas/warlockery/client/model/StormSimianModel.java"
+    },
+    "semantics": {
+      "imp": "Independent compact infernal rig with an asymmetric ember-and-old-gold bargaining flourish; its two-stage torn-plum wing chains remain unique to the Imp.",
+      "storm_simian": "Independent broad primate rig with separate root-level left and right scapular storm-sail trees, each owning a root, leading spar, inner sail, outer sail, UVs, and mirrored-but-independent flight and gust animation."
+    },
+    "atlases": {
+      "imp": {
+        "path": "src/main/resources/assets/warlockery/textures/entity/imp.png",
+        "width": 128,
+        "height": 128,
+        "sha256": "8D784A68CF6DAF9E39C0527D098EA78300B6F36C147AC39E7D530C9C463196D1",
+        "opaquePixels": 4196,
+        "transparentPixels": 12188,
+        "partiallyTransparentPixels": 0
+      },
+      "storm_simian": {
+        "path": "src/main/resources/assets/warlockery/textures/entity/storm_simian.png",
+        "width": 128,
+        "height": 128,
+        "sha256": "D1F187126CCD9643026732230E4E5E700A600187B09C07E408495B2E4C039402",
+        "opaquePixels": 9798,
+        "transparentPixels": 6586,
+        "partiallyTransparentPixels": 0
+      }
+    },
+    "softwareContactSheets": {
+      "imp": {
+        "path": "build/reports/visual-audit/creatures/imp-software-contact-sheet.png",
+        "width": 576,
+        "height": 384,
+        "sha256": "C2557D5F9AD614CF8AB6413F48F39677F35E1BA0647787618414B84176F3355A"
+      },
+      "storm_simian": {
+        "path": "build/reports/visual-audit/creatures/storm_simian-software-contact-sheet.png",
+        "width": 576,
+        "height": 384,
+        "sha256": "6A1910543E78B2B24E9DEBC918F112799DCA24CB37B605991982A14E1CD4B512"
+      }
+    }
+  },
+  "creatures": [
+    "imp",
+    "storm_simian"
+  ],
+  "authoritativeMappings": {
+    "imp": "Witchery Imp, with the Witchery Flame Imp page and image used only for high-level fire-demon cues",
+    "storm_simian": "Witchery Winged Monkey"
+  },
+  "relationshipToExistingBoard": {
+    "preservedArtifact": "docs/art-source/creature-concepts/production/wave-03c-winged-companion-turnarounds.png",
+    "statement": "This is a non-destructive Imp and Storm Simian revision. It does not replace or invalidate the already-frozen Hex Bat and Owl design references on the four-creature wave-03c board."
+  },
+  "wikiResearch": {
+    "performedOn": "2026-08-21",
+    "pages": [
+      {
+        "creature": "imp",
+        "title": "Flame Imp - Witchery Mod for Minecraft",
+        "url": "https://legacy-wiki.msrandom.net/site/witcherymod/flame-imp/",
+        "availability": "reachable through the public legacy wiki mirror",
+        "distilledTextCues": [
+          "mischievous fire-associated demon",
+          "motivated by personal gain and valuable gifts",
+          "can enter a contract and perform flame magic",
+          "clever bargaining presence rather than brute-force demon"
+        ],
+        "distilledVisualCues": [
+          "compact and squat overall read",
+          "broad dark warm-toned body mass",
+          "paired pale horn accents",
+          "small warm glowing facial accents"
+        ]
+      },
+      {
+        "creature": "storm_simian",
+        "title": "Winged Monkey - Witchery Mod for Minecraft",
+        "url": "https://legacy-wiki.msrandom.net/site/witcherymod/winged-monkey/",
+        "availability": "reachable through the public legacy wiki mirror",
+        "distilledTextCues": [
+          "literally a monkey with functional wings",
+          "flies to fetch or carry creatures and its owner",
+          "loyally defends its owner",
+          "tameable companion with an active transport role"
+        ],
+        "distilledVisualCues": [
+          "compact primate body remains readable beneath the wings",
+          "paired dark wings are a primary silhouette feature",
+          "wings read as separate flight anatomy rather than arm replacements",
+          "simple square-faced primate read at gameplay scale"
+        ]
+      }
+    ],
+    "inspectedImages": [
+      {
+        "creature": "imp",
+        "url": "https://legacy-wiki.msrandom.net/site/witcherymod/_/rsrc/1431191883152/flame-imp/imp.png?height=200&width=177",
+        "httpStatus": 200,
+        "downloadedBytes": 39032,
+        "decodedDimensions": {
+          "width": 218,
+          "height": 246
+        },
+        "sha256": "6264493BB5AF4760FAC169E7C057985428F9CB7B95C6E8CDFCA7791B0A7A8B78",
+        "inspectionOnly": true
+      },
+      {
+        "creature": "storm_simian",
+        "url": "https://legacy-wiki.msrandom.net/site/witcherymod/_/rsrc/1431191885035/winged-monkey/monkey.png",
+        "httpStatus": 200,
+        "downloadedBytes": 22795,
+        "decodedDimensions": {
+          "width": 171,
+          "height": 108
+        },
+        "sha256": "CB24FD2D1ED9186E91C5EF65F43075A37DB744822EBDE2ECB95D6B23FBD08251",
+        "inspectionOnly": true
+      },
+      {
+        "creature": "storm_simian",
+        "url": "https://legacy-wiki.msrandom.net/site/witcherymod/_/rsrc/1431191885035/winged-monkey/monkey3.png?height=248&width=320",
+        "httpStatus": 200,
+        "downloadedBytes": 126346,
+        "decodedDimensions": {
+          "width": 429,
+          "height": 333
+        },
+        "sha256": "CBA9E7936B5E5A0440D29723EDC9A2A18E435AE559C6514D6B6D056EE53D0ADC",
+        "inspectionOnly": true
+      }
+    ],
+    "unavailableSources": [
+      {
+        "url": "https://ftb.fandom.com/wiki/Flame_Imp",
+        "result": "The web reader returned HTTP 402, so it was not used for visual inspection. Search-result text only corroborated that the Flame Imp is a Witchery hostile creature."
+      },
+      {
+        "url": "the original now-offline Witchery wiki host",
+        "result": "Unavailable; the reachable public legacy mirror URLs recorded above were used instead."
+      }
+    ],
+    "noCopyBoundary": "Research images were used only to identify generic semantic and silhouette-level facts. No historic image was traced, traced, composited, sampled, palette-extracted, or used to copy texture pixels, geometry, exact proportions, poses, or distinctive arrangements."
+  }
+}

@@ -13,9 +13,12 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -71,6 +74,28 @@ public final class WolfFormAvatarRenderer extends LivingEntityRenderer<
         final WolfFormRenderState state = createRenderState(player, partialTicks);
         state.applyAvatarPose(avatarState);
         submit(state, poseStack, submitNodeCollector, cameraState);
+    }
+
+    public void submitFirstPersonArm(
+        final PoseStack poseStack,
+        final SubmitNodeCollector submitNodeCollector,
+        final int packedLight,
+        final HumanoidArm arm
+    ) {
+        poseStack.pushPose();
+        poseStack.translate(arm == HumanoidArm.RIGHT ? -0.12F : 0.12F, -0.18F, -0.38F);
+        poseStack.mulPose(Axis.XP.rotationDegrees(-72.0F));
+        poseStack.mulPose(Axis.YP.rotationDegrees(arm == HumanoidArm.RIGHT ? 16.0F : -16.0F));
+        poseStack.scale(0.82F, 0.82F, 0.82F);
+        submitNodeCollector.submitModelPart(
+            model.firstPersonForeleg(arm),
+            poseStack,
+            RenderTypes.entityTranslucent(TEXTURE),
+            packedLight,
+            OverlayTexture.NO_OVERLAY,
+            null
+        );
+        poseStack.popPose();
     }
 
     @Override
@@ -143,6 +168,13 @@ public final class WolfFormAvatarRenderer extends LivingEntityRenderer<
             poseStack.mulPose(Axis.YP.rotationDegrees(mouthPose.rotateYDegrees()));
             poseStack.mulPose(Axis.ZP.rotationDegrees(mouthPose.rotateZDegrees()));
             poseStack.scale(mouthPose.scale(), mouthPose.scale(), mouthPose.scale());
+        }
+
+        ModelPart firstPersonForeleg(final HumanoidArm arm) {
+            final ModelPart part = arm == HumanoidArm.RIGHT ? rightFrontLeg : leftFrontLeg;
+            part.resetPose();
+            part.setPos(0.0F, 0.0F, 0.0F);
+            return part;
         }
     }
 }

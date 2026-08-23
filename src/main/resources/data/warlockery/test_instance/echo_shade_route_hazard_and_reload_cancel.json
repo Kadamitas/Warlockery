@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:echo_shade_route_hazard_and_reload_cancel",
-  "environment": "warlockery:echo_spectre_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "echo_shade_route_hazard_and_reload_cancel",
+    "delegate": "warlockery:echo_spectre_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

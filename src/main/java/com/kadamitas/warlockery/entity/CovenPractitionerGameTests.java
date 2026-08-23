@@ -34,7 +34,7 @@ import net.minecraft.world.phys.Vec3;
  * dispatched entities, cleans up every created entity and block in {@code finally} including
  * mid-sequence stages, and uses exact counter assertions instead of elapsed-time guesses.
  *
- * <p>Arena geometry: the framework seals the {@code forge:empty3x3x3} cell in a barrier shell, so
+ * <p>Arena geometry: the framework seals the {@code warlockery:empty3x3x3} cell in a barrier shell, so
  * geometry stays within relative 0..2 and every entity spawns at y=1 (y=2 clips eyes into the
  * ceiling). Fixtures that need real standoff distances open the framework shell inside their own
  * pass-local radius-five arena and restore every block on close in reverse order, so the framework
@@ -662,7 +662,7 @@ public final class CovenPractitionerGameTests {
     }
 
     /**
-     * Opens the framework's own barrier shell around the {@code forge:empty3x3x3} cell (the box
+     * Opens the framework's own barrier shell around the {@code warlockery:empty3x3x3} cell (the box
      * faces at relative -1 and 3, floor excluded) so the fixture's arena is one connected space.
      * Every removed barrier is restored on close, after the arena shell is removed.
      */

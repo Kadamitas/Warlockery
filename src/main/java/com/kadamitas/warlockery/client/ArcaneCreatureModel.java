@@ -68,14 +68,24 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
     }
 
     static LayerDefinition createLayer(final Archetype archetype) {
-        return createLayer(archetype, null);
+        return createLayer(archetype, null, 64, 64);
     }
 
     static LayerDefinition createLayer(final CreatureModelProfile profile) {
-        return createLayer(profile.bodyPlan(), profile.variant());
+        return createLayer(
+            profile.bodyPlan(),
+            profile.variant(),
+            profile.textureWidth(),
+            profile.textureHeight()
+        );
     }
 
-    private static LayerDefinition createLayer(final Archetype archetype, final Variant variant) {
+    private static LayerDefinition createLayer(
+        final Archetype archetype,
+        final Variant variant,
+        final int textureWidth,
+        final int textureHeight
+    ) {
         final MeshDefinition mesh = new MeshDefinition();
         final PartDefinition root = mesh.getRoot();
         if (!buildDistinctBody(root, variant)) {
@@ -103,7 +113,7 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
         PART_NAMES.stream()
             .filter(name -> root.getChild(name) == null)
             .forEach(name -> root.addOrReplaceChild(name, CubeListBuilder.create(), PartPose.ZERO));
-        return LayerDefinition.create(mesh, 64, 64);
+        return LayerDefinition.create(mesh, textureWidth, textureHeight);
     }
 
     private static boolean buildDistinctBody(final PartDefinition root, final Variant variant) {
@@ -135,8 +145,180 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
                 buildPenguinGoblin(root);
                 yield true;
             }
+            case MANDRAKE -> {
+                buildMandrake(root);
+                yield true;
+            }
+            case DREAMROOT -> {
+                buildDreamroot(root);
+                yield true;
+            }
             default -> false;
         };
+    }
+
+    private static void buildMandrake(final PartDefinition root) {
+        final PartDefinition head = root.addOrReplaceChild(
+            "head",
+            CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -4.0F, -3.0F, 6.0F, 4.0F, 6.0F),
+            PartPose.offset(0.0F, 11.0F, 0.0F)
+        );
+        head.addOrReplaceChild(
+            "recessed_mouth",
+            CubeListBuilder.create().texOffs(0, 12).addBox(-2.0F, -1.0F, -0.5F, 4.0F, 3.0F, 1.0F),
+            PartPose.offset(0.0F, -1.5F, -2.7F)
+        );
+        root.addOrReplaceChild(
+            "body",
+            CubeListBuilder.create()
+                .texOffs(24, 0).addBox(-4.0F, -1.0F, -2.5F, 8.0F, 9.0F, 5.0F)
+                .texOffs(50, 0).addBox(-4.75F, 1.0F, -2.0F, 2.0F, 6.0F, 4.0F),
+            PartPose.offset(0.0F, 11.0F, 0.0F)
+        );
+
+        final PartDefinition crown = root.addOrReplaceChild(
+            "crown",
+            CubeListBuilder.create().texOffs(68, 0).addBox(-2.0F, -1.0F, -2.0F, 4.0F, 3.0F, 4.0F),
+            PartPose.offset(0.0F, 7.0F, 0.0F)
+        );
+        addLeafPlane(crown, "mandrake_leaf_north", 0.0F, -0.15F, -1.0F, -0.62F, 0.0F, 0.0F);
+        addLeafPlane(crown, "mandrake_leaf_south", 0.0F, 0.0F, 1.0F, 0.55F, 3.14F, 0.0F);
+        addLeafPlane(crown, "mandrake_leaf_west", -1.0F, 0.0F, 0.0F, 0.0F, -1.35F, -0.72F);
+        addLeafPlane(crown, "mandrake_leaf_east", 1.0F, 0.2F, 0.0F, 0.0F, 1.25F, 0.58F);
+        addLeafPlane(crown, "mandrake_leaf_high", 0.0F, -0.4F, 0.0F, 0.0F, 0.35F, 0.18F);
+
+        addMandrakeArm(root, "right_arm", "right_arm_distal", -4.0F, 13.0F, 0.35F, false);
+        addMandrakeArm(root, "left_arm", "left_arm_distal", 4.0F, 13.5F, -0.48F, true);
+        addMandrakeRoot(root, "right_hind_leg", "right_root_distal", -2.25F, 18.5F, 0.15F, false);
+        addMandrakeRoot(root, "left_hind_leg", "left_root_distal", 2.25F, 18.5F, -0.2F, true);
+    }
+
+    private static void addLeafPlane(
+        final PartDefinition crown,
+        final String name,
+        final float x,
+        final float y,
+        final float z,
+        final float xRot,
+        final float yRot,
+        final float zRot
+    ) {
+        crown.addOrReplaceChild(
+            name,
+            CubeListBuilder.create().texOffs(84, 0).addBox(-1.5F, -8.0F, -0.5F, 3.0F, 8.0F, 1.0F),
+            PartPose.offsetAndRotation(x, y, z, xRot, yRot, zRot)
+        );
+    }
+
+    private static void addMandrakeArm(
+        final PartDefinition root,
+        final String proximalName,
+        final String distalName,
+        final float x,
+        final float y,
+        final float zRot,
+        final boolean mirror
+    ) {
+        final PartDefinition proximal = root.addOrReplaceChild(
+            proximalName,
+            CubeListBuilder.create().texOffs(96, 0).mirror(mirror)
+                .addBox(mirror ? 0.0F : -2.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F),
+            PartPose.offsetAndRotation(x, y, 0.0F, 0.0F, 0.0F, zRot)
+        );
+        proximal.addOrReplaceChild(
+            distalName,
+            CubeListBuilder.create().texOffs(104, 0).mirror(mirror)
+                .addBox(mirror ? 0.0F : -1.5F, 0.0F, -0.75F, 1.5F, 4.0F, 1.5F),
+            PartPose.offsetAndRotation(mirror ? 1.5F : -1.5F, 4.0F, 0.0F, 0.0F, 0.0F, zRot * 0.45F)
+        );
+    }
+
+    private static void addMandrakeRoot(
+        final PartDefinition root,
+        final String proximalName,
+        final String distalName,
+        final float x,
+        final float y,
+        final float zRot,
+        final boolean mirror
+    ) {
+        final PartDefinition proximal = root.addOrReplaceChild(
+            proximalName,
+            CubeListBuilder.create().texOffs(112, 0).mirror(mirror).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 3.0F, 3.0F),
+            PartPose.offsetAndRotation(x, y, 0.0F, 0.12F, 0.0F, zRot)
+        );
+        proximal.addOrReplaceChild(
+            distalName,
+            CubeListBuilder.create().texOffs(112, 10).mirror(mirror).addBox(-1.25F, 0.0F, -2.0F, 2.5F, 3.0F, 4.0F),
+            PartPose.offsetAndRotation(mirror ? 0.35F : -0.35F, 2.5F, -0.2F, 0.35F, 0.0F, -zRot * 0.5F)
+        );
+    }
+
+    private static void buildDreamroot(final PartDefinition root) {
+        root.addOrReplaceChild(
+            "head",
+            CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -4.0F, -3.0F, 6.0F, 6.0F, 6.0F),
+            PartPose.offset(0.0F, 8.0F, 0.0F)
+        );
+        root.addOrReplaceChild(
+            "body",
+            CubeListBuilder.create()
+                .texOffs(24, 0).addBox(-2.5F, -1.0F, -2.5F, 5.0F, 10.0F, 5.0F)
+                .texOffs(44, 0).addBox(-3.5F, 5.0F, -3.0F, 7.0F, 6.0F, 6.0F),
+            PartPose.offset(0.0F, 9.0F, 0.0F)
+        );
+        final PartDefinition bloom = root.addOrReplaceChild(
+            "crown",
+            CubeListBuilder.create().texOffs(68, 48).addBox(-2.0F, -4.0F, -2.0F, 4.0F, 4.0F, 4.0F),
+            PartPose.offsetAndRotation(0.0F, 4.0F, 0.0F, 0.08F, 0.0F, 0.0F)
+        );
+        final PartDefinition inner = bloom.addOrReplaceChild(
+            "petal_tier_inner",
+            CubeListBuilder.create().texOffs(84, 0)
+                .addBox(-5.0F, -0.5F, -1.5F, 10.0F, 1.0F, 3.0F)
+                .addBox(-1.5F, -0.45F, -5.0F, 3.0F, 1.0F, 10.0F),
+            PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.18F, 0.0F)
+        );
+        final PartDefinition middle = inner.addOrReplaceChild(
+            "petal_tier_middle",
+            CubeListBuilder.create().texOffs(84, 16)
+                .addBox(-6.0F, -0.5F, -1.0F, 12.0F, 1.0F, 2.0F)
+                .addBox(-1.0F, -0.45F, -6.0F, 2.0F, 1.0F, 12.0F),
+            PartPose.offsetAndRotation(0.0F, 1.0F, 0.0F, 0.0F, -0.52F, 0.08F)
+        );
+        middle.addOrReplaceChild(
+            "petal_tier_outer",
+            CubeListBuilder.create().texOffs(84, 32)
+                .addBox(-7.0F, -0.5F, -1.0F, 14.0F, 1.0F, 2.0F)
+                .addBox(-1.0F, -0.45F, -7.0F, 2.0F, 1.0F, 14.0F),
+            PartPose.offsetAndRotation(0.0F, 1.0F, 0.0F, 0.0F, 0.35F, -0.1F)
+        );
+
+        addDreamTassel(root, "right_hind_leg", "right_tassel_distal", -4.5F, 14.0F, 0.24F, false);
+        addDreamTassel(root, "left_hind_leg", "left_tassel_distal", 4.5F, 14.5F, -0.28F, true);
+        addDreamTassel(root, "right_arm", "right_outer_tassel", -7.5F, 12.0F, 0.38F, false);
+        addDreamTassel(root, "left_arm", "left_outer_tassel", 7.5F, 12.5F, -0.44F, true);
+    }
+
+    private static void addDreamTassel(
+        final PartDefinition root,
+        final String proximalName,
+        final String distalName,
+        final float x,
+        final float y,
+        final float zRot,
+        final boolean mirror
+    ) {
+        final PartDefinition proximal = root.addOrReplaceChild(
+            proximalName,
+            CubeListBuilder.create().texOffs(0, 24).mirror(mirror).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 7.0F, 2.0F),
+            PartPose.offsetAndRotation(x, y, 0.0F, 0.15F, 0.0F, zRot)
+        );
+        proximal.addOrReplaceChild(
+            distalName,
+            CubeListBuilder.create().texOffs(8, 24).mirror(mirror).addBox(-0.75F, 0.0F, -0.75F, 1.5F, 4.0F, 1.5F),
+            PartPose.offsetAndRotation(0.0F, 5.75F, 0.0F, -0.35F, 0.12F, zRot * 0.75F)
+        );
     }
 
     private static void buildPenguinGoblin(final PartDefinition root) {
@@ -1162,25 +1344,6 @@ final class ArcaneCreatureModel extends EntityModel<TexturedCreatureRenderers.Ar
                 addPair(root, "ent_outer_leaves", 8.0F, 7.0F, 8.0F, 15.0F, -20.0F, 1.0F);
                 addPart(root, "ent_beard", 6.0F, 9.0F, 3.0F, 0.0F, 3.0F, -4.0F);
                 addPair(root, "ent_root_flare", 7.0F, 4.0F, 10.0F, 4.0F, 24.0F, 0.0F);
-            }
-            case MANDRAKE -> {
-                addPart(root, "mandrake_leaf_knot", 6.0F, 3.0F, 6.0F, 0.0F, 7.0F, 0.0F);
-                addPart(root, "mandrake_center_leaf", 3.0F, 11.0F, 4.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.1F);
-                addPair(root, "mandrake_leaf_fan", 3.0F, 10.0F, 4.0F, 4.0F, 2.0F, 0.0F, 0.0F, 0.0F, 0.55F);
-                addPair(root, "mandrake_outer_leaf", 3.0F, 9.0F, 4.0F, 7.0F, 4.0F, 1.0F, 0.0F, 0.0F, 0.8F);
-                addPart(root, "mandrake_mouth", 4.0F, 5.0F, 2.0F, 0.0F, 13.0F, -4.0F);
-                addPair(root, "mandrake_root_arm", 3.0F, 9.0F, 3.0F, 5.0F, 16.0F, 0.0F, 0.0F, 0.0F, 0.55F);
-                addPair(root, "mandrake_root_toe", 3.0F, 3.0F, 7.0F, 2.5F, 23.0F, -2.0F, 0.3F, 0.0F, 0.0F);
-            }
-            case DREAMROOT -> {
-                addPart(root, "dreamroot_stem", 9.0F, 20.0F, 8.0F, 0.0F, 6.0F, 0.0F);
-                addPart(root, "dream_bulb", 10.0F, 10.0F, 10.0F, 0.0F, -14.0F, 0.0F);
-                addPair(root, "dream_petals", 8.0F, 3.0F, 8.0F, 7.0F, -11.0F, 0.0F, 0.0F, 0.0F, 0.4F);
-                addPair(root, "outer_dream_petals", 8.0F, 3.0F, 8.0F, 10.0F, -15.0F, 1.0F, 0.0F, 0.0F, 0.65F);
-                addPair(root, "dream_crown_spire", 2.0F, 10.0F, 2.0F, 4.0F, -21.0F, 0.0F, 0.0F, 0.0F, 0.25F);
-                addPair(root, "trailing_root", 2.0F, 16.0F, 2.0F, 5.0F, 20.0F, 0.0F, 0.25F, 0.0F, 0.25F);
-                addPair(root, "outer_trailing_root", 2.0F, 13.0F, 2.0F, 9.0F, 20.0F, 2.0F, -0.2F, 0.0F, 0.4F);
-                addPair(root, "root_fan", 2.0F, 11.0F, 2.0F, 12.0F, 22.0F, -1.0F, 0.2F, 0.0F, 0.65F);
             }
             case BRAMBLE_COLOSSUS -> {
                 addPart(root, "bramble_core_mass", 17.0F, 14.0F, 11.0F, 0.0F, 7.0F, 0.0F);

@@ -22,15 +22,15 @@ final class ReleaseMetadataTest {
         final var matcher = GRADLE_VERSION.matcher(build);
         assertTrue(matcher.find());
         final String version = matcher.group(1);
-        assertEquals("1.5.0-LlaGuiT0-26.2.0.45", version);
+        assertEquals("1.5.1-LlaGuiT0-26.2.0.45", version);
         assertTrue(build.contains("neoForge {"));
         assertTrue(build.contains("version = '26.2.0.45-beta'"));
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
-        assertEquals("1.5.0", promotions.get("26.2-latest").getAsString());
-        assertEquals("1.5.0", promotions.get("26.2-recommended").getAsString());
-        assertTrue(update.getAsJsonObject("26.2").has("1.5.0"));
+        assertEquals("1.5.1", promotions.get("26.2-latest").getAsString());
+        assertEquals("1.5.1", promotions.get("26.2-recommended").getAsString());
+        assertTrue(update.getAsJsonObject("26.2").has("1.5.1"));
 
         final String changelog = read("changelog.txt");
         assertTrue(changelog.startsWith("Warlockery " + version));
@@ -47,8 +47,9 @@ final class ReleaseMetadataTest {
         assertTrue(metadata.contains("issueTrackerURL=\"https://github.com/Kadamitas/Warlockery/issues\""));
         assertTrue(metadata.contains("displayURL=\"https://github.com/Kadamitas/Warlockery\""));
         assertTrue(metadata.contains("updateJSONURL=\"https://raw.githubusercontent.com/Kadamitas/Warlockery/neoforge-main/update.json\""));
-        assertTrue(metadata.contains("logoFile=\"warlockery-icon.png\""));
-        assertTrue(metadata.contains("logoBlur=false"));
+        assertTrue(metadata.contains("iconFile=\"warlockery-icon.png\""));
+        assertTrue(metadata.contains("iconBlur=false"));
+        assertFalse(metadata.contains("logoFile="));
         assertTrue(metadata.contains("[features.warlockery]"));
         assertTrue(metadata.contains("javaVersion=\"[25,)\""));
         assertTrue(metadata.contains("modId=\"neoforge\""));
@@ -83,6 +84,28 @@ final class ReleaseMetadataTest {
 
         final String wrapper = read("gradle/wrapper/gradle-wrapper.properties");
         assertTrue(wrapper.contains("distributionSha256Sum=553c78f50dafcd54d65b9a444649057857469edf836431389695608536d6b746"));
+    }
+
+    @Test
+    void publicationWorkflowsKeepNormalLoadersAndGuardTheSupporterBuild() throws IOException {
+        for (final String workflow : new String[] {
+            ".github/workflows/publish-curseforge.yml",
+            ".github/workflows/publish-modrinth.yml"
+        }) {
+            final String contents = read(workflow);
+            assertTrue(contents.contains("default: v1.5.1-LlaGuiT0-26.2.0.45"));
+            assertTrue(contents.contains("- forge"));
+            assertTrue(contents.contains("- neoforge"));
+            assertTrue(contents.contains("- fabric"));
+            assertTrue(contents.contains("supporter_neoforge_only:"));
+            assertTrue(contents.contains("SUPPORTER_NEOFORGE_ONLY"));
+            assertTrue(contents.contains("endsWith(inputs.tag || github.event.release.tag_name, '-LlaGuiT0-26.2.0.45')"));
+            assertTrue(contents.contains("v*-LlaGuiT0-26.2.0.45"));
+            assertTrue(contents.contains("REQUESTED_LOADER"));
+            assertTrue(contents.contains("REQUESTED_RELEASE_TYPE"));
+            assertTrue(contents.contains("\"neoforge\""));
+            assertTrue(contents.contains("\"beta\""));
+        }
     }
 
     private static String read(final String relativePath) throws IOException {

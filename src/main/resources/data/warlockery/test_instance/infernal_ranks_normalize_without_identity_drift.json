@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:infernal_ranks_normalize_without_identity_drift",
-  "environment": "warlockery:infernal_hierarchy_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "infernal_ranks_normalize_without_identity_drift",
+    "delegate": "warlockery:infernal_hierarchy_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

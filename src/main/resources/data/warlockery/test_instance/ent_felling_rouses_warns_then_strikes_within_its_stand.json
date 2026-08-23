@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:ent_felling_rouses_warns_then_strikes_within_its_stand","environment":"warlockery:ent_isolated","structure":"warlockery:empty3x3x3","max_ticks":400}
+{"type":"minecraft:function","function":"warlockery:ent_felling_rouses_warns_then_strikes_within_its_stand","environment":{"type":"warlockery:isolated","id":"ent_felling_rouses_warns_then_strikes_within_its_stand","delegate":"warlockery:ent_isolated"},"structure":"warlockery:empty32x32x32","max_ticks":400}

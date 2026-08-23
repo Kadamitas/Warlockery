@@ -3,6 +3,9 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.entity.SpiritRules.Phase;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -24,6 +27,8 @@ import net.minecraft.world.level.storage.ValueOutput;
  */
 public final class SpiritEntity extends SpectralEntity {
     static final String STATE_KEY = "WarlockerySpirit";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(SpiritEntity.class, EntityDataSerializers.BYTE);
 
     private final SpiritRuntime.Counters counters = new SpiritRuntime.Counters();
     private final SpiritRuntime.TransientState scratch = new SpiritRuntime.TransientState();
@@ -39,6 +44,26 @@ public final class SpiritEntity extends SpectralEntity {
 
     public void setSpiritState(final SpiritState updated) {
         state = updated == null ? SpiritState.empty() : updated;
+        syncPresentation(state.phase());
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_PRESENTATION_PHASE, (byte) Phase.WANDER.ordinal());
+    }
+
+    public Phase presentationPhase() {
+        final int stored = entityData.get(DATA_PRESENTATION_PHASE);
+        final Phase[] phases = Phase.values();
+        return stored >= 0 && stored < phases.length ? phases[stored] : Phase.WANDER;
+    }
+
+    private void syncPresentation(final Phase phase) {
+        final byte encoded = (byte) phase.ordinal();
+        if (entityData.get(DATA_PRESENTATION_PHASE) != encoded) {
+            entityData.set(DATA_PRESENTATION_PHASE, encoded);
+        }
     }
 
     public SpiritRuntime.Counters spiritCounters() {
@@ -97,6 +122,7 @@ public final class SpiritEntity extends SpectralEntity {
         state = input.read(STATE_KEY, CompoundTag.CODEC)
             .map(tag -> SpiritState.read(tag, dimension))
             .orElse(SpiritState.empty());
+        syncPresentation(state.phase());
         scratch.resetForLoad();
         normalizeEquipment();
         setNoGravity(true);

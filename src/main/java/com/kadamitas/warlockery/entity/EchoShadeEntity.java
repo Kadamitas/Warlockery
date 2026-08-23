@@ -1,9 +1,13 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.entity.EchoShadeRules.Phase;
 import java.util.EnumSet;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -49,6 +53,8 @@ import org.jspecify.annotations.Nullable;
  */
 public final class EchoShadeEntity extends Monster implements ArcaneCreature {
     static final String STATE_KEY = "WarlockeryEchoShade";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(EchoShadeEntity.class, EntityDataSerializers.BYTE);
 
     private final ApparitionEpisodeRuntime.Counters apparitionCounters =
         new ApparitionEpisodeRuntime.Counters();
@@ -72,6 +78,26 @@ public final class EchoShadeEntity extends Monster implements ArcaneCreature {
 
     public void setEchoShadeState(final EchoShadeState updated) {
         state = updated == null ? EchoShadeState.empty() : updated;
+        syncPresentation(state.phase());
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_PRESENTATION_PHASE, (byte) Phase.WATCH.ordinal());
+    }
+
+    public Phase presentationPhase() {
+        final int stored = entityData.get(DATA_PRESENTATION_PHASE);
+        final Phase[] phases = Phase.values();
+        return stored >= 0 && stored < phases.length ? phases[stored] : Phase.WATCH;
+    }
+
+    private void syncPresentation(final Phase phase) {
+        final byte encoded = (byte) phase.ordinal();
+        if (entityData.get(DATA_PRESENTATION_PHASE) != encoded) {
+            entityData.set(DATA_PRESENTATION_PHASE, encoded);
+        }
     }
 
     public EchoShadeRuntime.Counters echoShadeCounters() {
@@ -215,6 +241,7 @@ public final class EchoShadeEntity extends Monster implements ArcaneCreature {
         state = input.read(STATE_KEY, CompoundTag.CODEC)
             .map(tag -> EchoShadeState.read(tag, dimension))
             .orElse(EchoShadeState.empty());
+        syncPresentation(state.phase());
         scratch.resetForLoad();
         striking = false;
         normalizeEquipment();

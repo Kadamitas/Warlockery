@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:nami_ward_protects_spouse_and_releases_stale_threat",
-  "environment": "minecraft:default",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "nami_ward_protects_spouse_and_releases_stale_threat",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 240
 }
