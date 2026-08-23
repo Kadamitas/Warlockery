@@ -1,9 +1,12 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:steed_two_player_caps_auras_and_owl_isolation",
-  "environment": "warlockery:spectral_steeds_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "steed_two_player_caps_auras_and_owl_isolation",
+    "delegate": "warlockery:spectral_steeds_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }
-
 

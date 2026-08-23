@@ -55,7 +55,7 @@ final class IronboundSentinelResourceTest {
         final CreatureVisualProfile visual = CreatureVisualProfile.forKind(
             CreatureKind.IRONBOUND_SENTINEL);
         assertEquals(1.0F, visual.width(), "the registry-owned width is immutable");
-        assertEquals(2.5F, visual.height(), "the registry-owned height is immutable");
+        assertEquals(2.7F, visual.height(), "the registry-owned height is immutable");
         assertEquals(CreatureVisualProfile.Archetype.BOSS, visual.archetype());
         assertFalse(CreatureKind.IRONBOUND_SENTINEL.isUndead());
         assertFalse(CreatureKind.IRONBOUND_SENTINEL.isDemonic());

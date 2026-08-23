@@ -50,11 +50,13 @@ final class LycanPackResourceTest {
         final Set<String> values = strings(tag.getAsJsonArray("values"));
         assertTrue(values.contains("warlockery:harm_werewolves"),
             "the typed source must remain magical for Absorb Magic compatibility");
+        assertTrue(values.contains("warlockery:vampire_sunlight"),
+            "the approved vampire sunlight source must remain magical");
         assertTrue(values.containsAll(Set.of(
             "minecraft:dragon_breath", "minecraft:indirect_magic", "minecraft:magic",
             "minecraft:sonic_boom", "minecraft:thorns", "minecraft:wither", "minecraft:wither_skull"
         )), "every pre-F04 magical member must be preserved");
-        assertEquals(8, values.size(), "the sole F04 tag edit is the exact typed-source addition");
+        assertEquals(9, values.size(), "the magical tag contains only the approved typed sources");
     }
 
     @Test

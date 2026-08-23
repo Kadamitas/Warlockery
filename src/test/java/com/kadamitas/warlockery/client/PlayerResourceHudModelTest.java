@@ -18,7 +18,7 @@ final class PlayerResourceHudModelTest {
     }
 
     @Test
-    void vampireBloodAndHeldFocusManaRemainDistinctMeters() {
+    void vampireBloodLeavesTheTopLeftLaneWhileManaRemains() {
         final ModNetwork.SupernaturalSnapshot snapshot = snapshot(
             "path.warlockery.vampire",
             1_250,
@@ -33,13 +33,10 @@ final class PlayerResourceHudModelTest {
 
         final List<PlayerResourceHudModel.Meter> meters = PlayerResourceHudModel.meters(snapshot, true);
 
-        assertEquals(2, meters.size());
-        assertEquals(PlayerResourceHudModel.Kind.BLOOD, meters.get(0).kind());
-        assertEquals(4, meters.get(0).charges());
-        assertEquals(3, meters.get(0).cooldownSeconds());
-        assertEquals(PlayerResourceHudModel.Kind.MANA, meters.get(1).kind());
-        assertEquals(73, meters.get(1).resource());
-        assertEquals(160, meters.get(1).maximum());
+        assertEquals(1, meters.size());
+        assertEquals(PlayerResourceHudModel.Kind.MANA, meters.getFirst().kind());
+        assertEquals(73, meters.getFirst().resource());
+        assertEquals(160, meters.getFirst().maximum());
     }
 
     @Test
@@ -90,13 +87,10 @@ final class PlayerResourceHudModelTest {
 
         final List<PlayerResourceHudModel.Meter> meters = PlayerResourceHudModel.meters(snapshot, true);
 
-        assertEquals(400, meters.get(0).resource());
-        assertEquals(96, meters.get(0).filledWidth(96));
-        assertEquals(-1, meters.get(0).charges());
-        assertEquals(0, meters.get(0).cooldownTicks());
-        assertEquals(120, meters.get(1).resource());
-        assertEquals(96, meters.get(1).filledWidth(96));
-        assertEquals(0, meters.get(1).filledWidth(-5));
+        assertEquals(1, meters.size());
+        assertEquals(120, meters.getFirst().resource());
+        assertEquals(96, meters.getFirst().filledWidth(96));
+        assertEquals(0, meters.getFirst().filledWidth(-5));
     }
 
     private static ModNetwork.SupernaturalSnapshot snapshot(

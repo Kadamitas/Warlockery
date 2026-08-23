@@ -1,0 +1,429 @@
+{
+  "schemaVersion": 2,
+  "package": "B2 spectral wiki-fusion revision",
+  "generatedOn": "2026-08-21",
+  "cleanRoomBoundary": {
+    "statement": "Only high-level category, massing, palette, appendage, material, effect, and presentation cues were retained from the cited sources. No source geometry, texture layout, pixel placement, costume, face, pose, or distinctive arrangement was copied.",
+    "implementationBoundary": "Each owned target remains a direct independent EntityModel with its own hierarchy, pivots, UV layout, animation code, texture atlas, extractor, and tests. No shared creature rig, geometry helper, player model, or skin-on-player construction is permitted."
+  },
+  "authoritativeMappings": [
+    {
+      "source": "Banshee",
+      "target": "Banshee"
+    },
+    {
+      "source": "Poltergeist",
+      "target": "Poltergeist"
+    },
+    {
+      "source": "Spectre",
+      "target": "Spectre"
+    },
+    {
+      "source": "Spirit",
+      "target": "Spirit"
+    },
+    {
+      "source": "Lost Soul",
+      "target": "Lost Soul"
+    },
+    {
+      "source": "Soul",
+      "target": "Lost Soul",
+      "note": "Name mapping only; the exact source page and source class were unavailable."
+    },
+    {
+      "source": "Shade",
+      "target": "Echo Shade",
+      "note": "Name mapping only; the exact source page/image was unavailable and Shade of Leonard was excluded as a different named entity."
+    },
+    {
+      "source": "Watcher",
+      "target": "Eldritch Watcher",
+      "note": "Name mapping only; exact legacy page, class, and visual were unavailable."
+    },
+    {
+      "source": null,
+      "target": "Umbral Sigil",
+      "note": "Unmapped Warlockery original; frozen."
+    },
+    {
+      "source": null,
+      "target": "Spectral Familiar",
+      "note": "Unmapped Warlockery original; its complete model, test, and texture package is outside this manifest."
+    }
+  ],
+  "research": {
+    "legacyArchive": "https://witchery.fentanylsolutions.org/",
+    "publicSourceRepository": {
+      "url": "https://github.com/Bogdan-G/Witchery",
+      "inspectedCommit": "8fe35c9ed57ac47260a23bb17784cdb1b49d42bc",
+      "use": "Read-only confirmation of broad entity/render category cues and unavailable equivalents; no source model dimensions, pivots, UVs, texture coordinates, or code were transferred."
+    },
+    "sources": [
+      {
+        "mapping": "Banshee -> Banshee",
+        "pageUrl": "https://witchery.fentanylsolutions.org/banshee.html",
+        "pageStatus": 200,
+        "pageCue": "A shrieking pale hovering humanoid apparition associated with nearby harm.",
+        "image": {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191882331/banshee/banshee.png",
+          "width": 136,
+          "height": 200,
+          "bytes": 39653,
+          "sha256": "c8b0a60f3140a4dcf814b068431da81035fd7523ae7bfe336a27287cec6c99d9"
+        },
+        "distilledCue": "Keep only pale upright lament mass, long separated arms, ragged hovering lower read, and wail semantics; fuse with the authored veil/bell silhouette and new feminine semantic geometry."
+      },
+      {
+        "mapping": "Poltergeist -> Poltergeist",
+        "pageUrl": "https://witchery.fentanylsolutions.org/poltergeist.html",
+        "pageStatus": 200,
+        "pageCue": "Mischievous, partly unseen household apparition that disturbs doors/containers and throws objects; revealing effects expose it.",
+        "pageImage": null,
+        "sourceTexture": {
+          "url": "https://raw.githubusercontent.com/Bogdan-G/Witchery/master/src/main/resources/assets/witchery/textures/entities/poltergeist.png",
+          "width": 64,
+          "height": 32,
+          "bytes": 1026,
+          "sha256": "f688c3709a33981227de197456f52e6cdafd1ffa7156bd0bc9bd6575ac2eb355"
+        },
+        "sourceFilesInspected": [
+          "src/main/java/com/emoniph/witchery/entity/EntityPoltergeist.java",
+          "src/main/java/com/emoniph/witchery/client/model/ModelPoltergeist.java",
+          "src/main/java/com/emoniph/witchery/client/renderer/RenderPoltergeist.java"
+        ],
+        "distilledCue": "Keep only embodied translucent green apparition, paired limb mass, mischievous object throwing, and visibility/reveal semantics; retain Warlockery's detached force hands and prop orbit with wholly new central anatomy."
+      },
+      {
+        "mapping": "Spectre -> Spectre",
+        "pageUrl": "https://witchery.fentanylsolutions.org/spectre.html",
+        "pageStatus": 200,
+        "pageCue": "Hard-to-see cold apparition whose chilling reach bypasses ordinary protection.",
+        "image": {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191884365/spectre/spectre.png",
+          "width": 166,
+          "height": 199,
+          "bytes": 46417,
+          "sha256": "05280d97faa450a45984b87b7e501cb57d5284d4befe6e5bcfa889d235d33d4b"
+        },
+        "distilledCue": "Keep only near-invisibility, pale-blue inner vacancy, obscured presence, and chilling reach. Warlockery behavior is a non-damaging dread manifestation, so the authored hooked mantle and long arms must never read as a weapon strike."
+      },
+      {
+        "mapping": "Spirit -> Spirit",
+        "pageUrl": "https://witchery.fentanylsolutions.org/spirit.html",
+        "pageStatus": 200,
+        "pageCue": "Small glowing airborne spirit-world creature.",
+        "image": {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191884696/spirit/spirit.png",
+          "width": 199,
+          "height": 118,
+          "bytes": 5114,
+          "sha256": "501eecb2731e979d4ca91341ff52ba9c09b22d5932bbd7e3f83d35f4414f3de1"
+        },
+        "sourceFilesInspected": [
+          "src/main/java/com/emoniph/witchery/entity/EntitySpirit.java",
+          "src/main/java/com/emoniph/witchery/client/model/ModelSpirit.java",
+          "src/main/java/com/emoniph/witchery/client/renderer/RenderSpirit.java"
+        ],
+        "distilledCue": "Add a small unmistakable golden spark/core focal point to the existing independent pearl/cyan guardian, without reusing the legacy stacked core geometry."
+      },
+      {
+        "mapping": "Lost Soul -> Lost Soul",
+        "pageUrl": "https://witchery.fentanylsolutions.org/lost-soul.html",
+        "pageStatus": 404,
+        "sourceFilesInspected": [
+          "src/main/java/com/emoniph/witchery/entity/EntityLostSoul.java",
+          "src/main/java/com/emoniph/witchery/client/renderer/RenderSpirit.java"
+        ],
+        "sourceFinding": "The legacy Lost Soul extends Spirit, uses the Spirit renderer/model, and varies broad tint among red, green, and blue; it has no distinct historic model or texture.",
+        "distilledCue": "Keep Warlockery's small vulnerable petitioner, heart mote, ribbon tail, and three trailing beads; add a wholly original rose/moss/blue memory-mote cluster rather than copying the legacy Spirit core."
+      },
+      {
+        "mapping": "Soul -> Lost Soul",
+        "pageUrl": "https://witchery.fentanylsolutions.org/soul.html",
+        "pageStatus": 404,
+        "sourceClassStatus": "No exact EntitySoul class found in the inspected public repository.",
+        "distilledCue": "No visual cue inherited; name mapping only."
+      },
+      {
+        "mapping": "Shade -> Echo Shade",
+        "pageUrl": "https://witchery.fentanylsolutions.org/shade.html",
+        "pageStatus": 404,
+        "sourceClassStatus": "No exact generic Shade class/asset found.",
+        "contextExcluded": {
+          "pageUrl": "https://witchery.fentanylsolutions.org/shade-of-leonard.html",
+          "imageUrl": "https://witchery.fentanylsolutions.org/_/rsrc/1431191884362/shade-of-leonard/leonard.png",
+          "width": 142,
+          "height": 246,
+          "bytes": 17063,
+          "sha256": "4b0a04d7990a029b170a6bbfc97d23f602de8d914a4097c1b3d25e5c907b545d",
+          "reason": "A separately named entity, not evidence for the mapped generic Shade; no visual trait transferred."
+        },
+        "distilledCue": "No inherited visual cue. Preserve Echo Shade's authored runner, split scarf/coat-tail language, and offset replay shells."
+      },
+      {
+        "mapping": "Watcher -> Eldritch Watcher",
+        "pageUrl": "https://witchery.fentanylsolutions.org/watcher.html",
+        "pageStatus": 404,
+        "sourceClassStatus": "No exact Watcher class/asset found in the inspected public repository.",
+        "distilledCue": "No inherited visual cue. Preserve the authored lens head, asymmetric eye clusters, thorax, fins, and four unequal tendrils."
+      }
+    ],
+    "userSuppliedInspiration": {
+      "target": "Banshee",
+      "pageUrl": "https://www.minecraftskins.com/skin/12853800/banshee-girl/",
+      "pageRequestStatus": 403,
+      "pageHostedImage": {
+        "url": "https://www.minecraftskins.com/uploads/skins/2019/03/11/banshee-girl-12853800.png",
+        "width": 64,
+        "height": 64,
+        "bytes": 1335,
+        "sha256": "20ac37e1e349ffa0ea83c8b3a08b513973a16377220376565c4b4eaf63a0d016"
+      },
+      "distilledCue": "Only high-level feminine face, hair framing, shoulder/bodice, pale-cyan dress palette, and presentation cues were used. No player geometry, skin pixels, garment map, face pixels, or exact color placement was copied."
+    }
+  },
+  "behaviorSilhouetteContracts": [
+    {
+      "target": "Banshee",
+      "source": "BansheeRules.Mode",
+      "action": "WARNING/LAMENT opens mouth and wail flares, spreads separated arms and dress veil."
+    },
+    {
+      "target": "Eldritch Watcher",
+      "source": "EldritchWatcherRules.Mode",
+      "action": "FOCUS_INSPECTION/INTERCEPTING braces tendrils and focuses the lens."
+    },
+    {
+      "target": "Poltergeist",
+      "source": "PoltergeistRules.Phase",
+      "action": "LIFT/THROW flares the embodied face, conducts detached hands, and displaces the prop orbit."
+    },
+    {
+      "target": "Spectre",
+      "source": "SpectreRules.Phase",
+      "action": "MANIFEST/DREAD unfurls mantle, exposes cold vacancy, and reaches; explicitly no strike/damage/weapon motion."
+    },
+    {
+      "target": "Spirit",
+      "source": "SpiritRules.Phase",
+      "action": "WARN/DEFEND crosses ward palms around the golden core and cants halos forward."
+    },
+    {
+      "target": "Lost Soul",
+      "source": "LostSoulRules.Phase",
+      "action": "PETITION/COOLDOWN bows, shelters the heart, and aligns memory motes."
+    },
+    {
+      "target": "Echo Shade",
+      "source": "EchoShadeRules.Phase",
+      "action": "ANSWER/STRIKE presents the recorded leading pose and two offset replay shells."
+    }
+  ],
+  "sheets": [
+    {
+      "file": "../wave-01b-occult-anomaly-wiki-fusion-turnarounds.png",
+      "width": 1536,
+      "height": 1024,
+      "fileSizeBytes": 2018088,
+      "sha256": "95ccced93477a736e8c55690c2aefaff89d02ff8e197a5fbe503beee4741eb5f",
+      "roster": [
+        "banshee",
+        "umbral_sigil",
+        "eldritch_watcher"
+      ]
+    },
+    {
+      "file": "../wave-02a-embodied-spirit-wiki-fusion-turnarounds.png",
+      "width": 1536,
+      "height": 1024,
+      "fileSizeBytes": 2650506,
+      "sha256": "c8a71286671c43fb689037276ede1630074ef4f50792834b9aacb91d043b8351",
+      "roster": [
+        "spectral_familiar",
+        "poltergeist",
+        "spectre"
+      ]
+    },
+    {
+      "file": "../wave-02b-soul-and-shade-wiki-fusion-turnarounds.png",
+      "width": 1536,
+      "height": 1024,
+      "fileSizeBytes": 2467816,
+      "sha256": "92734a664a6cf8252c88993819c63e701ae8acb26fbb15f1ab6aec5415ae8393",
+      "roster": [
+        "spirit",
+        "lost_soul",
+        "echo_shade"
+      ]
+    }
+  ],
+  "implementation": {
+    "presentationSync": {
+      "banshee": "Existing synchronized presentation activity and pulse sequence retained.",
+      "eldritch_watcher": "Dedicated synchronized presentation Mode byte; extractor uses presentationMode().",
+      "poltergeist": "Dedicated synchronized presentation Phase byte; extractor uses presentationPhase().",
+      "spectre": "Dedicated synchronized presentation Phase byte; extractor uses presentationPhase().",
+      "spirit": "Dedicated synchronized presentation Phase byte; extractor uses presentationPhase().",
+      "lost_soul": "Dedicated synchronized presentation Phase byte; extractor uses presentationPhase().",
+      "echo_shade": "Dedicated synchronized presentation Phase byte; extractor uses presentationPhase()."
+    },
+    "generator": {
+      "file": "../../../../../tools/creature_models/generate_spectral_entities.ps1",
+      "fileSizeBytes": 4435,
+      "sha256": "d2df085fe42c83004d403bf026c0ff1e068c5848ead3f4405d1fd7224018ee5c",
+      "determinism": "Two consecutive runs with pwsh 7.6.4 on 2026-08-21 produced identical SHA-256 values for all seven owned atlases. The generator writes only those seven atlases."
+    },
+    "models": [
+      {
+        "id": "banshee",
+        "class": "BansheeModel",
+        "modelSha256": "46f88ce74d27f7d387e3854fcebc28e50bbbe450393a688188076d19f9f8fff3",
+        "testSha256": "550ac42fbd419b799faf4ef0b02e6f2a978a0aa576cc427d35fbb6f09b5b055f",
+        "entitySourceSha256": "aa97854007526b192f2aab5475355bc8aefa41234b41953265140a46f1052449",
+        "textureWidth": 128,
+        "textureHeight": 128,
+        "textureBytes": 1008,
+        "textureSha256": "9070da5a7e123eb55beab59ca393633d168a1dac00b0220458f13d284b4df355"
+      },
+      {
+        "id": "eldritch_watcher",
+        "class": "EldritchWatcherModel",
+        "modelSha256": "8d74266746d6cc549d8ca9687dd72e17620a98be08fefb9bdfac9a1e4b2d2445",
+        "testSha256": "612c4555b310cd3dbaef36f409195fa943565737497b5aa9e582aa6c8ca1121f",
+        "entitySourceSha256": "8152d4f5a499c261e9c841f5ba9cd678605ba3709eedde7de665005d9462689c",
+        "textureWidth": 128,
+        "textureHeight": 64,
+        "textureBytes": 663,
+        "textureSha256": "d910595b23144a8d90d75c2fe44a6f0746942b76f87c6d10888f83e27767c125"
+      },
+      {
+        "id": "poltergeist",
+        "class": "PoltergeistModel",
+        "modelSha256": "a2e362a52816f6abc4f8b2d7fc6bd4c61be183279fd044b0dcd32cfffe3ea3ab",
+        "testSha256": "eec3c2d77d064ec958c722847e081abcd20450d95ed9b32e3dcf008bdfb3d174",
+        "entitySourceSha256": "52bc76d9df234bbdbd6fd6f6378ef628797607bc7e8c3adf01d6755e506cf516",
+        "textureWidth": 128,
+        "textureHeight": 128,
+        "textureBytes": 857,
+        "textureSha256": "87edb071bcca2a681736c3c28f3b4e90016c2ae0bb4774ffe00ffe0f99138d53"
+      },
+      {
+        "id": "spectre",
+        "class": "SpectreModel",
+        "modelSha256": "36863483493f884617471326247c482a956b62835097beb315904b294b2b0c3b",
+        "testSha256": "9511d51f298ad40879f09a24e1675ac383c7707cc4472288879df040e62efad2",
+        "entitySourceSha256": "de938f4d66c1b692911a865675a264cd4ec120ada2bc16e400f059948f792cef",
+        "textureWidth": 128,
+        "textureHeight": 128,
+        "textureBytes": 755,
+        "textureSha256": "0e9d3a75c092bcec1b127b8de8e554d16e64df2d59412d28db6fb3a427556573"
+      },
+      {
+        "id": "spirit",
+        "class": "SpiritModel",
+        "modelSha256": "52f38eaa2a4d6ad88f7706454ab81c27fc1534c6df2dd5c3d19ed5f7b1cb4367",
+        "testSha256": "457d0a17c828b30dada9379e6992e0e6106ba7025a5830cd03ec969d3d1353cf",
+        "entitySourceSha256": "a9bd87493bdf5972a7e64616423065ccbfbfc72416ca8701108b08a240a72a9c",
+        "textureWidth": 128,
+        "textureHeight": 128,
+        "textureBytes": 761,
+        "textureSha256": "595414efe558f27f8cd645af5dedbce6b6d0c1533e017c2732b85e5c56454d17"
+      },
+      {
+        "id": "lost_soul",
+        "class": "LostSoulModel",
+        "modelSha256": "b452b5a3f256c5223aaa5fd415cf61e279d2ecf038ef745cb7a2a053cee2b0bb",
+        "testSha256": "7e8529aa92fe7bba8778c7a733cdf28974bb8043b9ef006c5f8c34f074caff7e",
+        "entitySourceSha256": "b17553b2742bff2e71e846bf749754b8df64cedb12669b6a0d3cc51f86a5ae6f",
+        "textureWidth": 64,
+        "textureHeight": 64,
+        "textureBytes": 476,
+        "textureSha256": "cd1e06b45608d513314686d738e5f3670f34b060b8fd207c0e0820bda45d6cc7"
+      },
+      {
+        "id": "echo_shade",
+        "class": "EchoShadeModel",
+        "modelSha256": "1f3458a233fdc22040703830dc599fd80df05775517261d6d6eb96b2b79ae147",
+        "testSha256": "f8578c2076a188cf5a9975b6f03c86e27a3afa7df6a658d3a4ea75309dd1ab6d",
+        "entitySourceSha256": "9d9595e6a0c6b32c32cfc5edc37db63e994a32891b440a6a8d09318013cce2f8",
+        "textureWidth": 128,
+        "textureHeight": 128,
+        "textureBytes": 1069,
+        "textureSha256": "e4be3faf00dc7f9efea812a3aa4a66b82d7df5e093988d5658d8724ff1dd4903"
+      }
+    ],
+    "contactSheets": [
+      {
+        "id": "banshee",
+        "file": "../../../../../build/reports/visual-audit/creatures/banshee-software-contact-sheet.png",
+        "width": 384,
+        "height": 256,
+        "fileSizeBytes": 5146,
+        "sha256": "c2fd7d9b2ac7089a483f971ab85a696a6cfb20e7777556e534d1ed3da1006915",
+        "visualQa": "Six inspected silhouettes preserve a feminine hair-and-bell-dress mass, arm/torso negative space, and a visibly expanded wail action."
+      },
+      {
+        "id": "eldritch_watcher",
+        "file": "../../../../../build/reports/visual-audit/creatures/eldritch_watcher-software-contact-sheet.png",
+        "width": 384,
+        "height": 256,
+        "fileSizeBytes": 5369,
+        "sha256": "842cd03b68d8b7d9a913152b48cd6ff0e6c6474aeb4d377cc1770205e5617ea4",
+        "visualQa": "Six inspected silhouettes retain the broad lens head, narrow suspended thorax, unequal tendrils, and focused action."
+      },
+      {
+        "id": "poltergeist",
+        "file": "../../../../../build/reports/visual-audit/creatures/poltergeist-software-contact-sheet.png",
+        "width": 384,
+        "height": 256,
+        "fileSizeBytes": 6372,
+        "sha256": "5f16a379d38d74d1f89566623915196a781e5b6aa3cac430fcb52b528f85d5f1",
+        "visualQa": "Six inspected silhouettes clearly separate the embodied central apparition from giant force hands and independently orbiting props; fling action remains readable."
+      },
+      {
+        "id": "spectre",
+        "file": "../../../../../build/reports/visual-audit/creatures/spectre-software-contact-sheet.png",
+        "width": 384,
+        "height": 256,
+        "fileSizeBytes": 6436,
+        "sha256": "dceec1ab2bef29684412d7fa3207a0fbfb8d1cd4b60582316e8324bd326fa08b",
+        "visualQa": "Six inspected silhouettes retain cowl, hooked mantle, long cold-reaching arms, fork tails, and an unfurled dread manifestation without a weapon-strike read."
+      },
+      {
+        "id": "spirit",
+        "file": "../../../../../build/reports/visual-audit/creatures/spirit-software-contact-sheet.png",
+        "width": 384,
+        "height": 256,
+        "fileSizeBytes": 5859,
+        "sha256": "77fc5d1221be84c96a747e60b2c21def5cf306f8f679012b430eb1ab5449588c",
+        "visualQa": "Six inspected silhouettes preserve the independent ward guardian, split halos/tails, and strongly crossed shield action around the new core."
+      },
+      {
+        "id": "lost_soul",
+        "file": "../../../../../build/reports/visual-audit/creatures/lost_soul-software-contact-sheet.png",
+        "width": 384,
+        "height": 256,
+        "fileSizeBytes": 5122,
+        "sha256": "838990a7c8230a66e559a9d7f2b1929b3071cac304e9f935f0a18986c8f14aeb",
+        "visualQa": "Six inspected silhouettes retain the hunched petitioner, ribbon tail, and detached soul beads; shelter action closes protectively around the core/memory cluster."
+      },
+      {
+        "id": "echo_shade",
+        "file": "../../../../../build/reports/visual-audit/creatures/echo_shade-software-contact-sheet.png",
+        "width": 384,
+        "height": 256,
+        "fileSizeBytes": 4636,
+        "sha256": "8af856992371bc912c1c3cdea807386ffede9a0999c7b7d73d15b15d8129797a",
+        "visualQa": "Six inspected silhouettes retain the forward runner, split trailing cloth, offset replay shells, and decisive echo action."
+      }
+    ]
+  },
+  "frozenProductionHashes": {
+    "umbralSigilModel": "76264a6fbc839b54abc67b33c3fda88265287f125fd3117320b17a135608b1c3",
+    "umbralSigilTest": "0f1367f739e4f005c4e7f4caa60d3e0b9412367498666579d0fddb88f13dff55",
+    "umbralSigilTexture": "424272feb78470fb533d57a363de8379cbb39089ed061891744ba0df806e90fe",
+    "spectralFamiliarBoundary": "The complete Spectral Familiar model, test, and texture package is outside this manifest and excluded from these byte-freeze and hash claims."
+  }
+}

@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:corpse_scavenges_feeds_and_enters_dormancy_safely",
-  "environment": "warlockery:corpse_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "corpse_scavenges_feeds_and_enters_dormancy_safely",
+    "delegate": "warlockery:corpse_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:circle_talisman_captures_and_restores_full_large_ring",
-  "environment": "minecraft:default",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "circle_talisman_captures_and_restores_full_large_ring",
+    "delegate": "minecraft:default"
+  },
   "structure": "forge:empty3x3x3",
   "max_ticks": 100,
   "padding": 40

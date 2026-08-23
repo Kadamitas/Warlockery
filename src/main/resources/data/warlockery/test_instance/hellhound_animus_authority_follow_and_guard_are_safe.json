@@ -1,7 +1,12 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:hellhound_animus_authority_follow_and_guard_are_safe",
-  "environment": "warlockery:hellhound_isolated",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hellhound_animus_authority_follow_and_guard_are_safe",
+    "delegate": "warlockery:hellhound_isolated"
+  },
   "structure": "forge:empty3x3x3",
-  "max_ticks": 400
+  "max_ticks": 400,
+  "padding": 40
 }

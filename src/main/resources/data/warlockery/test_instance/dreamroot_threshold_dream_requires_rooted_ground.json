@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:dreamroot_threshold_dream_requires_rooted_ground","environment":"warlockery:living_roots_isolated","structure":"forge:empty3x3x3","max_ticks":500}
+{"type":"minecraft:function","function":"warlockery:dreamroot_threshold_dream_requires_rooted_ground","environment":{"type":"warlockery:isolated","id":"dreamroot_threshold_dream_requires_rooted_ground","delegate":"warlockery:living_roots_isolated"},"structure":"warlockery:empty32x32x32","max_ticks":500}

@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:low_health_raiders_escape_as_bat_and_wolf",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "low_health_raiders_escape_as_bat_and_wolf",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

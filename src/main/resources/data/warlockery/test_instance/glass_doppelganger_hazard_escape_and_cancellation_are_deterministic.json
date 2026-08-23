@@ -1,8 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:glass_doppelganger_hazard_escape_and_cancellation_are_deterministic",
-  "environment": "warlockery:glass_doppelganger_isolated",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "glass_doppelganger_hazard_escape_and_cancellation_are_deterministic",
+    "delegate": "warlockery:glass_doppelganger_isolated"
+  },
   "structure": "forge:empty15x15x15",
   "max_ticks": 400
 }
-

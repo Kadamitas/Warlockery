@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:hedge_crone_warns_intruders_and_casts_contextual_hex",
-  "environment": "warlockery:coven_practitioners_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hedge_crone_warns_intruders_and_casts_contextual_hex",
+    "delegate": "warlockery:coven_practitioners_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

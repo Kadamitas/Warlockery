@@ -363,7 +363,7 @@ public final class WarlockeryGameTests {
     }
 
     public static void hellOnEarthUsesTaggedDemons(final GameTestHelper helper) {
-        final BlockPos center = helper.absolutePos(new BlockPos(1, 1, 1));
+        final BlockPos center = helper.absolutePos(new BlockPos(16, 1, 16));
         RitualTerrainPlan.fireRing(center, 9, 12).forEach(column -> {
             helper.getLevel().setBlockAndUpdate(column.below(), Blocks.STONE.defaultBlockState());
             helper.getLevel().setBlockAndUpdate(column, Blocks.AIR.defaultBlockState());

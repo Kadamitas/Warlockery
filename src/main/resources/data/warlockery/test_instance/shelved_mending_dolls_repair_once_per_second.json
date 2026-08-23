@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:shelved_mending_dolls_repair_once_per_second",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "shelved_mending_dolls_repair_once_per_second",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

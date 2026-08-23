@@ -1,6 +1,6 @@
 {
-    "parent":  "minecraft:block/crop",
+    "parent":  "warlockery:block/template/plant_tall_cross",
     "textures":  {
-                     "crop":  "warlockery:block/belladonna_stage_3"
+                     "plant":  "warlockery:block/belladonna_stage_3"
                  }
 }

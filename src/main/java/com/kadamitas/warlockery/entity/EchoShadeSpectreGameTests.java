@@ -121,9 +121,14 @@ public final class EchoShadeSpectreGameTests {
                 // baseline is captured rather than assumed.
                 strikesBeforeForcedWindow.set(shade.echoShadeCounters().strikes());
                 walking.set(false);
-                final BlockPos beside = helper.absolutePos(new BlockPos(1, 1, 0));
-                mark.teleportTo(beside.getX() + 0.5D, beside.getY(), beside.getZ() + 0.5D);
+                shade.getNavigation().stop();
+                mark.teleportTo(shade.getX(), shade.getY(), shade.getZ());
                 mark.setDeltaMovement(Vec3.ZERO);
+                shade.getSensing().tick();
+                helper.assertTrue(
+                    shade.distanceToSqr(mark) <= EchoShadeRules.STRIKE_BAND_SQUARED
+                        && shade.getSensing().hasLineOfSight(mark),
+                    "armed control: the forced mark is inside the live strike gate");
                 shade.setEchoShadeState(shade.echoShadeState()
                     .withMark(EchoShadeState.Mark.of(mark.getUUID(),
                         ApparitionEpisodeRuntime.dimensionOf(helper.getLevel())))

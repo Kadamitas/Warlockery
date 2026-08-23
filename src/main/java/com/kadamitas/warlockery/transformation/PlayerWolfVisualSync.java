@@ -25,16 +25,16 @@ public final class PlayerWolfVisualSync {
     }
 
     public static void refresh(final ServerPlayer player) {
-        final boolean wolf = isWolf(player);
-        if (LAST_BROADCAST.changed(player.getUUID(), wolf)) {
-            ModNetwork.broadcastPlayerWolfVisual(player, wolf);
+        final WerewolfShape shape = shape(player);
+        if (LAST_BROADCAST.changed(player.getUUID(), shape)) {
+            ModNetwork.broadcastPlayerWolfVisual(player, shape);
         }
     }
 
     private static void handleStartTracking(final PlayerEvent.StartTracking event) {
         if (event.getEntity() instanceof ServerPlayer recipient
             && event.getTarget() instanceof ServerPlayer subject) {
-            ModNetwork.sendPlayerWolfVisual(recipient, subject, isWolf(subject));
+            ModNetwork.sendPlayerWolfVisual(recipient, subject, shape(subject));
         }
     }
 
@@ -52,17 +52,18 @@ public final class PlayerWolfVisualSync {
         }
     }
 
-    private static boolean isWolf(final ServerPlayer player) {
+    private static WerewolfShape shape(final ServerPlayer player) {
         return SupernaturalState.getForm(player) == SupernaturalForm.WEREWOLF
-            && SupernaturalProgression.werewolfShape(player) == WerewolfShape.WOLF;
+            ? SupernaturalProgression.werewolfShape(player)
+            : WerewolfShape.HUMAN;
     }
 
     static final class StateLedger {
-        private final ConcurrentMap<UUID, Boolean> values = new ConcurrentHashMap<>();
+        private final ConcurrentMap<UUID, WerewolfShape> values = new ConcurrentHashMap<>();
 
-        boolean changed(final UUID playerId, final boolean wolf) {
-            final Boolean previous = values.put(playerId, wolf);
-            return previous == null || previous != wolf;
+        boolean changed(final UUID playerId, final WerewolfShape shape) {
+            final WerewolfShape previous = values.put(playerId, shape);
+            return previous != shape;
         }
 
         void remove(final UUID playerId) {

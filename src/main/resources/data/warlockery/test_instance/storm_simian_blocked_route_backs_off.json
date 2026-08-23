@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:storm_simian_blocked_route_backs_off",
-  "environment": "warlockery:storm_simian_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "storm_simian_blocked_route_backs_off",
+    "delegate": "warlockery:storm_simian_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

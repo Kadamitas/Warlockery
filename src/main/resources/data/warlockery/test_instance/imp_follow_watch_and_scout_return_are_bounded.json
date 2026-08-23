@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:imp_follow_watch_and_scout_return_are_bounded",
-  "environment": "warlockery:imp_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "imp_follow_watch_and_scout_return_are_bounded",
+    "delegate": "warlockery:imp_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

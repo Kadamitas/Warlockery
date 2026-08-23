@@ -1,7 +1,12 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:imp_ranged_lane_windup_and_retreat_are_bounded",
-  "environment": "warlockery:imp_isolated",
-  "structure": "forge:empty3x3x3",
-  "max_ticks": 400
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "imp_ranged_lane_windup_and_retreat_are_bounded",
+    "delegate": "warlockery:imp_isolated"
+  },
+  "structure": "forge:empty15x15x15",
+  "max_ticks": 400,
+  "padding": 40
 }

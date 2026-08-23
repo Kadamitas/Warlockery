@@ -1,0 +1,1 @@
+{ "parent": "warlockery:block/template/plant_rosette", "textures": { "plant": "warlockery:block/plantmine_thorns" } }

@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:lycan_signature_offers_survive_profession_and_reload",
-  "environment": "warlockery:lycan_villager_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "lycan_signature_offers_survive_profession_and_reload",
+    "delegate": "warlockery:lycan_villager_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 200
 }

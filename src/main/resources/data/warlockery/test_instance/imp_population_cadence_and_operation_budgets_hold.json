@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:imp_population_cadence_and_operation_budgets_hold",
-  "environment": "warlockery:imp_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "imp_population_cadence_and_operation_budgets_hold",
+    "delegate": "warlockery:imp_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

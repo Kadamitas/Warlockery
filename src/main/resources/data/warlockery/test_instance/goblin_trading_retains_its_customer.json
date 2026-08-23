@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:goblin_trading_retains_its_customer",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "goblin_trading_retains_its_customer",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

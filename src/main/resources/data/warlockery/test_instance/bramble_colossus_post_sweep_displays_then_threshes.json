@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:bramble_colossus_post_sweep_displays_then_threshes","environment":"warlockery:bramble_colossus_isolated","structure":"forge:empty15x15x15","max_ticks":120}
+{"type":"minecraft:function","function":"warlockery:bramble_colossus_post_sweep_displays_then_threshes","environment":{"type":"warlockery:isolated","id":"bramble_colossus_post_sweep_displays_then_threshes","delegate":"warlockery:bramble_colossus_isolated"},"structure":"forge:empty15x15x15","max_ticks":120}

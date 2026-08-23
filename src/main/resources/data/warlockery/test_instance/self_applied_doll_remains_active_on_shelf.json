@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:self_applied_doll_remains_active_on_shelf",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "self_applied_doll_remains_active_on_shelf",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

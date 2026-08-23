@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:infernal_leader_loss_and_unloaded_authority_cancel_execution",
-  "environment": "warlockery:infernal_hierarchy_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "infernal_leader_loss_and_unloaded_authority_cancel_execution",
+    "delegate": "warlockery:infernal_hierarchy_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 600
 }

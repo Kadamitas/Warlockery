@@ -17,9 +17,11 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RenderAvatarEvent;
+import net.minecraftforge.client.event.RenderArmEvent;
 import net.minecraftforge.client.gui.overlay.ForgeLayeredDraw;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
@@ -28,6 +30,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = Warlockery.MOD_ID, value = Dist.CLIENT)
 public final class WarlockeryClient {
     private static WolfFormAvatarRenderer wolfFormAvatarRenderer;
+    private static WerewolfFormAvatarRenderer werewolfFormAvatarRenderer;
 
     private WarlockeryClient() {
     }
@@ -49,46 +52,79 @@ public final class WarlockeryClient {
         event.registerBlockEntityRenderer(ModBlockEntities.WOLF_TRAP.get(), WolfTrapOverlayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ALTAR.get(), AltarOverlayRenderer::new);
         event.registerEntityRenderer(ModEntities.BROOM.get(), BroomEntityRenderer::new);
-        ModEntities.ALL.forEach((id, type) -> {
-            if ("nami".equals(id)) {
-                TexturedCreatureRenderers.registerNami(event, type.get());
-                return;
-            }
-            if ("naamah".equals(id)) {
-                TexturedCreatureRenderers.registerNaamah(event, type.get());
-                return;
-            }
-            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(ModEntities.kindFor(id));
-            TexturedCreatureRenderers.registerArcane(
-                event,
-                type.get(),
-                CreatureModelProfile.forEntity(id, visual)
-            );
-        });
+        TexturedCreatureRenderers.registerNami(event, ModEntities.NAMI.get());
+        final CreatureVisualProfile glassVisual = CreatureVisualProfile.forKind(
+            ModEntities.kindFor("glass_doppelganger")
+        );
+        TexturedCreatureRenderers.registerArcane(
+            event,
+            ModEntities.ALL.get("glass_doppelganger").get(),
+            CreatureModelProfile.forEntity("glass_doppelganger", glassVisual)
+        );
+        DedicatedCreatureRenderers.registerAll(event);
     }
 
     @SubscribeEvent
     public static void addPlayerLayers(final EntityRenderersEvent.AddLayers event) {
         wolfFormAvatarRenderer = new WolfFormAvatarRenderer(event.getContext());
+        werewolfFormAvatarRenderer = new WerewolfFormAvatarRenderer(event.getContext());
     }
 
     @SubscribeEvent
     public static boolean renderWolfAvatar(final RenderAvatarEvent.Pre event) {
         final Minecraft minecraft = Minecraft.getInstance();
         if (wolfFormAvatarRenderer == null
+            || werewolfFormAvatarRenderer == null
             || minecraft.level == null
-            || !(minecraft.level.getEntity(event.getState().id) instanceof AbstractClientPlayer player)
-            || !PlayerWolfVisualState.isWolf(player.getUUID())) {
+            || !(minecraft.level.getEntity(event.getState().id) instanceof AbstractClientPlayer player)) {
             return false;
         }
-        wolfFormAvatarRenderer.submitAvatar(
-            player,
-            event.getState(),
-            event.getPoseStack(),
-            event.getNodeCollector(),
-            event.getCameraState()
-        );
-        return true;
+        return switch (PlayerWolfVisualState.shape(player.getUUID())) {
+            case WOLF -> {
+                wolfFormAvatarRenderer.submitAvatar(
+                    player,
+                    event.getState(),
+                    event.getPoseStack(),
+                    event.getNodeCollector(),
+                    event.getCameraState()
+                );
+                yield true;
+            }
+            case WOLFMAN -> {
+                werewolfFormAvatarRenderer.submitAvatar(
+                    player,
+                    event.getState(),
+                    event.getPoseStack(),
+                    event.getNodeCollector(),
+                    event.getCameraState()
+                );
+                yield true;
+            }
+            case HUMAN -> false;
+        };
+    }
+
+    @SubscribeEvent
+    public static boolean renderTransformedFirstPersonArm(final RenderArmEvent event) {
+        final Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || wolfFormAvatarRenderer == null || werewolfFormAvatarRenderer == null) {
+            return false;
+        }
+        return switch (PlayerWolfVisualState.shape(minecraft.player.getUUID())) {
+            case WOLF -> {
+                wolfFormAvatarRenderer.submitFirstPersonArm(
+                    event.getPoseStack(), event.getNodeCollector(), event.getPackedLight(), event.getArm()
+                );
+                yield true;
+            }
+            case WOLFMAN -> {
+                werewolfFormAvatarRenderer.submitFirstPersonArm(
+                    event.getPoseStack(), event.getNodeCollector(), event.getPackedLight(), event.getArm()
+                );
+                yield true;
+            }
+            case HUMAN -> false;
+        };
     }
 
     @SubscribeEvent
@@ -111,13 +147,26 @@ public final class WarlockeryClient {
     }
 
     @SubscribeEvent
+    public static void suppressPreyDriveInput(final MovementInputUpdateEvent event) {
+        PreyDriveControls.suppressMovement(event);
+    }
+
+    @SubscribeEvent
     public static void clientLogout(final ClientPlayerNetworkEvent.LoggingOut event) {
         PlayerWolfVisualState.clear();
+        ClientSupernaturalState.clear();
+        SupernaturalStatusOverlay.clear();
     }
 
     @SubscribeEvent
     public static void addHudLayers(final AddGuiOverlayLayersEvent event) {
         if (event.getLayeredDraw().getName().equals(ForgeLayeredDraw.VANILLA_ROOT)) {
+            event.getLayeredDraw().addAbove(
+                ForgeLayeredDraw.HOTBAR_AND_DECOS,
+                VampireBloodHud.LAYER,
+                ForgeLayeredDraw.HEALTH_BAR,
+                VampireBloodHud::extract
+            );
             event.getLayeredDraw().add(
                 ForgeLayeredDraw.PRE_SLEEP_STACK,
                 DollStatusOverlay.LAYER,

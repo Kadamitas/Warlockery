@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:broken_earth_creates_fissure",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "broken_earth_creates_fissure",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

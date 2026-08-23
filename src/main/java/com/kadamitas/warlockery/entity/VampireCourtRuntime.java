@@ -153,7 +153,10 @@ public final class VampireCourtRuntime {
             if (!member.getNavigation().isDone()) member.getNavigation().stop();
             return state;
         }
-        return navigate(member, state, target.getX(), target.getY(), target.getZ(), 1.15D, now);
+        // Minecraft's default reach range of one lets a path finish on the adjacent node, which
+        // can still sit just outside the current AABB-based melee band. Assault feeding must close
+        // the final node instead of treating that near miss as three route failures.
+        return navigate(member, state, target.getX(), target.getY(), target.getZ(), 0, 1.15D, now);
     }
 
     public static void acceptAssaultObjective(
@@ -324,9 +327,22 @@ public final class VampireCourtRuntime {
         final double speed,
         final long now
     ) {
+        return navigate(member, state, x, y, z, 1, speed, now);
+    }
+
+    private static VampireCourtState navigate(
+        final VampireCourtEntity member,
+        VampireCourtState state,
+        final double x,
+        final double y,
+        final double z,
+        final int reachRange,
+        final double speed,
+        final long now
+    ) {
         if (now < state.retryAfter() || !VampireCourtRules.navigationDue(state.lastNavigationAt(), now)) return state;
         member.courtCounters().navigationRequests++;
-        final boolean accepted = member.getNavigation().moveTo(x, y, z, speed);
+        final boolean accepted = member.getNavigation().moveTo(x, y, z, reachRange, speed);
         state = state.withCadence(
             state.nextDecisionAt(), state.nextEntityScanAt(), state.nextShelterScanAt(),
             state.nextFeedbackAt(), now

@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:werewolf_altar_diagnoses_and_advances",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "werewolf_altar_diagnoses_and_advances",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

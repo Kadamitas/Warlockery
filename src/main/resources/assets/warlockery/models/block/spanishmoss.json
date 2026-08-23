@@ -1,7 +1,6 @@
 {
-    "parent":  "minecraft:block/cross",
-    "render_type":  "minecraft:cutout",
+    "parent":  "warlockery:block/template/plant_hanging",
     "textures":  {
-                     "cross":  "warlockery:block/spanish_moss"
+                     "plant":  "warlockery:block/spanish_moss"
                  }
 }

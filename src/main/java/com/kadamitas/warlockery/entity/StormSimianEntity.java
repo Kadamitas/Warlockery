@@ -1,6 +1,9 @@
 package com.kadamitas.warlockery.entity;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -44,6 +47,10 @@ import org.jspecify.annotations.Nullable;
  */
 public final class StormSimianEntity extends WingedArcaneMob {
     static final String STATE_KEY = "WarlockeryStormSimian";
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_CHARGE =
+        SynchedEntityData.defineId(StormSimianEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_PRESENTATION_HAS_GRIP =
+        SynchedEntityData.defineId(StormSimianEntity.class, EntityDataSerializers.BOOLEAN);
 
     private final StormSimianRuntime.Counters counters = new StormSimianRuntime.Counters();
     private final StormSimianRuntime.TransientState scratch =
@@ -58,6 +65,13 @@ public final class StormSimianEntity extends WingedArcaneMob {
     }
 
     @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_CHARGE, 0);
+        builder.define(DATA_PRESENTATION_HAS_GRIP, false);
+    }
+
+    @Override
     protected void registerArcaneTargets() {
         targetHostileMobs();
     }
@@ -68,6 +82,26 @@ public final class StormSimianEntity extends WingedArcaneMob {
 
     public void setStormSimianState(final StormSimianState updated) {
         state = updated == null ? StormSimianState.empty() : updated;
+        syncPresentationFromRuntime();
+    }
+
+    public int presentationCharge() {
+        return entityData.get(DATA_PRESENTATION_CHARGE);
+    }
+
+    public boolean presentationHasGrip() {
+        return entityData.get(DATA_PRESENTATION_HAS_GRIP);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final int charge = state.charge();
+        final boolean hasGrip = state.grip().isPresent();
+        if (entityData.get(DATA_PRESENTATION_CHARGE) != charge) {
+            entityData.set(DATA_PRESENTATION_CHARGE, charge);
+        }
+        if (entityData.get(DATA_PRESENTATION_HAS_GRIP) != hasGrip) {
+            entityData.set(DATA_PRESENTATION_HAS_GRIP, hasGrip);
+        }
     }
 
     public StormSimianRuntime.Counters stormSimianCounters() {
@@ -86,6 +120,7 @@ public final class StormSimianEntity extends WingedArcaneMob {
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         StormSimianRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     /**
@@ -160,5 +195,6 @@ public final class StormSimianEntity extends WingedArcaneMob {
             .orElse(StormSimianState.empty());
         scratch.resetForLoad();
         setCanPickUpLoot(false);
+        syncPresentationFromRuntime();
     }
 }

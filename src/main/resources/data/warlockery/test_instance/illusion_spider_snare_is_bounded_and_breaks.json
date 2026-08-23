@@ -1,8 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:illusion_spider_snare_is_bounded_and_breaks",
-  "environment": "warlockery:illusion_copies_isolated",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "illusion_spider_snare_is_bounded_and_breaks",
+    "delegate": "warlockery:illusion_copies_isolated"
+  },
   "structure": "forge:empty15x15x15",
   "max_ticks": 400
 }
-

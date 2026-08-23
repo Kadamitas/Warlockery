@@ -1,7 +1,12 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:hell_on_earth_uses_tagged_demons",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
-  "max_ticks": 100
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hell_on_earth_uses_tagged_demons",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 100,
+  "sky_access": true
 }

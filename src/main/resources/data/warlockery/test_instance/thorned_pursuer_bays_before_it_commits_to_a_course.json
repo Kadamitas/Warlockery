@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:thorned_pursuer_bays_before_it_commits_to_a_course",
-  "environment": "warlockery:thorned_pursuer_isolated",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "thorned_pursuer_bays_before_it_commits_to_a_course",
+    "delegate": "warlockery:thorned_pursuer_isolated"
+  },
   "structure": "forge:empty15x15x15",
   "max_ticks": 12000
 }

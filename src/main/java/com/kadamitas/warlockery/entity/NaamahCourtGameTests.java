@@ -1188,7 +1188,6 @@ public final class NaamahCourtGameTests {
         outsideSpatialQuery.setGameMode(GameType.SPECTATOR);
         otherPlayer.setGameMode(GameType.SPECTATOR);
         collisionTarget.setGameMode(GameType.SPECTATOR);
-        helper.setBlock(new BlockPos(4, 1, 3), Blocks.TURTLE_EGG);
         final NaamahEntity eggSubject = (NaamahEntity) helper.spawn(
             ModEntities.ALL.get("naamah").get(), new BlockPos(3, 1, 3), EntitySpawnReason.EVENT
         );
@@ -1198,7 +1197,12 @@ public final class NaamahCourtGameTests {
         automaticTarget.setNoGravity(true);
         final AtomicBoolean eggChecked = new AtomicBoolean(false);
         helper.runAfterDelay(80L, () -> {
-            helper.assertTrue(helper.getBlockState(new BlockPos(4, 1, 3)).is(Blocks.TURTLE_EGG),
+            // TurtleEggBlock.stepOn randomly breaks an egg for any grief-capable LivingEntity,
+            // so block survival cannot distinguish an inherited RemoveBlockGoal from incidental
+            // court navigation. Inspect the live selector contract directly instead.
+            helper.assertTrue(eggSubject.getGoalSelector().getAvailableGoals().stream()
+                    .map(goal -> goal.getGoal())
+                    .noneMatch(net.minecraft.world.entity.ai.goal.RemoveBlockGoal.class::isInstance),
                 "dedicated Naamah goals must not inherit turtle-egg destruction");
             eggSubject.discard();
             eggChecked.set(true);

@@ -1,8 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:illusion_copies_hazard_escape_and_cancellation_are_deterministic",
-  "environment": "warlockery:illusion_copies_isolated",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "illusion_copies_hazard_escape_and_cancellation_are_deterministic",
+    "delegate": "warlockery:illusion_copies_isolated"
+  },
   "structure": "forge:empty15x15x15",
   "max_ticks": 400
 }
-

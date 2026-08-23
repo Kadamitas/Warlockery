@@ -1,7 +1,6 @@
 {
-    "parent":  "minecraft:block/cross",
-    "render_type":  "minecraft:cutout",
+    "parent":  "warlockery:block/template/plant_pad",
     "textures":  {
-                     "cross":  "warlockery:block/leapinglily"
+                     "plant":  "warlockery:block/leapinglily"
                  }
 }

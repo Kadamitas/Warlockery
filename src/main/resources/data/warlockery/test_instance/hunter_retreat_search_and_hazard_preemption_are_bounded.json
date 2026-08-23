@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:hunter_retreat_search_and_hazard_preemption_are_bounded",
-  "environment": "warlockery:werewolf_hunter_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hunter_retreat_search_and_hazard_preemption_are_bounded",
+    "delegate": "warlockery:werewolf_hunter_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

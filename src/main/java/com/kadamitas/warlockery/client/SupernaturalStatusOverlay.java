@@ -36,6 +36,11 @@ public final class SupernaturalStatusOverlay {
         recipient = minecraft.player == null ? null : minecraft.player.getUUID();
     }
 
+    public static void clear() {
+        snapshot = new ModNetwork.SupernaturalSnapshot("none", 0, 0, 0, "", "", "", "");
+        recipient = null;
+    }
+
     public static void extract(
         final GuiGraphicsExtractor graphics,
         final net.minecraft.client.DeltaTracker deltaTracker

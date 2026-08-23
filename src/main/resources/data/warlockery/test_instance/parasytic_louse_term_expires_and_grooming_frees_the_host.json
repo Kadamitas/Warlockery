@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:parasytic_louse_term_expires_and_grooming_frees_the_host",
-  "environment": "warlockery:parasytic_louse_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "parasytic_louse_term_expires_and_grooming_frees_the_host",
+    "delegate": "warlockery:parasytic_louse_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

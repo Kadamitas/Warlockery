@@ -41,7 +41,8 @@ public final class GenerateOriginalAssets {
     public static void main(final String[] args) throws Exception {
         final boolean polishOnly = Arrays.asList(args).contains("--polish");
         final boolean goblinsOnly = Arrays.asList(args).contains("--goblins");
-        final boolean transformedWomenOnly = Arrays.asList(args).contains("--nami-naamah");
+        final boolean retiredCharacterGenerator = Arrays.asList(args).contains("--nami")
+            || Arrays.asList(args).contains("--nami-naamah");
         final Path root = Arrays.stream(args)
             .filter(argument -> !argument.startsWith("--"))
             .findFirst()
@@ -51,27 +52,17 @@ public final class GenerateOriginalAssets {
             .normalize();
         final Path textureRoot = root.resolve("src/main/resources/assets/warlockery/textures");
         final Path entityRoot = textureRoot.resolve("entity");
-        final Path lootRoot = root.resolve("src/main/resources/data/warlockery/loot_table/entities");
-        if (!Files.isDirectory(textureRoot) || !Files.isDirectory(lootRoot)) {
+        if (!Files.isDirectory(textureRoot)) {
             throw new IllegalArgumentException("Run from the Warlockery project root: " + root);
         }
 
         if (goblinsOnly) {
-            Files.createDirectories(entityRoot);
-            ImageIO.write(penguinGoblinTexture(false), "png", entityRoot.resolve("goblin.png").toFile());
-            ImageIO.write(penguinGoblinTexture(true), "png", entityRoot.resolve("hobgoblin.png").toFile());
-            final Path itemRoot = textureRoot.resolve("item");
-            ImageIO.write(itemTexture("goblin_spawn_egg.png", 16, 16, false), "png", itemRoot.resolve("goblin_spawn_egg.png").toFile());
-            ImageIO.write(itemTexture("hobgoblin_spawn_egg.png", 16, 16, false), "png", itemRoot.resolve("hobgoblin_spawn_egg.png").toFile());
-            System.out.println("Generated goblin and hobgoblin textures.");
+            System.out.println("--goblins is retired; dedicated creature generators own Goblin and Hobgoblin atlases.");
             return;
         }
 
-        if (transformedWomenOnly) {
-            Files.createDirectories(entityRoot);
-            ImageIO.write(namiSkin(), "png", entityRoot.resolve("nami.png").toFile());
-            ImageIO.write(naamahSkin(), "png", entityRoot.resolve("naamah.png").toFile());
-            System.out.println("Generated Nami and Naamah slim-player skins.");
+        if (retiredCharacterGenerator) {
+            System.out.println("Nami is intentionally pinned and unchanged; Naamah uses tools/creature_models/generate_naamah.ps1.");
             return;
         }
 
@@ -85,14 +76,16 @@ public final class GenerateOriginalAssets {
         final List<Path> visibleTextures = visibleTextures(root, textureRoot, entityRoot);
         final Set<String> blockItemIds = blockItemIds(root);
         for (final Path path : visibleTextures) {
+            if (path.normalize().startsWith(entityRoot.normalize())) {
+                throw new IllegalStateException("Refusing to overwrite an authored entity atlas: " + path);
+            }
             Files.createDirectories(path.getParent());
             final int[] dimensions = dimensions(path);
             final Path relative = textureRoot.relativize(path);
             final String category = relative.getName(0).toString();
-            final String sourceName = category.equals("entity") ? relative.toString() : path.getFileName().toString();
+            final String sourceName = path.getFileName().toString();
             final BufferedImage image = switch (category) {
                 case "block" -> blockTexture(sourceName, dimensions[0], dimensions[1]);
-                case "entity" -> equipmentLayerTexture(sourceName, 64, 32);
                 case "gui" -> guiTexture(sourceName, dimensions[0], dimensions[1]);
                 case "particle" -> particleTexture(sourceName, dimensions[0], dimensions[1]);
                 default -> itemTexture(
@@ -105,22 +98,9 @@ public final class GenerateOriginalAssets {
             ImageIO.write(image, "png", path.toFile());
         }
 
-        Files.createDirectories(entityRoot);
-        final List<String> entities;
-        try (Stream<Path> files = Files.list(lootRoot)) {
-            entities = files.filter(path -> path.toString().endsWith(".json"))
-                .map(path -> path.getFileName().toString().replaceFirst("\\.json$", ""))
-                .sorted()
-                .toList();
-        }
-        for (final String entity : entities) {
-            ImageIO.write(entityTexture(entity, 64), "png", entityRoot.resolve(entity + ".png").toFile());
-        }
-
         final Path effectRoot = textureRoot.resolve("mob_effect");
         Files.createDirectories(effectRoot);
         ImageIO.write(soaringEffectTexture(), "png", effectRoot.resolve("soaring.png").toFile());
-        writeHunterArmorTextures(textureRoot);
         polishVisualAssets(textureRoot);
         writeCompassModelAssets(root);
 
@@ -141,14 +121,13 @@ public final class GenerateOriginalAssets {
 
             - Generator: `tools/GenerateOriginalAssets.java`
             - Method: deterministic geometric pixel art; existing files supply dimensions only
-            - Entity skins: generated from registered entity IDs using original palettes and UV-safe blocks
+            - Entity atlases: preserved; dedicated creature generators retain sole ownership
             - Palette: charcoal, violet, oxidized copper, teal, parchment, plus semantic variants
             - Generated PNG count: %d
-            - Generated entity skin count: %d
-            """.formatted(visibleTextures.size() + entities.size() + 11, entities.size());
+            """.formatted(visibleTextures.size() + 2);
         Files.writeString(root.resolve("docs/GENERATED_ASSETS.md"), manifest);
-        System.out.printf("Generated %d original Warlockery PNGs (%d entity skins).%n",
-            visibleTextures.size() + entities.size() + 11, entities.size());
+        System.out.printf("Generated %d original non-entity Warlockery PNGs.%n",
+            visibleTextures.size() + 2);
     }
 
     private static void polishVisualAssets(final Path textureRoot) throws IOException {
@@ -892,49 +871,6 @@ public final class GenerateOriginalAssets {
         }
     }
 
-    private static void writeHunterArmorTextures(final Path textureRoot) throws IOException {
-        final List<String> layers = List.of("humanoid", "humanoid_baby", "humanoid_leggings");
-        final List<String> variants = List.of("werewolf_hunter", "werewolf_hunter_silvered", "werewolf_hunter_dawn");
-        for (final String layer : layers) {
-            final Path directory = textureRoot.resolve("entity/equipment").resolve(layer);
-            Files.createDirectories(directory);
-            for (final String variant : variants) {
-                ImageIO.write(hunterArmorTexture(variant, 64, 32), "png", directory.resolve(variant + ".png").toFile());
-            }
-        }
-    }
-
-    private static BufferedImage hunterArmorTexture(final String variant, final int width, final int height) {
-        final BufferedImage image = image(width, height);
-        final Graphics2D graphics = image.createGraphics();
-        final Color leather = variant.endsWith("dawn") ? new Color(0x78352C) : new Color(0x4A3025);
-        final Color leatherLight = variant.endsWith("dawn") ? new Color(0xA7563D) : new Color(0x76503A);
-        final Color trim = variant.endsWith("silvered")
-            ? new Color(0xC5D1D9)
-            : variant.endsWith("dawn") ? new Color(0xD7AD55) : new Color(0x9A7043);
-        graphics.setColor(new Color(0x1B1718));
-        graphics.fillRect(0, 0, width, height);
-        graphics.setComposite(java.awt.AlphaComposite.Clear);
-        graphics.fillRect(24, 0, 16, 8);
-        graphics.fillRect(56, 0, 8, 32);
-        graphics.setComposite(java.awt.AlphaComposite.SrcOver);
-        graphics.setColor(leather);
-        graphics.fillRect(0, 8, 24, 16);
-        graphics.fillRect(16, 20, 40, 12);
-        graphics.setColor(leatherLight);
-        graphics.fillRect(2, 10, 20, 5);
-        graphics.fillRect(18, 22, 36, 5);
-        graphics.setColor(trim);
-        graphics.fillRect(10, 8, 3, 16);
-        graphics.fillRect(31, 20, 3, 12);
-        graphics.fillRect(16, 27, 40, 2);
-        graphics.setColor(new Color(0xD8D0B5));
-        graphics.fillRect(6, 16, 3, 3);
-        graphics.fillRect(15, 16, 3, 3);
-        graphics.dispose();
-        return image;
-    }
-
     private static BufferedImage soaringEffectTexture() {
         final BufferedImage image = image(18, 18);
         final Graphics2D graphics = image.createGraphics();
@@ -963,7 +899,7 @@ public final class GenerateOriginalAssets {
         final Set<Path> textures = new LinkedHashSet<>();
         try (Stream<Path> files = Files.walk(textureRoot)) {
             files.filter(path -> path.toString().endsWith(".png"))
-                .filter(path -> !path.getParent().equals(entityRoot))
+                .filter(path -> !path.normalize().startsWith(entityRoot.normalize()))
                 .forEach(textures::add);
         }
         final Pattern reference = Pattern.compile("warlockery:(block|item)/([a-z0-9_./-]+)");

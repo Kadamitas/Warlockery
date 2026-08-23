@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:hellhound_acquisition_and_zombie_variants_are_contained",
-  "environment": "warlockery:hellhound_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hellhound_acquisition_and_zombie_variants_are_contained",
+    "delegate": "warlockery:hellhound_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:mandrake_extraction_wail_and_resettle_are_bounded","environment":"warlockery:living_roots_isolated","structure":"forge:empty3x3x3","max_ticks":400}
+{"type":"minecraft:function","function":"warlockery:mandrake_extraction_wail_and_resettle_are_bounded","environment":{"type":"warlockery:isolated","id":"mandrake_extraction_wail_and_resettle_are_bounded","delegate":"warlockery:living_roots_isolated"},"structure":"warlockery:empty32x32x32","max_ticks":400}

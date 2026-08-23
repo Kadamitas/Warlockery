@@ -1,8 +1,13 @@
 package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
+import com.kadamitas.warlockery.entity.InfernalHierarchyRules.Intent;
+import com.kadamitas.warlockery.entity.InfernalHierarchyRules.PhaseState;
 import com.kadamitas.warlockery.entity.InfernalHierarchyRules.Rank;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
@@ -29,6 +34,10 @@ import org.jspecify.annotations.Nullable;
 public final class InfernalHierarchyEntity extends ArcaneMob {
     public static final String STATE_KEY = "WarlockeryInfernalHierarchy";
     public static final String LEGACY_PHASE_KEY = "WarlockeryAbyssalTormentPhase";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_INTENT =
+        SynchedEntityData.defineId(InfernalHierarchyEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(InfernalHierarchyEntity.class, EntityDataSerializers.BYTE);
 
     private final Rank rank;
     private final InfernalHierarchyRuntime.Counters hierarchyCounters = new InfernalHierarchyRuntime.Counters();
@@ -60,6 +69,33 @@ public final class InfernalHierarchyEntity extends ArcaneMob {
         hierarchyState = state == null
             ? InfernalHierarchyState.empty(rank, getUUID(), level().getGameTime())
             : state;
+        syncPresentationFromRuntime();
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_INTENT, EntityPresentationSync.encode(Intent.IDLE));
+        builder.define(DATA_PRESENTATION_PHASE, EntityPresentationSync.encode(PhaseState.NONE));
+    }
+
+    public Intent presentationIntent() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_INTENT), Intent.IDLE);
+    }
+
+    public PhaseState presentationPhaseState() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE), PhaseState.NONE);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte intent = EntityPresentationSync.encode(hierarchyState.intent());
+        final byte phase = EntityPresentationSync.encode(hierarchyState.phaseState());
+        if (entityData.get(DATA_PRESENTATION_INTENT) != intent) {
+            entityData.set(DATA_PRESENTATION_INTENT, intent);
+        }
+        if (entityData.get(DATA_PRESENTATION_PHASE) != phase) {
+            entityData.set(DATA_PRESENTATION_PHASE, phase);
+        }
     }
 
     public InfernalHierarchyRuntime.Counters hierarchyCounters() {
@@ -79,6 +115,7 @@ public final class InfernalHierarchyEntity extends ArcaneMob {
     @Override
     protected void tickSpecializedActivity(final ServerLevel level) {
         InfernalHierarchyRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override
@@ -225,5 +262,6 @@ public final class InfernalHierarchyEntity extends ArcaneMob {
             getPersistentData().putBoolean(LEGACY_PHASE_KEY, true);
         }
         normalizeHierarchyIdentity();
+        syncPresentationFromRuntime();
     }
 }

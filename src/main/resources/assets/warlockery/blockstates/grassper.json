@@ -1,6 +1,6 @@
 {
   "variants": {
-    "occupied=false": { "model": "warlockery:block/grassper" },
-    "occupied=true": { "model": "warlockery:block/grassper" }
+    "occupied=false": { "model": "warlockery:block/grassper_empty" },
+    "occupied=true": { "model": "warlockery:block/grassper_occupied" }
   }
 }

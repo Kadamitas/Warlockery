@@ -15,6 +15,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
@@ -23,6 +27,74 @@ final class RequestedVisualAssetRepairTest {
     private static final Path ASSETS = Path.of("src/main/resources/assets/warlockery");
     private static final Path ITEM_TEXTURES = ASSETS.resolve("textures/item");
     private static final Path BLOCK_TEXTURES = ASSETS.resolve("textures/block");
+    private static final Path BLOCK_MODELS = ASSETS.resolve("models/block");
+    private static final Path BLOCK_STATES = ASSETS.resolve("blockstates");
+
+    @Test
+    void cropAndCrossPlantSpritesUseDeliberateTransparency() {
+        final List<String> cropFamilies = List.of("belladonna", "snowbell", "wolfsbane", "wormwood");
+        cropFamilies.forEach(family -> IntStream.rangeClosed(0, 4).forEach(stage ->
+            assertPlantCutout(family + "_stage_" + stage, 96)
+        ));
+        List.of(
+            "bloodrose", "bramble_wild", "embermoss", "glint_weed", "grassper",
+            "leapinglily", "plantmine", "somnian_cotton", "spanish_moss", "vine"
+        ).forEach(id -> assertPlantCutout(id, 80));
+    }
+
+    @Test
+    void matureCropFamiliesAndGrowthStagesHaveDistinctAlphaMasks() {
+        final List<String> families = List.of("belladonna", "snowbell", "wolfsbane", "wormwood");
+        final Set<String> matureMasks = families.stream()
+            .map(family -> alphaMask(image(BLOCK_TEXTURES.resolve(family + "_stage_4.png"))))
+            .collect(Collectors.toSet());
+        assertEquals(families.size(), matureMasks.size(), "mature crops need species-specific silhouettes");
+        families.forEach(family -> {
+            final long masks = IntStream.rangeClosed(0, 4)
+                .mapToObj(stage -> alphaMask(image(BLOCK_TEXTURES.resolve(family + "_stage_" + stage + ".png"))))
+                .distinct()
+                .count();
+            assertEquals(5, masks, family + " growth silhouettes");
+        });
+    }
+
+    @Test
+    void plantStateVariantsResolveToDistinctModelsAndTextures() {
+        final Map<String, List<String>> states = Map.of(
+            "plantmine", List.of("payload=ink", "payload=sprouting", "payload=thorns", "payload=unarmed", "payload=webs"),
+            "grassper", List.of("occupied=false", "occupied=true"),
+            "glintweed", List.of("hanging=false", "hanging=true")
+        );
+        states.forEach((block, properties) -> {
+            final JsonObject variants = json(BLOCK_STATES.resolve(block + ".json")).getAsJsonObject("variants");
+            final List<String> models = properties.stream()
+                .map(property -> variants.getAsJsonObject(property).get("model").getAsString())
+                .toList();
+            assertEquals(models.size(), models.stream().distinct().count(), block + " state models");
+            final List<String> textures = models.stream().map(model -> {
+                final String modelId = model.substring("warlockery:block/".length());
+                final JsonObject definition = json(BLOCK_MODELS.resolve(modelId + ".json"));
+                final String texture = definition.getAsJsonObject("textures").entrySet().stream()
+                    .map(entry -> entry.getValue().getAsString())
+                    .filter(reference -> reference.startsWith("warlockery:block/"))
+                    .findFirst()
+                    .orElseThrow();
+                assertTrue(Files.isRegularFile(BLOCK_TEXTURES.resolve(
+                    texture.substring("warlockery:block/".length()) + ".png"
+                )), texture);
+                return texture;
+            }).toList();
+            assertEquals(textures.size(), textures.stream().distinct().count(), block + " state textures");
+        });
+    }
+
+    @Test
+    void hangingPlantsUsePurposeBuiltDescendingGeometry() {
+        final JsonObject glintweed = json(BLOCK_MODELS.resolve("glintweed_hanging.json"));
+        assertEquals("warlockery:block/template/plant_hanging", glintweed.get("parent").getAsString());
+        assertEquals("warlockery:block/template/plant_hanging",
+            json(BLOCK_MODELS.resolve("spanishmoss.json")).get("parent").getAsString());
+    }
 
     @Test
     void critterSnareAndWispyCottonUseRecognizableIndependentSprites() {
@@ -102,6 +174,20 @@ final class RequestedVisualAssetRepairTest {
         assertEquals("warlockery:item/" + id,
             json(ASSETS.resolve("items/" + id + ".json"))
                 .getAsJsonObject("model").get("model").getAsString());
+    }
+
+    private static void assertPlantCutout(final String id, final long minimumTransparentPixels) {
+        final BufferedImage sprite = image(BLOCK_TEXTURES.resolve(id + ".png"));
+        assertEquals(16, sprite.getWidth(), id + " width");
+        assertEquals(16, sprite.getHeight(), id + " height");
+        assertTrue(transparentPixels(sprite) >= minimumTransparentPixels, id + " transparent silhouette");
+        assertTrue(transparentPixels(sprite) < 250, id + " visible silhouette");
+    }
+
+    private static String alphaMask(final BufferedImage image) {
+        final StringBuilder mask = new StringBuilder(image.getWidth() * image.getHeight());
+        pixels(image).forEach(pixel -> mask.append(pixel >>> 24 == 0 ? '0' : '1'));
+        return mask.toString();
     }
 
     private static boolean isRaisedTooth(final JsonObject element) {

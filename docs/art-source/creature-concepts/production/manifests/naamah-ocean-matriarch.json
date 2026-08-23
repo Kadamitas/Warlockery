@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "package": "naamah-ocean-matriarch",
+  "generatedOn": "2026-08-21",
+  "concept": {
+    "path": "docs/art-source/creature-concepts/production/naamah-ocean-matriarch-turnaround.png",
+    "width": 1774,
+    "height": 887,
+    "sha256": "349edb484a6aba0bb60b475653e217defe5250625ec09b5bda697579de1c1b96"
+  },
+  "abstractedFirstPartyCues": [
+    "pale warm face with narrow glowing ruby-red eyes and dark burgundy lips",
+    "extremely long near-black hair with deep-crimson underlayers and ember-red tips",
+    "structured black and oxblood bodice with antique-gold piping",
+    "red-gold throat jewel and central chest jewel",
+    "bare shoulders and detached long bell sleeves with fiery orange hems",
+    "layered asymmetrical split lower garment, black thigh-high boots, and a long rear train",
+    "black, crimson, gold, and ember palette"
+  ],
+  "originalOceanMatriarchFusion": [
+    "three-crested sea-glass crown that extends the existing red-gold jewel hierarchy",
+    "independently modeled crown hair, side locks, long back hair mantle, and crimson inner hair fins",
+    "tide-rib bodice and small wave-crest shoulder ornaments",
+    "bell-sleeve shells that transition from ember interiors to cold sea-foam edges",
+    "overlapping split skirt fins and a rear tidal mantle that form a tall lower-goddess silhouette while leaving both boots readable",
+    "restrained deep-ocean teal and cold sea-glass cyan accents layered into the established black, crimson, gold, and ember identity"
+  ],
+  "semanticRigPlan": {
+    "modelContract": "Independent direct EntityModel<NaamahModel.State> with complete owned geometry, UV layout, and animation; no shared Warlockery rig or geometry helper.",
+    "primaryParts": [
+      "root",
+      "lower_goddess",
+      "left_leg",
+      "right_leg",
+      "front_skirt_layers",
+      "rear_tidal_mantle",
+      "bodice",
+      "tide_ribs",
+      "head",
+      "face",
+      "crown",
+      "crown_hair",
+      "left_side_lock",
+      "right_side_lock",
+      "back_hair_mantle",
+      "crimson_hair_fins",
+      "left_arm",
+      "right_arm",
+      "left_bell_sleeve",
+      "right_bell_sleeve",
+      "left_wave_crest",
+      "right_wave_crest"
+    ],
+    "forbiddenAnatomy": [
+      "player-slim rig",
+      "shared humanoid rig",
+      "fish tail",
+      "body tentacles",
+      "octopus or squid anatomy",
+      "wings",
+      "held or modeled weapon"
+    ]
+  },
+  "behaviorDrivenAnimation": [
+    {
+      "state": "SEA_BORNE_COMPOSURE / HOLD_COURT",
+      "intent": "Near-still sovereign posture with slow opposing drift in side locks, sleeve shells, and rear tidal mantle."
+    },
+    {
+      "state": "DREAM_APPROACH / walk",
+      "intent": "Measured glide-step led by the crown and bodice; skirt layers and hair lag behind independently without collapsing into player gait."
+    },
+    {
+      "state": "COURT_WAVE",
+      "intent": "Both arms open into a broad circular sweep while bell sleeves and rear mantle fan outward as the main readable wave telegraph."
+    },
+    {
+      "state": "VEIL_STEP",
+      "intent": "Body compresses into a narrow vertical silhouette before snapping into a re-opened sovereign stance."
+    },
+    {
+      "state": "TENTACLE_BIND",
+      "intent": "One controlled downward command gesture; tentacles remain environmental floor effects and never become model anatomy."
+    },
+    {
+      "state": "DROWNING_SURGE / SOVEREIGN_REFUSAL",
+      "intent": "One hand raised and one lowered, crown, hair, sleeves, and tidal mantle lifting in an upward water-column silhouette."
+    },
+    {
+      "state": "gaze regeneration",
+      "intent": "Chest and throat jewels pulse together while the face holds the challenger; motion quiets immediately when line of sight breaks."
+    },
+    {
+      "state": "melee",
+      "intent": "Weaponless close-range palm or sleeve-backed strike that preserves regal posture."
+    }
+  ],
+  "immutableExclusions": {
+    "nami": "All Nami files and hashes must remain byte-for-byte untouched.",
+    "glassDoppelganger": "Remains the player-copy model exception and is not redesigned by this package."
+  },
+  "ownedFiles": [
+    "src/main/java/com/kadamitas/warlockery/client/model/NaamahModel.java",
+    "src/test/java/com/kadamitas/warlockery/client/model/NaamahModelTest.java",
+    "src/main/resources/assets/warlockery/textures/entity/naamah.png",
+    "tools/creature_models/generate_naamah.ps1"
+  ],
+  "implementation": {
+    "model": "Independent direct EntityModel<NaamahModel.State> with 75 authored cuboids and no armed, player-slim, shared-rig, shared-helper, or catalog dependency.",
+    "stateBase": "LivingEntityRenderState",
+    "concreteExtraction": "NaamahEntity court action, court phase, water state, and gaze-mending eligibility",
+    "atlas": {
+      "path": "src/main/resources/assets/warlockery/textures/entity/naamah.png",
+      "width": 192,
+      "height": 128,
+      "sha256": "0db00bf28723da46fed58a0d32fdb3782073c48df6240393eea82ddf73532372",
+      "transparentMargin": true,
+      "palette": [
+        "near-black",
+        "deep crimson",
+        "oxblood",
+        "antique gold",
+        "ember orange",
+        "deep-ocean teal",
+        "sea-glass cyan",
+        "warm pale skin"
+      ]
+    },
+    "atlasGenerator": "tools/creature_models/generate_naamah.ps1",
+    "generatorScope": "Regenerates naamah.png only; it does not invoke the legacy combined generator and never reads or writes Nami assets."
+  },
+  "immutableNamiByteAuditBaseline": [
+    {
+      "path": "src/main/java/com/kadamitas/warlockery/entity/NamiEntity.java",
+      "sha256": "30e1aedf93173e67347e950a76c766783c6f5cb274a4f5aa5036466bfef275f5"
+    },
+    {
+      "path": "src/main/java/com/kadamitas/warlockery/entity/NamiLifeState.java",
+      "sha256": "90176a29495e38a9d6fdbda28a10bfc61cef47f0706159501a38c3d0f70d83b3"
+    },
+    {
+      "path": "src/main/java/com/kadamitas/warlockery/entity/NamiLifeRuntime.java",
+      "sha256": "250936941d320fce1c1b650d8572b42b05cd2c411a7b87eb4bd9a6000584e211"
+    },
+    {
+      "path": "src/main/java/com/kadamitas/warlockery/entity/NamiLifeRules.java",
+      "sha256": "f6141424df69480e59697d19594bbb8d6b1cd7549c33a8119c0554d2c7dc36a6"
+    },
+    {
+      "path": "src/main/java/com/kadamitas/warlockery/entity/NamiLifeGameTests.java",
+      "sha256": "473fe174525c59f9577a8c67bb40ca5659bc964a116a9f31b7f63a86fce53fe2"
+    },
+    {
+      "path": "src/main/java/com/kadamitas/warlockery/ritual/NamiRitualGameTests.java",
+      "sha256": "c676ee4a2988ac2573491eac86ff0370f0896a18d411286da908b6706a341a0e"
+    },
+    {
+      "path": "src/test/java/com/kadamitas/warlockery/entity/NamiLifeStateTest.java",
+      "sha256": "4d04a01c330b00d26b9380cd94f39be9927deab16d4a56469f615edf5530e533"
+    },
+    {
+      "path": "src/test/java/com/kadamitas/warlockery/entity/NamiLifeRulesTest.java",
+      "sha256": "f238932557e2aa55c7aa7cb6ad559fc66bf3166630a527bdfab17dcfd6998d00"
+    },
+    {
+      "path": "src/main/resources/assets/warlockery/textures/entity/nami.png",
+      "sha256": "9ffc406b45205ccfb2e9c1faddb9702a0cb430aa14d37bcbad00407a912ca2d0"
+    }
+  ],
+  "firstPartyReferences": [
+    {
+      "path": "src/main/resources/assets/warlockery/textures/entity/naamah.png",
+      "width": 64,
+      "height": 64,
+      "sha256": "8abccd265818221777f467220a59385986e892984ffa715b110b44bb65885218",
+      "purpose": "Distill Naamah's existing face, hair, clothing, and palette identity."
+    },
+    {
+      "path": "docs/concept_art/naamah.png",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "c335bd28db1208dee3c5b4a4a52e1bad8149ff65e28fb1b894129883606610ae",
+      "purpose": "Distill the existing first-party front/back silhouette and garment motifs."
+    },
+    {
+      "path": "docs/art-source/creature-concepts/nami_naamah_turnaround.png",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "3b7b31364daf9a036426df7ad4f78a9cf7fce94df2fc8da4f7b7cb00642e7c91",
+      "purpose": "Inspect only the Naamah half for existing first-party proportion and costume cues; Nami is immutable."
+    }
+  ],
+  "reproducibility": {
+    "generatorReproducibility": "Two independent runs produced identical atlas bytes.",
+    "goldens": {
+      "neutralGeometry": "e28e6b9e5efc6ed3061462240e3cf5899bf7d09cdcd5ffef76199b834230e987",
+      "frontSilhouette": "ecc971dfb97b4004365e83930f275de2d999c794020c89eb877517d4bacdd41a",
+      "sideSilhouette": "ab20efad9fc96859705100c847ad857c6306156f6285b57fd01fa17eadc2e72a",
+      "backSilhouette": "3f1380a52f3ac01d439548737072516357c6ab1b92c778e9aa43cba47aba80cd",
+      "threeQuarterSilhouette": "ee67100232491500734a50cda00b202dcd3fba44ca597f1185ef5a0b25a63962",
+      "seaBorneMovement": "1b88f8539ae2619916552398eb49508b81d65cb85ce1b37db1e1a7570fc8f1a5",
+      "courtWave": "fff8e3cb886963ac0df69131409aa5f82cb4f8121eed3c199707856089a698a0",
+      "drowningSurge": "de286347592f648fd7febcccb2c8195810c4c085672417609dfced6d5a6de361"
+    },
+    "contactSheet": {
+      "path": "build/reports/visual-audit/creatures/naamah-software-contact-sheet.png",
+      "width": 1120,
+      "height": 176,
+      "sha256": "4d27889968335fe150b7853cdd7b26822a236c6547365cffee9d56fa6cfb52f8",
+      "inspected": true,
+      "visualRead": "Tall three-crest crown, deeper architectural hair mantle, side-separated bell sleeves, flared skirt fins, split gown and rear train are readable in profile; broad court wave and asymmetric drowning surge remain grounded and unclipped."
+    }
+  }
+}

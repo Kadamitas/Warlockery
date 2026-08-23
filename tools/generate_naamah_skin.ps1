@@ -1,7 +1,6 @@
-$projectRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-$generator = Join-Path $PSScriptRoot 'GenerateOriginalAssets.java'
+$generator = Join-Path $PSScriptRoot 'creature_models\generate_naamah.ps1'
 
-& java $generator --nami-naamah $projectRoot
+& $generator
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }

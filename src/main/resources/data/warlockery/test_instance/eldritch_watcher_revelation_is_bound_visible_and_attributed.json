@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:eldritch_watcher_revelation_is_bound_visible_and_attributed",
-  "environment": "warlockery:eldritch_watcher_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "eldritch_watcher_revelation_is_bound_visible_and_attributed",
+    "delegate": "warlockery:eldritch_watcher_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

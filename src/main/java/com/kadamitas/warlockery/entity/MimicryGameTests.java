@@ -138,7 +138,10 @@ public final class MimicryGameTests {
             fixture.spawn(EntityTypes.SPIDER, new BlockPos(3, 1, 9)),
             fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(11, 1, 9))
         );
-        vanilla.forEach(entity -> entity.setInvulnerable(true));
+        vanilla.forEach(entity -> {
+            entity.setInvulnerable(true);
+            if (entity instanceof Mob mob) mob.setNoAi(true);
+        });
         final List<Float> health = vanilla.stream().map(LivingEntity::getHealth).toList();
         final List<Entity> targets = new ArrayList<>();
         vanilla.forEach(entity -> targets.add(entity instanceof Mob mob ? mob.getTarget() : null));
@@ -684,6 +687,7 @@ public final class MimicryGameTests {
             sharedHookActors.add(actor);
         }
         final List<Vec3> sharedHookStarts = sharedHookActors.stream().map(Entity::position).toList();
+        final boolean[] sharedHookMoved = new boolean[sharedHookActors.size()];
         helper.runAfterDelay(2L, () -> {
             final MimicryRules.Phase phase = copy.mimicCore().scratch().phase();
             MimicryRuntime.onAcceptedDamage(copy, null);
@@ -736,6 +740,8 @@ public final class MimicryGameTests {
                     CreatureBehaviorRuntime.afterHurt(
                         actor, helper.getLevel(), helper.getLevel().damageSources().magic(), 2.0F, profile
                     );
+                    sharedHookMoved[index] |= actor.position()
+                        .distanceToSqr(sharedHookStarts.get(index)) > 0.01D;
                 }
                 helper.assertTrue(profile.has(CreatureBehaviorProfile.Feature.PHASED)
                         == !sharedHookIds.get(index).equals("banshee"),
@@ -760,9 +766,7 @@ public final class MimicryGameTests {
             helper.assertTrue(copy.mimicCore().counters().meleeAttempts <= 3L, "melee cadence is no faster than once per 40 ticks");
             helper.assertValueEqual(copy.mimicCore().counters().foreignEntityWrites, 0L, "confrontation changes no foreign state");
             for (int index = 0; index < sharedHookActors.size(); index++) {
-                final boolean moved = sharedHookActors.get(index).position()
-                    .distanceToSqr(sharedHookStarts.get(index)) > 0.01D;
-                helper.assertTrue(moved == !sharedHookIds.get(index).equals("banshee"),
+                helper.assertTrue(sharedHookMoved[index] == !sharedHookIds.get(index).equals("banshee"),
                     "the real shared damage hook preserves Banshee and phases " + sharedHookIds.get(index));
             }
             helper.assertTrue(MimicryRules.attributionFresh(0) && MimicryRules.attributionFresh(40)
@@ -1503,4 +1507,3 @@ public final class MimicryGameTests {
         }
     }
 }
-

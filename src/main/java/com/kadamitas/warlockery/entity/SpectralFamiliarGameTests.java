@@ -382,9 +382,15 @@ public final class SpectralFamiliarGameTests {
             CreatureBehaviorState.bind(theirs, UUID.randomUUID());
 
             final Aggressor aggressor = fixture.spawnAggressor(new BlockPos(2, 1, 2));
+            // This fixture owns the hostile body only as a stable defence target. Letting its
+            // ordinary zombie goals wander it around made the familiar's intercept distance depend
+            // on unrelated AI scheduling in the full suite.
+            aggressor.setNoAi(true);
             owner.setLastHurtByMob(aggressor);
 
             final List<BlockState> arena = fixture.snapshotArena();
+            final boolean[] interceptObserved = {false};
+            final long interceptDeadline = helper.getLevel().getGameTime() + 80L;
 
             helper.runAfterDelay(5L, () -> {
                 try {
@@ -408,8 +414,19 @@ public final class SpectralFamiliarGameTests {
                 }
             });
 
-            helper.runAfterDelay(60L, () -> {
+            helper.onEachTick(() -> {
+                if (interceptObserved[0]) {
+                    return;
+                }
                 try {
+                    final long opportunities = mine.spectralCounters().meleeOpportunities();
+                    helper.assertTrue(opportunities <= 1L,
+                        "one defensive lease must never yield a chain of melee opportunities");
+                    if (opportunities == 0L) {
+                        helper.assertTrue(helper.getLevel().getGameTime() <= interceptDeadline,
+                            "the familiar must close on its stationary attacker by the bounded deadline");
+                        return;
+                    }
                     helper.assertValueEqual(mine.spectralCounters().defenceLeases(), 1L,
                         "one attack event yields one lease and never a stream of them");
                     // EXACTLY one, from both sides. The upper bound alone was satisfied by zero,
@@ -425,9 +442,8 @@ public final class SpectralFamiliarGameTests {
                     helper.assertFalse(
                         mine.spectralState().defenceReady(helper.getLevel().getGameTime()),
                         "and armed the window that stops the very next tick taking a fresh lease");
-                    helper.assertTrue(mine.spectralCounters().auraPulses() > 0L,
-                        "the bound familiar keeps pulsing its owner's frozen Haste aura throughout");
                     fixture.assertArenaUnedited(arena, "defending edits no blocks");
+                    interceptObserved[0] = true;
                 } catch (final RuntimeException | Error failure) {
                     fixture.close();
                     throw failure;
@@ -439,11 +455,15 @@ public final class SpectralFamiliarGameTests {
             // must never happen is a fresh lease every tick, and that is what this pins.
             helper.runAfterDelay(95L, () -> {
                 try {
+                    helper.assertTrue(interceptObserved[0],
+                        "the bounded defensive intercept must complete before reload");
                     helper.assertValueEqual(mine.spectralCounters().defenceLeases(), 1L,
                         "ninety-five ticks beside its attacker bought one lease, not ninety-five");
                     helper.assertValueEqual(mine.spectralCounters().meleeOpportunities(), 1L,
                         "and exactly one ordinary melee opportunity came out of it, still, thirty "
                             + "five ticks later: the intercept is bounded from above AND below");
+                    helper.assertTrue(mine.spectralCounters().auraPulses() > 0L,
+                        "the bound familiar keeps pulsing its owner's frozen Haste aura throughout");
 
                     final TagValueOutput output = TagValueOutput.createWithContext(
                         ProblemReporter.DISCARDING, helper.getLevel().registryAccess());

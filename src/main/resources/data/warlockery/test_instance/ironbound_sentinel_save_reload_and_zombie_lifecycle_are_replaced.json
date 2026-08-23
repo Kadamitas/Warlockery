@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:ironbound_sentinel_save_reload_and_zombie_lifecycle_are_replaced",
-  "environment": "warlockery:ironbound_sentinel_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "ironbound_sentinel_save_reload_and_zombie_lifecycle_are_replaced",
+    "delegate": "warlockery:ironbound_sentinel_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

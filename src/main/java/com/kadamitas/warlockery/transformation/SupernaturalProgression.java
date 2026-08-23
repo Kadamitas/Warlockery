@@ -23,6 +23,7 @@ public final class SupernaturalProgression {
     private static final String COOLDOWNS = "cooldowns";
     private static final String WEREWOLF_SHAPE = "werewolf_shape";
     private static final String BAT_SWARM_UNTIL = "bat_swarm_until";
+    private static final String SANGUINE = "sanguine";
 
     private SupernaturalProgression() {
     }
@@ -87,6 +88,9 @@ public final class SupernaturalProgression {
         final int maximum = maximumResource(path, level(player, path));
         pathState(player.getPersistentData(), path, true).orElseThrow()
             .putInt(RESOURCE, Math.clamp(amount, 0, maximum));
+        if (path == Path.VAMPIRE) {
+            reconcileSanguine(player);
+        }
     }
 
     public static int addResource(final Player player, final Path path, final int amount) {
@@ -254,6 +258,32 @@ public final class SupernaturalProgression {
 
     public static void setBatSwarmUntil(final Player player, final long gameTime) {
         root(player.getPersistentData(), true).orElseThrow().putLong(BAT_SWARM_UNTIL, Math.max(0L, gameTime));
+    }
+
+    public static boolean sanguine(final Player player) {
+        return pathState(player.getPersistentData(), Path.VAMPIRE, false)
+            .map(tag -> tag.getBooleanOr(SANGUINE, false))
+            .orElse(false);
+    }
+
+    public static void setSanguine(final Player player, final boolean sanguine) {
+        pathState(player.getPersistentData(), Path.VAMPIRE, true).orElseThrow().putBoolean(SANGUINE, sanguine);
+    }
+
+    static boolean reconcileSanguine(final Player player) {
+        final Optional<CompoundTag> state = pathState(player.getPersistentData(), Path.VAMPIRE, false);
+        if (state.isEmpty() && SupernaturalState.getForm(player) != SupernaturalForm.VAMPIRE) {
+            return false;
+        }
+        final boolean updated = VampireSustenanceRules.updateSanguine(
+            SupernaturalState.getForm(player) == SupernaturalForm.VAMPIRE,
+            sanguine(player),
+            resource(player, Path.VAMPIRE),
+            maximumResource(Path.VAMPIRE, level(player, Path.VAMPIRE))
+        );
+        state.orElseGet(() -> pathState(player.getPersistentData(), Path.VAMPIRE, true).orElseThrow())
+            .putBoolean(SANGUINE, updated);
+        return updated;
     }
 
     public static void copy(final Player source, final Player destination) {

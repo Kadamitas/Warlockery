@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:broom_legacy_creative_flight_state_is_removed",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "broom_legacy_creative_flight_state_is_removed",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

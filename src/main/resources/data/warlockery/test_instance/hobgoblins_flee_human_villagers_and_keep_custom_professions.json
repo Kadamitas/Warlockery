@@ -1,7 +1,12 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:hobgoblins_flee_human_villagers_and_keep_custom_professions",
-  "environment": "minecraft:default",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hobgoblins_flee_human_villagers_and_keep_custom_professions",
+    "delegate": "minecraft:default"
+  },
   "structure": "forge:empty3x3x3",
-  "max_ticks": 100
+  "max_ticks": 100,
+  "padding": 40
 }

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "package": "wave-01c-verdant-creatures",
+  "generatedOn": "2026-08-21",
+  "concept": {
+    "path": "docs/art-source/creature-concepts/production/wave-01c-verdant-titan-turnarounds.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "79be9295db8cdf3df52b6bb7f327d1151f67b58f7e7998ad869d9dcad1f21857"
+  },
+  "authoritativeNameMappings": [
+    {
+      "userSourceName": "Ent",
+      "targetDisplayName": "Ent",
+      "registryId": "ent"
+    },
+    {
+      "userSourceName": "Treefyd",
+      "targetDisplayName": "Bramble Colossus",
+      "registryId": "bramble_colossus"
+    },
+    {
+      "userSourceName": "Horned Huntsman",
+      "targetDisplayName": "Thorned Pursuer",
+      "registryId": "thorned_pursuer"
+    },
+    {
+      "userSourceName": "Horned Huntsman's Pursuer",
+      "targetDisplayName": "Thorned Pursuer",
+      "registryId": "thorned_pursuer"
+    }
+  ],
+  "interpretationPolicy": "The source names and inspected pages/images contribute only coarse semantic, silhouette, material, and behavior cues. Every Warlockery design, atlas pixel, cube, pivot, hierarchy, UV layout, proportion, ornament arrangement, and animation is an independently authored clean-room interpretation. No Witchery, Bewitchment, vanilla, or third-party model, texture, code, geometry, or exact appearance is reproduced or imitated.",
+  "research": [
+    {
+      "userSourceName": "Ent",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/ent/",
+      "secondaryPageUrl": "https://ftb.fandom.com/wiki/Ent_%28Witchery%29",
+      "inspectedImageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/_/rsrc/1431191883152/ent/ent.png?height=200&width=160",
+      "distilledTraitsOnly": [
+        "tree-first creature",
+        "broad overhead canopy",
+        "dark trunk mass"
+      ],
+      "excludedFromInterpretation": "Exact model, texture, block proportions, canopy outline, face, pose, colors, ornament placement, and geometry were not used."
+    },
+    {
+      "userSourceName": "Treefyd",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/treefyd/",
+      "inspectedImageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/_/rsrc/1431191884705/treefyd/treefyd.png",
+      "distilledTraitsOnly": [
+        "magically mutated plant life",
+        "paired elevated bloom or bulb accents",
+        "stem-like support anatomy",
+        "red-green contrast"
+      ],
+      "excludedFromInterpretation": "Exact paired-flower shape, proportions, texture, face, stalk arrangement, pose, colors, and geometry were not used."
+    },
+    {
+      "userSourceName": "Horned Huntsman",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/horned-huntsman/",
+      "secondaryPageUrl": "https://ftb.fandom.com/wiki/Horned_Huntsman",
+      "inspectedImageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/_/rsrc/1431191883486/horned-huntsman/huntsman.png?height=200&width=144",
+      "distilledTraitsOnly": [
+        "pale horn crown",
+        "broad shoulder line",
+        "dark woodland materials",
+        "bright eyes",
+        "relentless hunt energy"
+      ],
+      "excludedFromInterpretation": "Exact humanoid proportions, horn or antler layout, head, face, clothing, weapon, texture, pose, and geometry were not used."
+    },
+    {
+      "userSourceName": "Horned Huntsman's Pursuer",
+      "researchNote": "No separate wiki page or image for this exact mapped name was located during the approved inspection; the phrase therefore contributes linguistic archetype semantics only and remains anchored to the recorded Horned Huntsman source.",
+      "distilledTraitsOnly": [
+        "subordinate coursing role",
+        "pursuit",
+        "anchoring",
+        "recovery",
+        "snare presentation"
+      ],
+      "excludedFromInterpretation": "No unverified image or inferred third-party design was used."
+    }
+  ],
+  "approvedDesignPins": {
+    "ent": [
+      "three irregular separated canopy masses",
+      "asymmetric split trunk",
+      "separate rooted stride legs and broad root feet"
+    ],
+    "bramble_colossus": [
+      "two unequal closed bloom-bulbs",
+      "broad low six-limbed siege body",
+      "lateral thorn outriggers"
+    ],
+    "thorned_pursuer": [
+      "backward-swept paired thornwood horns",
+      "lean digitigrade hunter",
+      "trailing snare tendrils"
+    ]
+  },
+  "atlases": [
+    {
+      "id": "ent",
+      "width": 256,
+      "height": 128,
+      "sha256": "377a17798cbc04dee1de5dde98d0ea158b3d4775f2c7f3ccbb0a55ae44665118",
+      "opaquePixels": 11396,
+      "transparentPixels": 21372
+    },
+    {
+      "id": "bramble_colossus",
+      "width": 256,
+      "height": 128,
+      "sha256": "8e4d40f2b0120474df2809fb27824628809d5e66ccf1f199985ee584eb4b2791",
+      "opaquePixels": 10440,
+      "transparentPixels": 22328
+    },
+    {
+      "id": "thorned_pursuer",
+      "width": 192,
+      "height": 128,
+      "sha256": "afb91bcbe3297cd8e086df067b7cffab7e3ae338bffe46f9c6c386865b476caf",
+      "opaquePixels": 5178,
+      "transparentPixels": 19398
+    }
+  ],
+  "atlasGenerator": "tools/creature_models/generate_verdant_creatures.ps1"
+}

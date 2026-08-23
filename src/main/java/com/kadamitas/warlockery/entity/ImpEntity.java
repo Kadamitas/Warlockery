@@ -1,6 +1,9 @@
 package com.kadamitas.warlockery.entity;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -18,6 +21,8 @@ import net.minecraft.world.phys.Vec3;
 
 public final class ImpEntity extends WingedArcaneMob {
     private static final String STATE_KEY = "WarlockeryImpLife";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_ACTION =
+        SynchedEntityData.defineId(ImpEntity.class, EntityDataSerializers.BYTE);
 
     private final ImpLifeRuntime.Counters lifeCounters = new ImpLifeRuntime.Counters();
     private ImpLifeState lifeState;
@@ -32,6 +37,13 @@ public final class ImpEntity extends WingedArcaneMob {
     }
 
     @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_ACTION,
+            EntityPresentationSync.encode(ImpLifeRules.Action.NONE));
+    }
+
+    @Override
     protected void registerArcaneTargets() {
         targetPlayers();
     }
@@ -42,6 +54,19 @@ public final class ImpEntity extends WingedArcaneMob {
 
     public void setLifeState(final ImpLifeState state) {
         lifeState = state == null ? ImpLifeState.empty(getUUID(), level().getGameTime()) : state;
+        syncPresentationFromRuntime();
+    }
+
+    public ImpLifeRules.Action presentationAction() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_ACTION),
+            ImpLifeRules.Action.NONE);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte action = EntityPresentationSync.encode(lifeState.action());
+        if (entityData.get(DATA_PRESENTATION_ACTION) != action) {
+            entityData.set(DATA_PRESENTATION_ACTION, action);
+        }
     }
 
     public ImpLifeRuntime.Counters lifeCounters() {
@@ -88,6 +113,7 @@ public final class ImpEntity extends WingedArcaneMob {
     @Override
     protected void customWingedAiStep(final ServerLevel level) {
         ImpLifeRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override
@@ -146,5 +172,6 @@ public final class ImpEntity extends WingedArcaneMob {
             ImpLifeRules.SCOUT_TOTAL_READ_BUDGET
         );
         progressTarget = Long.MIN_VALUE;
+        syncPresentationFromRuntime();
     }
 }

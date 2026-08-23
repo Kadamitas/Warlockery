@@ -74,7 +74,8 @@ public final class LycanPackGameTests {
             helper.assertValueEqual(werewolf.variant(), Variant.WEREWOLF, "explicit werewolf variant");
             helper.assertValueEqual(feral.variant(), Variant.FERAL_LYCAN, "explicit feral variant");
             helper.assertValueEqual(werewolf.getBbWidth(), 0.85F, "upright werewolf keeps its 0.85 width");
-            helper.assertValueEqual(werewolf.getBbHeight(), 2.15F, "upright werewolf keeps its 2.15 height");
+            helper.assertValueEqual(werewolf.getBbHeight(), 1.8F,
+                "upright werewolf stays player-height so it can enter villager homes");
             helper.assertValueEqual(feral.getBbWidth(), 0.95F, "feral keeps its reduced 0.95 width");
             helper.assertValueEqual(feral.getBbHeight(), 1.25F, "feral keeps its reduced 1.25 height");
             for (final WerewolfEntity lycan : List.of(werewolf, feral)) {

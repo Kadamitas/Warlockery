@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:fatal_dream_damage_wakes_before_death",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "fatal_dream_damage_wakes_before_death",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 200
 }

@@ -1,0 +1,947 @@
+{
+  "schemaVersion": 2,
+  "package": "wave-04-occult-humanoids",
+  "generatedOn": "2026-08-21",
+  "sheets": [
+    {
+      "path": "docs/art-source/creature-concepts/production/wave-04a-practitioner-and-court-turnarounds.png",
+      "width": 1536,
+      "height": 1024,
+      "fileSizeBytes": 2294957,
+      "sha256": "0071ce1e5a53c70561edbb929ed9a615babc25056322e2c808db3e78b75337ae",
+      "roster": [
+        "circle_mage",
+        "hedge_crone",
+        "vampire",
+        "blood_thrall"
+      ]
+    },
+    {
+      "path": "docs/art-source/creature-concepts/production/wave-04b-grave-hunt-village-turnarounds.png",
+      "width": 1536,
+      "height": 1024,
+      "fileSizeBytes": 2382043,
+      "sha256": "270b97e685a89e080d37a2c46a71a721f37d42ebb4e9377ef0fd28b642bdd714",
+      "roster": [
+        "corpse",
+        "werewolf_hunter",
+        "lycan_villager"
+      ]
+    }
+  ],
+  "authoritativeNameMappings": [
+    {
+      "userSourceName": "Coven Witch",
+      "targetDisplayName": "Circle Mage",
+      "registryId": "circle_mage",
+      "modelClass": "CircleMageModel"
+    },
+    {
+      "userSourceName": "Baba Yaga",
+      "targetDisplayName": "Hedge Crone",
+      "registryId": "hedge_crone",
+      "modelClass": "HedgeCroneModel"
+    },
+    {
+      "userSourceName": "Vampire",
+      "targetDisplayName": "Vampire",
+      "registryId": "vampire",
+      "modelClass": "VampireModel"
+    },
+    {
+      "userSourceName": "Vampire Thrall",
+      "targetDisplayName": "Blood Thrall",
+      "registryId": "blood_thrall",
+      "modelClass": "BloodThrallModel"
+    },
+    {
+      "userSourceName": "Corpse",
+      "targetDisplayName": "Corpse",
+      "registryId": "corpse",
+      "modelClass": "CorpseModel"
+    },
+    {
+      "userSourceName": "Witch Hunter",
+      "targetDisplayName": "Warlock Hunter",
+      "conceptSheetLabel": "WARLOCK HUNTER",
+      "registryId": "werewolf_hunter",
+      "codeRegistryId": "werewolf_hunter",
+      "modelClass": "WerewolfHunterModel",
+      "codeCompatibilityNote": "Warlock Hunter is the approved concept/display name only. The existing public registry ID, Java entity spelling, and planned model class remain werewolf_hunter, WerewolfHunterEntity, and WerewolfHunterModel for compatibility."
+    },
+    {
+      "userSourceName": "Werewolf Villager",
+      "targetDisplayName": "Lycan Villager",
+      "registryId": "lycan_villager",
+      "modelClass": "LycanVillagerModel"
+    }
+  ],
+  "warlockHunterNaming": {
+    "conceptAndDisplayName": "Warlock Hunter",
+    "conceptSheetLabel": "WARLOCK HUNTER",
+    "registryId": "werewolf_hunter",
+    "entityClass": "WerewolfHunterEntity",
+    "plannedModelClass": "WerewolfHunterModel",
+    "rule": "Do not rename the registry ID or code classes during implementation. The display/concept vocabulary intentionally differs from the compatibility-preserved code spelling."
+  },
+  "interpretationPolicy": "The mapped Witchery names and separately inspected pages/images contribute only the broad role, social behavior, posture, clothing category, material, and palette cues enumerated below. Every Warlockery anatomy, proportion, face, costume construction, accessory arrangement, negative space, model part, pivot, hierarchy, UV layout, texture pixel, and animation must be independently authored. No historic image or source asset was incorporated into the concept artwork.",
+  "research": [
+    {
+      "userSourceName": "Coven Witch",
+      "targetDisplayName": "Circle Mage",
+      "pageUrl": "https://witchery.fentanylsolutions.org/coven-witch.html",
+      "pageStatus": "available and inspected on 2026-08-21",
+      "inspectedImages": [
+        {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191882879/coven-witch/witches2.png",
+          "width": 199,
+          "height": 165,
+          "fileSizeBytes": 38882,
+          "sha256": "484dbbc9babe1d35cfe8260ae96e7978bdee51c51481ca54f98a2ae0c8f10e18"
+        }
+      ],
+      "pageTraitsOnly": [
+        "forest and village practitioners",
+        "task-giving and recruitable coven role",
+        "ritual-circle assistance",
+        "small collegial group behavior",
+        "pottering and study around a home"
+      ],
+      "imageTraitsOnly": [
+        "dark headwear",
+        "plum-purple cloth",
+        "restrained green and gold band accents",
+        "approachable practitioner grouping"
+      ],
+      "allowedInfluenceOnly": [
+        "collegial ritual-scholar role",
+        "plum, dark indigo, moss, and old-brass palette family",
+        "quiet inward study action",
+        "compact dark headwear category"
+      ],
+      "excludedFromInterpretation": "The villager body and face, long nose, exact pointed hats, robe cuts, buckles, pixel patterns, color placement, pose, group arrangement, proportions, and geometry were not used."
+    },
+    {
+      "userSourceName": "Baba Yaga",
+      "targetDisplayName": "Hedge Crone",
+      "pageUrl": "https://witchery.fentanylsolutions.org/baba-yaga.html",
+      "pageStatus": "available and inspected on 2026-08-21",
+      "inspectedImages": [
+        {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191882331/baba-yaga/babayaga.png",
+          "width": 153,
+          "height": 199,
+          "fileSizeBytes": 47002,
+          "sha256": "8538645e134c0efb25d93762e419b31a2640867d90df9840c5c30d57c36e5ff9"
+        }
+      ],
+      "pageTraitsOnly": [
+        "ferocious elderly forest practitioner",
+        "unpredictable help-or-hinder presence",
+        "deep-forest home territory",
+        "mortar and pestle material vocabulary",
+        "durable boundary encounter"
+      ],
+      "imageTraitsOnly": [
+        "severe elderly posture",
+        "green and brown forest palette",
+        "compact mortar and pestle silhouette cues"
+      ],
+      "allowedInfluenceOnly": [
+        "elderly bent hedge-witch massing",
+        "root, bark, ward-bundle, stone-bowl, and pestle-like material vocabulary",
+        "peat, lichen, bone-gray, and ochre palette",
+        "stooped ward-preparation action"
+      ],
+      "excludedFromInterpretation": "The villager face, exact green hat, flying mortar, pestle placement, seated pose, skull motifs, forest composition, proportions, texture, and geometry were not used."
+    },
+    {
+      "userSourceName": "Vampire",
+      "targetDisplayName": "Vampire",
+      "pageUrl": "https://witchery.fentanylsolutions.org/vampire.html",
+      "pageStatus": "available and inspected on 2026-08-21",
+      "inspectedImages": [
+        {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191885033/vampire/vampire1.png",
+          "width": 148,
+          "height": 199,
+          "fileSizeBytes": 30616,
+          "sha256": "635d6980ab53acce817dc477d8bc6588334b44f39e9edf883c1d9dceabb80471"
+        },
+        {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191885033/vampire/vampire2.png",
+          "width": 151,
+          "height": 199,
+          "fileSizeBytes": 34357,
+          "sha256": "85d14bc6fd6209c06810bbd81643092f3554bb193e7b65f4e03d7d13fb9e2d70"
+        }
+      ],
+      "pageTraitsOnly": [
+        "human origin through conversion",
+        "nocturnal village feeding",
+        "daytime shelter near a coffin",
+        "predatory court hierarchy",
+        "fire, sunlight, werewolf, and vampire vulnerabilities"
+      ],
+      "imageTraitsOnly": [
+        "pale human presentation",
+        "black and dark-gray formal clothing",
+        "red formal chest accents",
+        "restrained gold fasteners"
+      ],
+      "allowedInfluenceOnly": [
+        "tall calculating court-leader posture",
+        "pale ash, charcoal, black plum, oxblood, and dull-gold palette family",
+        "formal clothing category",
+        "controlled stalk and assault-lead action"
+      ],
+      "excludedFromInterpretation": "The villager face and nose, exact coats, button rows, cravat, vest patterns, palette placement, pose, proportions, textures, and geometry were not used."
+    },
+    {
+      "userSourceName": "Vampire Thrall",
+      "targetDisplayName": "Blood Thrall",
+      "requestedPageUrl": "https://witchery.fentanylsolutions.org/vampire-thrall.html",
+      "pageStatus": "HTTP 404 on 2026-08-21; no distinct official-mirror page or image located",
+      "inspectedImages": [],
+      "distilledTraitsOnly": [
+        "the authoritative mapped name supplies subordinate or bound-guard semantics only",
+        "no Witchery appearance was inferred",
+        "current Warlockery threshold-guard, intercept, wavering, retreat, and bound-guard runtime behavior controls the silhouette"
+      ],
+      "excludedFromInterpretation": "The accessible Vampire page was not treated as a Blood Thrall character-appearance reference, and no unverified thrall anatomy, outfit, face, palette placement, or geometry was guessed."
+    },
+    {
+      "userSourceName": "Corpse",
+      "targetDisplayName": "Corpse",
+      "requestedPageUrl": "https://witchery.fentanylsolutions.org/corpse.html",
+      "pageStatus": "HTTP 404 on 2026-08-21; no distinct official-mirror creature page or image located",
+      "contextualPageUrl": "https://witchery.fentanylsolutions.org/brew-of-raising.html",
+      "contextualPageStatus": "available and inspected; used only to confirm raised-undead semantics",
+      "inspectedImages": [
+        {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191882605/brew-of-raising/brewraising.png",
+          "width": 240,
+          "height": 115,
+          "fileSizeBytes": 1908,
+          "sha256": "a50e740bb880274c0268e9ca5afca13755eca57e63972415f2d19af96201c730",
+          "interpretation": "Crafting-recipe diagram only; supplied no creature anatomy, clothing, pose, texture, or geometry cues."
+        }
+      ],
+      "distilledTraitsOnly": [
+        "raised-undead semantics",
+        "no external corpse appearance was inferred",
+        "current Warlockery necromantic-cohesion, dormancy, recovery, grave-command, and scavenging behavior controls the silhouette"
+      ],
+      "excludedFromInterpretation": "No generic Witchery corpse or zombie appearance was guessed from the name or recipe."
+    },
+    {
+      "userSourceName": "Witch Hunter",
+      "targetDisplayName": "Warlock Hunter",
+      "pageUrl": "https://witchery.fentanylsolutions.org/witch-hunter.html",
+      "pageStatus": "available and inspected on 2026-08-21",
+      "inspectedImages": [
+        {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191885036/witch-hunter/witchhunters.png",
+          "width": 198,
+          "height": 112,
+          "fileSizeBytes": 30942,
+          "sha256": "277169520b82c787f37afa2b237da4b69402a1e39c4f7cdefea53981b99c717f"
+        }
+      ],
+      "pageTraitsOnly": [
+        "dedicated tracking and destruction of black-magic threats",
+        "coordinated hunter group",
+        "werewolf and vampire quarry",
+        "ranged silver and fiery bolt equipment"
+      ],
+      "imageTraitsOnly": [
+        "long dark field-clothing category",
+        "broad weatherproof headwear category",
+        "coordinated ranged-hunt posture"
+      ],
+      "allowedInfluenceOnly": [
+        "evidence-led tracker and protector role",
+        "angular half-brim hood and long field-coat category",
+        "crossbow and silver-ammunition readability",
+        "warning and careful reposition action"
+      ],
+      "excludedFromInterpretation": "The villager faces and noses, exact wide hats, exact coats, group arrangement, weapon placement, colors, pixel patterns, pose, proportions, and geometry were not used."
+    },
+    {
+      "userSourceName": "Werewolf Villager",
+      "targetDisplayName": "Lycan Villager",
+      "requestedPageUrl": "https://witchery.fentanylsolutions.org/werewolf-villager.html",
+      "requestedPageStatus": "HTTP 404 on 2026-08-21",
+      "contextualPageUrl": "https://witchery.fentanylsolutions.org/werewolf.html",
+      "contextualPageStatus": "available and inspected; the page explicitly describes a villager infected with lycanthropy",
+      "inspectedImages": [
+        {
+          "url": "https://witchery.fentanylsolutions.org/_/rsrc/1431191885035/werewolf/werewolf.png",
+          "width": 142,
+          "height": 270,
+          "fileSizeBytes": 21264,
+          "sha256": "0e5a2635151a2dff0e64f309742cd461cb414ffec7daeb4ea50a38be9ced8ebf"
+        }
+      ],
+      "pageTraitsOnly": [
+        "villager origin and dual identity",
+        "full-moon transformation pressure",
+        "upright lycan massing",
+        "silver vulnerability",
+        "village threat and moon-watch tension"
+      ],
+      "imageTraitsOnly": [
+        "compact lupine head category",
+        "upright heavy-shouldered lycan category",
+        "restrained dark-gray fur palette"
+      ],
+      "allowedInfluenceOnly": [
+        "village-born sentinel and trader role",
+        "upright broad lycan anatomy with compact wedge muzzle",
+        "restrained ash-gray and umber fur palette",
+        "full-moon watch and protective warning action"
+      ],
+      "excludedFromInterpretation": "The exact wolfman skull, yellow eye, shoulder and arm proportions, stance, texture, colors, pixel pattern, silhouette, and geometry were not used. The Warlockery Lycan Villager remains practical, clothed, neighborly, and visually separate from the future Werewolf model."
+    }
+  ],
+  "unavailableSources": [
+    {
+      "userSourceName": "Vampire Thrall",
+      "url": "https://witchery.fentanylsolutions.org/vampire-thrall.html",
+      "result": "HTTP 404 on 2026-08-21",
+      "policy": "Use the authoritative mapped name for bound-subordinate semantics and current Warlockery behavior only; infer no appearance."
+    },
+    {
+      "userSourceName": "Corpse",
+      "url": "https://witchery.fentanylsolutions.org/corpse.html",
+      "result": "HTTP 404 on 2026-08-21",
+      "policy": "Use raised-undead semantics and current Warlockery necromantic-cohesion behavior only; infer no appearance."
+    },
+    {
+      "userSourceName": "Werewolf Villager",
+      "url": "https://witchery.fentanylsolutions.org/werewolf-villager.html",
+      "result": "HTTP 404 on 2026-08-21",
+      "policy": "Use the accessible Werewolf page only because its text explicitly identifies the subject as an infected villager; distill only the broad cues recorded above."
+    }
+  ],
+  "userSuppliedInspirationResearch": [
+    {
+      "role": "masculine Vampire variant inspiration",
+      "pageUrl": "https://namemc.com/skin/01a44d5b3e11bd33",
+      "inspectionDate": "2026-08-21",
+      "accessNote": "The published texture and rendered-body endpoints were accessed read-only and returned the recorded public assets.",
+      "distilledHighLevelCuesOnly": [
+        "narrow masculine court silhouette",
+        "short dark face-framing hair category",
+        "pale angular face and restrained bright-eye contrast",
+        "tall tailored front and high collar category",
+        "restrained vertical closure rhythm"
+      ],
+      "excludedFromInterpretation": "No original pixels, exact hair, face, eyes, collar, red vest, buttons, sleeves, coat, pose, proportions, layer layout, player geometry, or skin UV placement was copied, traced, or transferred.",
+      "referenceAssets": [
+        {
+          "url": "https://namemc.com/texture/01a44d5b3e11bd33.png",
+          "kind": "raw 64x64 skin texture",
+          "width": 64,
+          "height": 64,
+          "fileSizeBytes": 1035,
+          "sha256": "68d3aa8718c2bedbe3f91306447e18aa7afd9a94603c9cd858ef7e16532386f9"
+        },
+        {
+          "url": "https://s.namemc.com/2d/skin/face.png?id=01a44d5b3e11bd33&scale=8",
+          "kind": "published face render",
+          "width": 64,
+          "height": 64,
+          "fileSizeBytes": 561,
+          "sha256": "76f6fb0219789c4768246f88f8d16016e47a5d91a2101a4c3a3f2be7cc75f55e"
+        },
+        {
+          "url": "https://s.namemc.com/3d/skin/body.png?id=01a44d5b3e11bd33&model=classic&theta=30&phi=21&time=90&width=600&height=800",
+          "kind": "published three-quarter body render",
+          "width": 600,
+          "height": 800,
+          "fileSizeBytes": 37276,
+          "sha256": "cf79e3fc5d2c03b56d094204b33fa59c00b5e3812ec171e59e703c01c0ccc6d4"
+        },
+        {
+          "url": "https://s.namemc.com/3d/skin/body.png?id=01a44d5b3e11bd33&model=classic&width=640&height=402&front_and_back=true",
+          "kind": "published front-and-back body render",
+          "width": 640,
+          "height": 402,
+          "fileSizeBytes": 33136,
+          "sha256": "28319a22e65e823e804049b542ab92e9d47fb180bc55e7b341925c419a07892c"
+        }
+      ]
+    },
+    {
+      "role": "feminine Vampire variant inspiration",
+      "pageUrl": "https://namemc.com/skin/b0fadabec315afa2",
+      "pageObservation": "The accessible page identified a Vampire-tagged skin; tags and identity were not used as geometry.",
+      "inspectionDate": "2026-08-21",
+      "accessNote": "The published texture and rendered-body endpoints were accessed read-only and returned the recorded public assets.",
+      "distilledHighLevelCuesOnly": [
+        "narrow feminine silhouette",
+        "long dark face-framing hair category",
+        "stark pale face and bright-eye contrast",
+        "angular shoulder framing",
+        "visible pale forearm contrast and restrained trim"
+      ],
+      "excludedFromInterpretation": "No original pixels, exact long hair, face, eyes, shoulder cut, exposed-skin layout, red trim, garment, pose, proportions, layer layout, player geometry, or skin UV placement was copied, traced, or transferred.",
+      "referenceAssets": [
+        {
+          "url": "https://namemc.com/texture/b0fadabec315afa2.png",
+          "kind": "raw 64x64 skin texture",
+          "width": 64,
+          "height": 64,
+          "fileSizeBytes": 865,
+          "sha256": "e24e65885186fcb4d873ed9e00675b59328fff6f8bb8ddf31fb8feead40840e3"
+        },
+        {
+          "url": "https://s.namemc.com/2d/skin/face.png?id=b0fadabec315afa2&scale=8",
+          "kind": "published face render",
+          "width": 64,
+          "height": 64,
+          "fileSizeBytes": 606,
+          "sha256": "38b6ab0ef26e0ac22e16c70e9148543fe9e8c1a3f017bdcd6192b8e4244f1843"
+        },
+        {
+          "url": "https://s.namemc.com/3d/skin/body.png?id=b0fadabec315afa2&model=classic&theta=30&phi=21&time=90&width=600&height=800",
+          "kind": "published three-quarter body render",
+          "width": 600,
+          "height": 800,
+          "fileSizeBytes": 36423,
+          "sha256": "2eb17f259118bbd2860436743ce628d0c614ddbe7dc065126b18a813282807f9"
+        },
+        {
+          "url": "https://s.namemc.com/3d/skin/body.png?id=b0fadabec315afa2&model=classic&width=640&height=402&front_and_back=true",
+          "kind": "published front-and-back body render",
+          "width": 640,
+          "height": 402,
+          "fileSizeBytes": 30303,
+          "sha256": "17f26ee4c88d99dfa6172253a2c2220c950001e152ab2805f6882596a5c386ed"
+        }
+      ]
+    }
+  ],
+  "naamahOceanLineageFusion": {
+    "basis": "Current Warlockery lore ties Naamah and the Blood Audience to an ocean monument, Heart of the Sea, prismarine crystals, nautilus shell, drowned halls, and the vampire initiation lineage.",
+    "requiredMaterialLanguage": [
+      "abyssal blue-black and deep-water navy",
+      "storm teal and sea-glass light",
+      "drowned silver and water-worn edges",
+      "salt-pale skin",
+      "nacre, pearl, muted coral, nautilus, tide-cut, and pressure-fold motifs"
+    ],
+    "prohibitedShortcut": "Do not reduce ocean lineage to ordinary gothic black clothing with teal trim; do not drift into pirate, sailor, Victorian, Dracula, steampunk, elf, or ballroom costume categories."
+  },
+  "behaviorSilhouetteSources": [
+    {
+      "registryId": "circle_mage",
+      "sourceFiles": [
+        "src/main/java/com/kadamitas/warlockery/entity/CircleMageEntity.java",
+        "src/main/java/com/kadamitas/warlockery/entity/CircleMageState.java",
+        "src/main/java/com/kadamitas/warlockery/entity/CircleMageRules.java",
+        "src/main/java/com/kadamitas/warlockery/entity/CircleMageRuntime.java"
+      ],
+      "runtimeStates": [
+        "IDLE",
+        "FOLLOWING",
+        "DEFENDING",
+        "STUDYING",
+        "WITHDRAWING",
+        "BOLT",
+        "STUDY"
+      ],
+      "silhouetteCues": [
+        "approachable recruitable practitioner",
+        "one-owner following and defense",
+        "bounded solo or three-member study conclave",
+        "inward focus-preparation and study posture",
+        "empty-handed equipment lifecycle, so the ring-focus and ritual slate are model parts rather than held-item assumptions"
+      ]
+    },
+    {
+      "registryId": "hedge_crone",
+      "sourceFiles": [
+        "src/main/java/com/kadamitas/warlockery/entity/HedgeCroneEntity.java",
+        "src/main/java/com/kadamitas/warlockery/entity/HedgeCroneState.java",
+        "src/main/java/com/kadamitas/warlockery/entity/HedgeCroneRules.java",
+        "src/main/java/com/kadamitas/warlockery/entity/HedgeCroneRuntime.java"
+      ],
+      "runtimeStates": [
+        "IDLE",
+        "WARNING",
+        "CASTING",
+        "PREPARING",
+        "WITHDRAWING",
+        "RETURNING",
+        "HEX",
+        "WARD_PREPARATION"
+      ],
+      "silhouetteCues": [
+        "boundary-anchored warning encounter",
+        "contextual hex casting",
+        "ward preparation at a work surface",
+        "withdraw and return rhythm",
+        "empty-handed equipment lifecycle, so bowl, basket, arch, and baton remain dedicated independent model parts"
+      ]
+    },
+    {
+      "registryIds": [
+        "vampire",
+        "blood_thrall"
+      ],
+      "sourceFiles": [
+        "src/main/java/com/kadamitas/warlockery/entity/VampireCourtEntity.java",
+        "src/main/java/com/kadamitas/warlockery/entity/VampireCourtState.java",
+        "src/main/java/com/kadamitas/warlockery/entity/VampireCourtRules.java",
+        "src/main/java/com/kadamitas/warlockery/entity/VampireCourtRuntime.java"
+      ],
+      "runtimeStates": [
+        "UNBOUND",
+        "ROOST",
+        "WATCH",
+        "STALK",
+        "FEED",
+        "SEEK_SHELTER",
+        "VEILED_REST",
+        "THRESHOLD_GUARD",
+        "INTERCEPT",
+        "WAVERING",
+        "RETREAT",
+        "ASSAULT_LEAD",
+        "RECOVER"
+      ],
+      "silhouetteCues": [
+        "Vampire is the slim calculating predator leader for roost, stalk, feed, shelter, and assault-lead states",
+        "Blood Thrall is a low broad bound guard for threshold guard, intercept, wavering, and retreat states",
+        "the two bodies must not share anatomy, garment geometry, coat tails, cape, head, or animation helper",
+        "empty-handed equipment lifecycle; predation and guard behavior must read through dedicated body posing"
+      ]
+    },
+    {
+      "registryId": "corpse",
+      "sourceFiles": [
+        "src/main/java/com/kadamitas/warlockery/entity/CorpseEntity.java",
+        "src/main/java/com/kadamitas/warlockery/entity/CorpseState.java",
+        "src/main/java/com/kadamitas/warlockery/entity/CorpseRules.java",
+        "src/main/java/com/kadamitas/warlockery/entity/CorpseRuntime.java"
+      ],
+      "runtimeStates": [
+        "DORMANT",
+        "HAZARD",
+        "RECOVERY",
+        "GRAVE_COMMAND",
+        "COMBAT",
+        "SCAVENGE",
+        "FOLLOW",
+        "IDLE"
+      ],
+      "silhouetteCues": [
+        "necromantic-cohesion body rather than vanilla zombie lifecycle",
+        "completely still dormant state",
+        "collapsed or reknitting recovery posture",
+        "grave-controller and raise-owner command",
+        "asymmetrical supported anatomy and ground contact rather than a generic shared biped"
+      ]
+    },
+    {
+      "registryId": "werewolf_hunter",
+      "displayConceptName": "Warlock Hunter",
+      "sourceFiles": [
+        "src/main/java/com/kadamitas/warlockery/entity/WerewolfHunterEntity.java",
+        "src/main/java/com/kadamitas/warlockery/entity/WerewolfHunterState.java",
+        "src/main/java/com/kadamitas/warlockery/entity/WerewolfHunterRules.java",
+        "src/main/java/com/kadamitas/warlockery/entity/WerewolfHunterRuntime.java"
+      ],
+      "runtimeStates": [
+        "IDLE",
+        "PATROL",
+        "INVESTIGATE",
+        "WARN",
+        "ENGAGE",
+        "REPOSITION",
+        "RETREAT",
+        "RESUPPLY",
+        "RETURN"
+      ],
+      "silhouetteCues": [
+        "vanilla crossbow main-hand equipment and ingredient_bolt_silver off-hand ammunition",
+        "evidence-led quarry tracking rather than identity-only aggression",
+        "warning before engagement",
+        "crossfire cancellation and careful reposition",
+        "visible resupply capacity through a restrained silver-bolt fan"
+      ]
+    },
+    {
+      "registryId": "lycan_villager",
+      "sourceFiles": [
+        "src/main/java/com/kadamitas/warlockery/entity/LycanVillagerEntity.java",
+        "src/main/java/com/kadamitas/warlockery/entity/LycanVillagerState.java",
+        "src/main/java/com/kadamitas/warlockery/entity/LycanVillagerRules.java",
+        "src/main/java/com/kadamitas/warlockery/entity/LycanVillagerRuntime.java"
+      ],
+      "runtimeStates": [
+        "ROUTINE",
+        "BOUNDARY_WATCH",
+        "MOON_WATCH",
+        "GREETING",
+        "RESERVE",
+        "WARNING",
+        "INTERCEPT",
+        "DEFEND",
+        "WITHDRAW",
+        "RETURN"
+      ],
+      "silhouetteCues": [
+        "villager trading and greeting remain readable",
+        "home-boundary and full-moon watch",
+        "warning before intercept and resident defense",
+        "upright practical sentinel posture",
+        "distinct from the separate future Werewolf and Feral Lycan model packages"
+      ]
+    }
+  ],
+  "currentEntityVisualBounds": [
+    {
+      "registryId": "circle_mage",
+      "width": 0.6,
+      "height": 1.95,
+      "archetype": "HUMANOID"
+    },
+    {
+      "registryId": "hedge_crone",
+      "width": 0.65,
+      "height": 2,
+      "archetype": "BOSS"
+    },
+    {
+      "registryId": "vampire",
+      "width": 0.6,
+      "height": 1.95,
+      "archetype": "HUMANOID"
+    },
+    {
+      "registryId": "blood_thrall",
+      "width": 0.6,
+      "height": 1.95,
+      "archetype": "HUMANOID"
+    },
+    {
+      "registryId": "corpse",
+      "width": 0.6,
+      "height": 1.95,
+      "archetype": "HUMANOID"
+    },
+    {
+      "registryId": "werewolf_hunter",
+      "displayConceptName": "Warlock Hunter",
+      "width": 0.6,
+      "height": 1.95,
+      "archetype": "HUMANOID"
+    },
+    {
+      "registryId": "lycan_villager",
+      "width": 0.85,
+      "height": 2.15,
+      "archetype": "LYCAN"
+    }
+  ],
+  "approvedDesignPins": {
+    "circle_mage": [
+      "medium narrow approachable ritual scholar",
+      "compact asymmetrical folded cowl-cap rather than a pointed hat",
+      "short front-broken faceted shoulder mantle and split ritual sash",
+      "separate polygonal ring-focus and folding ritual slate",
+      "quiet inward STUDYING action"
+    ],
+    "hedge_crone": [
+      "tall deeply hunched boundary witch with long angular forearms",
+      "one-sided crooked root-lattice shoulder arch",
+      "woven hood, bark-apron layers, ward-bundle hip basket, stone bowl, and short ward baton",
+      "peat, lichen, bone-gray, and ochre materials",
+      "stooped WARD_PREPARATION action"
+    ],
+    "vampire": [
+      "two visibly distinct very tall narrow variants within one independently authored VampireModel: masculine and feminine",
+      "masculine form uses short tide-swept hair, nautilus-split collar, pressure-jacket strata, pearl toggles, one current vane, and narrow tide panels",
+      "feminine form uses long kelp-current hair panels, short manta-like shoulder fins, deep-water pressure bodice, exposed salt-pale forearms, pearl tide cuffs, side veil, and coral clasp",
+      "fundamentally abyssal Naamah-line palette and materials: deep-water blue-black, storm teal, drowned silver, salt-pale skin, nacre, pearl, muted coral, sea-glass, and tide cuts",
+      "controlled masculine STALK / ASSAULT_LEAD and feminine FEED / COURT_CLAIM actions; neither form uses a player/shared rig"
+    ],
+    "blood_thrall": [
+      "lean low-bound guard anatomy unrelated to Vampire; never broad, fat, bulky, or a scaled Vampire",
+      "narrow ribcage, constrained sloped shoulders, long sinewy forearms, thin waist, deeply bent knees, and clawed grip feet",
+      "asymmetric shell restraint yoke, abyssal membrane smock, exposed forearms with drowned-silver cuffs, tide-cord bindings, and off-center pearl cage with dull coral court seal",
+      "strong Naamah-line abyssal, storm-teal, drowned-silver, salt-pale, pearl, coral, and water-worn materials with no pirate or gothic courtwear shortcut",
+      "low diagonal INTERCEPT and WAVERING action"
+    ],
+    "corpse": [
+      "permanently asymmetrical necromantic-cohesion body",
+      "grave-cloth binding bands, one timber splint, sternum ballast plate, and restrained teal cohesion seams",
+      "folded burial-cloth face without gore",
+      "uneven supported legs and forward pitch",
+      "partially collapsed DORMANT and REKNITTING action"
+    ],
+    "werewolf_hunter": [
+      "concept/display name Warlock Hunter with compatibility-preserved werewolf_hunter code spelling",
+      "lean evidence-led tracker with angular one-sided half-brim hood",
+      "three-panel field coat, one raised crossbow-side shoulder guard, compact crossbow, silver-bolt fan, and evidence satchel",
+      "storm charcoal, soot brown, cold silver, and russet palette",
+      "WARN and careful REPOSITION action with a protected firing corridor"
+    ],
+    "lycan_villager": [
+      "largest body in the package with broad upright chest, tapered waist, long forearms, compact wedge muzzle, and slightly digitigrade feet",
+      "ash-gray and umber dedicated lycan anatomy underneath native dynamic villager biome/type, profession, profession-headwear, and level clothing layers",
+      "the board's plains farmer turnaround and plains farmer, desert cartographer, and taiga armorer callouts use the exact same underlying lycan anatomy",
+      "neighborly trader and resident defender rather than a snarling monster",
+      "model anatomy independent from Werewolf and Feral Lycan; no fixed blue vest, apron, badge, satchel, or custom profession outfit texture",
+      "MOON_WATCH and DEFEND action plus explicit body + biome/type robe + profession layer + level badge composition"
+    ]
+  },
+  "vampireVariantContract": {
+    "selection": "Select masculine versus feminine deterministically from the entity UUID and reproduce the same selection on every extraction, reload, and client. Do not add a gameplay, NBT, or network field unless implementation discovers an existing appropriate visual-state seam that cannot satisfy stable UUID selection.",
+    "variants": [
+      {
+        "id": "masculine",
+        "requiredSemanticParts": [
+          "short tide-swept hair locks",
+          "nautilus-split collar",
+          "abyssal pressure-jacket front strata",
+          "three unequal pearl toggles",
+          "drowned-silver shoulder current vane",
+          "two narrow tide-cut lower panels"
+        ],
+        "requiredTextureLocation": "warlockery:textures/entity/vampire_masculine.png"
+      },
+      {
+        "id": "feminine",
+        "requiredSemanticParts": [
+          "long face-framing and three-back-current kelp hair panels",
+          "short structural manta-like shoulder fins",
+          "deep-water pressure bodice",
+          "visible forearms with pearl tide cuffs",
+          "asymmetric storm-teal side veil",
+          "branching muted-coral clasp"
+        ],
+        "requiredTextureLocation": "warlockery:textures/entity/vampire_feminine.png"
+      }
+    ],
+    "requiredTests": [
+      "prove both UUID-selected variants are reachable",
+      "prove the same UUID always selects the same variant without mutable gameplay state",
+      "prove the two dedicated texture locations are selected with their matching geometry",
+      "prove both texture atlases exist, have pinned dimensions, have recorded SHA-256 hashes, and have different hashes",
+      "prove variant-specific hair, collar or bodice, shoulder, cuff, veil, coat, and train visibility differs semantically within VampireModel",
+      "prove VampireModel never extends, wraps, or delegates geometry to a vanilla player model or shared Warlockery humanoid rig"
+    ],
+    "bloodThrallSeparation": "BloodThrallModel remains a separate independently authored lean low-bound rig, atlas, UV layout, state extraction, and animation implementation. It must not scale, subclass, copy, or reuse VampireModel geometry, variant helpers, or textures."
+  },
+  "lycanVillagerClothingRendererContract": {
+    "currentEntityFact": "LycanVillagerEntity extends Villager and already carries synchronized live VillagerData containing type, profession, and level.",
+    "requiredStateSeam": "LycanVillagerModel.State must extend VillagerRenderState, or implement VillagerDataHolderRenderState while extracting entity.getVillagerData() into the render state.",
+    "requiredModelSeam": "LycanVillagerModel must implement VillagerLikeModel<LycanVillagerModel.State>, retain independently authored wolf head, muzzle, ears, hands, feet, body, pivots, and animations, and expose profession/type clothing-compatible robe, jacket, hat, and level-badge UV islands plus a no-hat body layer.",
+    "requiredForgeLayer": "The dedicated Forge Lycan Villager renderer must add the native VillagerProfessionLayer with path 'villager', compatible main and no-hat LycanVillagerModel layers, and live VillagerData extraction.",
+    "vanillaCompositionSemantics": [
+      "render villager biome/type texture from textures/entity/villager/type/<type>.png",
+      "render profession texture and profession headwear from textures/entity/villager/profession/<profession>.png",
+      "render profession level badge from textures/entity/villager/profession_level/<level>.png",
+      "honor VillagerMetadataSection.Hat NONE, PARTIAL, and FULL visibility rules",
+      "preserve farmer, cartographer, armorer, nitwit, biome/type, and level identity dynamically instead of authoring one fixed outfit"
+    ],
+    "requiredTests": [
+      "source-check the native VillagerProfessionLayer(path='villager') seam and LycanVillagerModel VillagerLikeModel contract",
+      "prove render-state extraction retains the entity's VillagerData type, profession, and level",
+      "prove changing type or profession changes the selected native clothing layers without changing dedicated lycan anatomy",
+      "prove cartographer remains visibly cartographer and hat metadata selects the no-hat layer correctly",
+      "prove there is no custom fixed profession outfit texture, indigo vest, static apron, or static profession selection"
+    ],
+    "transformedWerewolfRenderingRequirement": {
+      "currentGap": "The separate full-moon infection path converts a vanilla Villager into WerewolfEntity and WerewolfVillagerInfectionRuntime currently saves original VillagerData server-side for restoration, but that appearance data is not a synchronized client render seam.",
+      "requiredRuntimeOutcome": "Transformed Werewolf rendering must synchronize original villager appearance data and retain the native biome and profession clothing layers."
+    }
+  },
+  "modelIndependenceContract": {
+    "requiredModelClasses": [
+      "CircleMageModel",
+      "HedgeCroneModel",
+      "VampireModel",
+      "BloodThrallModel",
+      "CorpseModel",
+      "WerewolfHunterModel",
+      "LycanVillagerModel"
+    ],
+    "required": [
+      "one independently authored concrete model class per registry row",
+      "all geometry, pivots, parenting, and animation logic live in that species class",
+      "each species receives an independently authored atlas and UV layout",
+      "special poses derive from the current entity runtime states recorded above",
+      "VampireModel is one independently authored species rig with deterministically UUID-selected masculine and feminine geometry visibility and two distinct oceanic texture atlases",
+      "BloodThrallModel is a separate independently authored lean low-bound rig rather than a scaled, widened, or reused VampireModel",
+      "LycanVillagerModel independently authors all lycan anatomy while permitting native vanilla VillagerProfessionLayer composition for live biome, profession, level, and hat clothing identity",
+      "transformed Werewolf rendering must retain synchronized original-villager biome and profession clothing identity"
+    ],
+    "prohibited": [
+      "shared family rig",
+      "shared geometry helper",
+      "shared animation helper",
+      "copying another species model method and reskinning it",
+      "palette-swapped body or atlas",
+      "historic Witchery or Warlockery concept imagery as copied geometry, texture, or pixel input",
+      "reuse of Vampire anatomy, coat, cape, or pose for Blood Thrall",
+      "reuse of Werewolf or Feral Lycan anatomy for Lycan Villager"
+    ]
+  },
+  "implementationAssets": {
+    "generator": {
+      "path": "tools/creature_models/generate_occult_humanoids.ps1",
+      "date": "2026-08-21",
+      "fileSizeBytes": 16806,
+      "sha256": "5b7868a0214e9bab31e917af9d753e0ec9ae066c881655bdfbb3139b6991ef27",
+      "sharedRigOrPaletteSwap": false
+    },
+    "atlases": [
+      {
+        "id": "circle_mage",
+        "path": "src/main/resources/assets/warlockery/textures/entity/circle_mage.png",
+        "width": 128,
+        "height": 128,
+        "fileSizeBytes": 984,
+        "sha256": "4ac3a4fe5362fd0f9cfb9b34e501f96b6e074131c995618b800a03d8db3f389e",
+        "authoredRead": "charcoal-plum study cloth, drowned silver, old parchment, and restrained teal circle-focus light"
+      },
+      {
+        "id": "hedge_crone",
+        "path": "src/main/resources/assets/warlockery/textures/entity/hedge_crone.png",
+        "width": 128,
+        "height": 128,
+        "fileSizeBytes": 1120,
+        "sha256": "b63943485b07a83657e49bc29b2031b040830cc07afaf8a918dfb7d259008e77",
+        "authoredRead": "bark, moss, root fiber, weathered stone mortar, wooden pestle, and amber ward knots"
+      },
+      {
+        "id": "vampire_masculine",
+        "path": "src/main/resources/assets/warlockery/textures/entity/vampire_masculine.png",
+        "width": 128,
+        "height": 128,
+        "fileSizeBytes": 932,
+        "sha256": "6152495bd0a620b3f74f68faa89be6fa2fb3811ec59d35c446b84192d6368d61",
+        "authoredRead": "narrow abyssal tailoring, drowned silver, rigid current lines, pearl closures, and muted coral rank marks"
+      },
+      {
+        "id": "vampire_feminine",
+        "path": "src/main/resources/assets/warlockery/textures/entity/vampire_feminine.png",
+        "width": 128,
+        "height": 128,
+        "fileSizeBytes": 1091,
+        "sha256": "7262b6edeec4e78cdcfffbe34516174d1e11aede50128fbc90eab10db260750e",
+        "authoredRead": "storm-teal manta structure, long kelp-current hair, nacre tide lines, side veil, and coral train seal"
+      },
+      {
+        "id": "blood_thrall",
+        "path": "src/main/resources/assets/warlockery/textures/entity/blood_thrall.png",
+        "width": 128,
+        "height": 128,
+        "fileSizeBytes": 815,
+        "sha256": "dcc878b8cf0d05196f0f5a46838782e9343c3b17489fadc43bb0c885f79675d2",
+        "authoredRead": "lean drowned flesh, shell restraint, pearl cage bars, tide seams, and a dull coral obedience seal"
+      },
+      {
+        "id": "corpse",
+        "path": "src/main/resources/assets/warlockery/textures/entity/corpse.png",
+        "width": 128,
+        "height": 128,
+        "fileSizeBytes": 1040,
+        "sha256": "50409e03ac594dbb530bc1b16f049ff17857df213c3aff04f37aae3e742f7c76",
+        "authoredRead": "bruised earth flesh, pale reknit bone, black sutures, uneven bindings, and asymmetric material blocks"
+      },
+      {
+        "id": "werewolf_hunter",
+        "conceptDisplayName": "Warlock Hunter",
+        "codeCompatibilityName": "Werewolf Hunter",
+        "path": "src/main/resources/assets/warlockery/textures/entity/werewolf_hunter.png",
+        "width": 128,
+        "height": 128,
+        "fileSizeBytes": 887,
+        "sha256": "fb77aa124999c3505e4014d3bee7e40f3992dc36f6984b8e57b8e8b8205cf7e0",
+        "authoredRead": "weathered field leather, split charcoal coat, cold silver bolts, crossbow sling, and muted warning red"
+      },
+      {
+        "id": "lycan_villager",
+        "path": "src/main/resources/assets/warlockery/textures/entity/lycan_villager.png",
+        "width": 64,
+        "height": 64,
+        "fileSizeBytes": 518,
+        "sha256": "d2c3886e118319a374a7e8a5f6c26537ba479a88bee0ae2d93be2ac4c5400e3c",
+        "authoredRead": "ash-umber wolf anatomy plus an unmarked neutral underlayer; no static profession, biome, vest, apron, or cartographer texture",
+        "dynamicClothingSource": "Native VillagerProfessionLayer composition from live VillagerData"
+      }
+    ],
+    "legacyUnusedTexture": {
+      "path": "src/main/resources/assets/warlockery/textures/entity/vampire.png",
+      "status": "Unused by the UUID-selected Vampire renderer contract."
+    },
+    "contactSheets": [
+      {
+        "id": "circle_mage",
+        "path": "build/reports/visual-audit/creatures/circle_mage-software-contact-sheet.png",
+        "width": 768,
+        "height": 160,
+        "fileSizeBytes": 3811,
+        "sha256": "9eb329005f4b06d87335d48d085a326f928efe2268fe04f5d3038f9d45be7a86"
+      },
+      {
+        "id": "hedge_crone",
+        "path": "build/reports/visual-audit/creatures/hedge_crone-software-contact-sheet.png",
+        "width": 768,
+        "height": 160,
+        "fileSizeBytes": 5139,
+        "sha256": "e6b5b27060718d2c0fbad4f783309de43db3fa74fade647a816c57103bb5c5ce"
+      },
+      {
+        "id": "vampire_masculine_and_feminine",
+        "path": "build/reports/visual-audit/creatures/vampire-software-contact-sheet.png",
+        "width": 768,
+        "height": 320,
+        "fileSizeBytes": 7406,
+        "sha256": "a9c5bbdf4a9c29e56a6c35cca5af3918aba49afc2a2ccfbf269fe0de3b0bf462",
+        "rows": "Masculine top, feminine bottom; a test asserts the two rendered silhouette rows differ."
+      },
+      {
+        "id": "blood_thrall",
+        "path": "build/reports/visual-audit/creatures/blood_thrall-software-contact-sheet.png",
+        "width": 768,
+        "height": 160,
+        "fileSizeBytes": 4666,
+        "sha256": "cdf3e9e974a9fc61269cd69e080700034332e169f5c6a4517e9c43e86b18ec52"
+      },
+      {
+        "id": "corpse",
+        "path": "build/reports/visual-audit/creatures/corpse-software-contact-sheet.png",
+        "width": 768,
+        "height": 160,
+        "fileSizeBytes": 5124,
+        "sha256": "99b1c1ac25540cef6ae53db89d17e3f674ec03142f1e3f3e4c7d7f9e17b99df9"
+      },
+      {
+        "id": "werewolf_hunter",
+        "path": "build/reports/visual-audit/creatures/werewolf_hunter-software-contact-sheet.png",
+        "width": 768,
+        "height": 160,
+        "fileSizeBytes": 3775,
+        "sha256": "a70cf7f4c6aa4ce6c4444805850cc4fdc9c1163b1b4b52008bd79d77080d5642"
+      },
+      {
+        "id": "lycan_villager",
+        "path": "build/reports/visual-audit/creatures/lycan_villager-software-contact-sheet.png",
+        "width": 768,
+        "height": 160,
+        "fileSizeBytes": 3829,
+        "sha256": "3aa750b5b2a77b43f37b903d7f0d6f3088bd9b758f1138eba9393e0f73c2655b"
+      }
+    ],
+    "contactSheetInspection": {
+      "judgment": "All species retain distinct turn silhouettes and action reads. Vampire masculine and feminine rows are visibly distinct in the software contact sheet; Blood Thrall remains lean and low; Lycan Villager retains wolf anatomy around the native-clothing-compatible body."
+    }
+  }
+}

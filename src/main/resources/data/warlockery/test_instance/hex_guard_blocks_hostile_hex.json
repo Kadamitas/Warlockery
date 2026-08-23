@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:hex_guard_blocks_hostile_hex","environment":"minecraft:default","structure":"forge:empty3x3x3","max_ticks":100}
+{"type":"minecraft:function","function":"warlockery:hex_guard_blocks_hostile_hex","environment":{"type":"warlockery:isolated","id":"hex_guard_blocks_hostile_hex","delegate":"minecraft:default"},"structure":"warlockery:empty32x32x32","max_ticks":100}

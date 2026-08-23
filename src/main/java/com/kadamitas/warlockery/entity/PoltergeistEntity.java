@@ -1,9 +1,13 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.entity.PoltergeistRules.Phase;
 import java.util.EnumSet;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -48,6 +52,8 @@ import org.jspecify.annotations.Nullable;
  */
 public final class PoltergeistEntity extends PathfinderMob implements ArcaneCreature {
     static final String STATE_KEY = "WarlockeryPoltergeist";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(PoltergeistEntity.class, EntityDataSerializers.BYTE);
 
     private final PoltergeistRuntime.Counters counters = new PoltergeistRuntime.Counters();
     private final PoltergeistRuntime.TransientState scratch = new PoltergeistRuntime.TransientState();
@@ -71,6 +77,26 @@ public final class PoltergeistEntity extends PathfinderMob implements ArcaneCrea
 
     public void setPoltergeistState(final PoltergeistState updated) {
         state = updated == null ? PoltergeistState.empty() : updated;
+        syncPresentation(state.phase());
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_PRESENTATION_PHASE, (byte) Phase.LURK.ordinal());
+    }
+
+    public Phase presentationPhase() {
+        final int stored = entityData.get(DATA_PRESENTATION_PHASE);
+        final Phase[] phases = Phase.values();
+        return stored >= 0 && stored < phases.length ? phases[stored] : Phase.LURK;
+    }
+
+    private void syncPresentation(final Phase phase) {
+        final byte encoded = (byte) phase.ordinal();
+        if (entityData.get(DATA_PRESENTATION_PHASE) != encoded) {
+            entityData.set(DATA_PRESENTATION_PHASE, encoded);
+        }
     }
 
     public PoltergeistRuntime.Counters poltergeistCounters() {
@@ -216,6 +242,7 @@ public final class PoltergeistEntity extends PathfinderMob implements ArcaneCrea
         state = input.read(STATE_KEY, CompoundTag.CODEC)
             .map(PoltergeistState::read)
             .orElse(PoltergeistState.empty());
+        syncPresentation(state.phase());
         scratch.resetForLoad();
         normalizeEquipment();
         setNoGravity(true);

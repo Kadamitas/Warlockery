@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -31,6 +34,36 @@ final class GameTestInstanceContractTest {
     );
     private static final Path ENVIRONMENTS = Path.of(
         "src", "main", "resources", "data", "warlockery", "test_environment"
+    );
+    private static final Path ISOLATION_TEMPLATE = Path.of(
+        "src", "main", "resources", "data", "warlockery", "structure", "empty32x32x32.nbt"
+    );
+    private static final String GENERIC_STRUCTURE = "warlockery:empty32x32x32";
+    private static final String RETIRED_GENERIC_STRUCTURE = "forge:empty3x3x3";
+    /**
+     * These fixtures require the vanilla three-block staging cell: each passed alone on that
+     * geometry and failed alone in the 32-cube experiment. Keep this allowlist explicit so a
+     * future fixture cannot silently opt out of spatial isolation.
+     */
+    private static final Set<String> GEOMETRY_SENSITIVE_THREE_CUBE_FIXTURES = Set.of(
+        "approach_forms_cross_closed_fortification_and_reveal_inside",
+        "circle_talisman_captures_and_restores_full_large_ring",
+        "earths_wrath_moves_volcanic_fluid",
+        "ent_hazard_escape_and_cancellation_are_deterministic",
+        "hellhound_animus_authority_follow_and_guard_are_safe",
+        "hobgoblin_village_builds_a_closed_wood_defense",
+        "hobgoblins_flee_human_villagers_and_keep_custom_professions",
+        "human_village_builds_a_closed_stone_defense",
+        "repeated_fortification_does_not_stack_or_duplicate_guards"
+    );
+    private static final Set<String> FORCE_TICKED_FIFTEEN_CUBE_FIXTURES = Set.of(
+        "imp_ranged_lane_windup_and_retreat_are_bounded"
+    );
+    private static final Set<String> RELEASE_1_5_1_FIXTURES = Set.of(
+        "vampire_blood_replaces_hunger_and_regenerates",
+        "vampire_sunlight_ignores_fire_resistance",
+        "werewolf_prey_drive_hunts_valid_prey",
+        "werewolf_prey_drive_releases_invalid_target"
     );
     private static final Pattern REGISTRATION = Pattern.compile(
         "REGISTRY\\.register\\(\\\"([^\\\"]+)\\\",\\s*\\(\\)\\s*->\\s*([A-Za-z0-9_]+)::([A-Za-z0-9_]+)\\);"
@@ -447,23 +480,90 @@ final class GameTestInstanceContractTest {
         registrations.forEach(this::assertFixtureAndMethod);
     }
 
+    @Test
+    void genericFixturesUseTheOwnedThirtyTwoCubeTemplate() {
+        assertTrue(Files.exists(ISOLATION_TEMPLATE), "missing owned isolation template");
+        final CompoundTag template = readCompressed(ISOLATION_TEMPLATE);
+        final var size = template.getListOrEmpty("size");
+        assertEquals(32, size.getIntOr(0, 0), "isolation template width");
+        assertEquals(32, size.getIntOr(1, 0), "isolation template height");
+        assertEquals(32, size.getIntOr(2, 0), "isolation template depth");
+        assertTrue(template.getListOrEmpty("blocks").isEmpty(), "isolation template must be empty");
+        assertTrue(template.getListOrEmpty("entities").isEmpty(), "isolation template must be entity-free");
+
+        final Set<String> bespokeFixtures = bespokeFixtures();
+        final Set<String> fixtureIds = fixtureIds();
+        assertEquals(26, bespokeFixtures.size(), "bespoke fixtures must retain their dedicated templates");
+        assertTrue(fixtureIds.containsAll(RELEASE_1_5_1_FIXTURES), "missing 1.5.1 fixtures");
+
+        final Set<String> ownedGenericFixtures = new LinkedHashSet<>(fixtureIds);
+        ownedGenericFixtures.removeAll(bespokeFixtures);
+        ownedGenericFixtures.removeAll(RELEASE_1_5_1_FIXTURES);
+        assertEquals(338, ownedGenericFixtures.size(), "owned generic fixture count");
+        assertTrue(ownedGenericFixtures.containsAll(GEOMETRY_SENSITIVE_THREE_CUBE_FIXTURES),
+            "approved three-cube fixture missing");
+        assertEquals(9, GEOMETRY_SENSITIVE_THREE_CUBE_FIXTURES.size(), "three-cube allowlist size");
+        assertEquals(1, FORCE_TICKED_FIFTEEN_CUBE_FIXTURES.size(), "force-ticked 15-cube allowlist size");
+
+        final long ownedThirtyTwoCubeCount = ownedGenericFixtures.stream()
+            .filter(fixtureId -> GENERIC_STRUCTURE.equals(readFixture(fixtureId).get("structure").getAsString()))
+            .count();
+        final long ownedThreeCubeCount = ownedGenericFixtures.stream()
+            .filter(fixtureId -> RETIRED_GENERIC_STRUCTURE.equals(readFixture(fixtureId).get("structure").getAsString()))
+            .count();
+        final long ownedFifteenCubeCount = ownedGenericFixtures.stream()
+            .filter(fixtureId -> "forge:empty15x15x15".equals(readFixture(fixtureId).get("structure").getAsString()))
+            .count();
+        assertEquals(328, ownedThirtyTwoCubeCount, "owned 32-cube generic fixture count");
+        assertEquals(9, ownedThreeCubeCount, "owned three-cube generic fixture count");
+        assertEquals(1, ownedFifteenCubeCount, "owned force-ticked 15-cube generic fixture count");
+
+        for (final String fixtureId : fixtureIds) {
+            final String structure = readFixture(fixtureId).get("structure").getAsString();
+            if (bespokeFixtures.contains(fixtureId)) {
+                assertEquals("forge:empty15x15x15", structure, fixtureId);
+            } else if (GEOMETRY_SENSITIVE_THREE_CUBE_FIXTURES.contains(fixtureId)) {
+                assertEquals(RETIRED_GENERIC_STRUCTURE, structure, fixtureId);
+            } else if (FORCE_TICKED_FIFTEEN_CUBE_FIXTURES.contains(fixtureId)) {
+                assertEquals("forge:empty15x15x15", structure, fixtureId);
+            } else {
+                assertEquals(GENERIC_STRUCTURE, structure, fixtureId);
+            }
+        }
+    }
+
+    @Test
+    void heightmapSensitiveSpawnsUseScopedFixtureSettings() {
+        final JsonObject goblinRaid = readFixture("goblin_raid_wave_is_grouped_and_coordinated");
+        assertTrue(goblinRaid.get("sky_access").getAsBoolean(), "goblin raid needs the fixture roof removed");
+        assertEquals(
+            "warlockery:goblin_raid_isolated",
+            environmentDelegate(goblinRaid),
+            "goblin raid must own its temporary difficulty setting"
+        );
+
+        final JsonObject environment = JsonParser.parseString(
+            read(environment("goblin_raid_isolated"))
+        ).getAsJsonObject();
+        assertEquals("minecraft:difficulty", environment.get("type").getAsString());
+        assertEquals("normal", environment.get("difficulty").getAsString());
+
+        final JsonObject hellOnEarth = readFixture("hell_on_earth_uses_tagged_demons");
+        assertTrue(hellOnEarth.get("sky_access").getAsBoolean(),
+            "Hell on Earth needs the fixture roof removed");
+    }
+
     private void assertFixtureAndMethod(final Registration registration) {
         final JsonObject fixture = readFixture(registration.id());
         assertEquals("minecraft:function", fixture.get("type").getAsString(), registration.id());
         assertEquals("warlockery:" + registration.id(), fixture.get("function").getAsString(), registration.id());
         assertEquals(
             expectedEnvironment(registration.id()),
-            fixture.get("environment").getAsString(),
+            environmentDelegate(fixture),
             registration.id()
         );
         assertEquals(
-            ISOLATED_THORNED_PURSUER.contains(registration.id())
-                || ISOLATED_BRAMBLE_COLOSSUS.contains(registration.id())
-                || ISOLATED_ILLUSION_COPIES.contains(registration.id())
-                || ISOLATED_GLASS_DOPPELGANGER.contains(registration.id())
-                || LARGE_MACHINE_FIXTURES.contains(registration.id())
-                ? "forge:empty15x15x15"
-                : "forge:empty3x3x3",
+            expectedStructure(registration.id()),
             fixture.get("structure").getAsString(),
             registration.id()
         );
@@ -518,12 +618,43 @@ final class GameTestInstanceContractTest {
         return JsonParser.parseString(read(INSTANCES.resolve(id + ".json"))).getAsJsonObject();
     }
 
+    private static Set<String> bespokeFixtures() {
+        final Set<String> fixtures = new LinkedHashSet<>();
+        fixtures.addAll(ISOLATED_THORNED_PURSUER);
+        fixtures.addAll(ISOLATED_BRAMBLE_COLOSSUS);
+        fixtures.addAll(ISOLATED_ILLUSION_COPIES);
+        fixtures.addAll(ISOLATED_GLASS_DOPPELGANGER);
+        fixtures.addAll(LARGE_MACHINE_FIXTURES);
+        return Set.copyOf(fixtures);
+    }
+
     private static String expectedEnvironment(final String fixture) {
         if (CLOCK_ISOLATED.contains(fixture)) {
             return "warlockery:" + fixture;
         }
+        if ("goblin_raid_wave_is_grouped_and_coordinated".equals(fixture)) {
+            return "warlockery:goblin_raid_isolated";
+        }
         final String environment = ISOLATED_ENVIRONMENT_BY_FIXTURE.get(fixture);
         return environment == null ? "minecraft:default" : "warlockery:" + environment;
+    }
+
+    private static String expectedStructure(final String fixture) {
+        if (bespokeFixtures().contains(fixture)) {
+            return "forge:empty15x15x15";
+        }
+        if (FORCE_TICKED_FIFTEEN_CUBE_FIXTURES.contains(fixture)) {
+            return "forge:empty15x15x15";
+        }
+        return GEOMETRY_SENSITIVE_THREE_CUBE_FIXTURES.contains(fixture)
+            ? RETIRED_GENERIC_STRUCTURE
+            : GENERIC_STRUCTURE;
+    }
+
+    private static String environmentDelegate(final JsonObject fixture) {
+        final JsonObject isolated = fixture.getAsJsonObject("environment");
+        assertEquals("warlockery:isolated", isolated.get("type").getAsString());
+        return isolated.get("delegate").getAsString();
     }
 
     private static Path environment(final String id) {
@@ -545,6 +676,14 @@ final class GameTestInstanceContractTest {
     private static String read(final Path path) {
         try {
             return Files.readString(path);
+        } catch (IOException exception) {
+            throw new UncheckedIOException(path.toString(), exception);
+        }
+    }
+
+    private static CompoundTag readCompressed(final Path path) {
+        try {
+            return NbtIo.readCompressed(path, NbtAccounter.unlimitedHeap());
         } catch (IOException exception) {
             throw new UncheckedIOException(path.toString(), exception);
         }

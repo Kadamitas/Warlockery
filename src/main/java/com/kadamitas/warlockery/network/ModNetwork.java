@@ -6,6 +6,7 @@ import com.kadamitas.warlockery.ritual.RitualManager;
 import com.kadamitas.warlockery.ritual.RitualRequirementText;
 import com.kadamitas.warlockery.ritual.RitualSessionData;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
+import com.kadamitas.warlockery.transformation.WerewolfShape;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -39,7 +40,7 @@ public final class ModNetwork {
 
     private static final SimpleChannel CHANNEL = ChannelBuilder
         .named(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "main"))
-        .networkProtocolVersion(6)
+        .networkProtocolVersion(8)
         .simpleChannel()
         .play()
         .clientbound()
@@ -118,9 +119,9 @@ public final class ModNetwork {
         );
     }
 
-    public static void broadcastPlayerWolfVisual(final ServerPlayer player, final boolean wolf) {
+    public static void broadcastPlayerWolfVisual(final ServerPlayer player, final WerewolfShape shape) {
         CHANNEL.send(
-            new PlayerWolfVisualPayload(player.getUUID(), wolf),
+            new PlayerWolfVisualPayload(player.getUUID(), shape),
             PacketDistributor.TRACKING_ENTITY_AND_SELF.with(player)
         );
     }
@@ -128,20 +129,20 @@ public final class ModNetwork {
     public static void sendPlayerWolfVisual(
         final ServerPlayer recipient,
         final ServerPlayer subject,
-        final boolean wolf
+        final WerewolfShape shape
     ) {
         if (recipient.connection == null) {
             return;
         }
         CHANNEL.send(
-            new PlayerWolfVisualPayload(subject.getUUID(), wolf),
+            new PlayerWolfVisualPayload(subject.getUUID(), shape),
             PacketDistributor.PLAYER.with(recipient)
         );
     }
 
     public static void clearPlayerWolfVisual(final ServerPlayer player) {
         CHANNEL.send(
-            new PlayerWolfVisualPayload(player.getUUID(), false),
+            new PlayerWolfVisualPayload(player.getUUID(), WerewolfShape.HUMAN),
             PacketDistributor.TRACKING_ENTITY.with(player)
         );
     }
@@ -398,7 +399,9 @@ public final class ModNetwork {
         int powerCooldownTicks,
         String magicPath,
         int magicResource,
-        int magicMaxResource
+        int magicMaxResource,
+        boolean sanguine,
+        int preyTargetEntityId
     ) {
         public SupernaturalSnapshot(
             final String identity,
@@ -411,7 +414,17 @@ public final class ModNetwork {
             final String questProgress
         ) {
             this(identity, level, resource, maxResource, selectedPower, shape, questTitle, questProgress,
-                -1, 0, "", 0, 0);
+                -1, 0, "", 0, 0, false, -1);
+        }
+
+        public SupernaturalSnapshot(
+            final String identity, final int level, final int resource, final int maxResource,
+            final String selectedPower, final String shape, final String questTitle, final String questProgress,
+            final int selectedPowerCharges, final int powerCooldownTicks, final String magicPath,
+            final int magicResource, final int magicMaxResource
+        ) {
+            this(identity, level, resource, maxResource, selectedPower, shape, questTitle, questProgress,
+                selectedPowerCharges, powerCooldownTicks, magicPath, magicResource, magicMaxResource, false, -1);
         }
 
         public SupernaturalSnapshot {
@@ -428,6 +441,7 @@ public final class ModNetwork {
             magicPath = safe(magicPath);
             magicMaxResource = Math.max(0, magicMaxResource);
             magicResource = Math.clamp(magicResource, 0, magicMaxResource);
+            preyTargetEntityId = Math.max(-1, preyTargetEntityId);
         }
 
         public boolean active() {
@@ -461,18 +475,25 @@ public final class ModNetwork {
             );
     }
 
-    public record PlayerWolfVisualPayload(UUID playerId, boolean wolf) {
+    public record PlayerWolfVisualPayload(UUID playerId, WerewolfShape shape) {
         public static final StreamCodec<RegistryFriendlyByteBuf, PlayerWolfVisualPayload> STREAM_CODEC =
             StreamCodec.of(
                 (output, value) -> {
                     output.writeUUID(value.playerId());
-                    output.writeBoolean(value.wolf());
+                    output.writeVarInt(value.shape().ordinal());
                 },
-                input -> new PlayerWolfVisualPayload(input.readUUID(), input.readBoolean())
+                input -> new PlayerWolfVisualPayload(input.readUUID(), shapeAt(input.readVarInt()))
             );
 
         public PlayerWolfVisualPayload {
             Objects.requireNonNull(playerId, "playerId");
+            Objects.requireNonNull(shape, "shape");
+        }
+
+        private static WerewolfShape shapeAt(final int ordinal) {
+            return ordinal >= 0 && ordinal < WerewolfShape.values().length
+                ? WerewolfShape.values()[ordinal]
+                : WerewolfShape.HUMAN;
         }
     }
 
@@ -533,6 +554,8 @@ public final class ModNetwork {
             input.readVarInt(),
             input.readUtf(MAX_STRING),
             input.readVarInt(),
+            input.readVarInt(),
+            input.readBoolean(),
             input.readVarInt()
         );
     }
@@ -554,5 +577,7 @@ public final class ModNetwork {
         output.writeUtf(snapshot.magicPath(), MAX_STRING);
         output.writeVarInt(snapshot.magicResource());
         output.writeVarInt(snapshot.magicMaxResource());
+        output.writeBoolean(snapshot.sanguine());
+        output.writeVarInt(snapshot.preyTargetEntityId());
     }
 }

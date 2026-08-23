@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:poltergeist_reload_does_not_replay_and_families_stay_isolated",
-  "environment": "warlockery:poltergeist_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "poltergeist_reload_does_not_replay_and_families_stay_isolated",
+    "delegate": "warlockery:poltergeist_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

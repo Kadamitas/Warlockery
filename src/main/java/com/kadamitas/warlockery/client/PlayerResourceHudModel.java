@@ -16,16 +16,7 @@ public final class PlayerResourceHudModel {
         final boolean focusHeld
     ) {
         final List<Meter> meters = new ArrayList<>(2);
-        if (isIdentity(snapshot, "vampire")) {
-            meters.add(new Meter(
-                Kind.BLOOD,
-                snapshot.resource(),
-                snapshot.maxResource(),
-                snapshot.selectedPower(),
-                snapshot.selectedPowerCharges(),
-                snapshot.powerCooldownTicks()
-            ));
-        } else if (isIdentity(snapshot, "werewolf")) {
+        if (isIdentity(snapshot, "werewolf")) {
             meters.add(new Meter(
                 Kind.FEROCITY,
                 snapshot.resource(),

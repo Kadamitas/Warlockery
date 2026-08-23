@@ -1,7 +1,6 @@
 {
-    "parent":  "minecraft:block/cross",
-    "render_type":  "minecraft:cutout",
+    "parent":  "warlockery:block/template/plant_rosette",
     "textures":  {
-                     "cross":  "warlockery:block/embermoss"
+                     "plant":  "warlockery:block/embermoss"
                  }
 }

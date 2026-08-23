@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:broom_mount_moves_forward_and_keeps_its_rider",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "broom_mount_moves_forward_and_keeps_its_rider",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

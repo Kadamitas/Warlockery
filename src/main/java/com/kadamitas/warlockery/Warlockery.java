@@ -9,6 +9,7 @@ import com.kadamitas.warlockery.registry.ModMenus;
 import com.kadamitas.warlockery.registry.ModVillagers;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModGameTests;
+import com.kadamitas.warlockery.registry.ModGameTestEnvironments;
 import com.kadamitas.warlockery.registry.ModSounds;
 import com.kadamitas.warlockery.registry.ModFluids;
 import com.kadamitas.warlockery.registry.ModEffects;
@@ -92,6 +93,7 @@ public final class Warlockery {
         ModBlockEntities.REGISTRY.register(modBus);
         ModChunkTickets.REGISTRY.register(modBus);
         ModCreativeTabs.REGISTRY.register(modBus);
+        ModGameTestEnvironments.REGISTRY.register(modBus);
         ModGameTests.REGISTRY.register(modBus);
         EntityAttributeCreationEvent.BUS.addListener(ModEntities::registerAttributes);
         SpawnPlacementRegisterEvent.BUS.addListener(ModEntities::registerSpawnPlacements);

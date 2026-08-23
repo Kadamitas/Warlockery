@@ -299,7 +299,7 @@ public final class LycanVillagerRuntime {
 
     private static Budget budget(final ServerLevel level, final long tick) {
         final Budget value = BUDGETS.computeIfAbsent(level, ignored -> new Budget());
-        if (value.tick != tick) value.begin(tick);
+        if (value.tick != tick) value.begin(level, tick);
         return value;
     }
 
@@ -311,14 +311,16 @@ public final class LycanVillagerRuntime {
         final java.util.Map<UUID, Long> lastAsked = new java.util.HashMap<>();
         UUID observationCursor;
         UUID pathCursor;
-        void begin(final long now) {
+        void begin(final ServerLevel level, final long now) {
             tick = now;
             // Drop bodies that stopped asking. The rotation is level wide and only four bodies
             // observe per tick, so every stale entry is a slot spent on nobody while a living
             // lycan waits its turn. Nothing removed a dead lycan before this: the set only shed
             // entries once it passed sixty four, and it shed them in UUID order, which could
             // evict a living body and keep a corpse.
-            lastAsked.entrySet().removeIf(entry -> now - entry.getValue() > IDLE_EVICTION_TICKS);
+            lastAsked.entrySet().removeIf(entry -> now - entry.getValue() > IDLE_EVICTION_TICKS
+                || !(level.getEntity(entry.getKey()) instanceof LycanVillagerEntity living)
+                || !living.isAlive());
             known.retainAll(lastAsked.keySet());
             observationCursor = select(known, observationCursor, LEVEL_OBSERVATIONS_PER_TICK, observationWinners);
             pathCursor = select(known, pathCursor, LEVEL_PATHS_PER_TICK, pathWinners);

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "description": "Compact, luminance-ordered entity palettes for the readable roster pass.",
+  "entries": [
+    { "id": "demon", "theme": "infernal ember", "palette": ["#140D10", "#3A1718", "#7A2A20", "#C84A28", "#FF8A2C", "#FFD06A"] },
+    { "id": "emberhorn_archfiend", "theme": "charcoal and lava", "palette": ["#100C0E", "#2A1217", "#631D20", "#B13226", "#F15A24", "#FFB33E", "#FFE09A"] },
+    { "id": "abyssal_regent", "theme": "abyssal violet ember", "palette": ["#0A0B16", "#1F1834", "#3F285E", "#6F3A82", "#A34C7A", "#E06556", "#FF9B43", "#FFD36B"] },
+    { "id": "ironbound_sentinel", "theme": "iron and old verdigris", "palette": ["#101417", "#252C30", "#414B4F", "#647275", "#879493", "#A8B5AF"] },
+    { "id": "umbral_sigil", "theme": "void violet", "palette": ["#080B12", "#141A28", "#272640", "#3C3760", "#56527D", "#6D8A9D", "#8BCBD1"] },
+    { "id": "eldritch_watcher", "theme": "deep teal and baleful gold", "palette": ["#071014", "#12242A", "#23424A", "#37666A", "#759083", "#D69A44", "#FFD778"] },
+
+    { "id": "ent", "theme": "mossed bark", "palette": ["#17130F", "#33251A", "#54402B", "#70583A", "#7E7242", "#9A945C", "#C5BD7B"] },
+    { "id": "bramble_colossus", "theme": "thornwood and lichen", "palette": ["#11140E", "#252719", "#3A3B22", "#51502C", "#68653B", "#858156", "#A59C6C"] },
+    { "id": "thorned_pursuer", "theme": "blackthorn and ruddy wood", "palette": ["#100D0D", "#251515", "#3E2220", "#5C3029", "#7B4438", "#A65F48", "#D68A67"] },
+
+    { "id": "spectral_familiar", "theme": "moonlit cyan", "palette": ["#0D1720", "#19303C", "#285363", "#397888", "#61A3AD", "#9AD5D6", "#DDF4EC"] },
+    { "id": "poltergeist", "theme": "ectoplasmic green", "palette": ["#0B1811", "#173522", "#235B34", "#378447", "#5DAA5D", "#8CD67B", "#C9F5A6"] },
+    { "id": "spectre", "theme": "bruised violet", "palette": ["#0C0D18", "#1C1B31", "#302A4D", "#4A3F6B", "#6A5B89", "#9185AF", "#C8BFE0"] },
+    { "id": "spirit", "theme": "sea glass and ivory", "palette": ["#14232A", "#24515A", "#3A7D80", "#62A9A1", "#A3C9AF", "#E7DDC2", "#FFF1D0"] },
+    { "id": "lost_soul", "theme": "cold dusk", "palette": ["#151925", "#2A3042", "#424A62", "#626B83", "#858EA3", "#ADB5C2", "#D8DCE2"] },
+    { "id": "echo_shade", "theme": "deep echo teal", "palette": ["#080E15", "#121F2B", "#203445", "#315064", "#487287", "#6A99A5", "#9CC9C8"] },
+
+    { "id": "mandrake", "theme": "root and bitter leaf", "palette": ["#20170F", "#3B2917", "#5A4021", "#78602F", "#7F8140", "#A5A45A", "#D0C878"] },
+    { "id": "dreamroot", "theme": "oneiric indigo", "palette": ["#111426", "#252347", "#3D3768", "#5C538A", "#7C76AA", "#A7A0C7", "#D9D0E5"] },
+
+    { "id": "feral_lycan", "theme": "weathered brown fur", "palette": ["#12100F", "#2A2421", "#423936", "#5E504B", "#796A62", "#9A8B80", "#C2B3A4"] },
+    { "id": "hellhound", "theme": "coal and ember", "palette": ["#0D0B0C", "#211317", "#3D1C20", "#612622", "#913423", "#CF4C24", "#FF7A2C"] },
+    { "id": "pale_steed", "theme": "bone and cold ash", "palette": ["#15191B", "#2C3335", "#485154", "#687375", "#8D9897", "#B7C1BC", "#E3E7DB"] },
+    { "id": "nightmare", "theme": "midnight violet", "palette": ["#090B14", "#14192A", "#222944", "#34375F", "#4A4C78", "#67678F", "#8C89A8"] },
+
+    { "id": "imp", "theme": "soot and infernal red", "palette": ["#100D10", "#2B161C", "#55252B", "#873431", "#BC4830", "#EE6A32", "#FFAA4B"] },
+    { "id": "hex_bat", "theme": "occult violet", "palette": ["#0C0B14", "#20182E", "#392449", "#553565", "#744B82", "#9C6AA3", "#CE9CC8"] },
+    { "id": "parasytic_louse", "theme": "sickly chitin", "palette": ["#11130D", "#252817", "#3C4424", "#596032", "#747C43", "#98A15B", "#C1C77B"] },
+
+    { "id": "circle_mage", "theme": "coven indigo and teal", "palette": ["#0D111C", "#1C2638", "#2C3E55", "#3F5B70", "#597C88", "#7FA3A5", "#B6CFCA"] },
+    { "id": "corpse", "theme": "grave rot", "palette": ["#12130F", "#292A1D", "#41422A", "#5B5B38", "#747348", "#94915E", "#BBB477"] },
+    { "id": "werewolf_hunter", "theme": "silver and worn leather", "palette": ["#111317", "#282B30", "#42474D", "#62686D", "#858A8D", "#ADB0AD", "#D8D5C9"] },
+    { "id": "lycan_villager", "theme": "village wool and brown fur", "palette": ["#171412", "#312822", "#4B3B31", "#675144", "#806A59", "#A08B77", "#C5B4A0"] },
+
+    { "id": "illusion_creeper", "theme": "false moss", "palette": ["#0A1412", "#17302A", "#285046", "#3C7462", "#5A987C", "#83BC98", "#B5DDBA"] },
+    { "id": "illusion_spider", "theme": "false teal and violet", "palette": ["#0B0D14", "#1C1B2B", "#2E2B45", "#3E4661", "#4E6B78", "#67949A", "#91C3BA"] },
+    { "id": "illusion_zombie", "theme": "bruised false green", "palette": ["#10140F", "#252B1E", "#3D432C", "#585C3C", "#73754F", "#95936A", "#B9B48A"] }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "artifact": "docs/art-source/creature-concepts/production/wave-03c-winged-companion-turnarounds.png",
+  "createdOn": "2026-08-21",
+  "dimensions": {
+    "width": 1536,
+    "height": 1024
+  },
+  "intendedAtlasSizes": {
+    "imp": "128x128",
+    "storm_simian": "128x128",
+    "hex_bat": "128x128",
+    "owl": "128x128"
+  },
+  "creatures": [
+    "imp",
+    "storm_simian",
+    "hex_bat",
+    "owl"
+  ]
+}

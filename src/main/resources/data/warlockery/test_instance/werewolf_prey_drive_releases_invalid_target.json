@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:werewolf_prey_drive_releases_invalid_target",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "werewolf_prey_drive_releases_invalid_target",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 260
+}

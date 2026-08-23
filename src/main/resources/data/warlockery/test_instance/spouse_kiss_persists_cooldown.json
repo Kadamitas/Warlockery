@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:spouse_kiss_persists_cooldown",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "spouse_kiss_persists_cooldown",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

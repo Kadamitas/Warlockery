@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:ritual_lapsed_cast_names_its_failed_requirement",
-  "environment": "minecraft:default",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "ritual_lapsed_cast_names_its_failed_requirement",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

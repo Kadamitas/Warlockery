@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:demon_truce_morale_retreat_and_return_are_bounded",
-  "environment": "warlockery:infernal_hierarchy_isolated",
-  "structure": "forge:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "demon_truce_morale_retreat_and_return_are_bounded",
+    "delegate": "warlockery:infernal_hierarchy_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

@@ -4,6 +4,9 @@ import java.util.EnumSet;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -55,6 +58,8 @@ import org.jspecify.annotations.Nullable;
  */
 public final class UmbralSigilEntity extends Monster implements ArcaneCreature {
     static final String STATE_KEY = "WarlockeryUmbralSigil";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(UmbralSigilEntity.class, EntityDataSerializers.BYTE);
 
     private final UmbralSigilRuntime.Counters counters = new UmbralSigilRuntime.Counters();
     private final UmbralSigilRuntime.TransientState scratch =
@@ -70,6 +75,13 @@ public final class UmbralSigilEntity extends Monster implements ArcaneCreature {
     }
 
     @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_PHASE,
+            EntityPresentationSync.encode(UmbralSigilRules.Phase.DORMANT));
+    }
+
+    @Override
     public CreatureKind creatureKind() {
         return CreatureKind.UMBRAL_SIGIL;
     }
@@ -80,6 +92,19 @@ public final class UmbralSigilEntity extends Monster implements ArcaneCreature {
 
     public void setSigilState(final UmbralSigilState updated) {
         state = updated == null ? UmbralSigilState.empty() : updated;
+        syncPresentationFromRuntime();
+    }
+
+    public UmbralSigilRules.Phase presentationPhase() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE),
+            UmbralSigilRules.Phase.DORMANT);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte phase = EntityPresentationSync.encode(state.phase());
+        if (entityData.get(DATA_PRESENTATION_PHASE) != phase) {
+            entityData.set(DATA_PRESENTATION_PHASE, phase);
+        }
     }
 
     public UmbralSigilRuntime.Counters sigilCounters() {
@@ -134,6 +159,7 @@ public final class UmbralSigilEntity extends Monster implements ArcaneCreature {
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         UmbralSigilRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     /**
@@ -238,5 +264,6 @@ public final class UmbralSigilEntity extends Monster implements ArcaneCreature {
         striking = false;
         normalizeEquipment();
         setNoGravity(true);
+        syncPresentationFromRuntime();
     }
 }

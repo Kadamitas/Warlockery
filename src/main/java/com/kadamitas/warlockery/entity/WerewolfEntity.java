@@ -2,9 +2,13 @@ package com.kadamitas.warlockery.entity;
 
 import com.kadamitas.warlockery.entity.LycanPackRules.Variant;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
@@ -25,6 +29,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerData;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -35,6 +40,18 @@ import org.jspecify.annotations.Nullable;
 
 public class WerewolfEntity extends ArcaneMob {
     private static final String STATE_KEY = "WarlockeryLycanPack";
+    private static final String TRANSFORMED_VILLAGER_DATA_KEY =
+        "WarlockeryTransformedVillagerAppearance";
+    private static final EntityDataAccessor<Boolean> DATA_TRANSFORMED_VILLAGER =
+        SynchedEntityData.defineId(WerewolfEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<VillagerData> DATA_TRANSFORMED_VILLAGER_APPEARANCE =
+        SynchedEntityData.defineId(WerewolfEntity.class, EntityDataSerializers.VILLAGER_DATA);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_HUNGER =
+        SynchedEntityData.defineId(WerewolfEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_FEAR =
+        SynchedEntityData.defineId(WerewolfEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_ACTION =
+        SynchedEntityData.defineId(WerewolfEntity.class, EntityDataSerializers.BYTE);
     private static final Identifier ZOMBIE_RANDOM_SPAWN_BONUS =
         Identifier.withDefaultNamespace("zombie_random_spawn_bonus");
     private static final Identifier LEADER_ZOMBIE_BONUS =
@@ -50,6 +67,17 @@ public class WerewolfEntity extends ArcaneMob {
         super(type, level, CreatureKind.WEREWOLF);
         packState = LycanPackState.empty(variant(), level.getGameTime());
         normalizeLifecycle();
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_TRANSFORMED_VILLAGER, false);
+        entityData.define(DATA_TRANSFORMED_VILLAGER_APPEARANCE, Villager.createDefaultVillagerData());
+        entityData.define(DATA_PRESENTATION_HUNGER, LycanPackRules.defaultHunger(variant()));
+        entityData.define(DATA_PRESENTATION_FEAR, LycanPackRules.DEFAULT_FEAR);
+        entityData.define(DATA_PRESENTATION_ACTION,
+            EntityPresentationSync.encode(LycanPackRules.ActionKind.NONE));
     }
 
     public Variant variant() {
@@ -127,6 +155,7 @@ public class WerewolfEntity extends ArcaneMob {
     @Override
     protected void tickSpecializedActivity(final ServerLevel level) {
         LycanPackRuntime.tick(this, level);
+        syncPresentationFromRuntime();
         AmbientActivityRuntime.tick(this, level, CreatureKind.WEREWOLF);
     }
 
@@ -137,10 +166,52 @@ public class WerewolfEntity extends ArcaneMob {
     public void setPackState(final LycanPackState state) {
         packState = state == null || state.variant() != variant()
             ? LycanPackState.empty(variant(), level().getGameTime()) : state;
+        syncPresentationFromRuntime();
+    }
+
+    public int presentationHunger() {
+        return entityData.get(DATA_PRESENTATION_HUNGER);
+    }
+
+    public int presentationFear() {
+        return entityData.get(DATA_PRESENTATION_FEAR);
+    }
+
+    public LycanPackRules.ActionKind presentationAction() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_ACTION),
+            LycanPackRules.ActionKind.NONE);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final int hunger = packState.needs().hunger();
+        final int fear = packState.needs().fear();
+        final byte action = EntityPresentationSync.encode(packState.action().kind());
+        if (entityData.get(DATA_PRESENTATION_HUNGER) != hunger) entityData.set(DATA_PRESENTATION_HUNGER, hunger);
+        if (entityData.get(DATA_PRESENTATION_FEAR) != fear) entityData.set(DATA_PRESENTATION_FEAR, fear);
+        if (entityData.get(DATA_PRESENTATION_ACTION) != action) entityData.set(DATA_PRESENTATION_ACTION, action);
     }
 
     public LycanPackRuntime.Counters packCounters() {
         return packCounters;
+    }
+
+    /**
+     * The synchronized villager appearance is visual state only. It lets a temporary full-moon
+     * body keep the originating villager's biome, profession and badge layers without changing
+     * the werewolf combat/runtime contract.
+     */
+    public Optional<VillagerData> transformedVillagerData() {
+        return entityData.get(DATA_TRANSFORMED_VILLAGER)
+            ? Optional.of(entityData.get(DATA_TRANSFORMED_VILLAGER_APPEARANCE))
+            : Optional.empty();
+    }
+
+    public void setTransformedVillagerData(final @Nullable VillagerData data) {
+        entityData.set(DATA_TRANSFORMED_VILLAGER, data != null);
+        entityData.set(
+            DATA_TRANSFORMED_VILLAGER_APPEARANCE,
+            data == null ? Villager.createDefaultVillagerData() : data
+        );
     }
 
     public @Nullable UUID transientAttackerId(final long now) {
@@ -250,6 +321,9 @@ public class WerewolfEntity extends ArcaneMob {
     protected void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.store(STATE_KEY, CompoundTag.CODEC, packState.write());
+        transformedVillagerData().ifPresent(data ->
+            output.store(TRANSFORMED_VILLAGER_DATA_KEY, VillagerData.CODEC, data)
+        );
     }
 
     @Override
@@ -258,9 +332,13 @@ public class WerewolfEntity extends ArcaneMob {
         packState = input.read(STATE_KEY, CompoundTag.CODEC)
             .map(tag -> LycanPackState.read(tag, variant(), level().getGameTime()))
             .orElse(LycanPackState.empty(variant(), level().getGameTime()));
+        setTransformedVillagerData(null);
+        input.read(TRANSFORMED_VILLAGER_DATA_KEY, VillagerData.CODEC)
+            .ifPresent(this::setTransformedVillagerData);
         transientCarrionId = null;
         transientAttackerId = null;
         transientAttackerUntil = 0L;
         normalizeLifecycle();
+        syncPresentationFromRuntime();
     }
 }

@@ -272,7 +272,7 @@ final class UmbralSigilRulesTest {
         final CreatureVisualProfile visual =
             CreatureVisualProfile.forKind(CreatureKind.UMBRAL_SIGIL);
         assertEquals(0.7F, visual.width());
-        assertEquals(0.7F, visual.height());
+        assertEquals(1.44F, visual.height());
         assertEquals(CreatureVisualProfile.Archetype.SPIRIT, visual.archetype());
     }
 
