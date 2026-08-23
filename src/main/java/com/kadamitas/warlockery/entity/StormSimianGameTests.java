@@ -315,7 +315,9 @@ public final class StormSimianGameTests {
         try {
             fixture.captureWeather();
             fixture.placeBlock(new BlockPos(2, 0, 2), Blocks.STONE);
-            fixture.placeBlock(new BlockPos(2, 1, 2), Blocks.LIGHTNING_ROD.weathering().unaffected());
+            // Waxing removes vanilla random-tick oxidation from a fixture whose contract is that
+            // the Simian itself never mutates or energizes the rod.
+            fixture.placeBlock(new BlockPos(2, 1, 2), Blocks.LIGHTNING_ROD.waxed().unaffected());
             final BlockState rodBefore = helper.getBlockState(new BlockPos(2, 1, 2));
             fixture.setStorm();
             final StormSimianEntity simian = spawnSimian(fixture, new BlockPos(0, 1, 0));
@@ -373,6 +375,8 @@ public final class StormSimianGameTests {
     public static void stormSimianCuriosityDoesNotMoveOrTakeItems(final GameTestHelper helper) {
         final FixtureScope fixture = new FixtureScope(helper);
         try {
+            fixture.captureWeather();
+            fixture.setClear();
             final StormSimianEntity simian = spawnSimian(fixture, new BlockPos(0, 1, 0));
             simian.setStormSimianState(simian.stormSimianState()
                 .withGrip(helper.absolutePos(new BlockPos(0, 1, 0))));
@@ -428,6 +432,8 @@ public final class StormSimianGameTests {
     public static void stormSimianChargedGustConsumesOnce(final GameTestHelper helper) {
         final FixtureScope fixture = new FixtureScope(helper);
         try {
+            fixture.captureWeather();
+            fixture.setClear();
             final StormSimianEntity simian = spawnSimian(fixture, new BlockPos(0, 1, 0));
             simian.setStormSimianState(
                 simian.stormSimianState().withCharge(StormSimianRules.MAX_CHARGE));
@@ -451,8 +457,12 @@ public final class StormSimianGameTests {
                         "a hundred charge can pay for at most two charged gusts; charged="
                             + counters.chargedGusts());
                     helper.assertValueEqual(simian.stormSimianState().charge(),
-                        StormSimianRules.MAX_CHARGE - (int) counters.chargeSpent(),
-                        "the persisted charge is exactly what was not spent");
+                        StormSimianRules.MAX_CHARGE
+                            - (int) counters.chargeSpent()
+                            - StormSimianRules.CLEAR_CHARGE_DECAY
+                                * (int) counters.observationsCompleted(),
+                        "the persisted charge accounts separately for gust spending and legal "
+                            + "clear-weather observation decay");
                     helper.assertTrue(simian.stormSimianState().charge()
                             < StormSimianRules.CHARGED_GUST_COST
                         || counters.plainGusts() == 0L,
@@ -808,6 +818,15 @@ public final class StormSimianGameTests {
             weather.setThundering(true);
             weather.setRainTime(12_000);
             weather.setThunderTime(12_000);
+        }
+
+        private void setClear() {
+            final var weather = helper.getLevel().getWeatherData();
+            weather.setClearWeatherTime(12_000);
+            weather.setRaining(false);
+            weather.setThundering(false);
+            weather.setRainTime(0);
+            weather.setThunderTime(0);
         }
 
         private ServerPlayer connectedPlayer(final BlockPos position, final GameType gameType) {

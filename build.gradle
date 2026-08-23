@@ -61,6 +61,7 @@ abstract class ReleaseBundleTask extends DefaultTask {
 abstract class GenerateEmptyGameTestStructure extends DefaultTask {
     @Input abstract Property<Integer> getStructureSize()
     @Input abstract Property<Integer> getDataVersion()
+    @Input abstract Property<Boolean> getSparse()
     @OutputFile abstract RegularFileProperty getOutputFile()
     @TaskAction void generate() {
         def output = outputFile.get().asFile.toPath()
@@ -69,13 +70,17 @@ abstract class GenerateEmptyGameTestStructure extends DefaultTask {
             int size = structureSize.get(); data.writeByte(10); data.writeUTF('')
             GenerateEmptyGameTestStructure.writeIntList(data, 'size', size, size, size)
             GenerateEmptyGameTestStructure.writeCompoundList(data, 'entities', 0)
-            GenerateEmptyGameTestStructure.writeCompoundList(data, 'blocks', size * size * size)
-            for (int y=0;y<size;y++) for (int x=0;x<size;x++) for (int z=0;z<size;z++) {
-                GenerateEmptyGameTestStructure.writeIntList(data, 'pos', x, y, z)
-                data.writeByte(3); data.writeUTF('state'); data.writeInt(0); data.writeByte(0)
+            GenerateEmptyGameTestStructure.writeCompoundList(data, 'blocks', sparse.get() ? 0 : size * size * size)
+            if (!sparse.get()) {
+                for (int y=0;y<size;y++) for (int x=0;x<size;x++) for (int z=0;z<size;z++) {
+                    GenerateEmptyGameTestStructure.writeIntList(data, 'pos', x, y, z)
+                    data.writeByte(3); data.writeUTF('state'); data.writeInt(0); data.writeByte(0)
+                }
             }
-            GenerateEmptyGameTestStructure.writeCompoundList(data, 'palette', 1)
-            data.writeByte(8); data.writeUTF('Name'); data.writeUTF('minecraft:air'); data.writeByte(0)
+            GenerateEmptyGameTestStructure.writeCompoundList(data, 'palette', sparse.get() ? 0 : 1)
+            if (!sparse.get()) {
+                data.writeByte(8); data.writeUTF('Name'); data.writeUTF('minecraft:air'); data.writeByte(0)
+            }
             data.writeByte(3); data.writeUTF('DataVersion'); data.writeInt(dataVersion.get()); data.writeByte(0)
         }
     }
@@ -99,12 +104,16 @@ java {
 
 def generatedGameTestResources = layout.buildDirectory.dir('generated/gameTestResources')
 def generateEmptyGameTestStructure = tasks.register('generateEmptyGameTestStructure', GenerateEmptyGameTestStructure) {
-    structureSize.set(3); dataVersion.set(4_903)
+    structureSize.set(3); dataVersion.set(4_903); sparse.set(false)
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty3x3x3.nbt') })
 }
 def generateLargeGameTestStructure = tasks.register('generateLargeGameTestStructure', GenerateEmptyGameTestStructure) {
-    structureSize.set(15); dataVersion.set(4_903)
+    structureSize.set(15); dataVersion.set(4_903); sparse.set(false)
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty15x15x15.nbt') })
+}
+def generateIsolationGameTestStructure = tasks.register('generateIsolationGameTestStructure', GenerateEmptyGameTestStructure) {
+    structureSize.set(32); dataVersion.set(4_903); sparse.set(true)
+    outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty32x32x32.nbt') })
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources'; srcDir generatedGameTestResources }
@@ -146,6 +155,7 @@ dependencies {
 tasks.named('processResources', ProcessResources) {
     dependsOn generateEmptyGameTestStructure
     dependsOn generateLargeGameTestStructure
+    dependsOn generateIsolationGameTestStructure
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
@@ -155,6 +165,7 @@ tasks.named('processResources', ProcessResources) {
 tasks.named('sourcesJar') {
     dependsOn generateEmptyGameTestStructure
     dependsOn generateLargeGameTestStructure
+    dependsOn generateIsolationGameTestStructure
 }
 
 tasks.named('test', Test) {

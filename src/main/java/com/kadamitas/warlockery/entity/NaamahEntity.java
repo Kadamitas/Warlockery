@@ -7,6 +7,9 @@ import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerBossEvent;
@@ -41,6 +44,12 @@ import org.jspecify.annotations.Nullable;
 public final class NaamahEntity extends ArcaneMob {
     private static final Identifier ZOMBIE_RANDOM_SPAWN_BONUS = Identifier.withDefaultNamespace("zombie_random_spawn_bonus");
     private static final Identifier LEADER_ZOMBIE_BONUS = Identifier.withDefaultNamespace("leader_zombie_bonus");
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_ACTION =
+        SynchedEntityData.defineId(NaamahEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(NaamahEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Boolean> DATA_PRESENTATION_GAZE_MENDING =
+        SynchedEntityData.defineId(NaamahEntity.class, EntityDataSerializers.BOOLEAN);
     private final ServerBossEvent courtBossEvent;
     private final NaamahCourtRuntime.Counters courtCounters = new NaamahCourtRuntime.Counters();
     private NaamahCourtState courtState = NaamahCourtState.empty();
@@ -56,6 +65,16 @@ public final class NaamahEntity extends ArcaneMob {
             BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS
         );
         normalizeLifecycle();
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_ACTION,
+            EntityPresentationSync.encode(NaamahCourtRules.Action.NONE));
+        builder.define(DATA_PRESENTATION_PHASE,
+            EntityPresentationSync.encode(NaamahCourtRules.Phase.ENTHRONED));
+        builder.define(DATA_PRESENTATION_GAZE_MENDING, false);
     }
 
     @Override
@@ -118,6 +137,7 @@ public final class NaamahEntity extends ArcaneMob {
     @Override
     protected void tickSpecializedActivity(final ServerLevel level) {
         NaamahCourtRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     public NaamahCourtState courtState() {
@@ -126,6 +146,38 @@ public final class NaamahEntity extends ArcaneMob {
 
     public void setCourtState(final NaamahCourtState state) {
         courtState = state == null ? NaamahCourtState.empty() : state;
+        syncPresentationFromRuntime();
+    }
+
+    public NaamahCourtRules.Action presentationAction() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_ACTION),
+            NaamahCourtRules.Action.NONE);
+    }
+
+    public NaamahCourtRules.Phase presentationPhase() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE),
+            NaamahCourtRules.Phase.ENTHRONED);
+    }
+
+    public boolean presentationGazeMending() {
+        return entityData.get(DATA_PRESENTATION_GAZE_MENDING);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte action = EntityPresentationSync.encode(courtState.action());
+        final byte phase = EntityPresentationSync.encode(courtState.phase());
+        final boolean gazeMending = getTarget() != null
+            && getHealth() < getMaxHealth()
+            && level().getGameTime() >= regenerationSuppressedUntil;
+        if (entityData.get(DATA_PRESENTATION_ACTION) != action) {
+            entityData.set(DATA_PRESENTATION_ACTION, action);
+        }
+        if (entityData.get(DATA_PRESENTATION_PHASE) != phase) {
+            entityData.set(DATA_PRESENTATION_PHASE, phase);
+        }
+        if (entityData.get(DATA_PRESENTATION_GAZE_MENDING) != gazeMending) {
+            entityData.set(DATA_PRESENTATION_GAZE_MENDING, gazeMending);
+        }
     }
 
     public long regenerationSuppressedUntil() {
@@ -134,6 +186,7 @@ public final class NaamahEntity extends ArcaneMob {
 
     public void suppressRegenerationUntil(final long tick) {
         regenerationSuppressedUntil = Math.max(regenerationSuppressedUntil, tick);
+        syncPresentationFromRuntime();
     }
 
     public long nextRegenerationAt() {
@@ -280,5 +333,6 @@ public final class NaamahEntity extends ArcaneMob {
         regenerationSuppressedUntil = input.getLongOr("WarlockeryNaamahRegenSuppressedUntil", 0L);
         nextRegenerationAt = input.getLongOr("WarlockeryNaamahNextRegenerationAt", 0L);
         normalizeLifecycle();
+        syncPresentationFromRuntime();
     }
 }

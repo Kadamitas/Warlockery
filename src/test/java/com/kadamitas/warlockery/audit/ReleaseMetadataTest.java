@@ -17,7 +17,7 @@ final class ReleaseMetadataTest {
     @Test
     void stableVersionMatchesUpdateFeedAndChangelog() throws IOException {
         final String version = property("mod_version");
-        assertEquals("1.5.0", version);
+        assertEquals("1.5.1", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
@@ -89,6 +89,22 @@ final class ReleaseMetadataTest {
         final String wrapper = read("gradle/wrapper/gradle-wrapper.properties");
         assertTrue(wrapper.contains("gradle-9.5.1-bin.zip"));
         assertTrue(wrapper.contains("distributionSha256Sum=bafc141b619ad6350fd975fc903156dd5c151998cc8b058e8c1044ab5f7b031f"));
+    }
+
+    @Test
+    void curseForgeWorkflowKeepsNormalLoadersAndGuardsTheSupporterBuild() throws IOException {
+        final String contents = read(".github/workflows/publish-curseforge.yml");
+        assertTrue(contents.contains("default: v1.5.1"));
+        assertTrue(contents.contains("- forge"));
+        assertTrue(contents.contains("- neoforge"));
+        assertTrue(contents.contains("- fabric"));
+        assertTrue(contents.contains("supporter_neoforge_only:"));
+        assertTrue(contents.contains("SUPPORTER_NEOFORGE_ONLY"));
+        assertTrue(contents.contains("v1.5.0-LlaGuiT0-26.2.0.45"));
+        assertTrue(contents.contains("REQUESTED_LOADER"));
+        assertTrue(contents.contains("REQUESTED_RELEASE_TYPE"));
+        assertTrue(contents.contains("\"neoforge\""));
+        assertTrue(contents.contains("\"beta\""));
     }
 
     private static String property(final String name) throws IOException {

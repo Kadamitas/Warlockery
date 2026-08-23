@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:bramble_colossus_allowlist_and_maker_are_never_struck","environment":"warlockery:bramble_colossus_isolated","structure":"warlockery:empty15x15x15","max_ticks":120}
+{"type":"minecraft:function","function":"warlockery:bramble_colossus_allowlist_and_maker_are_never_struck","environment":{"type":"warlockery:isolated","id":"bramble_colossus_allowlist_and_maker_are_never_struck","delegate":"warlockery:bramble_colossus_isolated"},"structure":"warlockery:empty15x15x15","max_ticks":120}

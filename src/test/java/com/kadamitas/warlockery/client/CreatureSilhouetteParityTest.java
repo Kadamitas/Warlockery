@@ -1,113 +1,91 @@
 package com.kadamitas.warlockery.client;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.kadamitas.warlockery.entity.CreatureVisualProfile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.LinkedHashSet;
 import java.util.List;
-import net.minecraft.client.model.geom.ModelPart;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 final class CreatureSilhouetteParityTest {
-    @Test
-    void requestedSpiritVariantsUseDedicatedNonHumanoidGeometry() {
-        final ModelPart sigil = modelFor("umbral_sigil");
-        assertTrue(sigil.getChild("right_arm").isEmpty());
-        assertSolid(sigil, "sigil_outer_slash", "sigil_outer_backslash", "upper_right_tablet", "lower_left_tablet");
-        assertTrue(solidPartCount(sigil) >= 12);
-
-        final ModelPart watcher = modelFor("eldritch_watcher");
-        assertTrue(watcher.getChild("right_arm").isEmpty());
-        assertSolid(watcher, "watcher_eye", "watcher_pupil", "right_watcher_front_tentacle",
-            "left_watcher_back_tentacle", "watcher_rear_eye", "watcher_rear_pupil",
-            "right_watcher_lateral_eye", "right_watcher_side_eye", "left_watcher_lower_eye");
-        assertTrue(solidPartCount(watcher) >= 22);
-
-        final ModelPart poltergeist = modelFor("poltergeist");
-        assertTrue(poltergeist.getChild("right_hind_leg").isEmpty());
-        assertSolid(poltergeist, "debris_top", "right_debris_side", "left_debris_low", "debris_back", "debris_front");
-        assertTrue(solidPartCount(poltergeist) >= 15);
-    }
+    private static final Path MODELS = Path.of(
+        "src/main/java/com/kadamitas/warlockery/client/model"
+    );
+    private static final Path REGISTRATIONS = Path.of(
+        "src/main/java/com/kadamitas/warlockery/client/DedicatedCreatureRenderers.java"
+    );
 
     @Test
-    void verdantCreaturesHaveRootsCrownsAndAsymmetricBranches() {
-        final ModelPart ent = modelFor("ent");
-        assertSolid(ent, "ent_crown_branch", "ent_reaching_branch", "right_ent_branch_tip", "left_ent_canopy",
-            "right_ent_outer_leaves", "right_ent_root_flare");
+    void allFortySixSpeciesOwnIndependentModelClasses() throws Exception {
+        final String registrations = Files.readString(REGISTRATIONS);
+        final Matcher matcher = Pattern.compile("new ([A-Za-z0-9]+Model)\\(").matcher(registrations);
+        final Set<String> classes = new LinkedHashSet<>();
+        while (matcher.find()) {
+            classes.add(matcher.group(1));
+        }
+        assertEquals(47, classes.size(), "46 species plus transformed-villager clothing mesh");
+        assertTrue(classes.contains("NaamahModel"));
+        assertTrue(classes.contains("WerewolfVillagerClothingModel"));
 
-        final ModelPart mandrake = modelFor("mandrake");
-        assertSolid(mandrake, "mandrake_center_leaf", "right_mandrake_leaf_fan", "left_mandrake_outer_leaf",
-            "mandrake_mouth", "right_mandrake_root_arm", "left_mandrake_root_toe");
-
-        final ModelPart dreamroot = modelFor("dreamroot");
-        assertSolid(dreamroot, "dreamroot_stem", "dream_bulb", "right_outer_dream_petals",
-            "right_dream_crown_spire", "left_outer_trailing_root", "right_root_fan");
-
-        final ModelPart colossus = modelFor("bramble_colossus");
-        assertSolid(colossus, "bramble_core_mass", "right_bramble_pauldrons", "left_bramble_hook_claw",
-            "right_bramble_root_foot");
-    }
-
-    @Test
-    void werewolfHasDigitigradeLegsBroadForearmsAndClaws() {
-        final ModelPart werewolf = modelFor("werewolf");
-        assertSolid(werewolf, "right_wolf_shoulder", "wolf_mane", "left_wolf_forearm", "right_wolf_claw",
-            "left_wolf_hock", "right_wolf_foot");
-        assertTrue(solidPartCount(werewolf) >= 18);
+        for (final String modelClass : classes) {
+            final String source = Files.readString(MODELS.resolve(modelClass + ".java"));
+            final boolean ownsDirectRig = source.contains("extends EntityModel<");
+            final boolean usesApprovedVanillaRig = (modelClass.equals("FamiliarCatModel")
+                && source.contains("extends AdultFelineModel<"))
+                || (modelClass.equals("ToadModel") && source.contains("extends FrogModel"));
+            assertTrue(ownsDirectRig || usesApprovedVanillaRig, modelClass);
+            assertTrue(source.contains("createBodyLayer"), modelClass);
+            assertFalse(source.contains("ArcaneCreatureModel"), modelClass);
+            assertFalse(source.contains("CreatureModelProfile"), modelClass);
+            assertFalse(source.contains("GeometryHelper"), modelClass);
+            assertFalse(source.contains("ModelHelper"), modelClass);
+            assertFalse(source.contains("WarlockeryModel"), modelClass);
+            if (!usesApprovedVanillaRig) {
+                final Matcher inheritedRig = Pattern.compile(
+                    "class\\s+" + modelClass + "\\s+extends\\s+(?!EntityModel\\b)([A-Za-z0-9]+Model)"
+                ).matcher(source);
+                assertFalse(inheritedRig.find(), modelClass + " must not inherit another creature rig");
+            }
+        }
     }
 
     @Test
-    void occultHumanoidsUseLayeredGarmentsAndBodyMassInsteadOfPlainBipeds() {
-        assertSolid(modelFor("vampire"), "vampire_cape_mantle", "right_vampire_cape_panel",
-            "left_vampire_coat_tail", "right_high_collar");
-        assertSolid(modelFor("blood_thrall"), "thrall_torso_mass", "right_thrall_shoulders",
-            "left_thrall_gauntlet", "right_iron_shackle");
-        assertSolid(modelFor("corpse"), "corpse_back_mass", "right_corpse_shoulder", "grave_cairn",
-            "burial_board");
-        assertSolid(modelFor("werewolf_hunter"), "hunter_coat_mantle", "right_hunter_coat_panel",
-            "left_hunter_bracer", "silver_crossbow_bow");
-        assertSolid(modelFor("lycan_villager"), "village_vest", "right_village_sleeve",
-            "left_village_coat_tail", "right_village_boot");
+    void demonAndAbyssalRegentRemainWeaponlessBodyAttackers() throws Exception {
+        for (final String modelClass : List.of("DemonModel", "AbyssalRegentModel")) {
+            final String source = Files.readString(MODELS.resolve(modelClass + ".java"));
+            assertFalse(source.contains("ArmedModel"), modelClass);
+            assertFalse(source.contains("translateToHand"), modelClass);
+            assertFalse(source.contains("ItemInHand"), modelClass);
+            assertFalse(source.toLowerCase(java.util.Locale.ROOT).contains("weapon"), modelClass);
+        }
     }
 
     @Test
-    void huntersGoblinsAndDeathHaveReadableEquipmentSilhouettes() {
-        assertSolid(modelFor("thorned_pursuer"), "right_pursuer_antler_branch", "pursuer_branch_frame",
-            "left_pursuer_leaf_mantle", "right_vine_whip");
-        assertSolid(modelFor("hobgoblin"), "miner_cap", "work_vest", "prospector_satchel", "tail");
-        assertSolid(modelFor("goblin"), "miner_cap", "work_vest", "ore_satchel", "tail");
-        assertTrue(solidPartCount(modelFor("goblin")) <= 14);
-        assertTrue(solidPartCount(modelFor("hobgoblin")) <= 14);
-        assertSolid(modelFor("death"), "death_mantle", "right_death_robe_panel", "death_robe_hem",
-            "scythe_staff", "scythe_hook");
+    void goblinClanKeepsItsExplicitPenguinAnatomy() throws Exception {
+        for (final String modelClass : List.of(
+            "GoblinModel", "HobgoblinModel", "StonebrokerModel", "ForgewardenModel"
+        )) {
+            final String source = Files.readString(MODELS.resolve(modelClass + ".java"))
+                .toLowerCase(java.util.Locale.ROOT);
+            assertTrue(source.contains("beak"), modelClass);
+            assertTrue(source.contains("flipper"), modelClass);
+            assertTrue(source.contains("webbed"), modelClass);
+        }
     }
 
     @Test
-    void bossesRetainDistinctWeaponsArmorAndLowerBodyPlans() {
-        assertSolid(modelFor("demon"), "right_demon_pauldrons", "left_demon_bracer", "demon_warhammer");
-        assertSolid(modelFor("emberhorn_archfiend"), "archfiend_chestplate", "right_archfiend_gauntlet",
-            "archfiend_maul");
-        assertSolid(modelFor("naamah"), "right_front_leg", "left_middle_hind_leg",
-            "right_matriarch_crown_tine", "left_upper_blade");
-        assertSolid(modelFor("abyssal_regent"), "right_wing", "left_outer_abyssal_tentacle", "tidal_staff");
-        assertSolid(modelFor("ironbound_sentinel"), "sentinel_chassis", "right_sentinel_shield",
-            "sentinel_hammer");
-    }
-
-    private static ModelPart modelFor(final String id) {
-        final CreatureVisualProfile visual = new CreatureVisualProfile(
-            0.8F,
-            1.8F,
-            CreatureVisualProfile.Archetype.HUMANOID
-        );
-        return ArcaneCreatureModel.createLayer(CreatureModelProfile.forEntity(id, visual)).bakeRoot();
-    }
-
-    private static void assertSolid(final ModelPart root, final String... names) {
-        List.of(names).forEach(name -> assertFalse(root.getChild(name).isEmpty(), name));
-    }
-
-    private static long solidPartCount(final ModelPart root) {
-        return root.getAllParts().stream().filter(part -> !part.isEmpty()).count();
+    void naamahOwnsAGoddessRigWhileNamiStaysOutOfTheModelCatalog() throws Exception {
+        final String naamah = Files.readString(MODELS.resolve("NaamahModel.java"));
+        assertTrue(naamah.contains("three_crest_crown"));
+        assertTrue(naamah.contains("rear_tidal_mantle"));
+        assertTrue(naamah.contains("drowningSurgeProgress"));
+        assertFalse(naamah.contains("PlayerModel"));
+        assertFalse(Files.exists(MODELS.resolve("NamiModel.java")));
     }
 }

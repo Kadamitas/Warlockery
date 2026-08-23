@@ -1,29 +1,34 @@
 package com.kadamitas.warlockery.client;
 
 import com.kadamitas.warlockery.network.ModNetwork;
-import java.util.Set;
+import com.kadamitas.warlockery.transformation.WerewolfShape;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public final class PlayerWolfVisualState {
-    private static final Set<UUID> WOLF_PLAYERS = ConcurrentHashMap.newKeySet();
+    private static final ConcurrentMap<UUID, WerewolfShape> SHAPES = new ConcurrentHashMap<>();
 
     private PlayerWolfVisualState() {
     }
 
     public static boolean isWolf(final UUID playerId) {
-        return WOLF_PLAYERS.contains(playerId);
+        return shape(playerId) == WerewolfShape.WOLF;
+    }
+
+    public static WerewolfShape shape(final UUID playerId) {
+        return SHAPES.getOrDefault(playerId, WerewolfShape.HUMAN);
     }
 
     public static void update(final ModNetwork.PlayerWolfVisualPayload payload) {
-        if (payload.wolf()) {
-            WOLF_PLAYERS.add(payload.playerId());
+        if (payload.shape() == WerewolfShape.HUMAN) {
+            SHAPES.remove(payload.playerId());
         } else {
-            WOLF_PLAYERS.remove(payload.playerId());
+            SHAPES.put(payload.playerId(), payload.shape());
         }
     }
 
     public static void clear() {
-        WOLF_PLAYERS.clear();
+        SHAPES.clear();
     }
 }

@@ -7,7 +7,6 @@ import com.kadamitas.warlockery.entity.EntEntity;
 import com.kadamitas.warlockery.entity.ArcaneMob;
 import com.kadamitas.warlockery.entity.GoblinLifecycleRules;
 import com.kadamitas.warlockery.entity.NamiEntity;
-import com.kadamitas.warlockery.entity.NaamahEntity;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -42,14 +41,6 @@ final class TexturedCreatureRenderers {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    static void registerNaamah(final net.minecraft.world.entity.EntityType<?> type) {
-        EntityRenderers.register(
-            (net.minecraft.world.entity.EntityType) type,
-            Naamah::new
-        );
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
     static void registerNami(final net.minecraft.world.entity.EntityType<?> type) {
         EntityRenderers.register(
             (net.minecraft.world.entity.EntityType) type,
@@ -60,12 +51,6 @@ final class TexturedCreatureRenderers {
     static final class Nami extends SkinnedHumanoid<NamiEntity> {
         Nami(final EntityRendererProvider.Context context) {
             super(context, "nami", 0.4F);
-        }
-    }
-
-    static final class Naamah extends SkinnedHumanoid<NaamahEntity> {
-        Naamah(final EntityRendererProvider.Context context) {
-            super(context, "naamah", 0.45F);
         }
     }
 

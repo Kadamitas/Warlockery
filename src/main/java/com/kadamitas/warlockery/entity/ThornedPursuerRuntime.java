@@ -104,7 +104,7 @@ public final class ThornedPursuerRuntime {
         }
         state.episodeTicks += episode(state.phase) ? 1 : 0;
         boolean constantHazard = pursuer.isOnFire() || pursuer.isInLava();
-        if (ThornedPursuerRules.cadenceDue(pursuer.tickCount, pursuer.getId(), 20))
+        if (!constantHazard && ThornedPursuerRules.cadenceDue(pursuer.tickCount, pursuer.getId(), 20))
             state.contactHazardCached = observeHazard(pursuer, level) > 0;
         boolean observedHazard = state.contactHazardCached;
         if (constantHazard || observedHazard) {

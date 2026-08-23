@@ -291,16 +291,25 @@ final class CreativeAssetIntegrityTest {
 
     @Test
     void lycansAndGoblinsHaveDistinctClothedSkins() {
-        final List<String> clothed = List.of(
-            "lycan_villager", "hobgoblin", "goblin", "stonebroker", "forgewarden"
+        final Map<String, int[]> clothed = Map.of(
+            "lycan_villager", new int[]{64, 64},
+            "goblin", new int[]{128, 128},
+            "hobgoblin", new int[]{192, 128},
+            "stonebroker", new int[]{192, 160},
+            "forgewarden", new int[]{192, 160}
         );
-        final List<Path> skins = clothed.stream().map(id -> TEXTURES.resolve("entity/" + id + ".png")).toList();
-        skins.forEach(path -> {
+        final List<Path> skins = clothed.keySet().stream()
+            .map(id -> TEXTURES.resolve("entity/" + id + ".png"))
+            .toList();
+        clothed.forEach((id, dimensions) -> {
+            final Path path = TEXTURES.resolve("entity/" + id + ".png");
             assertTrue(Files.exists(path), path.toString());
             final BufferedImage image = image(path);
-            assertEquals(64, image.getWidth(), path.toString());
-            assertEquals(64, image.getHeight(), path.toString());
-            final long colors = Arrays.stream(image.getRGB(0, 0, 64, 64, null, 0, 64)).distinct().count();
+            assertEquals(dimensions[0], image.getWidth(), path.toString());
+            assertEquals(dimensions[1], image.getHeight(), path.toString());
+            final long colors = Arrays.stream(image.getRGB(
+                0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()
+            )).distinct().count();
             assertTrue(colors >= 8, path + " needs clothing and skin detail");
         });
         assertEquals(skins.size(), skins.stream().map(CreativeAssetIntegrityTest::sha256).distinct().count());

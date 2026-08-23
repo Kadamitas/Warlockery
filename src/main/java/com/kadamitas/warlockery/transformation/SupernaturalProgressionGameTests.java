@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.transformation;
 
 import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.fabric.event.BreakSpeedContext;
+import com.kadamitas.warlockery.fabric.event.PlayerCloneContext;
 import com.kadamitas.warlockery.item.BloodGobletItem;
 import com.kadamitas.warlockery.item.BloodGobletState;
 import com.kadamitas.warlockery.item.ManualItem;
@@ -17,10 +18,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.npc.villager.Villager;
@@ -336,12 +341,130 @@ public final class SupernaturalProgressionGameTests {
         helper.succeed();
     }
 
+    public static void vampireBloodReplacesHungerAndRegenerates(final GameTestHelper helper) {
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        SupernaturalAdvancement.beginVampire(player);
+        SupernaturalProgression.setLevel(player, SupernaturalProgression.Path.VAMPIRE, 10);
+        final int maximum = SupernaturalProgression.maximumResource(SupernaturalProgression.Path.VAMPIRE, 10);
+        SupernaturalProgression.setResource(player, SupernaturalProgression.Path.VAMPIRE, maximum);
+        helper.assertTrue(SupernaturalProgression.sanguine(player),
+            "filling blood latches persisted Sanguine immediately");
+        helper.assertTrue(SupernaturalProgressionRuntime.snapshot(player).sanguine(),
+            "the immediate full-blood snapshot includes Sanguine");
+        final ServerPlayer copied = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        SupernaturalState.copyAfterClone(new PlayerCloneContext(player, copied, false));
+        helper.assertTrue(SupernaturalProgression.sanguine(copied),
+            "Sanguine survives the Fabric attachment clone path");
+        player.setHealth(player.getMaxHealth() - 4.0F);
+        player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+        player.getFoodData().setFoodLevel(1);
+        player.getFoodData().setSaturation(5.0F);
+        player.causeFoodExhaustion(4.0F);
+        player.tickCount = VampireSustenanceRules.REGENERATION_INTERVAL_TICKS;
+        player.getFoodData().tick(player);
+        SupernaturalProgressionRuntime.tick(player);
+        helper.assertValueEqual(player.getFoodData().getFoodLevel(), VampireSustenanceRules.NEUTRAL_FOOD_LEVEL,
+            "the Fabric living-tail hook restores neutral food after vanilla FoodData updates");
+        helper.assertValueEqual(player.getFoodData().getSaturationLevel(), 0.0F,
+            "the Fabric living-tail hook restores zero saturation after vanilla FoodData updates");
+        helper.assertValueEqual(player.getHealth(), player.getMaxHealth() - 3.0F,
+            "tail-ordered Sanguine heals exactly one health");
+        helper.assertValueEqual(SupernaturalProgression.resource(player, SupernaturalProgression.Path.VAMPIRE),
+            maximum - VampireSustenanceRules.regenerationBloodCost(maximum),
+            "tail-ordered Sanguine spends one percent blood");
+        for (int tick = 1; tick <= 3; tick++) {
+            player.causeFoodExhaustion(8.0F);
+            player.tickCount = VampireSustenanceRules.REGENERATION_INTERVAL_TICKS + tick;
+            player.getFoodData().tick(player);
+            SupernaturalProgressionRuntime.tick(player);
+            helper.assertValueEqual(
+                player.getFoodData().getFoodLevel(),
+                VampireSustenanceRules.NEUTRAL_FOOD_LEVEL,
+                "repeated exhaustion cannot move vampire food away from the public neutral value"
+            );
+            helper.assertValueEqual(
+                player.getFoodData().getSaturationLevel(),
+                0.0F,
+                "repeated exhaustion cannot create vampire saturation"
+            );
+            helper.assertValueEqual(
+                player.getHealth(),
+                player.getMaxHealth() - 3.0F,
+                "the public neutral food value cannot trigger vanilla natural healing"
+            );
+        }
+        final int belowThreshold = maximum * 9 / 10 - 1;
+        final int current = SupernaturalProgression.resource(player, SupernaturalProgression.Path.VAMPIRE);
+        helper.assertTrue(SupernaturalProgression.spend(
+            player, SupernaturalProgression.Path.VAMPIRE, current - belowThreshold
+        ), "threshold-crossing blood spend succeeds");
+        helper.assertFalse(SupernaturalProgression.sanguine(player),
+            "threshold-crossing spend clears persisted Sanguine immediately");
+        helper.assertFalse(SupernaturalProgressionRuntime.snapshot(player).sanguine(),
+            "the next snapshot cannot expose stale Sanguine");
+        helper.succeed();
+    }
+
+    public static void vampireSunlightIgnoresFireResistance(final GameTestHelper helper) {
+        final ServerPlayer player = connectedSurvivalPlayer(helper);
+        SupernaturalAdvancement.beginVampire(player);
+        SupernaturalProgression.setLevel(player, SupernaturalProgression.Path.VAMPIRE, 5);
+        final int maximum = SupernaturalProgression.maximumResource(SupernaturalProgression.Path.VAMPIRE, 5);
+        final int cost = SupernaturalAbilityRules.sunlightBloodCost(5, maximum);
+        SupernaturalProgression.setResource(player, SupernaturalProgression.Path.VAMPIRE, cost);
+        player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 200));
+        player.invulnerableTime = 0;
+        final float health = player.getHealth();
+        final var source = VampireDamageTypes.sunlight(helper.getLevel());
+        helper.assertFalse(source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE), "owned sunlight is not fire damage");
+        player.tickCount = 40;
+        SupernaturalState.applyVampireSunlight(player, 5);
+        helper.assertValueEqual(player.getHealth(), health,
+            "a successful Sun Resistance blood payment prevents owned sunlight damage");
+        helper.assertValueEqual(SupernaturalProgression.resource(player, SupernaturalProgression.Path.VAMPIRE), 0,
+            "Sun Resistance consumes its exact blood payment");
+        player.invulnerableTime = 0;
+        player.tickCount = 60;
+        SupernaturalState.applyVampireSunlight(player, 5);
+        helper.assertTrue(player.getHealth() < health, "Fire Resistance does not cancel owned sunlight");
+
+        SupernaturalProgression.setResource(player, SupernaturalProgression.Path.VAMPIRE, maximum);
+        player.setHealth(player.getMaxHealth());
+        player.invulnerableTime = 0;
+        helper.assertTrue(player.hurtServer(helper.getLevel(), player.damageSources().generic(), 50.0F),
+            "an ordinary lethal hit still lands on a vampire protected by the death ward");
+        helper.assertTrue(player.isAlive(), "the supernatural death ward preserves the vampire");
+        helper.assertValueEqual(player.getHealth(), 1.0F,
+            "the supernatural death ward clamps real health to half a heart");
+        helper.assertTrue(player.hurtTime > 0,
+            "the nonzero clamped damage preserves vanilla hit reaction and knockback processing");
+        helper.assertFalse(player.hasEffect(MobEffects.ABSORPTION),
+            "the supernatural death ward grants no absorption effect");
+        helper.assertValueEqual(player.getAbsorptionAmount(), 0.0F,
+            "the supernatural death ward grants no yellow absorption hearts");
+
+        final int wardReserve = 150;
+        helper.assertTrue(wardReserve < cost, "the lethal regression begins below the Sun Resistance payment");
+        SupernaturalProgression.setResource(player, SupernaturalProgression.Path.VAMPIRE, wardReserve);
+        player.setHealth(0.5F);
+        player.invulnerableTime = 0;
+        player.tickCount = 80;
+        SupernaturalState.applyVampireSunlight(player, 5);
+        helper.assertFalse(player.isAlive(), "owned sunlight bypasses the vampire death ward and kills");
+        helper.assertValueEqual(
+            SupernaturalProgression.resource(player, SupernaturalProgression.Path.VAMPIRE),
+            wardReserve,
+            "owned sunlight never spends the vampire death-ward reserve");
+        helper.succeed();
+    }
+
     private static ServerPlayer connectedSurvivalPlayer(final GameTestHelper helper) {
         final ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
         final Connection connection = new Connection(PacketFlow.SERVERBOUND);
         new EmbeddedChannel(connection);
         final CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
         helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
+        player.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket());
         return GameTestMockPlayers.autoDisconnect(helper, player);
     }
 

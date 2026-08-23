@@ -1,9 +1,12 @@
 package com.kadamitas.warlockery.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.kadamitas.warlockery.client.model.GoblinModel;
+import com.kadamitas.warlockery.client.model.HobgoblinModel;
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
 import com.kadamitas.warlockery.entity.CreatureVisualProfile;
 import java.awt.image.BufferedImage;
@@ -11,48 +14,55 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.stream.IntStream;
 import javax.imageio.ImageIO;
+import net.minecraft.client.model.geom.ModelPart;
 import org.junit.jupiter.api.Test;
 
 final class GoblinVisualTest {
     private static final Path ENTITY_TEXTURES = Path.of("src/main/resources/assets/warlockery/textures/entity");
 
     @Test
-    void goblinfolkUseLittleCreatureDimensions() {
+    void goblinfolkKeepTheirLittleCreatureDimensions() {
         final CreatureVisualProfile goblin = CreatureVisualProfile.forKind(CreatureKind.GOBLIN);
         final CreatureVisualProfile hobgoblin = CreatureVisualProfile.forKind(CreatureKind.HOBGOBLIN);
-
-        assertTrue(goblin.height() <= 1.05F);
-        assertTrue(hobgoblin.height() <= 1.15F);
+        assertEquals(1.08F, goblin.height());
+        assertEquals(1.26F, hobgoblin.height());
         assertTrue(goblin.width() < hobgoblin.width());
     }
 
     @Test
-    void goblinAndHobgoblinTexturesHaveDistinctSkinPalettesAndClothes() {
+    void goblinAndHobgoblinOwnDistinctPenguinBodiesAndAtlases() {
+        final ModelPart goblinModel = GoblinModel.createBodyLayer().bakeRoot();
+        final ModelPart hobgoblinModel = HobgoblinModel.createBodyLayer().bakeRoot();
+        assertFalse(goblinModel.getChild("body").getChild("head").getChild("beak").isEmpty());
+        assertFalse(hobgoblinModel.getChild("torso").getChild("head").getChild("beak").isEmpty());
+        for (final ModelPart root : java.util.List.of(goblinModel, hobgoblinModel)) {
+            assertFalse(root.getChild("right_flipper").isEmpty());
+            assertFalse(root.getChild("left_flipper").isEmpty());
+            assertFalse(root.getChild("right_leg").getChild("right_webbed_foot").isEmpty());
+            assertFalse(root.getChild("left_leg").getChild("left_webbed_foot").isEmpty());
+        }
+
         final BufferedImage goblin = read("goblin.png");
         final BufferedImage hobgoblin = read("hobgoblin.png");
-
-        assertEquals(64, goblin.getWidth());
-        assertEquals(64, goblin.getHeight());
-        assertEquals(64, hobgoblin.getWidth());
-        assertEquals(64, hobgoblin.getHeight());
-        assertTrue(count(goblin, color -> green(color) > red(color) && green(color) > blue(color)) > 700);
-        assertTrue(count(hobgoblin, color -> red(color) > green(color) && green(color) > blue(color)) > 700);
-        assertTrue(count(goblin, color -> red(color) == 0x46 && green(color) == 0x52 && blue(color) == 0x5A) > 200);
+        assertEquals(128, goblin.getWidth());
+        assertEquals(128, goblin.getHeight());
+        assertEquals(192, hobgoblin.getWidth());
+        assertEquals(128, hobgoblin.getHeight());
+        assertTrue(hasOpaqueAndTransparentPixels(goblin));
+        assertTrue(hasOpaqueAndTransparentPixels(hobgoblin));
         assertNotEquals(pixelHash(goblin), pixelHash(hobgoblin));
-        assertFrontEyesOnly(goblin);
-        assertFrontEyesOnly(hobgoblin);
     }
 
     @Test
-    void synchronizedBabyStateSelectsTheSmallerGoblinModel() throws IOException {
+    void synchronizedBabyStateScalesBothDedicatedPenguinRenderers() throws IOException {
         final String renderer = Files.readString(Path.of(
-            "src/main/java/com/kadamitas/warlockery/client/TexturedCreatureRenderers.java"
+            "src/main/java/com/kadamitas/warlockery/client/DedicatedCreatureRenderers.java"
         ));
-        assertTrue(renderer.contains("profile.variant() == CreatureModelProfile.Variant.GOBLIN"));
-        assertTrue(renderer.contains("profile.variant() == CreatureModelProfile.Variant.HOBGOBLIN"));
-        assertTrue(renderer.contains("hasBabyModel && state.isBaby"));
+        assertTrue(renderer.contains("register(\"goblin\", context -> goblin(context))"));
+        assertTrue(renderer.contains("register(\"hobgoblin\", context -> hobgoblin(context))"));
+        assertTrue(renderer.contains("scaleBaby(state, poseStack)"));
+        assertTrue(renderer.contains("DedicatedCreatureRenderers::babyShadow"));
         assertTrue(renderer.contains("GoblinLifecycleRules.BABY_RENDER_SCALE"));
     }
 
@@ -64,37 +74,26 @@ final class GoblinVisualTest {
         }
     }
 
-    private static void assertFrontEyesOnly(final BufferedImage image) {
-        final int eyeHighlight = image.getRGB(9, 9);
-        assertEquals(eyeHighlight, image.getRGB(13, 9));
-        assertNotEquals(eyeHighlight, image.getRGB(24, 9));
-        assertNotEquals(eyeHighlight, image.getRGB(28, 9));
-        assertEquals(image.getRGB(23, 9), image.getRGB(24, 9));
-        assertEquals(image.getRGB(27, 9), image.getRGB(28, 9));
-    }
-
-    private static long count(final BufferedImage image, final java.util.function.IntPredicate predicate) {
-        return IntStream.range(0, image.getWidth() * image.getHeight())
-            .map(index -> image.getRGB(index % image.getWidth(), index / image.getWidth()))
-            .filter(predicate)
-            .count();
+    private static boolean hasOpaqueAndTransparentPixels(final BufferedImage image) {
+        boolean opaque = false;
+        boolean transparent = false;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                final int alpha = image.getRGB(x, y) >>> 24;
+                opaque |= alpha == 255;
+                transparent |= alpha == 0;
+            }
+        }
+        return opaque && transparent;
     }
 
     private static int pixelHash(final BufferedImage image) {
-        return IntStream.range(0, image.getWidth() * image.getHeight())
-            .map(index -> image.getRGB(index % image.getWidth(), index / image.getWidth()))
-            .reduce(1, (hash, color) -> 31 * hash + color);
-    }
-
-    private static int red(final int color) {
-        return color >>> 16 & 0xFF;
-    }
-
-    private static int green(final int color) {
-        return color >>> 8 & 0xFF;
-    }
-
-    private static int blue(final int color) {
-        return color & 0xFF;
+        int hash = 1;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                hash = 31 * hash + image.getRGB(x, y);
+            }
+        }
+        return hash;
     }
 }

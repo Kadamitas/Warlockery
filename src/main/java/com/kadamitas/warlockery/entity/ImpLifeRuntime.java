@@ -220,6 +220,11 @@ public final class ImpLifeRuntime {
             imp.setLifeState(state);
             return;
         }
+        // Vanilla flying goals run before this controller and may start navigation on any tick.
+        // PERCH owns movement continuously, not only on the decision tick that entered the state.
+        if (state.action() == Action.PERCH) {
+            imp.getNavigation().stop();
+        }
         if (!ImpLifeRules.due(state.cadence().nextDecisionAt(), now)) {
             imp.setLifeState(state);
             return;

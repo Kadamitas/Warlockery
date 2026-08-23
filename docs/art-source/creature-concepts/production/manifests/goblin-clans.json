@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "package": "wave-04c-goblin-clans",
+  "generatedOn": "2026-08-21",
+  "concept": {
+    "path": "docs/art-source/creature-concepts/production/wave-04c-goblin-clan-turnarounds.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "32af6dc4adae4ed988f3773a19dcc5762dbf5ca1ef410e63aa3975c29868acc9"
+  },
+  "authoritativeNameMappings": [
+    {
+      "userSourceName": "Kobold",
+      "targetDisplayName": "Goblin",
+      "registryId": "goblin"
+    },
+    {
+      "userSourceName": "Hobgoblin",
+      "targetDisplayName": "Hobgoblin",
+      "registryId": "hobgoblin"
+    }
+  ],
+  "unmappedWarlockeryRoles": [
+    {
+      "targetDisplayName": "Stonebroker",
+      "registryId": "stonebroker",
+      "policy": "No user-supplied Witchery equivalent was assigned. The concept uses only the existing Warlockery mineral-broker, ledger-volley, and ranged-patron role brief."
+    },
+    {
+      "targetDisplayName": "Forgewarden",
+      "registryId": "forgewarden",
+      "policy": "No user-supplied Witchery equivalent was assigned. The concept uses only the existing Warlockery forge-authority, ward, hammer, fire, and craft-patron role brief."
+    }
+  ],
+  "interpretationPolicy": "The mapped names and inspected Witchery pages/images contribute only coarse clothing, mining and trading tool, rank, posture, palette, and material cues. All four Warlockery creatures remain unmistakably penguin-bodied, and every atlas pixel, cube, pivot, hierarchy, UV layout, proportion, costume arrangement, and animation is independently authored. No Witchery, Bewitchment, vanilla, or third-party model, texture, code, geometry, face, anatomy, pixel pattern, proportion system, tool placement, or exact appearance is reproduced or imitated.",
+  "research": [
+    {
+      "userSourceName": "Hobgoblin",
+      "pageUrl": "https://witchery.fentanylsolutions.org/hobgoblin.html",
+      "inspectedImageUrl": "https://witchery.fentanylsolutions.org/_/rsrc/1431191883155/hobgoblin/20goblins.png",
+      "pageTraitsOnly": [
+        "small forest-dwelling social scavenger culture",
+        "cautious group posture",
+        "settlement and hut life",
+        "trading collected items",
+        "mining labor with hand tools",
+        "Koboldite prospecting and craft"
+      ],
+      "imageTraitsOnly": [
+        "dense squat visual weight",
+        "dark forest-green and brown work palette"
+      ],
+      "allowedInfluenceOnly": [
+        "moss-green and brown travel clothing",
+        "pack and mining-tool vocabulary",
+        "cautious guarded action posture",
+        "small practical worker rank language"
+      ],
+      "excludedFromInterpretation": "The exact humanoid body, head, face, ears, nose, texture, proportions, colors, pose, clothing layout, tool placement, pixel pattern, and geometry were not used. Penguin anatomy remains the controlling silhouette."
+    },
+    {
+      "userSourceName": "Kobold",
+      "pageUrl": "https://witchery.fentanylsolutions.org/koboldite-ingot.html",
+      "inspectedImageUrl": "https://witchery.fentanylsolutions.org/_/rsrc/1431191883488/koboldite-ingot/20ingot.png",
+      "researchNote": "No distinct Witchery Kobold entity page or character image was located. The authoritative name therefore contributes only generic small subterranean miner and scavenger semantics. The relevant Koboldite page states that Hobgoblins forge and trade the material, and its inspected recipe image shows a cool light-blue worked ingot.",
+      "distilledTraitsOnly": [
+        "small subterranean mining role",
+        "ore scavenging and carrying",
+        "compact work tool",
+        "cool light-blue worked-metal accent"
+      ],
+      "allowedInfluenceOnly": [
+        "ore-runner clothing and satchel",
+        "compact mining tool",
+        "cool-blue fasteners and ore accents",
+        "alert worker posture"
+      ],
+      "excludedFromInterpretation": "No unverified or inferred Kobold character appearance was used, and the Koboldite recipe image supplied no anatomy or model reference."
+    }
+  ],
+  "approvedDesignPins": {
+    "goblin": [
+      "small agile rockhopper-like penguin body",
+      "oversized alert head and compact ochre wedge beak",
+      "swept eyebrow-feather crests",
+      "long slim flippers and fast splayed webbed feet",
+      "lamp cap, cross-body ore satchel, and back-secured compact pick"
+    ],
+    "hobgoblin": [
+      "stout gentoo-like penguin traveler body",
+      "broad chest, longer blunt beak, powerful paddle flippers, and wide waddling stance",
+      "asymmetric hood-cape and practical travel vest",
+      "camp roll, side trade pack, lantern, and prospecting tool",
+      "defensive pack-guard action"
+    ],
+    "stonebroker": [
+      "low massive king-penguin mineral-patron body",
+      "small head nested inside a faceted geode mantle",
+      "wide mineral shoulder line, short layered flippers, bowed legs, and enormous stable feet",
+      "appraisal lens, belly ledger slab, crystal weights, and independent bolt quiver",
+      "planted ledger-volley action"
+    ],
+    "forgewarden": [
+      "tall emperor-penguin forge-patron body",
+      "clearly visible ember-orange beak framed by an open furnace-brow helm",
+      "barrel torso, blade-like flippers, stout legs, and broad heat-darkened webbed feet",
+      "asymmetric shoulder yoke, goblinite apron, hammer-flipper gauntlet, and ward guard",
+      "grounded hammer-commit action"
+    ]
+  },
+  "atlasGenerator": "tools/creature_models/generate_goblin_clans.ps1",
+  "atlases": [
+    {
+      "registryId": "goblin",
+      "path": "src/main/resources/assets/warlockery/textures/entity/goblin.png",
+      "width": 128,
+      "height": 128,
+      "sha256": "f159e79faa2a15cac24e3e073e4b963b133830d74545e7e9f9c130b626214692",
+      "opaquePixels": 2384,
+      "transparentPixels": 14000,
+      "distinctOpaqueColors": 12,
+      "authorship": "Original soot-green rockhopper feather, lichen belly, ochre beak, leather, ore, and lamp islands authored for the Goblin UV layout only."
+    },
+    {
+      "registryId": "hobgoblin",
+      "path": "src/main/resources/assets/warlockery/textures/entity/hobgoblin.png",
+      "width": 192,
+      "height": 128,
+      "sha256": "a7124c3c9e75f6ba37b71c58c9cd26c8693922f2c8d900e524d0cfdbbb1e6ac5",
+      "opaquePixels": 4146,
+      "transparentPixels": 20430,
+      "distinctOpaqueColors": 12,
+      "authorship": "Original charcoal gentoo feather, moss hood, canvas pack, russet leather, brass lantern, and cool-blue fastener islands authored for the Hobgoblin UV layout only."
+    },
+    {
+      "registryId": "stonebroker",
+      "path": "src/main/resources/assets/warlockery/textures/entity/stonebroker.png",
+      "width": 192,
+      "height": 160,
+      "sha256": "67f2a8ae07baf9029fe54871666d144a49fae99d0f7d1b8064079c7d5c0e4ebe",
+      "opaquePixels": 6659,
+      "transparentPixels": 24061,
+      "distinctOpaqueColors": 13,
+      "authorship": "Original blue-black king-penguin feather, ivory belly, gold throat, geode, amethyst, ledger, lens, and bolt islands authored for the Stonebroker UV layout only."
+    },
+    {
+      "registryId": "forgewarden",
+      "path": "src/main/resources/assets/warlockery/textures/entity/forgewarden.png",
+      "width": 192,
+      "height": 160,
+      "sha256": "9216e17d853063408fc3241daabe032e8f14b63498e9e21d4750155aca045d68",
+      "opaquePixels": 8999,
+      "transparentPixels": 21721,
+      "distinctOpaqueColors": 13,
+      "authorship": "Original soot emperor-penguin feather, pale heated belly, ember core, steel, brass, bellows, hammer, ward, and heat-darkened foot islands authored for the Forgewarden UV layout only."
+    }
+  ]
+}

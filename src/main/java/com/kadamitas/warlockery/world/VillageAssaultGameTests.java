@@ -35,6 +35,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.animal.wolf.Wolf;
@@ -60,8 +61,9 @@ public final class VillageAssaultGameTests {
         original.setCustomName(originalName);
         original.setCustomNameVisible(true);
         original.setVillagerData(original.getVillagerData()
-            .withProfession(helper.getLevel().registryAccess(), VillagerProfession.FARMER)
+            .withProfession(helper.getLevel().registryAccess(), VillagerProfession.CARTOGRAPHER)
             .withLevel(4));
+        final var originalVillagerData = original.getVillagerData();
         original.setVillagerXp(37);
         final UUID originalId = original.getUUID();
         final long bloodLockExpiry = helper.getLevel().getGameTime() + 90_000L;
@@ -79,6 +81,12 @@ public final class VillageAssaultGameTests {
         helper.assertTrue(original.isRemoved(), "the villager body must be replaced while transformed");
         helper.assertTrue(WerewolfVillagerInfectionRuntime.isTransformedVillager(transformed),
             "the werewolf must retain its reversible villager marker");
+        helper.assertTrue(transformed.transformedVillagerData()
+            .filter(data -> data.type().equals(originalVillagerData.type())
+                && data.profession().is(VillagerProfession.CARTOGRAPHER)
+                && data.level() == 4)
+            .isPresent(),
+            "the transformed werewolf must synchronize the cartographer's visible clothing data");
         helper.assertValueEqual(transformed.getCustomName(), originalName,
             "transformed villager name");
 
@@ -92,7 +100,7 @@ public final class VillageAssaultGameTests {
         helper.assertValueEqual(restored.getCustomName(), originalName,
             "restored villager name");
         helper.assertValueEqual(restored.getVillagerData().level(), 4, "restored villager profession level");
-        helper.assertTrue(restored.getVillagerData().profession().is(VillagerProfession.FARMER),
+        helper.assertTrue(restored.getVillagerData().profession().is(VillagerProfession.CARTOGRAPHER),
             "restored villager profession must survive the transformation");
         helper.assertValueEqual(restored.getUUID(), originalId, "restored villager UUID");
         helper.assertValueEqual(restored.getVillagerXp(), 37, "restored villager experience");
@@ -113,7 +121,7 @@ public final class VillageAssaultGameTests {
         helper.assertValueEqual(restoredAgain.getUUID(), originalId, "second-cycle villager UUID");
         helper.assertValueEqual(restoredAgain.getCustomName(), originalName,
             "second-cycle villager name");
-        helper.assertTrue(restoredAgain.getVillagerData().profession().is(VillagerProfession.FARMER)
+        helper.assertTrue(restoredAgain.getVillagerData().profession().is(VillagerProfession.CARTOGRAPHER)
             && restoredAgain.getVillagerData().level() == 4,
             "second-cycle villager profession and level must persist");
         helper.assertValueEqual(restoredAgain.getVillagerXp(), 37, "second-cycle villager experience");
@@ -288,10 +296,15 @@ public final class VillageAssaultGameTests {
         );
         helper.assertTrue(bat instanceof Bat && wolf instanceof Wolf,
             "vampire and werewolf assaults must begin as bat and wolf approach forms");
+        // The fixture directly integrates both approach vectors so unrelated vanilla wandering
+        // and navigation cadence cannot compete with the steering contract under test.
+        bat.setNoAi(true);
+        wolf.setNoAi(true);
         // Start the bat at cruising height so it does not spend dozens of ticks climbing
         // while vanilla Bat AI wanders it into walls or the revealed werewolf's reach.
         // The horizontal wall crossing under test is unchanged.
         bat.snapTo(bat.getX(), layout.deckY() + 3.0, bat.getZ(), bat.getYRot(), bat.getXRot());
+        wolf.snapTo(wolf.getX(), layout.deckY() + 1.0, wolf.getZ(), wolf.getYRot(), wolf.getXRot());
         final long gameTime = level.getGameTime();
         final AssaultState state = new AssaultState(
             center,
@@ -307,9 +320,15 @@ public final class VillageAssaultGameTests {
         helper.onEachTick(() -> {
             if (!bat.isRemoved()) {
                 VillageAssaultRuntime.tickApproachForm(level, state, bat);
+                if (!bat.isRemoved()) {
+                    bat.move(MoverType.SELF, bat.getDeltaMovement());
+                }
             }
             if (!wolf.isRemoved()) {
                 VillageAssaultRuntime.tickApproachForm(level, state, wolf);
+                if (!wolf.isRemoved()) {
+                    wolf.move(MoverType.SELF, wolf.getDeltaMovement());
+                }
             }
             if (!bat.isRemoved() || !wolf.isRemoved()) {
                 return;
@@ -352,6 +371,8 @@ public final class VillageAssaultGameTests {
             );
             helper.succeed();
         });
+        helper.runAfterDelay(295L, () -> helper.assertTrue(bat.isRemoved() && wolf.isRemoved(),
+            "approach forms must reveal by the bounded deadline"));
     }
 
     public static void bloodDrainedTradeLockUsesFabricInteractionCallback(final GameTestHelper helper) {

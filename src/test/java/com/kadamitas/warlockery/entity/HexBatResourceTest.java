@@ -83,7 +83,7 @@ final class HexBatResourceTest {
 
     @Test
     void protectedTextureHashesAndPathsAreUnchanged() {
-        assertEquals("13e25b97666b3d1e74c33f3eeebec71343f7b0b41fc233339c618ada58bd9680",
+        assertEquals("96c69abf9ffc53a66683279022c78469ee5f3272fbb29c5ff41c025335ff160c",
             sha256(RESOURCES.resolve(Path.of("assets", "warlockery", "textures", "entity", "hex_bat.png"))));
         assertEquals("ad48490fe37cfb68c9c508f3c3b5f353b77c6a24fdd92ef49ee68c0e8bd26230",
             sha256(RESOURCES.resolve(Path.of("assets", "warlockery", "textures", "item", "hex_bat_spawn_egg.png"))));

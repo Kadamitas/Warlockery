@@ -9,6 +9,9 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
@@ -69,6 +72,8 @@ public final class HobgoblinEntity extends AbstractGoblinMerchantEntity {
     public static final String STATE_KEY = "WarlockeryHobgoblinJourney";
     private static final String LEGACY_PROSPECTING_KEY = "WarlockeryProspectingCooldown";
     private static final String LEGACY_GIFT_KEY = "WarlockeryNextFlowerGift";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_MODE =
+        SynchedEntityData.defineId(HobgoblinEntity.class, EntityDataSerializers.BYTE);
 
     private final CreatureBehavior contractBehavior = CreatureBehaviorFactory.create(CreatureKind.HOBGOBLIN);
     private final HobgoblinJourneyRuntime.Counters journeyCounters = new HobgoblinJourneyRuntime.Counters();
@@ -87,6 +92,13 @@ public final class HobgoblinEntity extends AbstractGoblinMerchantEntity {
         if (getNavigation() instanceof net.minecraft.world.entity.ai.navigation.GroundPathNavigation ground) {
             ground.setCanOpenDoors(true);
         }
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_MODE,
+            EntityPresentationSync.encode(HobgoblinJourneyRules.Mode.IDLE));
     }
 
     @Override
@@ -113,6 +125,19 @@ public final class HobgoblinEntity extends AbstractGoblinMerchantEntity {
     public void setJourneyState(final HobgoblinJourneyState state) {
         journeyState = state == null ? HobgoblinJourneyState.empty() : state;
         setGoblinProfession(journeyState.profession());
+        syncPresentationFromRuntime();
+    }
+
+    public HobgoblinJourneyRules.Mode presentationMode() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_MODE),
+            HobgoblinJourneyRules.Mode.IDLE);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte mode = EntityPresentationSync.encode(journeyState.mode());
+        if (entityData.get(DATA_PRESENTATION_MODE) != mode) {
+            entityData.set(DATA_PRESENTATION_MODE, mode);
+        }
     }
 
     public HobgoblinJourneyRuntime.Counters journeyCounters() {
@@ -264,6 +289,7 @@ public final class HobgoblinEntity extends AbstractGoblinMerchantEntity {
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         HobgoblinJourneyRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override
@@ -533,6 +559,7 @@ public final class HobgoblinEntity extends AbstractGoblinMerchantEntity {
         input.getIntOr(LEGACY_PROSPECTING_KEY, 0);
         setGoblinProfession(journeyState.profession());
         journeyTransient.resetForLoad();
+        syncPresentationFromRuntime();
     }
 
     private Optional<UUID> legacyOwner() {

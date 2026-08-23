@@ -1,9 +1,12 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:nightmare_accelerates_and_warns_only_legal_hostiles",
-  "environment": "warlockery:spectral_steeds_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "nightmare_accelerates_and_warns_only_legal_hostiles",
+    "delegate": "warlockery:spectral_steeds_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }
-
 

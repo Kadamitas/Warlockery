@@ -6,6 +6,9 @@ import com.kadamitas.warlockery.entity.MimicryRules.Species;
 import java.util.EnumSet;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -57,12 +60,24 @@ public abstract class AbstractMimicEntity extends Monster
 
     /** Every mimic stores its two bounded counters beneath this one key. */
     public static final String STATE_KEY = "WarlockeryMimicry";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(AbstractMimicEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_ACCEPTED_HITS =
+        SynchedEntityData.defineId(AbstractMimicEntity.class, EntityDataSerializers.INT);
 
     private final MimicryRuntime.Core core;
 
     protected AbstractMimicEntity(final EntityType<? extends Monster> type, final Level level, final Species species) {
         super(type, level);
         this.core = new MimicryRuntime.Core(species);
+    }
+
+    @Override
+    protected final void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_PHASE,
+            EntityPresentationSync.encode(mimicSpecies().routine()));
+        builder.define(DATA_PRESENTATION_ACCEPTED_HITS, 0);
     }
 
     @Override
@@ -73,6 +88,26 @@ public abstract class AbstractMimicEntity extends Monster
     @Override
     public final MimicryRuntime.Core mimicCore() {
         return core;
+    }
+
+    public final MimicryRules.Phase presentationPhase() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE),
+            mimicSpecies().routine());
+    }
+
+    public final int presentationAcceptedHits() {
+        return entityData.get(DATA_PRESENTATION_ACCEPTED_HITS);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte phase = EntityPresentationSync.encode(core.scratch().phase());
+        final int acceptedHits = core.scratch().acceptedHits();
+        if (entityData.get(DATA_PRESENTATION_PHASE) != phase) {
+            entityData.set(DATA_PRESENTATION_PHASE, phase);
+        }
+        if (entityData.get(DATA_PRESENTATION_ACCEPTED_HITS) != acceptedHits) {
+            entityData.set(DATA_PRESENTATION_ACCEPTED_HITS, acceptedHits);
+        }
     }
 
     @Override
@@ -135,6 +170,7 @@ public abstract class AbstractMimicEntity extends Monster
     protected final void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         MimicryRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override
@@ -255,6 +291,6 @@ public abstract class AbstractMimicEntity extends Monster
         super.readAdditionalSaveData(input);
         MimicryRuntime.readSaveData(this, input, STATE_KEY);
         normalizeLifecycle();
+        syncPresentationFromRuntime();
     }
 }
-

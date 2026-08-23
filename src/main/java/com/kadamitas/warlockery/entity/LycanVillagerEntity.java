@@ -4,6 +4,9 @@ import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.transformation.SupernaturalForm;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -33,11 +36,32 @@ public final class LycanVillagerEntity extends Villager implements ArcaneCreatur
     public static final int MAX_OFFERS = 64;
     private LycanVillagerState sentinelState;
     private static final String STATE_KEY = "WarlockeryLycanSentinel";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_INTENT =
+        SynchedEntityData.defineId(LycanVillagerEntity.class, EntityDataSerializers.BYTE);
     private final Map<UUID, Long> tradeCooldowns = new HashMap<>();
 
     public LycanVillagerEntity(final EntityType<? extends Villager> type, final Level level) {
         super(type, level);
         sentinelState = LycanVillagerState.fresh(getUUID(), level.getGameTime());
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_PRESENTATION_INTENT, (byte) LycanVillagerRules.Intent.ROUTINE.ordinal());
+    }
+
+    public LycanVillagerRules.Intent presentationIntent() {
+        final int stored = entityData.get(DATA_PRESENTATION_INTENT);
+        final LycanVillagerRules.Intent[] intents = LycanVillagerRules.Intent.values();
+        return stored >= 0 && stored < intents.length ? intents[stored] : LycanVillagerRules.Intent.ROUTINE;
+    }
+
+    private void syncPresentation(final LycanVillagerRules.Intent intent) {
+        final byte encoded = (byte) intent.ordinal();
+        if (entityData.get(DATA_PRESENTATION_INTENT) != encoded) {
+            entityData.set(DATA_PRESENTATION_INTENT, encoded);
+        }
     }
 
     @Override
@@ -130,6 +154,7 @@ public final class LycanVillagerEntity extends Villager implements ArcaneCreatur
             getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
         }
         LycanVillagerRuntime.tick(this, level);
+        syncPresentation(sentinelState.intent());
     }
 
     @Override
@@ -146,14 +171,16 @@ public final class LycanVillagerEntity extends Villager implements ArcaneCreatur
                     || sentinelState.intent() == LycanVillagerRules.Intent.INTERCEPT
                     || sentinelState.intent() == LycanVillagerRules.Intent.DEFEND);
             if (engagedSameAggressor) {
-                sentinelState = sentinelState.withCombat(attacker.getUUID(),
+                setSentinelState(sentinelState.withCombat(attacker.getUUID(),
                     sentinelState.protectedResident().orElse(null), sentinelState.intent(),
-                    sentinelState.warningDeadline(), now + LycanVillagerRules.PURSUIT_TICKS);
+                    sentinelState.warningDeadline(), now + LycanVillagerRules.PURSUIT_TICKS));
             } else {
                 LycanVillagerRuntime.beginWarning(this, level, attacker);
-                sentinelState = sentinelState.withCombat(attacker.getUUID(), null, LycanVillagerRules.Intent.WARNING,
+                setSentinelState(sentinelState.withCombat(
+                    attacker.getUUID(), null, LycanVillagerRules.Intent.WARNING,
                     now + LycanVillagerRules.WARNING_TICKS,
-                    now + LycanVillagerRules.PURSUIT_TICKS);
+                    now + LycanVillagerRules.PURSUIT_TICKS
+                ));
             }
         }
         return hurt;
@@ -179,8 +206,12 @@ public final class LycanVillagerEntity extends Villager implements ArcaneCreatur
         if (trader != null && canTrade(SupernaturalState.getForm(trader)) && offerIsCurrent(offer)
             && now - tradeCooldowns.getOrDefault(trader.getUUID(), Long.MIN_VALUE / 2)
                 >= LycanVillagerRules.TRADE_FAMILIARITY_COOLDOWN_TICKS) {
-            sentinelState = sentinelState.observe(trader.getUUID(), LycanVillagerRules.RelationshipSource.PLAYER,
-                LycanVillagerRules.TRADE_FAMILIARITY_POINTS, now);
+            setSentinelState(sentinelState.observe(
+                trader.getUUID(),
+                LycanVillagerRules.RelationshipSource.PLAYER,
+                LycanVillagerRules.TRADE_FAMILIARITY_POINTS,
+                now
+            ));
             tradeCooldowns.put(trader.getUUID(), now);
             if (tradeCooldowns.size() > LycanVillagerRules.TRADE_COOLDOWN_CAP) {
                 tradeCooldowns.entrySet().stream().min(java.util.Map.Entry.comparingByValue())
@@ -210,7 +241,7 @@ public final class LycanVillagerEntity extends Villager implements ArcaneCreatur
         final long now = level().getGameTime();
         tradeCooldowns.clear();
         input.read(STATE_KEY, CompoundTag.CODEC).ifPresentOrElse(tag -> {
-            sentinelState = LycanVillagerState.read(tag, getUUID(), now);
+            setSentinelState(LycanVillagerState.read(tag, getUUID(), now));
             final CompoundTag cooldowns = tag.getCompoundOrEmpty("TradeCooldowns");
             for (final String key : cooldowns.keySet()) {
                 try {
@@ -220,7 +251,7 @@ public final class LycanVillagerEntity extends Villager implements ArcaneCreatur
                     }
                 } catch (RuntimeException ignored) { }
             }
-        }, () -> sentinelState = LycanVillagerState.fresh(getUUID(), now));
+        }, () -> setSentinelState(LycanVillagerState.fresh(getUUID(), now)));
         reconcileSignatureOffers(super.getOffers());
         LycanVillagerRuntime.cancel(this);
     }
@@ -247,5 +278,8 @@ public final class LycanVillagerEntity extends Villager implements ArcaneCreatur
         return sentinelState;
     }
 
-    void setSentinelState(final LycanVillagerState value) { sentinelState = value; }
+    void setSentinelState(final LycanVillagerState value) {
+        sentinelState = value == null ? LycanVillagerState.fresh(getUUID(), level().getGameTime()) : value;
+        syncPresentation(sentinelState.intent());
+    }
 }

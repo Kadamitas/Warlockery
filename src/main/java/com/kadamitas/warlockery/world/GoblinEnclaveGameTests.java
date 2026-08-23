@@ -481,11 +481,15 @@ public final class GoblinEnclaveGameTests {
         final FixtureScope fixture = new FixtureScope(helper);
         try {
             final List<GoblinEntity> crowd = new ArrayList<>();
-            // All fixture geometry stays inside relative 0..2 at y=1; the framework barrier shell
-            // makes anything outside that unreachable and every LOS walk terminate on barrier.
+            // Enclave identities intentionally use absolute 128-block regions. GameTest origins
+            // are randomized, so choose the nearest relative offset that keeps this 3x3 crowd on
+            // one side of each region boundary instead of making the assertion origin-dependent.
+            final BlockPos absoluteOrigin = helper.absolutePos(BlockPos.ZERO);
+            final int baseX = regionSafeCrowdOffset(absoluteOrigin.getX());
+            final int baseZ = regionSafeCrowdOffset(absoluteOrigin.getZ());
             for (int x = 0; x <= 2; x++) {
                 for (int z = 0; z <= 2; z++) {
-                    crowd.add(spawnGoblin(fixture, new BlockPos(x, 1, z)));
+                    crowd.add(spawnGoblin(fixture, new BlockPos(baseX + x, 1, baseZ + z)));
                 }
             }
             helper.assertValueEqual(crowd.size(), 9, "nine live Goblins share one arena");
@@ -550,6 +554,13 @@ public final class GoblinEnclaveGameTests {
     private static void makeDue(final GoblinEntity goblin) {
         final GoblinEnclaveRuntime.TransientState scratch = goblin.goblinTransient();
         scratch.resetForLoad();
+    }
+
+    private static int regionSafeCrowdOffset(final int absoluteOrigin) {
+        final int withinRegion = Math.floorMod(absoluteOrigin, GoblinEnclaveRules.REGION_SIZE);
+        return withinRegion <= GoblinEnclaveRules.REGION_SIZE - 3
+            ? 0
+            : GoblinEnclaveRules.REGION_SIZE - withinRegion;
     }
 
     private static GoblinEntity spawnGoblin(final FixtureScope fixture, final BlockPos position) {

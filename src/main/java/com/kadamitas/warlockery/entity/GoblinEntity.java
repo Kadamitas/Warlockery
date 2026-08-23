@@ -9,6 +9,9 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
@@ -60,6 +63,14 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
     private static final String ASSAULT_CENTER_KEY = "WarlockeryGoblinRaidCenter";
     private static final String ASSAULT_WAVE_KEY = "WarlockeryGoblinRaidWave";
     private static final String ASSAULT_LEADER_KEY = "WarlockeryGoblinRaidLeader";
+    private static final int PRESENTATION_ASSAULT_MEMBER = 1;
+    private static final int PRESENTATION_ASSAULT_LEADER = 1 << 1;
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_INTENT =
+        SynchedEntityData.defineId(GoblinEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_ASSAULT_FLAGS =
+        SynchedEntityData.defineId(GoblinEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_ASSAULT_WAVE =
+        SynchedEntityData.defineId(GoblinEntity.class, EntityDataSerializers.INT);
 
     private final CreatureBehavior contractBehavior = CreatureBehaviorFactory.create(CreatureKind.GOBLIN);
     private final GoblinEnclaveRuntime.Counters enclaveCounters = new GoblinEnclaveRuntime.Counters();
@@ -82,6 +93,15 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
         if (getNavigation() instanceof net.minecraft.world.entity.ai.navigation.GroundPathNavigation ground) {
             ground.setCanOpenDoors(true);
         }
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_INTENT,
+            EntityPresentationSync.encode(GoblinEnclaveRules.Intent.IDLE));
+        builder.define(DATA_PRESENTATION_ASSAULT_FLAGS, (byte) 0);
+        builder.define(DATA_PRESENTATION_ASSAULT_WAVE, 0);
     }
 
     @Override
@@ -108,6 +128,43 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
     public void setGoblinEnclaveState(final GoblinEnclaveState state) {
         enclaveState = state == null ? GoblinEnclaveState.empty() : state;
         setGoblinProfession(enclaveState.profession());
+        syncPresentationFromRuntime();
+    }
+
+    public GoblinEnclaveRules.Intent presentationIntent() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_INTENT),
+            GoblinEnclaveRules.Intent.IDLE);
+    }
+
+    public boolean presentationAssaultMember() {
+        return EntityPresentationSync.flag(entityData.get(DATA_PRESENTATION_ASSAULT_FLAGS),
+            PRESENTATION_ASSAULT_MEMBER);
+    }
+
+    public boolean presentationAssaultLeader() {
+        return EntityPresentationSync.flag(entityData.get(DATA_PRESENTATION_ASSAULT_FLAGS),
+            PRESENTATION_ASSAULT_LEADER);
+    }
+
+    public int presentationAssaultWave() {
+        return entityData.get(DATA_PRESENTATION_ASSAULT_WAVE);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte intent = EntityPresentationSync.encode(enclaveState.action().intent());
+        int flags = 0;
+        if (isAssaultMember()) flags |= PRESENTATION_ASSAULT_MEMBER;
+        if (isAssaultLeader()) flags |= PRESENTATION_ASSAULT_LEADER;
+        final byte assaultFlags = (byte) flags;
+        if (entityData.get(DATA_PRESENTATION_INTENT) != intent) {
+            entityData.set(DATA_PRESENTATION_INTENT, intent);
+        }
+        if (entityData.get(DATA_PRESENTATION_ASSAULT_FLAGS) != assaultFlags) {
+            entityData.set(DATA_PRESENTATION_ASSAULT_FLAGS, assaultFlags);
+        }
+        if (entityData.get(DATA_PRESENTATION_ASSAULT_WAVE) != assaultWave) {
+            entityData.set(DATA_PRESENTATION_ASSAULT_WAVE, assaultWave);
+        }
     }
 
     public GoblinEnclaveRuntime.Counters goblinCounters() {
@@ -255,6 +312,7 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         GoblinEnclaveRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override
@@ -491,6 +549,7 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
         assaultWave = wave;
         assaultLeader = leader;
         GoblinEnclaveRuntime.onAssaultJoined(this);
+        syncPresentationFromRuntime();
     }
 
     /** Releases every assault marker, and persistence itself when no other reason remains. */
@@ -499,6 +558,7 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
         assaultWave = 0;
         assaultLeader = false;
         GoblinEnclaveRuntime.onAssaultLeft(this);
+        syncPresentationFromRuntime();
     }
 
     public Optional<BlockPos> assaultCenter() {
@@ -558,6 +618,7 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
         assaultWave = input.getIntOr(ASSAULT_WAVE_KEY, 0);
         assaultLeader = input.getBooleanOr(ASSAULT_LEADER_KEY, false);
         enclaveTransient.resetForLoad();
+        syncPresentationFromRuntime();
     }
 
     private Optional<UUID> legacyOwner() {

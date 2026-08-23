@@ -45,6 +45,7 @@ import com.kadamitas.warlockery.ritual.hex.HexRuntime;
 import com.kadamitas.warlockery.ritual.hex.HexState;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import com.kadamitas.warlockery.transformation.SupernaturalState;
+import com.kadamitas.warlockery.transformation.WerewolfPreyDriveRuntime;
 import com.kadamitas.warlockery.transformation.PlayerWolfVisualSync;
 import com.kadamitas.warlockery.world.VillageAssaultRuntime;
 import com.kadamitas.warlockery.world.VillageGuardRuntime;
@@ -92,7 +93,10 @@ public final class WarlockeryFabricEvents {
         ServerLivingEntityEvents.AFTER_DEATH.register(WarlockeryFabricEvents::afterDeath);
         ServerPlayerEvents.COPY_FROM.register(WarlockeryFabricEvents::copyPlayerData);
         ServerPlayerEvents.JOIN.register(FlyingBroomItem::handleLogin);
-        ServerPlayerEvents.LEAVE.register(FlyingBroomItem::handleLogout);
+        ServerPlayerEvents.LEAVE.register(player -> {
+            FlyingBroomItem.handleLogout(player);
+            WerewolfPreyDriveRuntime.release(player);
+        });
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
             EquipmentSetEffects.handleEntityJoinLevel(entity, level, entity.tickCount > 0);
             if (VillageAssaultRuntime.handleEntityJoin(entity, level)) {
@@ -171,6 +175,9 @@ public final class WarlockeryFabricEvents {
     }
 
     private static void afterDeath(final LivingEntity entity, final DamageSource source) {
+        if (entity instanceof ServerPlayer player) {
+            WerewolfPreyDriveRuntime.release(player);
+        }
         FlyingBroomItem.handleDeath(entity);
         BrewPersistentRuntime.handleDeath(entity);
         MagicPathRuntime.handleDeath(entity, source);
@@ -184,6 +191,8 @@ public final class WarlockeryFabricEvents {
         final ServerPlayer player,
         final boolean alive
     ) {
+        WerewolfPreyDriveRuntime.release(original);
+        WerewolfPreyDriveRuntime.release(player);
         final PlayerCloneContext context = new PlayerCloneContext(original, player, !alive);
         SpiritWorldState.copyAfterClone(context);
         SpiritManifestationState.copyAfterClone(context);

@@ -1,7 +1,12 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:human_village_builds_a_closed_stone_defense",
-  "environment": "minecraft:default",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "human_village_builds_a_closed_stone_defense",
+    "delegate": "minecraft:default"
+  },
   "structure": "warlockery:empty3x3x3",
-  "max_ticks": 100
+  "max_ticks": 100,
+  "padding": 40
 }

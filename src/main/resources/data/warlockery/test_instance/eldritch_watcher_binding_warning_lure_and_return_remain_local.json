@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:eldritch_watcher_binding_warning_lure_and_return_remain_local",
-  "environment": "warlockery:eldritch_watcher_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "eldritch_watcher_binding_warning_lure_and_return_remain_local",
+    "delegate": "warlockery:eldritch_watcher_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

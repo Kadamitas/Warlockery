@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:death_reap_respects_vanilla_protection_and_attribution",
-  "environment": "warlockery:death_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "death_reap_respects_vanilla_protection_and_attribution",
+    "delegate": "warlockery:death_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/Kadamitas/Warlockery/releases",
   "promos": {
-    "26.2-latest": "1.5.0",
-    "26.2-recommended": "1.5.0"
+    "26.2-latest": "1.5.1",
+    "26.2-recommended": "1.5.1"
   },
   "26.2": {
     "1.0.0-alpha.1": "Initial public alpha.",
@@ -14,6 +14,7 @@
     "1.3.0": "Fortifies villages, adds vampire and werewolf assaults with distinct objectives and transformations, expands hobgoblin defenses, and improves player wolf form.",
     "1.3.1": "Updates the Forge, NeoForge, and Fabric builds to the latest compatible Minecraft 26.2 loader and API releases.",
     "1.4.0": "Makes village assaults rarer, adds mob-specific combat and hazard navigation, expands ecology and settlement life, improves spouse interactions and common-tag compatibility, and aligns tested Forge, NeoForge, and Fabric releases.",
-    "1.5.0": "Adds dedicated bounded creature behaviors and mimicry, reimagines machine interfaces, restores and modernizes Witchery machine functionality, expands Nami's Ocean Monument progression, reduces continuous scanning, and aligns Forge, NeoForge, Fabric, and the supporter build."
+    "1.5.0": "Adds dedicated bounded creature behaviors and mimicry, reimagines machine interfaces, restores and modernizes Witchery machine functionality, expands Nami's Ocean Monument progression, reduces continuous scanning, and aligns Forge, NeoForge, Fabric, and the supporter build.",
+    "1.5.1": "Isolates GameTests, reworks vampire blood, Sanguine regeneration, sunlight, and death wards, adds werewolf prey drive and synchronized wolf forms, rebuilds readable creature and magical-plant visuals, and fixes Hobgoblin defensive strikes."
   }
 }

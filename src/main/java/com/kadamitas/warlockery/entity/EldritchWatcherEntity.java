@@ -1,10 +1,14 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.entity.EldritchWatcherRules.Mode;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
@@ -28,6 +32,8 @@ import org.jspecify.annotations.Nullable;
 
 public final class EldritchWatcherEntity extends Vex implements ArcaneCreature {
     private static final String STATE_KEY = "WarlockeryEldritchWatcher";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_MODE =
+        SynchedEntityData.defineId(EldritchWatcherEntity.class, EntityDataSerializers.BYTE);
 
     private final EldritchWatcherRuntime.Counters watcherCounters = new EldritchWatcherRuntime.Counters();
     private EldritchWatcherState watcherState;
@@ -51,6 +57,26 @@ public final class EldritchWatcherEntity extends Vex implements ArcaneCreature {
         watcherState = state == null
             ? EldritchWatcherState.empty(getUUID(), level().getGameTime())
             : state;
+        syncPresentation(watcherState.mode());
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_PRESENTATION_MODE, (byte) Mode.QUIET_VIGIL.ordinal());
+    }
+
+    public Mode presentationMode() {
+        final int stored = entityData.get(DATA_PRESENTATION_MODE);
+        final Mode[] modes = Mode.values();
+        return stored >= 0 && stored < modes.length ? modes[stored] : Mode.QUIET_VIGIL;
+    }
+
+    private void syncPresentation(final Mode mode) {
+        final byte encoded = (byte) mode.ordinal();
+        if (entityData.get(DATA_PRESENTATION_MODE) != encoded) {
+            entityData.set(DATA_PRESENTATION_MODE, encoded);
+        }
     }
 
     public EldritchWatcherRuntime.Counters watcherCounters() {
@@ -147,6 +173,7 @@ public final class EldritchWatcherEntity extends Vex implements ArcaneCreature {
                 tag, getUUID(), level().dimension().identifier().toString(), now
             ))
             .orElse(EldritchWatcherState.empty(getUUID(), now));
+        syncPresentation(watcherState.mode());
         setIsCharging(false);
         normalizeEquipment();
     }

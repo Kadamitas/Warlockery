@@ -17,6 +17,15 @@ public final class ClientSupernaturalState {
         snapshot = payload.snapshot();
     }
 
+    public static ModNetwork.SupernaturalSnapshot snapshot() {
+        return snapshot;
+    }
+
+    public static boolean isVampire() {
+        final String identity = snapshot.identity();
+        return "vampire".equals(identity) || identity.endsWith(".vampire");
+    }
+
     public static void clear() {
         snapshot = emptySnapshot();
     }

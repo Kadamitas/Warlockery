@@ -49,6 +49,7 @@ import com.kadamitas.warlockery.ritual.WarlockeryGameTests;
 import com.kadamitas.warlockery.ritual.NamiRitualGameTests;
 import com.kadamitas.warlockery.ritual.SeerCovenGameTests;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionGameTests;
+import com.kadamitas.warlockery.transformation.WerewolfPreyDriveGameTests;
 import com.kadamitas.warlockery.world.SettlementFortificationGameTests;
 import com.kadamitas.warlockery.world.VillageAssaultGameTests;
 import com.kadamitas.warlockery.world.VillageGuardGameTests;
@@ -380,6 +381,14 @@ public final class ModGameTests {
             () -> SupernaturalProgressionGameTests::werewolfAltarDiagnosesAndAdvances);
         REGISTRY.register("transformed_werewolves_dig_dirt_and_sand_faster",
             () -> SupernaturalProgressionGameTests::transformedWerewolvesDigDirtAndSandFaster);
+        REGISTRY.register("vampire_blood_replaces_hunger_and_regenerates",
+            () -> SupernaturalProgressionGameTests::vampireBloodReplacesHungerAndRegenerates);
+        REGISTRY.register("vampire_sunlight_ignores_fire_resistance",
+            () -> SupernaturalProgressionGameTests::vampireSunlightIgnoresFireResistance);
+        REGISTRY.register("werewolf_prey_drive_hunts_valid_prey",
+            () -> WerewolfPreyDriveGameTests::huntsValidPrey);
+        REGISTRY.register("werewolf_prey_drive_releases_invalid_target",
+            () -> WerewolfPreyDriveGameTests::releasesInvalidTarget);
         REGISTRY.register("spirit_world_entry_creates_state_body_and_diagnostic",
             () -> SpiritWorldGameTests::entryCreatesStateBodyAndDiagnostic);
         REGISTRY.register("spirit_world_carry_in_and_exports_restore_without_duplication",

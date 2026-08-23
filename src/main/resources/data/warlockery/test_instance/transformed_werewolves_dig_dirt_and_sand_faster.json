@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:transformed_werewolves_dig_dirt_and_sand_faster",
-  "environment": "minecraft:default",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "transformed_werewolves_dig_dirt_and_sand_faster",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

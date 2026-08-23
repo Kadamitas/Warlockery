@@ -525,16 +525,18 @@ public final class ImpGameTests {
     public static void impRangedLaneWindupAndRetreatAreBounded(final GameTestHelper helper) {
         final FixtureScope fixture = new FixtureScope(helper);
         try {
-            final ImpEntity imp = spawnImp(fixture, new BlockPos(1, 1, 1));
-            erectIsolationShell(fixture, new BlockPos(1, 1, 1));
+            final BlockPos cellCenter = new BlockPos(7, 1, 7);
+            final ImpEntity imp = spawnImp(fixture, cellCenter);
+            erectFrameworkCell(fixture, cellCenter);
+            erectIsolationShell(fixture, cellCenter);
             // The 3x3x3 cell is enclosed by barriers, so the ranged lane is staged in the open-air
             // corridor east of the cell, inside the radius-five isolation shell. The zombie needs
             // its own support block because the world outside the cell floor is open air.
-            final BlockPos targetSupport = helper.absolutePos(new BlockPos(5, 0, -3));
+            final BlockPos targetSupport = helper.absolutePos(new BlockPos(11, 0, 3));
             helper.getLevel().setBlock(targetSupport, Blocks.STONE.defaultBlockState(), 3);
             fixture.onClose(() -> helper.getLevel().setBlock(
                 targetSupport, Blocks.AIR.defaultBlockState(), 3));
-            final Zombie target = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(5, 1, -3),
+            final Zombie target = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(11, 1, 3),
                 EntitySpawnReason.EVENT);
             target.setNoAi(true);
             imp.invulnerableTime = 0;
@@ -553,59 +555,101 @@ public final class ImpGameTests {
             helper.assertTrue(imp.lifeCounters().blockReads() <= ImpLifeRules.LANE_READ_BUDGET,
                 "lane validation charges at most sixty-four actual reads");
 
-            imp.setLifeState(imp.lifeState().withAction(Action.NONE)
-                .withDeadlines(ImpLifeState.Deadlines.none()));
+            // The lane search above owns navigation and move-control state. Use a fresh live body
+            // for the windup so the test observes combat timing without residual route steering.
+            imp.discard();
             // Eight blocks south of the target along the clear corridor east of the barrier cell:
             // inside the preferred eight-to-twelve band with unobstructed line of sight.
-            final BlockPos firingSpot = helper.absolutePos(new BlockPos(5, 1, 5));
-            imp.snapTo(firingSpot.getX() + 0.5D, firingSpot.getY(), firingSpot.getZ() + 0.5D,
-                0.0F, 0.0F);
-            imp.setDeltaMovement(Vec3.ZERO);
-            // Sensing caches line-of-sight per server tick; the first decision ran from inside
-            // the barrier cell and cached "unseen", so the cache must reset after repositioning.
-            imp.getSensing().tick();
-            makeDue(imp);
-            ImpLifeRuntime.tick(imp, helper.getLevel());
-            helper.assertValueEqual(imp.lifeState().action(), Action.RANGED_WINDUP,
-                "a preferred-band target with line of sight starts the ten-tick windup");
-            final long windupStart = imp.lifeState().deadlines().windupStartedAt();
-            helper.assertTrue(windupStart > 0L, "the windup records its start tick");
-
-            helper.runAfterDelay(ImpLifeRules.WINDUP_TICKS + 2L, () -> {
+            final BlockPos firingSpot = helper.absolutePos(new BlockPos(11, 1, 11));
+            final ImpEntity shooter = spawnImp(fixture, new BlockPos(11, 1, 11));
+            final boolean[] windupStarted = {false};
+            final long[] windupStart = {-1L};
+            final boolean[] shotObserved = {false};
+            helper.onEachTick(() -> {
+                if (windupStarted[0] || shooter.tickCount <= 0) {
+                    return;
+                }
+                // Begin the bound only after the server has promoted the newly inserted body to
+                // live entity ticking; padding and structure placement alone do not commit that
+                // promotion before the GameTest's initial callback on every chunk alignment.
+                shooter.snapTo(firingSpot.getX() + 0.5D, firingSpot.getY(), firingSpot.getZ() + 0.5D,
+                    0.0F, 0.0F);
+                shooter.setDeltaMovement(Vec3.ZERO);
+                shooter.setTarget(target);
+                shooter.getSensing().tick();
+                makeDue(shooter);
+                ImpLifeRuntime.tick(shooter, helper.getLevel());
+                helper.assertValueEqual(shooter.lifeState().action(), Action.RANGED_WINDUP,
+                    "a preferred-band target with line of sight starts the ten-tick windup");
+                windupStart[0] = shooter.lifeState().deadlines().windupStartedAt();
+                helper.assertTrue(windupStart[0] > 0L, "the windup records its start tick");
+                windupStarted[0] = true;
+            });
+            helper.onEachTick(() -> {
+                if (shotObserved[0] || shooter.lifeCounters().shotsFired() != 1L) {
+                    return;
+                }
+                shotObserved[0] = true;
                 try {
-                    helper.assertValueEqual(imp.lifeCounters().shotsFired(), 1L,
+                    helper.assertValueEqual(shooter.lifeCounters().shotsFired(), 1L,
                         "the completed windup releases exactly one projectile");
                     helper.assertFalse(helper.getLevel().getEntitiesOfClass(
-                            SmallFireball.class, imp.getBoundingBox().inflate(24.0D)).isEmpty(),
+                            SmallFireball.class, shooter.getBoundingBox().inflate(24.0D)).isEmpty(),
                         "a real small fireball leaves the live ticking imp");
                     helper.getLevel().getEntitiesOfClass(
-                        SmallFireball.class, imp.getBoundingBox().inflate(24.0D)).forEach(fixture::track);
-                    helper.assertTrue(imp.lifeState().deadlines().lastShotAt() > 0L,
+                        SmallFireball.class, shooter.getBoundingBox().inflate(24.0D)).forEach(fixture::track);
+                    helper.assertTrue(shooter.lifeState().deadlines().lastShotAt() > 0L,
                         "the shot stamps the thirty-tick cadence gate");
-                    makeDue(imp);
-                    ImpLifeRuntime.tick(imp, helper.getLevel());
-                    helper.assertFalse(imp.lifeState().action() == Action.RANGED_WINDUP,
+                    makeDue(shooter);
+                    ImpLifeRuntime.tick(shooter, helper.getLevel());
+                    helper.assertFalse(shooter.lifeState().action() == Action.RANGED_WINDUP,
                         "no second windup may start inside the thirty-tick cadence");
 
-                    imp.setHealth(imp.getMaxHealth() * 0.20F);
-                    makeDue(imp);
-                    ImpLifeRuntime.tick(imp, helper.getLevel());
-                    helper.assertTrue(imp.lifeState().retreatLatched(),
+                    shooter.setHealth(shooter.getMaxHealth() * 0.20F);
+                    makeDue(shooter);
+                    ImpLifeRuntime.tick(shooter, helper.getLevel());
+                    helper.assertTrue(shooter.lifeState().retreatLatched(),
                         "twenty percent health latches the retreat");
-                    helper.assertValueEqual(imp.lifeState().action(), Action.DISENGAGE,
+                    helper.assertValueEqual(shooter.lifeState().action(), Action.DISENGAGE,
                         "the latched imp disengages instead of firing");
-                    helper.assertTrue(imp.getTarget() == null,
+                    helper.assertTrue(shooter.getTarget() == null,
                         "retreat releases the target claim");
 
-                    imp.setHealth(imp.getMaxHealth() * 0.50F);
-                    makeDue(imp);
-                    ImpLifeRuntime.tick(imp, helper.getLevel());
-                    helper.assertFalse(imp.lifeState().retreatLatched(),
+                    shooter.setHealth(shooter.getMaxHealth() * 0.50F);
+                    makeDue(shooter);
+                    ImpLifeRuntime.tick(shooter, helper.getLevel());
+                    helper.assertFalse(shooter.lifeState().retreatLatched(),
                         "forty-five percent health with a safe lane releases the latch");
                 } finally {
                     fixture.close();
                 }
                 helper.succeed();
+            });
+            // A newly inserted mob may take its first entity tick on either side of the GameTest
+            // callback phase. Await the observable shot, but keep the production windup's own
+            // fifteen-tick action window as a hard deadline.
+            helper.onEachTick(() -> {
+                if (shotObserved[0] || !windupStarted[0]
+                    || helper.getLevel().getGameTime() - windupStart[0]
+                        <= ImpLifeRules.WINDUP_TICKS + 5L) {
+                    return;
+                }
+                try {
+                    helper.assertTrue(false,
+                        "the live windup must release its projectile inside the bounded action window");
+                } finally {
+                    fixture.close();
+                }
+            });
+            helper.runAfterDelay(40L, () -> {
+                if (windupStarted[0]) {
+                    return;
+                }
+                try {
+                    helper.assertTrue(false, "the fresh shooter must enter live entity ticking");
+                } finally {
+                    fixture.close();
+                }
             });
         } catch (final RuntimeException | Error failure) {
             fixture.close();
@@ -1008,6 +1052,30 @@ public final class ImpGameTests {
                 for (int dy = 0; dy <= height; dy++) {
                     final BlockPos pos = new BlockPos(
                         center.getX() + dx, center.getY() + dy, center.getZ() + dz);
+                    if (helper.getLevel().getBlockState(pos).isAir()) {
+                        helper.getLevel().setBlock(pos, Blocks.BARRIER.defaultBlockState(), 3);
+                        placed.add(pos);
+                    }
+                }
+            }
+        }
+        fixture.onClose(() -> placed.forEach(pos -> helper.getLevel().setBlock(
+            pos, Blocks.AIR.defaultBlockState(), 3)));
+    }
+
+    /** Recreates the sealed three-block framework staging cell inside the force-ticked 15-cube fixture. */
+    private static void erectFrameworkCell(final FixtureScope fixture, final BlockPos centerRelative) {
+        final GameTestHelper helper = fixture.helper;
+        final BlockPos center = helper.absolutePos(centerRelative);
+        final List<BlockPos> placed = new ArrayList<>();
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dy = -1; dy <= 2; dy++) {
+                for (int dz = -2; dz <= 2; dz++) {
+                    final boolean shell = Math.abs(dx) == 2 || Math.abs(dz) == 2 || dy == 2;
+                    if (!shell) {
+                        continue;
+                    }
+                    final BlockPos pos = center.offset(dx, dy, dz);
                     if (helper.getLevel().getBlockState(pos).isAir()) {
                         helper.getLevel().setBlock(pos, Blocks.BARRIER.defaultBlockState(), 3);
                         placed.add(pos);

@@ -37,12 +37,12 @@ final class CovenPractitionerResourceTest {
     void registeredDimensionsCategoryAndArchetypesRemainExact() {
         final CreatureVisualProfile crone = CreatureVisualProfile.forKind(CreatureKind.HEDGE_CRONE);
         assertEquals(0.65F, crone.width());
-        assertEquals(2.0F, crone.height());
+        assertEquals(2.7F, crone.height());
         assertEquals(Archetype.BOSS, crone.archetype());
 
         final CreatureVisualProfile mage = CreatureVisualProfile.forKind(CreatureKind.CIRCLE_MAGE);
         assertEquals(0.6F, mage.width());
-        assertEquals(1.95F, mage.height());
+        assertEquals(1.8F, mage.height());
         assertEquals(Archetype.HUMANOID, mage.archetype());
     }
 
@@ -151,9 +151,11 @@ final class CovenPractitionerResourceTest {
             final JsonObject json = read(descriptor);
             assertEquals("minecraft:function", json.get("type").getAsString());
             assertEquals("warlockery:" + fixture, json.get("function").getAsString());
+            final JsonObject environment = json.getAsJsonObject("environment");
+            assertEquals("warlockery:isolated", environment.get("type").getAsString());
             assertEquals("warlockery:coven_practitioners_isolated",
-                json.get("environment").getAsString());
-            assertEquals("warlockery:empty3x3x3", json.get("structure").getAsString());
+                environment.get("delegate").getAsString());
+            assertEquals("warlockery:empty32x32x32", json.get("structure").getAsString());
             assertEquals(400, json.get("max_ticks").getAsInt());
         });
     }

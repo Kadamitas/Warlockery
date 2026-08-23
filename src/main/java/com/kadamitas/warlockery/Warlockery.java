@@ -13,6 +13,7 @@ import com.kadamitas.warlockery.registry.ModCreativeTabs;
 import com.kadamitas.warlockery.registry.ModEffects;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModFluids;
+import com.kadamitas.warlockery.registry.ModGameTestEnvironments;
 import com.kadamitas.warlockery.registry.ModGameTests;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModMenus;
@@ -45,6 +46,7 @@ public final class Warlockery implements ModInitializer {
         ModBlockEntities.register();
         ModChunkTickets.register();
         ModCreativeTabs.register();
+        ModGameTestEnvironments.register();
         ModGameTests.register();
 
         WarlockeryWorldGeneration.initialize();

@@ -4,6 +4,9 @@ import com.kadamitas.warlockery.entity.HellhoundLifeRules.PackOrigin;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
@@ -36,6 +39,12 @@ import org.jspecify.annotations.Nullable;
  */
 public final class HellhoundEntity extends ArcaneMob {
     private static final String STATE_KEY = "WarlockeryHellhoundLife";
+    private static final int PRESENTATION_BOUND = 1;
+    private static final int PRESENTATION_WARNING = 1 << 1;
+    private static final int PRESENTATION_BITING = 1 << 2;
+    private static final int PRESENTATION_RETREATING = 1 << 3;
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_FLAGS =
+        SynchedEntityData.defineId(HellhoundEntity.class, EntityDataSerializers.BYTE);
 
     private final HellhoundLifeRuntime.Counters lifeCounters = new HellhoundLifeRuntime.Counters();
     private HellhoundLifeState lifeState;
@@ -58,6 +67,12 @@ public final class HellhoundEntity extends ArcaneMob {
         normalizeZombieState();
     }
 
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_FLAGS, (byte) 0);
+    }
+
     public HellhoundLifeState lifeState() {
         return lifeState;
     }
@@ -66,6 +81,37 @@ public final class HellhoundEntity extends ArcaneMob {
         lifeState = state == null
             ? HellhoundLifeState.solitary(getUUID(), PackOrigin.SOLITARY, level().getGameTime())
             : state;
+        syncPresentationFromRuntime();
+    }
+
+    public boolean presentationBound() {
+        return EntityPresentationSync.flag(entityData.get(DATA_PRESENTATION_FLAGS), PRESENTATION_BOUND);
+    }
+
+    public boolean presentationWarning() {
+        return EntityPresentationSync.flag(entityData.get(DATA_PRESENTATION_FLAGS), PRESENTATION_WARNING);
+    }
+
+    public boolean presentationBiting() {
+        return EntityPresentationSync.flag(entityData.get(DATA_PRESENTATION_FLAGS), PRESENTATION_BITING);
+    }
+
+    public boolean presentationRetreating() {
+        return EntityPresentationSync.flag(entityData.get(DATA_PRESENTATION_FLAGS), PRESENTATION_RETREATING);
+    }
+
+    private void syncPresentationFromRuntime() {
+        int flags = 0;
+        if (lifeState.bound()) flags |= PRESENTATION_BOUND;
+        if (lifeState.warningCommitDeadline() > 0L) flags |= PRESENTATION_WARNING;
+        if (lifeState.biteWindupStartedAt() > 0L || lifeState.biteCommitDeadline() > 0L) {
+            flags |= PRESENTATION_BITING;
+        }
+        if (lifeState.retreatLatched()) flags |= PRESENTATION_RETREATING;
+        final byte encoded = (byte) flags;
+        if (entityData.get(DATA_PRESENTATION_FLAGS) != encoded) {
+            entityData.set(DATA_PRESENTATION_FLAGS, encoded);
+        }
     }
 
     public HellhoundLifeRuntime.Counters lifeCounters() {
@@ -102,6 +148,7 @@ public final class HellhoundEntity extends ArcaneMob {
     @Override
     protected void tickSpecializedActivity(final ServerLevel level) {
         HellhoundLifeRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override
@@ -257,6 +304,7 @@ public final class HellhoundEntity extends ArcaneMob {
             .map(tag -> HellhoundLifeState.read(tag, getUUID(), now))
             .orElseGet(() -> HellhoundLifeState.solitary(getUUID(), PackOrigin.LEGACY_SOLITARY, now));
         normalizeZombieState();
+        syncPresentationFromRuntime();
     }
 
     /** One shared natural-group datum: exact pack identity, origin dimension, first position. */

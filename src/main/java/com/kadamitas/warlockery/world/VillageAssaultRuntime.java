@@ -12,6 +12,7 @@ import com.kadamitas.warlockery.entity.VampireCourtRules;
 import com.kadamitas.warlockery.entity.VampireCourtRuntime;
 import com.kadamitas.warlockery.entity.WerewolfEntity;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
 import com.kadamitas.warlockery.transformation.VampireProgressionRules;
 import com.kadamitas.warlockery.transformation.WerewolfProgressionRules;
 import com.kadamitas.warlockery.util.DataParsing;
@@ -91,6 +92,45 @@ public final class VillageAssaultRuntime {
                 villager instanceof Villager human && WerewolfVillagerInfectionRuntime.isInfected(human)
             )).isPresent();
     }
+
+    public static boolean protectsFromPreyDrive(final LivingEntity target) {
+        if (WarlockeryEntityData.get(target).contains(SupernaturalProgressionRuntime.NAAMAH_TRIAL_OWNER)) {
+            return true;
+        }
+        if (!(target.level() instanceof ServerLevel level)) {
+            return false;
+        }
+        return VillageAssaultData.get(level).active().map(state -> {
+            final boolean objectiveResident = target instanceof AbstractVillager resident
+                && eligibleObjectiveResident(state, resident)
+                && VillageAssaultRules.isFreshObjectiveTarget(
+                    state.kind(),
+                    target.getStringUUID(),
+                    Set.copyOf(state.objectiveVictims()),
+                    isBloodDrained(resident, level.getGameTime()),
+                    target instanceof Villager villager && WerewolfVillagerInfectionRuntime.isInfected(villager)
+                );
+            final boolean withinObjectiveArea = new AABB(state.center())
+                .inflate(TARGET_SEARCH_RADIUS, 20.0, TARGET_SEARCH_RADIUS)
+                .contains(target.position());
+            return protectsPreyTarget(
+                state, target.getStringUUID(), objectiveResident, withinObjectiveArea
+            );
+        }).orElse(false);
+    }
+
+    static boolean protectsPreyTarget(
+        final AssaultState state,
+        final String entityId,
+        final boolean objectiveResident,
+        final boolean withinObjectiveArea
+    ) {
+        return state.participants().contains(entityId)
+            || state.objectiveVictims().contains(entityId)
+            || state.raiderIds().contains(entityId)
+            || objectiveResident && withinObjectiveArea;
+    }
+
     public static void tick(final ServerLevel level) {
         WerewolfVillagerInfectionRuntime.tick(level);
         final long gameTime = level.getGameTime();

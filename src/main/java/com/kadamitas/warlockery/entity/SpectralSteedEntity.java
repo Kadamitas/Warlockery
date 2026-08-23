@@ -1,6 +1,9 @@
 package com.kadamitas.warlockery.entity;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -35,6 +38,17 @@ import net.minecraft.world.phys.Vec3;
  */
 public class SpectralSteedEntity extends ArcaneMob {
     private static final String STATE_KEY = "WarlockerySpectralSteed";
+    private static final int PRESENTATION_BALKING = 1;
+    private static final int PRESENTATION_RESTING = 1 << 1;
+    private static final int PRESENTATION_WARNING = 1 << 2;
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_GAIT =
+        SynchedEntityData.defineId(SpectralSteedEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_BOND =
+        SynchedEntityData.defineId(SpectralSteedEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_FATIGUE =
+        SynchedEntityData.defineId(SpectralSteedEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_FLAGS =
+        SynchedEntityData.defineId(SpectralSteedEntity.class, EntityDataSerializers.BYTE);
 
     private SpectralSteedState steedState = SpectralSteedState.empty();
 
@@ -49,12 +63,70 @@ public class SpectralSteedEntity extends ArcaneMob {
         }
     }
 
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_GAIT,
+            EntityPresentationSync.encode(SpectralSteedRules.Gait.HALT));
+        builder.define(DATA_PRESENTATION_BOND, 0);
+        builder.define(DATA_PRESENTATION_FATIGUE, 0);
+        builder.define(DATA_PRESENTATION_FLAGS, (byte) 0);
+    }
+
     public SpectralSteedState steedState() {
         return steedState;
     }
 
     public void setSteedState(final SpectralSteedState state) {
         steedState = state == null ? SpectralSteedState.empty() : state;
+        syncPresentationFromRuntime();
+    }
+
+    public SpectralSteedRules.Gait presentationGait() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_GAIT),
+            SpectralSteedRules.Gait.HALT);
+    }
+
+    public int presentationBond() {
+        return entityData.get(DATA_PRESENTATION_BOND);
+    }
+
+    public int presentationFatigue() {
+        return entityData.get(DATA_PRESENTATION_FATIGUE);
+    }
+
+    public boolean presentationBalking() {
+        return EntityPresentationSync.flag(entityData.get(DATA_PRESENTATION_FLAGS),
+            PRESENTATION_BALKING);
+    }
+
+    public boolean presentationResting() {
+        return EntityPresentationSync.flag(entityData.get(DATA_PRESENTATION_FLAGS),
+            PRESENTATION_RESTING);
+    }
+
+    public boolean presentationWarning() {
+        return EntityPresentationSync.flag(entityData.get(DATA_PRESENTATION_FLAGS),
+            PRESENTATION_WARNING);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte gait = EntityPresentationSync.encode(steedState.gait());
+        int flags = 0;
+        if (steedState.balking()) flags |= PRESENTATION_BALKING;
+        if (steedState.resting()) flags |= PRESENTATION_RESTING;
+        if (steedState.counters().warningTelegraphs() > 0L) flags |= PRESENTATION_WARNING;
+        final byte presentationFlags = (byte) flags;
+        if (entityData.get(DATA_PRESENTATION_GAIT) != gait) entityData.set(DATA_PRESENTATION_GAIT, gait);
+        if (entityData.get(DATA_PRESENTATION_BOND) != steedState.bond()) {
+            entityData.set(DATA_PRESENTATION_BOND, steedState.bond());
+        }
+        if (entityData.get(DATA_PRESENTATION_FATIGUE) != steedState.fatigue()) {
+            entityData.set(DATA_PRESENTATION_FATIGUE, steedState.fatigue());
+        }
+        if (entityData.get(DATA_PRESENTATION_FLAGS) != presentationFlags) {
+            entityData.set(DATA_PRESENTATION_FLAGS, presentationFlags);
+        }
     }
 
     /**
@@ -68,6 +140,7 @@ public class SpectralSteedEntity extends ArcaneMob {
             super.tickSpecializedActivity(level);
         }
         SpectralSteedRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     /** The shared mount speed, scaled by the band this steed has actually reached. */
@@ -117,7 +190,7 @@ public class SpectralSteedEntity extends ArcaneMob {
         setSteedState(input.read(STATE_KEY, CompoundTag.CODEC)
             .map(tag -> SpectralSteedState.read(tag, creatureKind()))
             .orElseGet(SpectralSteedState::empty));
+        syncPresentationFromRuntime();
     }
 }
-
 

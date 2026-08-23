@@ -3,6 +3,9 @@ package com.kadamitas.warlockery.entity;
 import java.util.EnumSet;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
@@ -33,6 +36,10 @@ import org.jspecify.annotations.Nullable;
 
 public final class VampireCourtEntity extends ArcaneMob {
     private static final String STATE_KEY = "WarlockeryVampireCourt";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_INTENT =
+        SynchedEntityData.defineId(VampireCourtEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_ROLE =
+        SynchedEntityData.defineId(VampireCourtEntity.class, EntityDataSerializers.BYTE);
     private static final Identifier ZOMBIE_RANDOM_SPAWN_BONUS =
         Identifier.withDefaultNamespace("zombie_random_spawn_bonus");
     private static final Identifier LEADER_ZOMBIE_BONUS =
@@ -56,6 +63,13 @@ public final class VampireCourtEntity extends ArcaneMob {
             throw new IllegalArgumentException("VampireCourtEntity requires a court kind");
         }
         return kind;
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_PRESENTATION_INTENT, (byte) VampireCourtRules.Intent.UNBOUND.ordinal());
+        entityData.define(DATA_PRESENTATION_ROLE, (byte) VampireCourtRules.AssaultRole.UNBOUND.ordinal());
     }
 
     @Override
@@ -135,6 +149,42 @@ public final class VampireCourtEntity extends ArcaneMob {
     public void setCourtState(final VampireCourtState state) {
         courtState = state == null || state.kind() != creatureKind()
             ? VampireCourtState.empty(creatureKind(), level().getGameTime()) : state;
+        syncPresentation(courtState.intent());
+        syncPresentationRole(courtState.assaultRole());
+    }
+
+    public VampireCourtRules.Intent presentationIntent() {
+        return decoded(
+            entityData.get(DATA_PRESENTATION_INTENT),
+            VampireCourtRules.Intent.values(),
+            VampireCourtRules.Intent.UNBOUND
+        );
+    }
+
+    public VampireCourtRules.AssaultRole presentationAssaultRole() {
+        return decoded(
+            entityData.get(DATA_PRESENTATION_ROLE),
+            VampireCourtRules.AssaultRole.values(),
+            VampireCourtRules.AssaultRole.UNBOUND
+        );
+    }
+
+    private void syncPresentation(final VampireCourtRules.Intent intent) {
+        final byte encoded = (byte) intent.ordinal();
+        if (entityData.get(DATA_PRESENTATION_INTENT) != encoded) {
+            entityData.set(DATA_PRESENTATION_INTENT, encoded);
+        }
+    }
+
+    private void syncPresentationRole(final VampireCourtRules.AssaultRole role) {
+        final byte encoded = (byte) role.ordinal();
+        if (entityData.get(DATA_PRESENTATION_ROLE) != encoded) {
+            entityData.set(DATA_PRESENTATION_ROLE, encoded);
+        }
+    }
+
+    private static <T> T decoded(final int encoded, final T[] values, final T fallback) {
+        return encoded >= 0 && encoded < values.length ? values[encoded] : fallback;
     }
 
     public VampireCourtRuntime.Counters courtCounters() {
@@ -225,9 +275,9 @@ public final class VampireCourtEntity extends ArcaneMob {
     @Override
     protected void readAdditionalSaveData(final ValueInput input) {
         super.readAdditionalSaveData(input);
-        courtState = input.read(STATE_KEY, CompoundTag.CODEC)
+        setCourtState(input.read(STATE_KEY, CompoundTag.CODEC)
             .map(tag -> VampireCourtState.read(tag, creatureKind(), level().getGameTime()))
-            .orElse(VampireCourtState.empty(creatureKind(), level().getGameTime()));
+            .orElse(VampireCourtState.empty(creatureKind(), level().getGameTime())));
         normalizeLifecycle();
     }
 }

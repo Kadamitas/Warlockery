@@ -3,6 +3,9 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.registry.ModSounds;
 import java.util.List;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,6 +53,8 @@ public final class ForgewardenEntity extends AbstractGoblinMerchantEntity
     implements GoblinPatronRuntime.PatronBody {
     public static final String STATE_KEY = "WarlockeryGoblinPatron";
     private static final String LEGACY_EMPOWERMENT_KEY = "WarlockeryEmpowerment";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_ACTION =
+        SynchedEntityData.defineId(ForgewardenEntity.class, EntityDataSerializers.BYTE);
 
     private final CreatureBehavior contractBehavior =
         CreatureBehaviorFactory.create(CreatureKind.FORGEWARDEN);
@@ -64,6 +69,13 @@ public final class ForgewardenEntity extends AbstractGoblinMerchantEntity
             BossEvent.BossBarColor.RED,
             BossEvent.BossBarOverlay.NOTCHED_6
         ));
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_ACTION,
+            EntityPresentationSync.encode(GoblinPatronRules.Action.IDLE));
     }
 
     // ---------------------------------------------------------------- identity
@@ -115,6 +127,19 @@ public final class ForgewardenEntity extends AbstractGoblinMerchantEntity
 
     public void setGoblinPatronState(final GoblinPatronState state) {
         patronCore.setState(state);
+        syncPresentationFromRuntime();
+    }
+
+    public GoblinPatronRules.Action presentationAction() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_ACTION),
+            GoblinPatronRules.Action.IDLE);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte action = EntityPresentationSync.encode(patronCore.state().combat().action());
+        if (entityData.get(DATA_PRESENTATION_ACTION) != action) {
+            entityData.set(DATA_PRESENTATION_ACTION, action);
+        }
     }
 
     public GoblinPatronRuntime.Counters patronCounters() {
@@ -184,6 +209,7 @@ public final class ForgewardenEntity extends AbstractGoblinMerchantEntity
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         GoblinPatronRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override
@@ -350,5 +376,6 @@ public final class ForgewardenEntity extends AbstractGoblinMerchantEntity
             input.getIntOr(LEGACY_EMPOWERMENT_KEY, 0),
             input.getIntOr("Xp", 0)
         );
+        syncPresentationFromRuntime();
     }
 }

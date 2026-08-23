@@ -9,7 +9,9 @@ record CreatureModelProfile(
     String entityId,
     CreatureVisualProfile visual,
     Archetype bodyPlan,
-    Variant variant
+    Variant variant,
+    int textureWidth,
+    int textureHeight
 ) {
     CreatureModelProfile {
         Objects.requireNonNull(entityId, "entityId");
@@ -19,11 +21,21 @@ record CreatureModelProfile(
         if (!variant.id().equals(entityId)) {
             throw new IllegalArgumentException("Model variant does not match entity id: " + entityId);
         }
+        if (textureWidth <= 0 || textureHeight <= 0) {
+            throw new IllegalArgumentException("Texture atlas dimensions must be positive");
+        }
     }
 
     static CreatureModelProfile forEntity(final String entityId, final CreatureVisualProfile visual) {
         final Variant variant = Variant.fromId(entityId);
-        return new CreatureModelProfile(entityId, visual, variant.bodyPlan(), variant);
+        return new CreatureModelProfile(
+            entityId,
+            visual,
+            variant.bodyPlan(),
+            variant,
+            variant.textureWidth(),
+            variant.textureHeight()
+        );
     }
 
     enum Variant {
@@ -100,6 +112,14 @@ record CreatureModelProfile(
                 case IMP -> Archetype.IMP;
                 case STORM_SIMIAN -> Archetype.SIMIAN;
             };
+        }
+
+        int textureWidth() {
+            return this == MANDRAKE || this == DREAMROOT ? 128 : 64;
+        }
+
+        int textureHeight() {
+            return 64;
         }
 
         static Variant fromId(final String entityId) {

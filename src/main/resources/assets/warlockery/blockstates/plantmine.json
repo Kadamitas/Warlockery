@@ -1,19 +1,9 @@
 {
   "variants": {
-    "payload=ink": {
-      "model": "warlockery:block/plantmine"
-    },
-    "payload=sprouting": {
-      "model": "warlockery:block/plantmine"
-    },
-    "payload=thorns": {
-      "model": "warlockery:block/plantmine"
-    },
-    "payload=unarmed": {
-      "model": "warlockery:block/plantmine"
-    },
-    "payload=webs": {
-      "model": "warlockery:block/plantmine"
-    }
+    "payload=ink": { "model": "warlockery:block/plantmine_ink" },
+    "payload=sprouting": { "model": "warlockery:block/plantmine_sprouting" },
+    "payload=thorns": { "model": "warlockery:block/plantmine_thorns" },
+    "payload=unarmed": { "model": "warlockery:block/plantmine_unarmed" },
+    "payload=webs": { "model": "warlockery:block/plantmine_webs" }
   }
 }

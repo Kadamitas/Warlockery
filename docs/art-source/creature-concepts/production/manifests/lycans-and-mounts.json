@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "package": "wave-03-lycans-canid-and-occult-mounts",
+  "generatedOn": "2026-08-21",
+  "authoritativeMappings": [
+    {
+      "sourceName": "Werewolf",
+      "warlockerySpecies": "Werewolf"
+    },
+    {
+      "sourceName": "Feral Werewolf",
+      "warlockerySpecies": "Feral Lycan"
+    },
+    {
+      "sourceName": "Hellhound",
+      "warlockerySpecies": "Hellhound"
+    },
+    {
+      "sourceName": "Spectral Steed",
+      "warlockerySpecies": "Pale Steed"
+    },
+    {
+      "sourceName": "Nightmare",
+      "warlockerySpecies": "Nightmare"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "docs/art-source/creature-concepts/production/wave-03a-lycan-and-canid-turnarounds.png",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "ddc25147216003b6ac57914df6100641a4910f6b8a1c15127f65da76bef17249"
+    },
+    {
+      "path": "docs/art-source/creature-concepts/production/wave-03b-occult-mount-turnarounds.png",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "3301a56ad4f6a037265ace1c7d95256655a9d0f0bb3abc7c183e35dc02a6ae30"
+    }
+  ],
+  "atlases": [
+    {
+      "id": "werewolf",
+      "width": 192,
+      "height": 192,
+      "sha256": "16f2ac1b6134425fbbf6d48a92415d8ce2709c5619c42a1f69c5a0250ecf3cfa",
+      "opaquePixels": 5958,
+      "transparentPixels": 30906
+    },
+    {
+      "id": "feral_lycan",
+      "width": 192,
+      "height": 160,
+      "sha256": "ed3018a31fa5c1a884cdc877a8c4109f5d12634abb656c24e966af98acf17321",
+      "opaquePixels": 5662,
+      "transparentPixels": 25058
+    },
+    {
+      "id": "hellhound",
+      "width": 256,
+      "height": 160,
+      "sha256": "c4186af63f8a4fa1715042623729acc2565c4819984009505a9395b4f44162ef",
+      "opaquePixels": 7862,
+      "transparentPixels": 33098
+    },
+    {
+      "id": "pale_steed",
+      "width": 256,
+      "height": 192,
+      "sha256": "ea5defe7bbd8f5293187b18d2d848147450057e221d01a6d1c06e8f8d4c10bbd",
+      "opaquePixels": 8528,
+      "transparentPixels": 40624
+    },
+    {
+      "id": "nightmare",
+      "width": 256,
+      "height": 224,
+      "sha256": "956e3747aeebdab42f6b6a8b0a2cb4bc98389aac8219f9b3b6b9a6a4872c126f",
+      "opaquePixels": 9742,
+      "transparentPixels": 47602
+    }
+  ],
+  "atlasGenerator": "tools/creature_models/generate_lycans_and_mounts.ps1",
+  "research": [
+    {
+      "sourceName": "Werewolf",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/werewolf/",
+      "imageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/_/rsrc/1431191885035/werewolf/werewolf.png",
+      "availability": "page and image inspected",
+      "distilledTraits": [
+        "upright gray hybrid",
+        "compact wolf head",
+        "weighty torso",
+        "long heavy arms"
+      ]
+    },
+    {
+      "sourceName": "Feral Werewolf",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/feral-werewolf/",
+      "availability": "exact legacy page and image unavailable; no substitute visual reference used",
+      "distilledTraits": [
+        "authoritative linguistic source name only"
+      ]
+    },
+    {
+      "sourceName": "Hellhound",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/hellhound/",
+      "availability": "page inspected; no creature image exposed by page",
+      "distilledTraits": [
+        "aggressive Nether pack canid",
+        "fire-causing bite",
+        "close-range provocation"
+      ]
+    },
+    {
+      "sourceName": "Spectral Steed",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/spectral-steed/",
+      "availability": "exact legacy page and image unavailable; no substitute visual reference used",
+      "distilledTraits": [
+        "authoritative linguistic source name only"
+      ]
+    },
+    {
+      "sourceName": "Nightmare",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/nightmare/",
+      "imageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/_/rsrc/1431191884093/nightmare/nightmare.png",
+      "availability": "page and image inspected",
+      "distilledTraits": [
+        "fast deadly Spirit World bad-dream manifestation",
+        "near-black violet material read",
+        "tall narrow vertical mass",
+        "long branching extremity masses",
+        "ragged taper"
+      ]
+    }
+  ]
+}

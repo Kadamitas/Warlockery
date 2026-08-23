@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:familiar_binding_honours_the_vanilla_latch_and_refuses_the_contract_one",
-  "environment": "warlockery:animal_familiar_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "familiar_binding_honours_the_vanilla_latch_and_refuses_the_contract_one",
+    "delegate": "warlockery:animal_familiar_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

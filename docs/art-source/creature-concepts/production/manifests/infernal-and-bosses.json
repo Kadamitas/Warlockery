@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 2,
+  "package": "wave-01a-infernal-and-bosses",
+  "generatedOn": "2026-08-21",
+  "concept": {
+    "path": "docs/art-source/creature-concepts/production/wave-01a-infernal-boss-turnarounds.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "bd218f479d0bcb1f761b5666a5d57c4e174961d5e37603d3d5dba402169913da"
+  },
+  "equivalentMappings": [
+    {
+      "warlockery": "Demon",
+      "witchery": [
+        "Demon"
+      ],
+      "wikiPage": "https://ftb.fandom.com/wiki/Demon_%28Witchery%29",
+      "wikiImage": "https://static.wikia.nocookie.net/ftb_gamepedia/images/1/13/Demon_Witchery.png/revision/latest?cb=20141125214344",
+      "abstractedCues": [
+        "tall red infernal body",
+        "paired narrow upright horns",
+        "yellow-gold eyes",
+        "elongated pointed lower silhouette"
+      ],
+      "originalFusion": "Lean blackened Warlockery foot soldier with asymmetric plates, ember seams, cloven hooves, and two oversized empty ember claws. It is strictly weaponless and attacks through horns, claws, body motion, and ember effects."
+    },
+    {
+      "warlockery": "Emberhorn Archfiend",
+      "witchery": [
+        "Fire Demon",
+        "Demon Heart Guardian"
+      ],
+      "wikiPageResolution": "The mapped labels do not have standalone pages in the inspected wiki. The public Demon and Demon Heart pages and images supplied the broad infernal-body and cubic-heart cues.",
+      "wikiPages": [
+        "https://ftb.fandom.com/wiki/Demon_%28Witchery%29",
+        "https://ftb.fandom.com/wiki/Demon_Heart_%28Witchery%29"
+      ],
+      "wikiImages": [
+        "https://static.wikia.nocookie.net/ftb_gamepedia/images/1/13/Demon_Witchery.png/revision/latest?cb=20141125214344",
+        "https://static.wikia.nocookie.net/ftb_gamepedia/images/1/1c/Demon_Heart.png/revision/latest?cb=20141125214338"
+      ],
+      "abstractedCues": [
+        "red horned infernal anatomy",
+        "cubic crimson heart",
+        "orange-gold internal glow",
+        "short crown-like heart lobes"
+      ],
+      "originalFusion": "Colossal obsidian rib anatomy whose layered chest cage, shoulder shields, and magma forearms visibly guard an exposed living heart."
+    },
+    {
+      "warlockery": "Abyssal Regent",
+      "witchery": [
+        "Lord of Torment",
+        "Void Demon"
+      ],
+      "wikiPageResolution": "Lord of Torment was inspected directly. Void Demon is retained as the user's linguistic mapping and Warlockery void-design input rather than a copied wiki entity.",
+      "wikiPage": "https://ftb.fandom.com/wiki/Lord_of_Torment",
+      "wikiImage": "https://static.wikia.nocookie.net/ftb_gamepedia/images/f/f6/Lord_of_Torment.png/revision/latest?cb=20141125222328",
+      "abstractedCues": [
+        "tall narrow blackened body",
+        "three paired wing masses",
+        "twin very narrow horn or antenna points",
+        "internal red fire"
+      ],
+      "originalFusion": "Fractured void-membrane cage wings, a split hovering lower body, a fire-lit abyssal rib cage, broken halo cage, sparse blunt void fragments, and violet-cyan erosion. No tentacle body and no held or modeled weapon; attacks read through six wings, void-fire, and body motion."
+    },
+    {
+      "warlockery": "Death",
+      "witchery": [
+        "Death"
+      ],
+      "wikiPage": "https://ftb.fandom.com/wiki/Death",
+      "wikiImage": "https://static.wikia.nocookie.net/ftb_gamepedia/images/6/65/Witchery_Death.png/revision/latest?cb=20141125232054",
+      "abstractedCues": [
+        "very slender black hooded figure",
+        "two small blue eyes",
+        "oversized iron scythe"
+      ],
+      "originalFusion": "Appointment-keeper with an hourglass crown cage, geometric timestamp seals, split shroud, asymmetric crescent scythe, and cold appointment lantern."
+    },
+    {
+      "warlockery": "Ironbound Sentinel",
+      "witchery": [
+        "Iron Golem",
+        "Village Sentinel"
+      ],
+      "wikiPageResolution": "The public Witchery Guard page and image were inspected for the Village Sentinel half of the mapping. Iron Golem remained a name-level mass and protector cue only.",
+      "wikiPage": "https://ftb.fandom.com/wiki/Guard",
+      "wikiImage": "https://static.wikia.nocookie.net/ftb_gamepedia/images/6/68/Witchery_Guard.png/revision/latest?cb=20151113221840",
+      "abstractedCues": [
+        "village protector role",
+        "brown leather helmet and shoulder pieces",
+        "deep-blue tunic",
+        "bow-bearing guard"
+      ],
+      "originalFusion": "Broad forged-iron and masonry guardian with long protective forearms, hammer-clamp hands, anchor feet, bell ward core, leather harness, blue tabard, moss, and a folded defensive bow mechanism."
+    }
+  ],
+  "atlases": [
+    {
+      "id": "demon",
+      "width": 128,
+      "height": 128,
+      "sha256": "ba358df5d1b3c3ffc9f044d2c7a5b0131257cbe9d28de830c7a819b1f4c0a16b",
+      "transparentPixels": 10952,
+      "revisionStatus": "translated and verified: weaponless claws, upright horns, soot plates, red infernal anatomy, cloven grounding"
+    },
+    {
+      "id": "emberhorn_archfiend",
+      "width": 192,
+      "height": 128,
+      "sha256": "ff0f9156a3428681636efd2ef2fbcdb3541870fc79f49d52d43bcbf80f1539fd",
+      "transparentPixels": 12868,
+      "revisionStatus": "translated and verified: exposed crowned heart, guarding ribs, branched emberhorns, magma forearms, no furnace anatomy"
+    },
+    {
+      "id": "abyssal_regent",
+      "width": 256,
+      "height": 128,
+      "sha256": "2eddcb40ff80b59fa1444326ccfbad7ba4950ae5d62cbc9666bd8643d7e9d456",
+      "transparentPixels": 21584,
+      "revisionStatus": "translated and verified: weaponless hovering body, three descending wing pairs, narrow antennae, internal fire, split void shroud, no tentacles"
+    },
+    {
+      "id": "death",
+      "width": 128,
+      "height": 128,
+      "sha256": "a8a4654139e25aa1441ba6a2cf50783571f9db816f98cefa7c6708012d0a2e3c",
+      "transparentPixels": 8224,
+      "revisionStatus": "translated and verified: void hood, twin blue eyes, hourglass crown, segmented iron crescent, appointment lantern"
+    },
+    {
+      "id": "ironbound_sentinel",
+      "width": 192,
+      "height": 128,
+      "sha256": "05d539992855161b354a5fb7252f0bf80f951de05fc76e941e22c795a2857d89",
+      "transparentPixels": 10760,
+      "revisionStatus": "translated and verified: village guardian body, leather helmet and harness, blue tabard, bell core, integrated folded bow, masonry legs"
+    }
+  ],
+  "atlasGenerator": "tools/creature_models/generate_infernal_and_bosses.ps1",
+  "reproducibility": {
+    "checks": [
+      "semantic hierarchy",
+      "independent direct EntityModel source",
+      "UV bounds",
+      "opaque used UVs",
+      "transparent unused atlas area",
+      "geometry and bounds goldens",
+      "front/side/three-quarter silhouettes",
+      "movement/action pose divergence",
+      "atlas byte pins"
+    ],
+    "contactSheets": [
+      "build/reports/visual-audit/creatures/demon-software-contact-sheet.png",
+      "build/reports/visual-audit/creatures/emberhorn_archfiend-software-contact-sheet.png",
+      "build/reports/visual-audit/creatures/abyssal_regent-software-contact-sheet.png",
+      "build/reports/visual-audit/creatures/death-software-contact-sheet.png",
+      "build/reports/visual-audit/creatures/ironbound_sentinel-software-contact-sheet.png"
+    ]
+  }
+}

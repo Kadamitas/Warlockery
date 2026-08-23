@@ -1,0 +1,132 @@
+{
+  "artifact": "docs/art-source/creature-concepts/production/wave-03d-familiar-and-vermin-turnarounds.png",
+  "createdOn": "2026-08-21",
+  "dimensions": {
+    "width": 1536,
+    "height": 1024
+  },
+  "sha256": "70d0a35cbe578e5953f1a2ab2002894ada2afe28b01b12a63e6a01d8197c8ddc",
+  "authoritativeNameMappings": [
+    {
+      "userSourceName": "Familiar Cat",
+      "targetDisplayName": "Familiar Cat",
+      "registryId": "familiar_cat"
+    },
+    {
+      "userSourceName": "Owl",
+      "targetDisplayName": "Owl",
+      "registryId": "owl"
+    },
+    {
+      "userSourceName": "Toad",
+      "targetDisplayName": "Toad",
+      "registryId": "toad"
+    },
+    {
+      "userSourceName": "Bat",
+      "targetDisplayName": "Hex Bat",
+      "registryId": "hex_bat"
+    },
+    {
+      "userSourceName": "Parasitic Louse",
+      "targetDisplayName": "Parasytic Louse",
+      "registryId": "parasytic_louse",
+      "spellingNote": "The source name uses Parasitic; the existing Warlockery registry/model ID intentionally uses Parasytic."
+    }
+  ],
+  "interpretationPolicy": "The supplied names and researched pages are used only to distill broad semantic, silhouette, material, and behavior cues. Every rendered design, atlas, cube, plane, pivot, hierarchy, UV layout, marking, proportion, and animation is a fresh clean-room interpretation. No Witchery, Bewitchment, vanilla, or third-party model, texture, ornament layout, code, or geometry is reproduced or imitated.",
+  "research": [
+    {
+      "userSourceName": "Familiar Cat",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/familiars/",
+      "inspectedImageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/_/rsrc/1431191883152/familiars/familiarcat.png?height=200&width=171",
+      "distilledTraitsOnly": [
+        "dark coat",
+        "bright warm eyes",
+        "plain collar",
+        "grounded seated feline silhouette"
+      ],
+      "excludedFromInterpretation": "Exact vanilla-like proportions, collar placement, face, texture pixels, pose, and geometry were not used."
+    },
+    {
+      "userSourceName": "Owl",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/owl/",
+      "distilledTraitsOnly": [
+        "compact upright perched body",
+        "broad flat facial disk",
+        "short talons",
+        "earthy dyable plumage"
+      ],
+      "excludedFromInterpretation": "Exact rectangular proportions, face pixels, eye placement, dye colors, and geometry were not used; the approved read-only wave-03c Owl remains the governing design contract."
+    },
+    {
+      "userSourceName": "Toad",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/toad/",
+      "distilledTraitsOnly": [
+        "low elongated amphibian silhouette",
+        "angular folded hind limbs",
+        "earthy dyable material"
+      ],
+      "excludedFromInterpretation": "Exact wedge proportions, eye placement, leg construction, skin pixels, dye colors, and geometry were not used."
+    },
+    {
+      "userSourceName": "Bat",
+      "pageUrl": "https://legacy-wiki.msrandom.net/site/witcherymod/owl/",
+      "linkedBatUrl": "https://minecraft.gamepedia.com/Bat",
+      "researchNote": "The inspected Witchery Owl page identifies a vanilla bat as a source creature and links the Bat page; no dedicated Witchery Bat creature/model page was located. The approved read-only wave-03c Hex Bat remains the governing design contract.",
+      "distilledTraitsOnly": [
+        "compact flying body",
+        "large membrane wings",
+        "oversized ears",
+        "inverted roost behavior"
+      ],
+      "excludedFromInterpretation": "Exact vanilla bat proportions, pixels, wing segmentation, face, roost pose, and geometry were not used."
+    },
+    {
+      "userSourceName": "Parasitic Louse",
+      "pageUrl": "https://witchery.fentanylsolutions.org/parasytic-louse.html",
+      "secondaryPageUrl": "https://ftb.fandom.com/wiki/Parasytic_Louse",
+      "inspectedImageUrls": [
+        "https://witchery.fentanylsolutions.org/_/rsrc/1431191884094/parasytic-louse/louse3.png",
+        "https://witchery.fentanylsolutions.org/_/rsrc/1431191884094/parasytic-louse/louse1.png"
+      ],
+      "distilledTraitsOnly": [
+        "very small low tapered segmented silhouette",
+        "earthy burgundy-brown material",
+        "plant and insect hybrid idea",
+        "biting or feeding behavior"
+      ],
+      "excludedFromInterpretation": "Exact silverfish-like proportions, pixels, segment count, pose, and geometry were not used."
+    }
+  ],
+  "intendedAtlasSizes": {
+    "familiar_cat": "128x128",
+    "owl": "128x128",
+    "toad": "128x128",
+    "hex_bat": "128x128",
+    "parasytic_louse": "128x128"
+  },
+  "sheetCreatures": [
+    "familiar_cat",
+    "toad",
+    "parasytic_louse",
+    "spectral_familiar"
+  ],
+  "implementedHere": [
+    "familiar_cat",
+    "owl",
+    "toad",
+    "hex_bat",
+    "parasytic_louse"
+  ],
+  "readOnlyDesignSources": {
+    "owl": "docs/art-source/creature-concepts/production/wave-03c-winged-companion-turnarounds.png",
+    "hex_bat": "docs/art-source/creature-concepts/production/wave-03c-winged-companion-turnarounds.png",
+    "manifest": "docs/art-source/creature-concepts/production/manifests/winged-outliers.json"
+  },
+  "readOnlyDesignInterpretation": "Owl blends only the broad researched Owl cues with the approved wave-03c heart-faced umber companion, layered-feather, and silent-flight design. Hex Bat blends only the broad researched Bat cues with the approved wave-03c charcoal/mulberry, teal-eyed, crescent-membrane, roost/swoop design. No B9 file was modified.",
+  "contextOnly": [
+    "spectral_familiar"
+  ],
+  "notes": "Familiar Cat, Toad, and Parasytic Louse are implemented from this wave-03d sheet. Owl and Hex Bat are implemented from the approved read-only wave-03c sheet. Spectral Familiar is context-only; its model and texture are not part of this package and production code does not reference it."
+}

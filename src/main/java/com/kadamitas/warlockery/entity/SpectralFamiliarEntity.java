@@ -2,6 +2,9 @@ package com.kadamitas.warlockery.entity;
 
 import java.util.List;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -56,6 +59,8 @@ public class SpectralFamiliarEntity extends SpiritMob {
 
     /** The single durable state key. */
     public static final String STATE_KEY = "WarlockerySpectralFamiliar";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(SpectralFamiliarEntity.class, EntityDataSerializers.BYTE);
 
     /** Sentinel meaning "seed me from this entity's identity on the next survey". */
     public static final int UNSEEDED_CURSOR = -1;
@@ -96,6 +101,13 @@ public class SpectralFamiliarEntity extends SpiritMob {
         xpReward = 1;
     }
 
+    @Override
+    protected final void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_PHASE,
+            EntityPresentationSync.encode(SpectralFamiliarRules.Phase.DORMANT));
+    }
+
     /**
      * The Vex goal set is never installed.
      *
@@ -122,6 +134,19 @@ public class SpectralFamiliarEntity extends SpiritMob {
         spectralState = state == null
             ? SpectralFamiliarState.empty(getUUID(), level().getGameTime())
             : state;
+        syncPresentationFromRuntime();
+    }
+
+    public final SpectralFamiliarRules.Phase presentationPhase() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE),
+            SpectralFamiliarRules.Phase.DORMANT);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte phase = EntityPresentationSync.encode(spectralState.phase());
+        if (entityData.get(DATA_PRESENTATION_PHASE) != phase) {
+            entityData.set(DATA_PRESENTATION_PHASE, phase);
+        }
     }
 
     public final SpectralFamiliarRuntime.Counters spectralCounters() {
@@ -144,6 +169,7 @@ public class SpectralFamiliarEntity extends SpiritMob {
         // the decline is observable instead of implicit.
         super.customServerAiStep(level);
         SpectralFamiliarRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override
@@ -246,6 +272,7 @@ public class SpectralFamiliarEntity extends SpiritMob {
         getNavigation().stop();
         getMoveControl().setWantedPosition(getX(), getY(), getZ(), 0.0D);
         surveyCursor = UNSEEDED_CURSOR;
+        syncPresentationFromRuntime();
     }
 
     // ---- declared test seams ----
@@ -298,4 +325,3 @@ public class SpectralFamiliarEntity extends SpiritMob {
         return targetSelector.getAvailableGoals().size();
     }
 }
-

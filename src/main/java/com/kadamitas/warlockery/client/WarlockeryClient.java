@@ -38,18 +38,15 @@ public final class WarlockeryClient implements ClientModInitializer {
         BlockEntityRenderers.register(ModBlockEntities.WOLF_TRAP.get(), WolfTrapOverlayRenderer::new);
         BlockEntityRenderers.register(ModBlockEntities.ALTAR.get(), AltarOverlayRenderer::new);
         EntityRenderers.register(ModEntities.BROOM.get(), BroomEntityRenderer::new);
-        ModEntities.ALL.forEach((id, type) -> {
-            if ("nami".equals(id)) {
-                TexturedCreatureRenderers.registerNami(type.get());
-                return;
-            }
-            if ("naamah".equals(id)) {
-                TexturedCreatureRenderers.registerNaamah(type.get());
-                return;
-            }
-            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(ModEntities.kindFor(id));
-            TexturedCreatureRenderers.registerArcane(type.get(), CreatureModelProfile.forEntity(id, visual));
-        });
+        TexturedCreatureRenderers.registerNami(ModEntities.NAMI.get());
+        final CreatureVisualProfile glassVisual = CreatureVisualProfile.forKind(
+            ModEntities.kindFor("glass_doppelganger")
+        );
+        TexturedCreatureRenderers.registerArcane(
+            ModEntities.ALL.get("glass_doppelganger").get(),
+            CreatureModelProfile.forEntity("glass_doppelganger", glassVisual)
+        );
+        DedicatedCreatureRenderers.registerAll();
         SupernaturalControls.register();
         BroomControls.register();
         BlockColorRegistry.register(
@@ -57,14 +54,24 @@ public final class WarlockeryClient implements ClientModInitializer {
             ModBlocks.ALL.get("scarecrow").get()
         );
         ModFluids.families().forEach(WarlockeryClient::registerFluidRenderer);
+        ClientTickEvents.START_CLIENT_TICK.register(PreyDriveControls::tick);
         ClientTickEvents.END_CLIENT_TICK.register(minecraft -> {
             SupernaturalControls.tick(minecraft);
             BroomControls.tick(minecraft);
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, minecraft) -> {
+            PreyDriveControls.disconnect();
             ClientSupernaturalState.clear();
             PlayerWolfVisualState.clear();
         });
+        HudElementRegistry.replaceElement(
+            VanillaHudElements.FOOD_BAR,
+            vanillaFood -> (graphics, deltaTracker) -> {
+                if (!VampireBloodHud.extract(graphics, deltaTracker)) {
+                    vanillaFood.extractRenderState(graphics, deltaTracker);
+                }
+            }
+        );
         HudElementRegistry.attachElementBefore(
             VanillaHudElements.SLEEP,
             SupernaturalStatusOverlay.LAYER,
