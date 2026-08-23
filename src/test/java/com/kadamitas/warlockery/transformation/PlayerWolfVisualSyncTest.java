@@ -12,11 +12,11 @@ class PlayerWolfVisualSyncTest {
         final PlayerWolfVisualSync.StateLedger ledger = new PlayerWolfVisualSync.StateLedger();
         final UUID player = UUID.randomUUID();
 
-        assertTrue(ledger.changed(player, false));
-        assertFalse(ledger.changed(player, false));
-        assertTrue(ledger.changed(player, true));
-        assertFalse(ledger.changed(player, true));
-        assertTrue(ledger.changed(player, false));
+        assertTrue(ledger.changed(player, WerewolfShape.HUMAN));
+        assertFalse(ledger.changed(player, WerewolfShape.HUMAN));
+        assertTrue(ledger.changed(player, WerewolfShape.WOLF));
+        assertFalse(ledger.changed(player, WerewolfShape.WOLF));
+        assertTrue(ledger.changed(player, WerewolfShape.WOLFMAN));
     }
 
     @Test
@@ -24,11 +24,11 @@ class PlayerWolfVisualSyncTest {
         final PlayerWolfVisualSync.StateLedger ledger = new PlayerWolfVisualSync.StateLedger();
         final UUID player = UUID.randomUUID();
 
-        assertTrue(ledger.changed(player, true));
-        assertFalse(ledger.changed(player, true));
+        assertTrue(ledger.changed(player, WerewolfShape.WOLFMAN));
+        assertFalse(ledger.changed(player, WerewolfShape.WOLFMAN));
 
         ledger.remove(player);
 
-        assertTrue(ledger.changed(player, true));
+        assertTrue(ledger.changed(player, WerewolfShape.WOLFMAN));
     }
 }

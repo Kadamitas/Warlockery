@@ -26,6 +26,13 @@ final class PlaceableModelFaceTest {
     private static final Path BLOCK_STATES = ASSETS.resolve("blockstates");
     private static final Path TEXTURES = ASSETS.resolve("textures/block");
     private static final String MODEL_PREFIX = "warlockery:block/";
+    private static final Set<String> INTENTIONAL_PLANT_GEOMETRY = Set.of(
+        "template/plant_hanging",
+        "template/plant_low_cross",
+        "template/plant_pad",
+        "template/plant_rosette",
+        "template/plant_tall_cross"
+    );
 
     @Test
     void sculptedElementsKeepAllSixFaces() {
@@ -79,7 +86,7 @@ final class PlaceableModelFaceTest {
                     .filter(value -> value.startsWith(MODEL_PREFIX))
                     .map(value -> value.substring(MODEL_PREFIX.length()))
                     .map(PlaceableModelFaceTest::resolveModel)
-                    .anyMatch(model -> model.elements() != null);
+                    .anyMatch(model -> model.elements() != null && !model.intentionalPlantGeometry());
                 if (sculpted) {
                     ids.add(path.getFileName().toString().replaceFirst("\\.json$", ""));
                 }
@@ -109,14 +116,18 @@ final class PlaceableModelFaceTest {
         final String parentId = model.has("parent") ? model.get("parent").getAsString() : "";
         final ResolvedModel parent = parentId.startsWith(MODEL_PREFIX)
             ? resolveModel(parentId.substring(MODEL_PREFIX.length()))
-            : new ResolvedModel(null, Map.of());
+            : new ResolvedModel(null, Map.of(), false);
         final Map<String, String> textures = new HashMap<>(parent.textures());
         if (model.has("textures")) {
             model.getAsJsonObject("textures").entrySet()
                 .forEach(entry -> textures.put(entry.getKey(), entry.getValue().getAsString()));
         }
         final JsonArray elements = model.has("elements") ? model.getAsJsonArray("elements") : parent.elements();
-        return new ResolvedModel(elements, Map.copyOf(textures));
+        return new ResolvedModel(
+            elements,
+            Map.copyOf(textures),
+            INTENTIONAL_PLANT_GEOMETRY.contains(modelId) || parent.intentionalPlantGeometry()
+        );
     }
 
     private static void assertTexture(
@@ -160,6 +171,10 @@ final class PlaceableModelFaceTest {
         }
     }
 
-    private record ResolvedModel(JsonArray elements, Map<String, String> textures) {
+    private record ResolvedModel(
+        JsonArray elements,
+        Map<String, String> textures,
+        boolean intentionalPlantGeometry
+    ) {
     }
 }

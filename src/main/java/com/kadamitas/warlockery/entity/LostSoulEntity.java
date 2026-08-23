@@ -1,7 +1,11 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.entity.LostSoulRules.Phase;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,6 +26,8 @@ import net.minecraft.world.level.storage.ValueOutput;
  */
 public final class LostSoulEntity extends SpectralEntity {
     static final String STATE_KEY = "WarlockeryLostSoul";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(LostSoulEntity.class, EntityDataSerializers.BYTE);
 
     private final LostSoulRuntime.Counters counters = new LostSoulRuntime.Counters();
     private final LostSoulRuntime.TransientState scratch = new LostSoulRuntime.TransientState();
@@ -37,6 +43,26 @@ public final class LostSoulEntity extends SpectralEntity {
 
     public void setLostSoulState(final LostSoulState updated) {
         state = updated == null ? LostSoulState.empty() : updated;
+        syncPresentation(state.phase());
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_PRESENTATION_PHASE, (byte) Phase.WANDER.ordinal());
+    }
+
+    public Phase presentationPhase() {
+        final int stored = entityData.get(DATA_PRESENTATION_PHASE);
+        final Phase[] phases = Phase.values();
+        return stored >= 0 && stored < phases.length ? phases[stored] : Phase.WANDER;
+    }
+
+    private void syncPresentation(final Phase phase) {
+        final byte encoded = (byte) phase.ordinal();
+        if (entityData.get(DATA_PRESENTATION_PHASE) != encoded) {
+            entityData.set(DATA_PRESENTATION_PHASE, encoded);
+        }
     }
 
     public LostSoulRuntime.Counters lostSoulCounters() {
@@ -80,6 +106,7 @@ public final class LostSoulEntity extends SpectralEntity {
         state = input.read(STATE_KEY, CompoundTag.CODEC)
             .map(tag -> LostSoulState.read(tag, dimension))
             .orElse(LostSoulState.empty());
+        syncPresentation(state.phase());
         scratch.resetForLoad();
         normalizeEquipment();
         setNoGravity(true);

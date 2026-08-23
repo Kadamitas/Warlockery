@@ -6,6 +6,7 @@ import com.kadamitas.warlockery.ritual.RitualManager;
 import com.kadamitas.warlockery.ritual.RitualRequirementText;
 import com.kadamitas.warlockery.ritual.RitualSessionData;
 import com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime;
+import com.kadamitas.warlockery.transformation.WerewolfShape;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -56,7 +57,7 @@ public final class ModNetwork {
     }
 
     private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("6");
+        final PayloadRegistrar registrar = event.registrar("8");
         registrar.playToClient(OpenRitualScreenPayload.TYPE, OpenRitualScreenPayload.STREAM_CODEC);
         registrar.playToClient(DollActivationPayload.TYPE, DollActivationPayload.STREAM_CODEC);
         registrar.playToClient(SupernaturalSnapshotPayload.TYPE, SupernaturalSnapshotPayload.STREAM_CODEC);
@@ -118,23 +119,23 @@ public final class ModNetwork {
         PacketDistributor.sendToPlayer(player, new SupernaturalSnapshotPayload(snapshot));
     }
 
-    public static void broadcastPlayerWolfVisual(final ServerPlayer player, final boolean wolf) {
+    public static void broadcastPlayerWolfVisual(final ServerPlayer player, final WerewolfShape shape) {
         if (!supportsPlayerWolfVisual(player)) {
             return;
         }
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(
             player,
-            new PlayerWolfVisualPayload(player.getUUID(), wolf)
+            new PlayerWolfVisualPayload(player.getUUID(), shape)
         );
     }
 
     public static void sendPlayerWolfVisual(
         final ServerPlayer recipient,
         final ServerPlayer subject,
-        final boolean wolf
+        final WerewolfShape shape
     ) {
         if (supportsPlayerWolfVisual(recipient)) {
-            PacketDistributor.sendToPlayer(recipient, new PlayerWolfVisualPayload(subject.getUUID(), wolf));
+            PacketDistributor.sendToPlayer(recipient, new PlayerWolfVisualPayload(subject.getUUID(), shape));
         }
     }
 
@@ -144,7 +145,7 @@ public final class ModNetwork {
         }
         PacketDistributor.sendToPlayersTrackingEntity(
             player,
-            new PlayerWolfVisualPayload(player.getUUID(), false)
+            new PlayerWolfVisualPayload(player.getUUID(), WerewolfShape.HUMAN)
         );
     }
 
@@ -445,7 +446,9 @@ public final class ModNetwork {
         int powerCooldownTicks,
         String magicPath,
         int magicResource,
-        int magicMaxResource
+        int magicMaxResource,
+        boolean sanguine,
+        int preyTargetEntityId
     ) {
         public SupernaturalSnapshot(
             final String identity,
@@ -458,7 +461,17 @@ public final class ModNetwork {
             final String questProgress
         ) {
             this(identity, level, resource, maxResource, selectedPower, shape, questTitle, questProgress,
-                -1, 0, "", 0, 0);
+                -1, 0, "", 0, 0, false, -1);
+        }
+
+        public SupernaturalSnapshot(
+            final String identity, final int level, final int resource, final int maxResource,
+            final String selectedPower, final String shape, final String questTitle, final String questProgress,
+            final int selectedPowerCharges, final int powerCooldownTicks, final String magicPath,
+            final int magicResource, final int magicMaxResource
+        ) {
+            this(identity, level, resource, maxResource, selectedPower, shape, questTitle, questProgress,
+                selectedPowerCharges, powerCooldownTicks, magicPath, magicResource, magicMaxResource, false, -1);
         }
 
         public SupernaturalSnapshot {
@@ -475,6 +488,7 @@ public final class ModNetwork {
             magicPath = safe(magicPath);
             magicMaxResource = Math.max(0, magicMaxResource);
             magicResource = Math.clamp(magicResource, 0, magicMaxResource);
+            preyTargetEntityId = Math.max(-1, preyTargetEntityId);
         }
 
         public boolean active() {
@@ -516,7 +530,7 @@ public final class ModNetwork {
         }
     }
 
-    public record PlayerWolfVisualPayload(UUID playerId, boolean wolf) implements CustomPacketPayload {
+    public record PlayerWolfVisualPayload(UUID playerId, WerewolfShape shape) implements CustomPacketPayload {
         public static final Type<PlayerWolfVisualPayload> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "player_wolf_visual")
         );
@@ -524,13 +538,20 @@ public final class ModNetwork {
             StreamCodec.of(
                 (output, value) -> {
                     output.writeUUID(value.playerId());
-                    output.writeBoolean(value.wolf());
+                    output.writeVarInt(value.shape().ordinal());
                 },
-                input -> new PlayerWolfVisualPayload(input.readUUID(), input.readBoolean())
+                input -> new PlayerWolfVisualPayload(input.readUUID(), shapeAt(input.readVarInt()))
             );
 
         public PlayerWolfVisualPayload {
             Objects.requireNonNull(playerId, "playerId");
+            Objects.requireNonNull(shape, "shape");
+        }
+
+        private static WerewolfShape shapeAt(final int ordinal) {
+            return ordinal >= 0 && ordinal < WerewolfShape.values().length
+                ? WerewolfShape.values()[ordinal]
+                : WerewolfShape.HUMAN;
         }
 
         @Override
@@ -612,6 +633,8 @@ public final class ModNetwork {
             input.readVarInt(),
             input.readUtf(MAX_STRING),
             input.readVarInt(),
+            input.readVarInt(),
+            input.readBoolean(),
             input.readVarInt()
         );
     }
@@ -633,5 +656,7 @@ public final class ModNetwork {
         output.writeUtf(snapshot.magicPath(), MAX_STRING);
         output.writeVarInt(snapshot.magicResource());
         output.writeVarInt(snapshot.magicMaxResource());
+        output.writeBoolean(snapshot.sanguine());
+        output.writeVarInt(snapshot.preyTargetEntityId());
     }
 }

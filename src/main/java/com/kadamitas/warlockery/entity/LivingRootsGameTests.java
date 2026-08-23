@@ -179,6 +179,9 @@ public final class LivingRootsGameTests {
             fixture.shell(); fixture.floor();
             final DreamrootEntity root = fixture.dreamroot(new BlockPos(0, 1, 0));
             final LivingEntity actor = fixture.living("sheep", new BlockPos(2, 1, 0));
+            helper.assertTrue(actor instanceof net.minecraft.world.entity.Mob,
+                "the threshold fixture actor has a controllable live AI body");
+            ((net.minecraft.world.entity.Mob)actor).setNoAi(true);
             final DreamrootEntity ageZero = fixture.dreamroot(new BlockPos(-2, 1, -2));
             final DreamrootEntity ageForty = fixture.dreamroot(new BlockPos(0, 1, -2));
             final DreamrootEntity ageFortyOne = fixture.dreamroot(new BlockPos(2, 1, -2));
@@ -325,8 +328,15 @@ public final class LivingRootsGameTests {
             raid.joinRaid(helper.getLevel(), 1, raidActor, raidActor.blockPosition(), true);
             helper.assertTrue(raidActor.getCurrentRaid() == raid, "the bound raider is a live raid participant");
             MandrakeRuntime.tick(raidMandrake, helper.getLevel());
+            raidDreamroot.tickCount = Math.floorMod(-raidDreamroot.getId(),
+                DreamrootRules.THRESHOLD_CADENCE_TICKS);
+            helper.assertTrue(LivingRootsRules.staggeredDue(raidDreamroot.tickCount, raidDreamroot.getId(),
+                DreamrootRules.THRESHOLD_CADENCE_TICKS),
+                "the raid cancellation lands on an exact Dreamroot observation cadence");
             DreamrootRuntime.tick(raidDreamroot, helper.getLevel());
             assertCancelledAndCleared(helper, raidMandrake, raidDreamroot, "raid");
+            helper.assertTrue(raidDreamroot.dreamrootCounters().thresholdChecks == 0,
+                "actor cancellation is terminal for the tick and cannot reacquire a subject");
 
             final Villager removedActor = (Villager)fixture.living("villager", new BlockPos(-3, 1, 2));
             final MandrakeEntity removedMandrake = fixture.mandrake(new BlockPos(-3, 1, 1));
@@ -370,27 +380,39 @@ public final class LivingRootsGameTests {
             DreamrootRuntime.tick(dimensionDreamroot, nether);
             assertCancelledAndCleared(helper, dimensionMandrake, dimensionDreamroot, "dimension change");
 
-            final Villager panicActor = (Villager)fixture.living("villager", new BlockPos(-2, 1, -1));
-            final MandrakeEntity panicMandrake = fixture.mandrake(new BlockPos(0, 1, -1));
-            final DreamrootEntity panicDreamroot = fixture.dreamroot(new BlockPos(2, 1, -1));
+            // This probe must receive natural Brain ticks. Keep every participant inside the
+            // 32-cube structure ticket instead of relying on the origin's neighbouring chunk.
+            final Villager panicActor = (Villager)fixture.living("villager", new BlockPos(14, 1, 15));
+            final MandrakeEntity panicMandrake = fixture.mandrake(new BlockPos(16, 1, 15));
+            final DreamrootEntity panicDreamroot = fixture.dreamroot(new BlockPos(18, 1, 15));
             MandrakeRuntime.acceptedDamage(panicMandrake, panicActor);
             DreamrootRuntime.acceptedDamage(panicDreamroot, panicActor);
             panicMandrake.setNoAi(true);
             panicDreamroot.setNoAi(true);
             final net.minecraft.world.entity.monster.zombie.Zombie panicSource =
-                (net.minecraft.world.entity.monster.zombie.Zombie)fixture.living("zombie", new BlockPos(-3, 1, -1));
+                (net.minecraft.world.entity.monster.zombie.Zombie)fixture.living("zombie", new BlockPos(13, 1, 15));
+            panicSource.setNoAi(true);
             helper.assertTrue(panicActor.hurtServer(helper.getLevel(), helper.getLevel().damageSources().mobAttack(panicSource), 1.0F),
                 "real Villager harm is accepted");
-            fixture.after(20, () -> {
+            final int panicStartTick = helper.getLevel().getServer().getTickCount();
+            final boolean[] panicCancellationObserved = {false};
+            helper.onEachTick(() -> {
+                if (panicCancellationObserved[0]) return;
                 final boolean activePanic = panicActor.getBrain().isActive(net.minecraft.world.entity.schedule.Activity.PANIC)
                     || panicActor.getBrain().hasMemoryValue(net.minecraft.world.entity.ai.memory.MemoryModuleType.IS_PANICKING);
-                helper.assertTrue(activePanic, "real Villager harm and actual Brain ticks entered active panic");
+                final int elapsed = helper.getLevel().getServer().getTickCount() - panicStartTick;
+                if (!activePanic) {
+                    helper.assertTrue(elapsed < 80,
+                        "real Villager harm and actual Brain ticks entered active panic by the bounded deadline");
+                    return;
+                }
                 helper.assertTrue(panicMandrake.mandrakeCounters().cancellations == 0
                     && panicDreamroot.dreamrootCounters().cancellations == 0,
                     "the controllers remain paused until active panic is established");
                 MandrakeRuntime.tick(panicMandrake, helper.getLevel());
                 DreamrootRuntime.tick(panicDreamroot, helper.getLevel());
                 assertCancelledAndCleared(helper, panicMandrake, panicDreamroot, "active panic");
+                panicCancellationObserved[0] = true;
             });
             final net.minecraft.world.entity.animal.Animal breedingActor =
                 (net.minecraft.world.entity.animal.Animal)fixture.living("cow", new BlockPos(-2, 1, -2));
@@ -473,6 +495,8 @@ public final class LivingRootsGameTests {
                 "fully blocked local geometry issues no path and enters bounded no-safe backoff");
             mandrake.setRemainingFireTicks(2); dreamroot.setRemainingFireTicks(2);
             fixture.finish(160, () -> {
+                helper.assertTrue(panicCancellationObserved[0],
+                    "active panic cancellation completed before the test deadline");
                 helper.assertTrue(mandrake.mandrakeCounters().cancellations >= 1, "mandrake cancelled");
                 helper.assertTrue(dreamroot.dreamrootCounters().cancellations >= 1, "dreamroot cancelled");
                 helper.assertTrue(mandrake.getTarget() == null && dreamroot.getTarget() == null, "targets cleared");

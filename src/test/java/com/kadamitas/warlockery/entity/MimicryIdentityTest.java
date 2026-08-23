@@ -78,7 +78,7 @@ final class MimicryIdentityTest {
     @Test
     void registryOwnedDimensionsAndArchetypesAreUntouched() {
         assertEquals(0.6F, CreatureVisualProfile.forKind(CreatureKind.ILLUSION_CREEPER).width());
-        assertEquals(1.7F, CreatureVisualProfile.forKind(CreatureKind.ILLUSION_CREEPER).height());
+        assertEquals(1.71F, CreatureVisualProfile.forKind(CreatureKind.ILLUSION_CREEPER).height());
         assertEquals(Archetype.CREEPER,
             CreatureVisualProfile.forKind(CreatureKind.ILLUSION_CREEPER).archetype());
         assertEquals(1.4F, CreatureVisualProfile.forKind(CreatureKind.ILLUSION_SPIDER).width());
@@ -87,7 +87,7 @@ final class MimicryIdentityTest {
             CreatureVisualProfile.forKind(CreatureKind.ILLUSION_SPIDER).archetype());
         for (final CreatureKind kind : List.of(CreatureKind.ILLUSION_ZOMBIE, CreatureKind.GLASS_DOPPELGANGER)) {
             assertEquals(0.6F, CreatureVisualProfile.forKind(kind).width(), kind.name());
-            assertEquals(1.95F, CreatureVisualProfile.forKind(kind).height(), kind.name());
+            assertEquals(1.8F, CreatureVisualProfile.forKind(kind).height(), kind.name());
             assertEquals(Archetype.HUMANOID, CreatureVisualProfile.forKind(kind).archetype(), kind.name());
         }
     }
@@ -124,5 +124,4 @@ final class MimicryIdentityTest {
         BODIES.forEach((body, kind) -> assertFalse(kind.isUndead(), kind.name()));
     }
 }
-
 

@@ -90,9 +90,9 @@ final class CustomCreatureIdentityTest {
         assertEquals(MandrakeEntity.BASE_ARMOR, DreamrootEntity.BASE_ARMOR);
         assertEquals(MandrakeEntity.XP_REWARD, DreamrootEntity.XP_REWARD);
         assertEquals(0.55F, CreatureVisualProfile.forKind(CreatureKind.MANDRAKE).width());
-        assertEquals(0.85F, CreatureVisualProfile.forKind(CreatureKind.MANDRAKE).height());
+        assertEquals(0.81F, CreatureVisualProfile.forKind(CreatureKind.MANDRAKE).height());
         assertEquals(0.9F, CreatureVisualProfile.forKind(CreatureKind.DREAMROOT).width());
-        assertEquals(1.7F, CreatureVisualProfile.forKind(CreatureKind.DREAMROOT).height());
+        assertEquals(1.62F, CreatureVisualProfile.forKind(CreatureKind.DREAMROOT).height());
     }
 
     @Test
@@ -105,7 +105,7 @@ final class CustomCreatureIdentityTest {
         assertEquals(7.0D, BrambleColossusEntity.BASE_ATTACK_DAMAGE);
         assertEquals(0.3D, BrambleColossusEntity.BASE_MOVEMENT_SPEED);
         assertEquals(1.3F, CreatureVisualProfile.forKind(CreatureKind.BRAMBLE_COLOSSUS).width());
-        assertEquals(2.6F, CreatureVisualProfile.forKind(CreatureKind.BRAMBLE_COLOSSUS).height());
+        assertEquals(2.61F, CreatureVisualProfile.forKind(CreatureKind.BRAMBLE_COLOSSUS).height());
     }
     @Test
     void hexBatIsADedicatedNonVexNonSpiritMonster() {
@@ -118,7 +118,7 @@ final class CustomCreatureIdentityTest {
         assertTrue(java.lang.reflect.Modifier.isFinal(HexBatEntity.class.getModifiers()));
         final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.HEX_BAT);
         assertEquals(0.5F, visual.width());
-        assertEquals(0.45F, visual.height());
+        assertEquals(0.63F, visual.height());
         assertEquals(Archetype.SPIRIT, visual.archetype(),
             "registry-owned dimensions and archetype stay exact");
     }
@@ -155,7 +155,7 @@ final class CustomCreatureIdentityTest {
         assertFalse(net.minecraft.world.entity.monster.Monster.class.isAssignableFrom(BansheeEntity.class));
         assertEquals(Archetype.SPIRIT, CreatureVisualProfile.forKind(CreatureKind.BANSHEE).archetype());
         assertEquals(0.65F, CreatureVisualProfile.forKind(CreatureKind.BANSHEE).width());
-        assertEquals(1.8F, CreatureVisualProfile.forKind(CreatureKind.BANSHEE).height());
+        assertEquals(1.98F, CreatureVisualProfile.forKind(CreatureKind.BANSHEE).height());
     }
 
     @Test
@@ -182,7 +182,7 @@ final class CustomCreatureIdentityTest {
         assertTrue(java.lang.reflect.Modifier.isFinal(EldritchWatcherEntity.class.getModifiers()));
         final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.ELDRITCH_WATCHER);
         assertEquals(0.8F, visual.width());
-        assertEquals(1.1F, visual.height());
+        assertEquals(1.35F, visual.height());
         assertEquals(Archetype.SPIRIT, visual.archetype());
     }
 
@@ -200,7 +200,7 @@ final class CustomCreatureIdentityTest {
         assertEquals(2.0D, CorpseEntity.BASE_ARMOR);
         assertEquals(0.0D, CorpseEntity.BASE_REINFORCEMENT_CHANCE);
         assertEquals(0.6F, CreatureVisualProfile.forKind(CreatureKind.CORPSE).width());
-        assertEquals(1.95F, CreatureVisualProfile.forKind(CreatureKind.CORPSE).height());
+        assertEquals(1.71F, CreatureVisualProfile.forKind(CreatureKind.CORPSE).height());
         assertTrue(CreatureKind.CORPSE.isUndead(), "Smite and Holy classification remains");
     }
 
@@ -226,7 +226,7 @@ final class CustomCreatureIdentityTest {
         assertEquals(0.23D, HedgeCroneEntity.BASE_MOVEMENT_SPEED);
         final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.HEDGE_CRONE);
         assertEquals(0.65F, visual.width());
-        assertEquals(2.0F, visual.height());
+        assertEquals(2.7F, visual.height());
         assertEquals(Archetype.BOSS, visual.archetype());
     }
 
@@ -248,7 +248,7 @@ final class CustomCreatureIdentityTest {
         assertEquals(0.23D, CircleMageEntity.BASE_MOVEMENT_SPEED);
         final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.CIRCLE_MAGE);
         assertEquals(0.6F, visual.width());
-        assertEquals(1.95F, visual.height());
+        assertEquals(1.8F, visual.height());
         assertEquals(Archetype.HUMANOID, visual.archetype());
     }
 

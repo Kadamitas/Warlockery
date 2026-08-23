@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:werewolf_trap_hunt_assault_and_infection_contracts_remain_exact",
-  "environment": "warlockery:lycan_pack_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "werewolf_trap_hunt_assault_and_infection_contracts_remain_exact",
+    "delegate": "warlockery:lycan_pack_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 200
 }

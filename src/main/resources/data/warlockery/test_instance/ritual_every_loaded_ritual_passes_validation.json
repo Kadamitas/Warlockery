@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:ritual_every_loaded_ritual_passes_validation",
-  "environment": "minecraft:default",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "ritual_every_loaded_ritual_passes_validation",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100
 }

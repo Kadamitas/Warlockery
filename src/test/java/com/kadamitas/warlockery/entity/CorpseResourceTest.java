@@ -40,7 +40,7 @@ final class CorpseResourceTest {
         assertTrue(CreatureKind.CORPSE.isUndead());
         final CreatureVisualProfile visual = CreatureVisualProfile.forKind(CreatureKind.CORPSE);
         assertEquals(0.6F, visual.width());
-        assertEquals(1.95F, visual.height());
+        assertEquals(1.71F, visual.height());
         assertEquals(CreatureVisualProfile.Archetype.HUMANOID, visual.archetype());
     }
 

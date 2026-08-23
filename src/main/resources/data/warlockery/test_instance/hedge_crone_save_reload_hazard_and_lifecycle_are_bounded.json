@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:hedge_crone_save_reload_hazard_and_lifecycle_are_bounded",
-  "environment": "warlockery:coven_practitioners_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hedge_crone_save_reload_hazard_and_lifecycle_are_bounded",
+    "delegate": "warlockery:coven_practitioners_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

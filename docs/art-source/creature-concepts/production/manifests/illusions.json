@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "artifact": "docs/art-source/creature-concepts/production/wave-05-illusion-turnarounds.png",
+  "createdOn": "2026-08-21",
+  "dimensions": {
+    "width": 1536,
+    "height": 1024
+  },
+  "mimeType": "image/png",
+  "colorMode": "RGB",
+  "sha256": "cec340a116e301f60b1a134d9a94fb01c5922bb0bab59caea667a596a4258e49",
+  "creatures": [
+    "illusion_creeper",
+    "illusion_spider",
+    "illusion_zombie"
+  ],
+  "intendedAtlasSizes": {
+    "illusion_creeper": "64x64",
+    "illusion_spider": "64x64",
+    "illusion_zombie": "64x64"
+  },
+  "authoritativeMappings": [
+    {
+      "registryId": "illusion_creeper",
+      "warlockeryName": "Illusion Creeper",
+      "witcheryEquivalent": "Illusion Creeper",
+      "wikiPage": "https://www.mcmod.cn/item/471195.html",
+      "inspectedImages": [
+        {
+          "url": "https://i.mcmod.cn/item/cover/20210720/1626786751_21294_XXDR.jpg",
+          "width": 720,
+          "height": 450,
+          "sha256": "bb899c1adac5a552ef746da130a69601da01913cfe9056e07343e69a06551372"
+        }
+      ],
+      "distilledCues": {
+        "bodyCategory": "Tall four-footed creeper-category creature.",
+        "massing": "Narrow upright top-heavy column, square head mass, compact trunk, and four short grounded feet.",
+        "palette": "Mottled medium and dark greens with pale green-gray highlights and a black facial void.",
+        "signature": "A severe inset face and an advancing four-footed stance."
+      },
+      "originalSynthesis": "A segmented false-fuse totem with a crooked crown ridge, three uneven face slits, tapered trunk, asymmetrical wedge feet, and a non-explosive collapse action."
+    },
+    {
+      "registryId": "illusion_spider",
+      "warlockeryName": "Illusion Spider",
+      "witcheryEquivalent": "Illusion Spider",
+      "wikiPage": "https://www.mcmod.cn/item/471176.html",
+      "inspectedImages": [
+        {
+          "url": "https://i.mcmod.cn/item/cover/20210720/1626785364_21294_kPIH.jpg",
+          "width": 720,
+          "height": 450,
+          "sha256": "a43d657c81418399be9b5b2b6072047f6a4dfa3efdc9f7395c4de50a5e40d63c"
+        }
+      ],
+      "distilledCues": {
+        "bodyCategory": "Ground-hugging eight-legged arthropod.",
+        "massing": "Very low and wide central body with eight long radiating segmented legs.",
+        "palette": "Charcoal, black, and iron gray with restrained dark red facial marks.",
+        "signature": "A compact red frontal sensory cluster and a broad splayed ambush stance."
+      },
+      "originalSynthesis": "A threshold-weaver with a shield-like cephalothorax, split wedge abdomen, eight independently articulated hooked legs, and a one-time inward snare action."
+    },
+    {
+      "registryId": "illusion_zombie",
+      "warlockeryName": "Illusion Zombie",
+      "witcheryEquivalent": "Illusion Zombie",
+      "wikiPage": "https://www.mcmod.cn/item/471175.html",
+      "inspectedImages": [
+        {
+          "url": "https://i.mcmod.cn/item/cover/20210720/1626785363_21294_gVKd.jpg",
+          "width": 720,
+          "height": 450,
+          "sha256": "05e6408e75132d8b0f278b885839c0f93c8e73632a266bbb0ece5cfc9e22d3b9"
+        }
+      ],
+      "distilledCues": {
+        "bodyCategory": "Upright block-humanoid decoy.",
+        "massing": "Square head, broad arm span, forward-reaching forearms, and a one-leg-leading walking mass.",
+        "palette": "Dark olive skin, oxidized teal torso cloth, blue-violet lower cloth, and dark eyes.",
+        "signature": "Rigid forward arms and an asymmetrical stepping approach."
+      },
+      "originalSynthesis": "A hollow-decoy mannequin with slanted shoulders, unequal slab forearms, a broken angular torso hem, offset solid shell pieces, and a non-retaliating absorb-and-unmask action."
+    }
+  ],
+  "unavailableSources": [
+    {
+      "description": "Dedicated Illusion Creeper page on the first official Witchery wiki mirror",
+      "url": "https://witchery.fentanylsolutions.org/illusion-creeper.html",
+      "result": "HTTP 404 on 2026-08-21"
+    },
+    {
+      "description": "Dedicated Illusion Spider page on the first official Witchery wiki mirror",
+      "url": "https://witchery.fentanylsolutions.org/illusion-spider.html",
+      "result": "HTTP 404 on 2026-08-21"
+    },
+    {
+      "description": "Dedicated Illusion Zombie page on the first official Witchery wiki mirror",
+      "url": "https://witchery.fentanylsolutions.org/illusion-zombie.html",
+      "result": "HTTP 404 on 2026-08-21"
+    },
+    {
+      "description": "Dedicated Illusion Creeper page on the legacy official Witchery wiki mirror",
+      "url": "https://legacy-wiki.msrandom.net/site/witcherymod/illusion-creeper/",
+      "result": "HTTP 404 on 2026-08-21"
+    },
+    {
+      "description": "Dedicated Illusion Spider page on the legacy official Witchery wiki mirror",
+      "url": "https://legacy-wiki.msrandom.net/site/witcherymod/illusion-spider/",
+      "result": "HTTP 404 on 2026-08-21"
+    },
+    {
+      "description": "Dedicated Illusion Zombie page on the legacy official Witchery wiki mirror",
+      "url": "https://legacy-wiki.msrandom.net/site/witcherymod/illusion-zombie/",
+      "result": "HTTP 404 on 2026-08-21"
+    }
+  ],
+  "sourceLimitations": "Each available source image is a single in-game view rather than a turnaround, model file, UV sheet, or texture source. The Illusion Spider cover was present in the page HTML even though the semantic page view omitted the image link. No missing view was inferred from another creature.",
+  "noCopyBoundary": {
+    "statement": "The wiki pages and images were used only for human visual inspection. Only broad body category, massing, palette family, and one simple signature cue per creature were retained. No source image, geometry, texture layout, or pixel pattern was incorporated into the concept artwork.",
+    "excludedFromTransfer": [
+      "source pixel layouts and texture patterns",
+      "exact face arrangements",
+      "exact body proportions or dimensions",
+      "models, geometry, pivots, hierarchy, and animation",
+      "UV coordinates and atlas layouts",
+      "ornament placement and screenshot composition"
+    ],
+    "independentModelContract": "The shared illusion language is limited to sparse cyan and bruise-violet surface-edge color glints. Illusion Creeper, Illusion Spider, and Illusion Zombie must each receive an independent future geometry, hierarchy, UV layout, animation implementation, and test contract with no shared Warlockery rig, geometry builder, or animation helper."
+  }
+}

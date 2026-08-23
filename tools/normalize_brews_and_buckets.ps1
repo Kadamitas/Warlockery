@@ -1,5 +1,5 @@
 param(
-    [string]$SkillRoot = 'C:\Users\agmlo\.codex\skills\recolor-pixel-icons'
+    [string]$SkillRoot = (Join-Path ([Environment]::GetFolderPath('UserProfile')) '.codex\skills\recolor-pixel-icons')
 )
 
 Add-Type -AssemblyName System.Drawing

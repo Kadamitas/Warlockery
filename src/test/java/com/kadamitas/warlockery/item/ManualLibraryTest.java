@@ -21,7 +21,8 @@ final class ManualLibraryTest {
         "src/main/resources/assets/warlockery/lang/en_us.json"
     );
     private static final List<String> LANGUAGES = List.of(
-        "de_de", "en_us", "es_es", "fr_fr", "ja_jp", "ko_kr", "pl_pl", "pt_br", "ru_ru", "tr_tr", "zh_cn", "zh_tw"
+        "de_de", "en_us", "es_es", "fr_fr", "ja_jp", "ko_kr", "pl_pl", "pt_br", "ru_ru", "tr_tr",
+        "zh_cn", "zh_tw"
     );
 
     @Test
@@ -178,7 +179,7 @@ final class ManualLibraryTest {
         final JsonObject translations = translations();
         final List<String> bloodCaps = List.of(
             "750", "1,000", "1,250", "1,500", "1,750",
-            "2,000", "2,250", "2,500", "2,750", "3,000"
+            "2,000", "2,250", "2,500", "3,250", "3,500"
         );
         for (int level = 1; level <= 10; level++) {
             final String vampire = translations.get(

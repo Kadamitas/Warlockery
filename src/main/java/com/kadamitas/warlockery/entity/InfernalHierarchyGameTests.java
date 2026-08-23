@@ -1495,9 +1495,9 @@ public final class InfernalHierarchyGameTests {
             final InfernalHierarchyEntity legacy = spawnRank(fixture, "abyssal_regent", new BlockPos(0, 1, 2));
             final CompoundTag legacyTag = save(helper, legacy);
             legacyTag.remove(InfernalHierarchyEntity.STATE_KEY);
-            final CompoundTag forgeData = legacyTag.getCompound("ForgeData").orElseGet(CompoundTag::new);
+            final CompoundTag forgeData = legacyTag.getCompound("NeoForgeData").orElseGet(CompoundTag::new);
             forgeData.putBoolean(InfernalHierarchyEntity.LEGACY_PHASE_KEY, true);
-            legacyTag.put("ForgeData", forgeData);
+            legacyTag.put("NeoForgeData", forgeData);
             final InfernalHierarchyEntity migrated = createRank(helper, "abyssal_regent", EntitySpawnReason.LOAD);
             fixture.track(migrated);
             migrated.load(TagValueInput.create(
@@ -1509,7 +1509,7 @@ public final class InfernalHierarchyGameTests {
                 "migration marks the phase done");
             helper.assertFalse(AbyssalRegentRules.beginsTormentPhase(100.0D,
                 migrated.hierarchyState().phaseCompleted()), "migration never replays the phase");
-            legacyTag.getCompound("ForgeData").orElseThrow()
+            legacyTag.getCompound("NeoForgeData").orElseThrow()
                 .remove(InfernalHierarchyEntity.LEGACY_PHASE_KEY);
             final InfernalHierarchyEntity untriggered = createRank(helper, "abyssal_regent", EntitySpawnReason.LOAD);
             fixture.track(untriggered);
@@ -1555,10 +1555,10 @@ public final class InfernalHierarchyGameTests {
             final UUID direct = UUID.randomUUID();
             final UUID animus = UUID.randomUUID();
             final CompoundTag ownedTag = save(helper, owned);
-            final CompoundTag ownerData = ownedTag.getCompound("ForgeData").orElseGet(CompoundTag::new);
+            final CompoundTag ownerData = ownedTag.getCompound("NeoForgeData").orElseGet(CompoundTag::new);
             ownerData.putString("WarlockeryCreatureOwner", direct.toString());
             ownerData.putString(InfernalPactEffects.OWNER_KEY, animus.toString());
-            ownedTag.put("ForgeData", ownerData);
+            ownedTag.put("NeoForgeData", ownerData);
             final InfernalHierarchyEntity inherited = createRank(helper, "demon", EntitySpawnReason.LOAD);
             fixture.track(inherited);
             inherited.load(TagValueInput.create(

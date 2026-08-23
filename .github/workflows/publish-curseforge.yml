@@ -9,7 +9,22 @@ on:
       tag:
         description: GitHub release tag to publish
         required: true
-        default: v1.5.0
+        default: v1.5.1
+      loader:
+        description: Mod loader files to publish
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - forge
+          - neoforge
+          - fabric
+      supporter_neoforge_only:
+        description: Publish the LlaGuiT0 supporter build as NeoForge only
+        required: false
+        default: false
+        type: boolean
       release_type:
         description: CurseForge release channel
         required: true
@@ -35,7 +50,9 @@ jobs:
       CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
       CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
       RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
-      REQUESTED_RELEASE_TYPE: ${{ inputs.release_type }}
+      REQUESTED_LOADER: ${{ (inputs.supporter_neoforge_only || (inputs.tag || github.event.release.tag_name) == 'v1.5.0-LlaGuiT0-26.2.0.45') && 'neoforge' || inputs.loader || 'all' }}
+      REQUESTED_RELEASE_TYPE: ${{ (inputs.supporter_neoforge_only || (inputs.tag || github.event.release.tag_name) == 'v1.5.0-LlaGuiT0-26.2.0.45') && 'beta' || inputs.release_type }}
+      SUPPORTER_NEOFORGE_ONLY: ${{ (inputs.supporter_neoforge_only || (inputs.tag || github.event.release.tag_name) == 'v1.5.0-LlaGuiT0-26.2.0.45') && 'true' || 'false' }}
       RELEASE_IS_PRERELEASE: ${{ github.event.release.prerelease }}
 
     steps:
@@ -45,25 +62,56 @@ jobs:
           test -n "$CURSEFORGE_API_TOKEN" || { echo "CURSEFORGE_API_TOKEN is not configured"; exit 1; }
           test -n "$CURSEFORGE_PROJECT_ID" || { echo "CURSEFORGE_PROJECT_ID is not configured"; exit 1; }
           test -n "$RELEASE_TAG" || { echo "A GitHub release tag is required"; exit 1; }
+          case "$REQUESTED_LOADER" in
+            all|forge|neoforge|fabric) ;;
+            *) echo "Unsupported loader selection: $REQUESTED_LOADER"; exit 1 ;;
+          esac
+          if [[ "$SUPPORTER_NEOFORGE_ONLY" == "true" ]]; then
+            test "$RELEASE_TAG" = "v1.5.0-LlaGuiT0-26.2.0.45" || { echo "The supporter option requires the LlaGuiT0 supporter tag"; exit 1; }
+            test "$REQUESTED_LOADER" = "neoforge" || { echo "The supporter build must publish as NeoForge only"; exit 1; }
+            test "$REQUESTED_RELEASE_TYPE" = "beta" || { echo "The supporter build must publish as beta"; exit 1; }
+          fi
 
       - name: Download release files
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           version="${RELEASE_TAG#v}"
           mkdir -p artifacts
-          gh release download "$RELEASE_TAG" \
-            --repo "$GITHUB_REPOSITORY" \
-            --dir artifacts \
-            --pattern "warlockery-${version}.jar" \
-            --pattern "warlockery-neoforge-${version}.jar"
-          gh release view "$RELEASE_TAG" \
-            --repo "$GITHUB_REPOSITORY" \
-            --json body \
-            --jq .body > artifacts/changelog.md
-          test -s "artifacts/warlockery-${version}.jar"
-          test -s "artifacts/warlockery-neoforge-${version}.jar"
+          release_json="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq ".[] | select(.tag_name == \"${RELEASE_TAG}\")")"
+          test -n "$release_json" || { echo "Release not found: $RELEASE_TAG"; exit 1; }
+
+          download_file() {
+            local file="$1"
+            if ! gh release download "$RELEASE_TAG" \
+                --repo "$GITHUB_REPOSITORY" \
+                --dir artifacts \
+                --pattern "$file"; then
+              local asset_api_url
+              asset_api_url="$(jq --raw-output --arg file "$file" \
+                '.assets[] | select(.name == $file) | .url' <<< "$release_json")"
+              test -n "$asset_api_url" || { echo "Release asset not found: $file"; exit 1; }
+              gh api "$asset_api_url" \
+                --header "Accept: application/octet-stream" > "artifacts/$file"
+            fi
+            test -s "artifacts/$file" || { echo "Missing release asset: $file"; exit 1; }
+          }
+
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "forge" ]]; then
+            download_file "warlockery-${version}.jar"
+          fi
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "neoforge" ]]; then
+            download_file "warlockery-neoforge-${version}.jar"
+          fi
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "fabric" ]]; then
+            download_file "warlockery-fabric-${version}.jar"
+          fi
+
+          jq --raw-output .body <<< "$release_json" > artifacts/changelog.md
           test -s artifacts/changelog.md
 
       - name: Publish loader files
@@ -105,11 +153,22 @@ jobs:
             local loader_version
             local display_name
             local metadata
+            local relations
             local response
+            local response_file
+            local http_status
             local file_id
             loader_version="$(resolve_version "$loader")"
             test -n "$loader_version" || { echo "CurseForge does not list loader $loader"; exit 1; }
             display_name="Warlockery ${version} for ${loader}"
+
+            relations='{"projects":[]}'
+            if [[ "$loader" == "Fabric" ]]; then
+              relations="$(jq --null-input --compact-output \
+                --arg slug "fabric-api" \
+                --argjson projectID 306612 \
+                '{projects: [{slug: $slug, projectID: $projectID, type: "requiredDependency"}]}')"
+            fi
 
             version_names="$(jq --null-input --compact-output \
               --arg minecraft "$minecraft_version" \
@@ -123,14 +182,26 @@ jobs:
               --arg displayName "$display_name" \
               --arg releaseType "$release_type" \
               --argjson gameVersionNames "$version_names" \
-              '{changelog: $changelog, changelogType: "markdown", displayName: $displayName, gameVersionNames: $gameVersionNames, releaseType: $releaseType}')"
+              --argjson relations "$relations" \
+              '{changelog: $changelog, changelogType: "markdown", displayName: $displayName, gameVersionNames: $gameVersionNames, releaseType: $releaseType}
+                + (if ($relations.projects | length) == 0 then {} else {relations: $relations} end)')"
 
-            response="$(curl --silent --show-error --fail-with-body \
+            response_file="$(mktemp)"
+            http_status="$(curl --silent --show-error \
               --request POST \
               --header "X-Api-Token: $CURSEFORGE_API_TOKEN" \
               --form-string "metadata=$metadata" \
               --form "file=@${file}" \
+              --output "$response_file" \
+              --write-out '%{http_code}' \
               "https://minecraft.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
+            response="$(cat "$response_file")"
+            rm -f "$response_file"
+            if (( http_status < 200 || http_status >= 300 )); then
+              echo "CurseForge upload failed with HTTP ${http_status}"
+              jq . <<< "$response" || echo "$response"
+              return 1
+            fi
             file_id="$(jq --exit-status --raw-output .id <<< "$response")"
             echo "| ${loader} | ${file_id} | ${release_type} |" >> "$GITHUB_STEP_SUMMARY"
           }
@@ -142,5 +213,12 @@ jobs:
             echo "| --- | ---: | --- |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          publish_file "Forge" "artifacts/warlockery-${version}.jar"
-          publish_file "NeoForge" "artifacts/warlockery-neoforge-${version}.jar"
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "forge" ]]; then
+            publish_file "Forge" "artifacts/warlockery-${version}.jar"
+          fi
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "neoforge" ]]; then
+            publish_file "NeoForge" "artifacts/warlockery-neoforge-${version}.jar"
+          fi
+          if [[ "$REQUESTED_LOADER" == "all" || "$REQUESTED_LOADER" == "fabric" ]]; then
+            publish_file "Fabric" "artifacts/warlockery-fabric-${version}.jar"
+          fi

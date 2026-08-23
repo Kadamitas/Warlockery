@@ -35,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
  * enabled and tick themselves, cleans up every created entity in {@code finally}, and uses exact
  * state and counter assertions rather than elapsed-time guesses.
  *
- * <p><strong>Arena geometry.</strong> The framework seals the {@code forge:empty3x3x3} cell in a
+ * <p><strong>Arena geometry.</strong> The framework seals the {@code warlockery:empty3x3x3} cell in a
  * barrier shell, so every entity and every derived destination has to stay inside relative 0..2
  * with entities at y=1 over a floor placed at y=0. The Sigil's seal radius is one block, so the
  * only snapshot centre whose three vertices all land inside the shell is the arena centre

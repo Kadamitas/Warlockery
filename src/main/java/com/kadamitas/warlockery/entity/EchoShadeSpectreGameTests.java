@@ -30,7 +30,7 @@ import net.minecraft.world.phys.Vec3;
  * AI enabled and tick themselves, cleans up every created entity and block in {@code finally}, and
  * uses exact state and counter assertions rather than elapsed-time guesses.
  *
- * <p>Arena geometry: the framework seals the {@code forge:empty3x3x3} cell in a barrier shell, so
+ * <p>Arena geometry: the framework seals the {@code warlockery:empty3x3x3} cell in a barrier shell, so
  * every entity and every computed destination in these fixtures stays inside relative 0..2 with
  * entities at y=1 over a placed floor at y=0. Both kinds were given deliberately short mark,
  * answer, strike and dread bands, so no fixture ever needs to reopen the framework shell to reach a
@@ -121,9 +121,14 @@ public final class EchoShadeSpectreGameTests {
                 // baseline is captured rather than assumed.
                 strikesBeforeForcedWindow.set(shade.echoShadeCounters().strikes());
                 walking.set(false);
-                final BlockPos beside = helper.absolutePos(new BlockPos(1, 1, 0));
-                mark.teleportTo(beside.getX() + 0.5D, beside.getY(), beside.getZ() + 0.5D);
+                shade.getNavigation().stop();
+                mark.teleportTo(shade.getX(), shade.getY(), shade.getZ());
                 mark.setDeltaMovement(Vec3.ZERO);
+                shade.getSensing().tick();
+                helper.assertTrue(
+                    shade.distanceToSqr(mark) <= EchoShadeRules.STRIKE_BAND_SQUARED
+                        && shade.getSensing().hasLineOfSight(mark),
+                    "armed control: the forced mark is inside the live strike gate");
                 shade.setEchoShadeState(shade.echoShadeState()
                     .withMark(EchoShadeState.Mark.of(mark.getUUID(),
                         ApparitionEpisodeRuntime.dimensionOf(helper.getLevel())))

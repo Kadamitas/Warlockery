@@ -3,6 +3,9 @@ package com.kadamitas.warlockery.entity;
 import com.kadamitas.warlockery.registry.ModItems;
 import java.util.List;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
@@ -36,6 +39,8 @@ import org.jspecify.annotations.Nullable;
 
 public final class WerewolfHunterEntity extends Pillager implements ArcaneCreature {
     private static final String STATE_KEY = "WarlockeryWerewolfHunter";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_INTENT =
+        SynchedEntityData.defineId(WerewolfHunterEntity.class, EntityDataSerializers.BYTE);
 
     private final WerewolfHunterRuntime.Counters hunterCounters = new WerewolfHunterRuntime.Counters();
     private WerewolfHunterState hunterState;
@@ -45,6 +50,25 @@ public final class WerewolfHunterEntity extends Pillager implements ArcaneCreatu
         super(type, level);
         hunterState = WerewolfHunterState.empty(getUUID(), level.getGameTime());
         normalizeRaidState();
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_PRESENTATION_INTENT, (byte) WerewolfHunterRules.Intent.IDLE.ordinal());
+    }
+
+    public WerewolfHunterRules.Intent presentationIntent() {
+        final int stored = entityData.get(DATA_PRESENTATION_INTENT);
+        final WerewolfHunterRules.Intent[] intents = WerewolfHunterRules.Intent.values();
+        return stored >= 0 && stored < intents.length ? intents[stored] : WerewolfHunterRules.Intent.IDLE;
+    }
+
+    private void syncPresentation(final WerewolfHunterRules.Intent intent) {
+        final byte encoded = (byte) intent.ordinal();
+        if (entityData.get(DATA_PRESENTATION_INTENT) != encoded) {
+            entityData.set(DATA_PRESENTATION_INTENT, encoded);
+        }
     }
 
     @Override
@@ -58,6 +82,7 @@ public final class WerewolfHunterEntity extends Pillager implements ArcaneCreatu
 
     public void setHunterState(final WerewolfHunterState state) {
         hunterState = state == null ? WerewolfHunterState.empty(getUUID(), level().getGameTime()) : state;
+        syncPresentation(hunterState.intent());
     }
 
     public WerewolfHunterRuntime.Counters hunterCounters() {
@@ -132,6 +157,7 @@ public final class WerewolfHunterEntity extends Pillager implements ArcaneCreatu
         TacticalCombatRuntime.tick(this, level, CreatureKind.WEREWOLF_HUNTER);
         AmbientActivityRuntime.tick(this, level, CreatureKind.WEREWOLF_HUNTER);
         WerewolfHunterRuntime.tick(this, level);
+        syncPresentation(hunterState.intent());
     }
 
     @Override
@@ -256,9 +282,9 @@ public final class WerewolfHunterEntity extends Pillager implements ArcaneCreatu
     @Override
     protected void readAdditionalSaveData(final ValueInput input) {
         super.readAdditionalSaveData(input);
-        hunterState = input.read(STATE_KEY, CompoundTag.CODEC)
+        setHunterState(input.read(STATE_KEY, CompoundTag.CODEC)
             .map(tag -> WerewolfHunterState.read(tag, getUUID(), level().getGameTime()))
-            .orElse(WerewolfHunterState.empty(getUUID(), level().getGameTime()));
+            .orElse(WerewolfHunterState.empty(getUUID(), level().getGameTime())));
         setChargingCrossbow(false);
         lastQuarrySeen = null;
         normalizeRaidState();

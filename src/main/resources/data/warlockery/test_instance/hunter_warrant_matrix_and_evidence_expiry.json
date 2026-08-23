@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:hunter_warrant_matrix_and_evidence_expiry",
-  "environment": "warlockery:werewolf_hunter_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hunter_warrant_matrix_and_evidence_expiry",
+    "delegate": "warlockery:werewolf_hunter_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

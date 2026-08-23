@@ -1,8 +1,12 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:glyph_transformation_changes_only_the_selected_ring",
-  "environment": "minecraft:default",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "glyph_transformation_changes_only_the_selected_ring",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 100,
   "padding": 16
 }

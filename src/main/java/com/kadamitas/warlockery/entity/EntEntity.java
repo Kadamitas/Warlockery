@@ -21,6 +21,7 @@ public final class EntEntity extends PathfinderMob implements ArcaneCreature {
         BASE_ARMOR=2, BASE_FOLLOW_RANGE=16, BASE_KNOCKBACK_RESISTANCE=1, BASE_STEP_HEIGHT=1;
     public static final int BASE_XP_REWARD=0;
     private static final EntityDataAccessor<Integer> DATA_VARIANT=SynchedEntityData.defineId(EntEntity.class,EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE=SynchedEntityData.defineId(EntEntity.class,EntityDataSerializers.BYTE);
     private EntState entState=new EntState(1,0,0,0,0,0,0,0);
     private final EntRuntime.TransientState transientState=new EntRuntime.TransientState();
     private final EntRuntime.Counters counters=new EntRuntime.Counters();
@@ -29,10 +30,12 @@ public final class EntEntity extends PathfinderMob implements ArcaneCreature {
     private static final class LookOnlyRandomLookGoal extends RandomLookAroundGoal{LookOnlyRandomLookGoal(Mob mob){super(mob);setFlags(java.util.EnumSet.of(Flag.LOOK));}}
     @Override public CreatureKind creatureKind(){return CreatureKind.ENT;}
     public EntVariant variant(){return EntVariant.byOrdinal(entityData.get(DATA_VARIANT));}
+    public EntRules.Phase presentationPhase(){return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE),EntRules.Phase.WARDING);}
     EntState entState(){return entState;} void setEntState(EntState state){entState=state;}
     EntRuntime.TransientState entTransient(){return transientState;} public EntRuntime.Counters entCounters(){return counters;}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder){super.defineSynchedData(builder);builder.define(DATA_VARIANT,0);}
-    @Override protected void customServerAiStep(ServerLevel level){super.customServerAiStep(level);EntRuntime.tick(this,level);}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder){super.defineSynchedData(builder);builder.define(DATA_VARIANT,0);builder.define(DATA_PRESENTATION_PHASE,EntityPresentationSync.encode(EntRules.Phase.WARDING));}
+    private void syncPresentationFromRuntime(){byte phase=EntityPresentationSync.encode(transientState.phase());if(entityData.get(DATA_PRESENTATION_PHASE)!=phase)entityData.set(DATA_PRESENTATION_PHASE,phase);}
+    @Override protected void customServerAiStep(ServerLevel level){super.customServerAiStep(level);EntRuntime.tick(this,level);syncPresentationFromRuntime();}
     @Override public boolean hurtServer(ServerLevel level,DamageSource source,float amount){boolean axe=source.getWeaponItem()!=null&&source.getWeaponItem().is(ItemTags.AXES);boolean mob=source.getEntity() instanceof Mob&&!(source.getEntity() instanceof Player);float before=getHealth()+getAbsorptionAmount();boolean hurt=super.hurtServer(level,source,EntRules.incomingDamage(amount,axe,mob));float after=getHealth()+getAbsorptionAmount();if(hurt&&after<before&&source.getEntity() instanceof LivingEntity living)EntRuntime.afterHurt(this,living);return hurt;}
     @Override public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level,DifficultyInstance difficulty,EntitySpawnReason reason,@Nullable SpawnGroupData group){SpawnGroupData result=super.finalizeSpawn(level,difficulty,reason,group);String biome=level.registryAccess().lookupOrThrow(Registries.BIOME).getKey(level.getBiome(blockPosition()).value()).toString();initializeVariant(EntVariant.fromBiome(biome));entState=EntState.fresh(getBlockX(),getBlockY(),getBlockZ());return result;}
     @Override protected void addAdditionalSaveData(ValueOutput out){super.addAdditionalSaveData(out);out.putString("WarlockeryEntVariant",variant().serializedName());EntRuntime.writeState(out,entState);}

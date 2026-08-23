@@ -25,9 +25,9 @@ final class LivingRootsResourceTest {
         assertEquals(net.minecraft.world.entity.monster.Monster.class, MandrakeEntity.class.getSuperclass());
         assertEquals(net.minecraft.world.entity.monster.Monster.class, DreamrootEntity.class.getSuperclass());
         assertEquals(0.55F, CreatureVisualProfile.forKind(ArcaneCreature.CreatureKind.MANDRAKE).width());
-        assertEquals(0.85F, CreatureVisualProfile.forKind(ArcaneCreature.CreatureKind.MANDRAKE).height());
+        assertEquals(0.81F, CreatureVisualProfile.forKind(ArcaneCreature.CreatureKind.MANDRAKE).height());
         assertEquals(0.9F, CreatureVisualProfile.forKind(ArcaneCreature.CreatureKind.DREAMROOT).width());
-        assertEquals(1.7F, CreatureVisualProfile.forKind(ArcaneCreature.CreatureKind.DREAMROOT).height());
+        assertEquals(1.62F, CreatureVisualProfile.forKind(ArcaneCreature.CreatureKind.DREAMROOT).height());
         for (String entity : List.of("MandrakeEntity.java", "DreamrootEntity.java")) {
             assertTrue(read(ROOT.resolve("java/com/kadamitas/warlockery/entity/" + entity))
                 .contains("Attributes.SPAWN_REINFORCEMENTS_CHANCE,0"));

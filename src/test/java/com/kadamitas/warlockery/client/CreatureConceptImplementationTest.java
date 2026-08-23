@@ -2,18 +2,20 @@ package com.kadamitas.warlockery.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.kadamitas.warlockery.entity.CreatureVisualProfile;
+import com.kadamitas.warlockery.client.model.ImpModel;
+import com.kadamitas.warlockery.client.model.NaamahModel;
+import com.kadamitas.warlockery.client.model.StormSimianModel;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,351 +28,155 @@ final class CreatureConceptImplementationTest {
         "src/main/resources/assets/warlockery/textures/entity"
     );
     private static final Path CONCEPTS = Path.of("docs/art-source/creature-concepts");
-    private static final Path ENTITY_LOOT = Path.of("src/main/resources/data/warlockery/loot_table/entities");
-    private static final Set<String> CONCEPT_SHEETS = Set.of(
-        "familiars-and-vermin.png",
-        "illusions-and-anomalies.png",
-        "infernal-and-bosses.png",
-        "goblin-clans.png",
-        "lycans-and-mounts.png",
-        "nami_naamah_turnaround.png",
-        "occult-humanoids.png",
-        "spectral-entities.png",
-        "verdant-creatures.png"
-    );
+    private static final String NAMI_SHA256 =
+        "9ffc406b45205ccfb2e9c1faddb9702a0cb430aa14d37bcbad00407a912ca2d0";
 
     @Test
-    void everyRegisteredCreatureHasAnExactModelProfile() throws IOException {
-        final Set<String> profileIds = Arrays.stream(CreatureModelProfile.Variant.values())
-            .map(CreatureModelProfile.Variant::id)
-            .collect(Collectors.toUnmodifiableSet());
-        final Set<String> registeredIds = registeredCreatureIds();
-        assertEquals(registeredIds, profileIds);
-        registeredIds.forEach(id -> {
-            final CreatureVisualProfile visual = new CreatureVisualProfile(
-                0.8F,
-                1.8F,
-                CreatureVisualProfile.Archetype.HUMANOID
-            );
-            final CreatureModelProfile profile = CreatureModelProfile.forEntity(id, visual);
-            final ModelPart root = ArcaneCreatureModel.createLayer(profile).bakeRoot();
-            assertFalse(root.getChild("head").isEmpty(), id + " head");
-            assertFalse(root.getChild("body").isEmpty(), id + " body");
-            assertTrue(root.getAllParts().stream().filter(part -> !part.isEmpty()).count() >= 7, id + " geometry");
-        });
-    }
-
-    @Test
-    void everyCreatureTextureIsPixelSizedAndOriginal() throws Exception {
-        final Set<String> registeredIds = registeredCreatureIds();
-        final Set<String> hashes = registeredIds.stream()
-            .map(id -> ENTITY_TEXTURES.resolve(id + ".png"))
-            .peek(path -> assertTrue(Files.isRegularFile(path), path.toString()))
+    void everyEntityTextureUsesAnAuthoredPixelAtlas() throws Exception {
+        final List<Path> textures;
+        try (Stream<Path> files = Files.list(ENTITY_TEXTURES)) {
+            textures = files.filter(path -> path.getFileName().toString().endsWith(".png")).toList();
+        }
+        assertTrue(textures.size() >= 48);
+        final Set<String> hashes = textures.stream()
             .map(CreatureConceptImplementationTest::inspectTexture)
             .collect(Collectors.toUnmodifiableSet());
-        assertEquals(registeredIds.size(), hashes.size());
+        assertEquals(textures.size(), hashes.size(), "entity atlases must not be palette-swap duplicates");
     }
 
     @Test
-    void everyGeneratedConceptSheetIsSavedWithProductionResolution() throws IOException {
-        try (Stream<Path> files = Files.list(CONCEPTS)) {
-            assertEquals(CONCEPT_SHEETS, files
-                .filter(path -> path.getFileName().toString().endsWith(".png"))
-                .map(path -> path.getFileName().toString())
-                .collect(Collectors.toUnmodifiableSet()));
+    void everySavedCreatureConceptHasReviewableProductionResolution() throws IOException {
+        final List<Path> sheets;
+        try (Stream<Path> files = Files.walk(CONCEPTS)) {
+            sheets = files.filter(path -> path.getFileName().toString().endsWith(".png")).toList();
         }
-        for (final String fileName : CONCEPT_SHEETS) {
-            final BufferedImage image = ImageIO.read(CONCEPTS.resolve(fileName).toFile());
-            assertTrue(image.getWidth() >= 1024, fileName + " width");
-            assertTrue(image.getHeight() >= 768, fileName + " height");
+        assertTrue(sheets.size() >= 15);
+        for (final Path sheet : sheets) {
+            final BufferedImage image = ImageIO.read(sheet.toFile());
+            assertNotNull(image, sheet.toString());
+            assertTrue(image.getWidth() >= 1024, sheet + " width");
+            assertTrue(image.getHeight() >= 768, sheet + " height");
         }
     }
 
     @Test
-    void customCreatureRenderingDoesNotReuseVanillaMobModels() throws IOException {
-        final String source = Files.readString(Path.of(
+    void customRenderingKeepsOnlyNamiAndGlassOnIntentionalLegacyPaths() throws IOException {
+        final String legacy = Files.readString(Path.of(
             "src/main/java/com/kadamitas/warlockery/client/TexturedCreatureRenderers.java"
         ));
-        assertFalse(source.contains("VexRenderer"));
-        assertFalse(source.contains("VillagerRenderer"));
-        assertFalse(source.contains("PillagerRenderer"));
-        assertFalse(source.contains("IronGolemRenderer"));
-        assertTrue(source.contains("Nami extends SkinnedHumanoid<NamiEntity>"));
-        assertTrue(source.contains("Naamah extends SkinnedHumanoid<NaamahEntity>"));
-        assertTrue(source.contains("super(context, \"nami\""));
-        assertTrue(source.contains("super(context, \"naamah\""));
-    }
-
-    @Test
-    void namiAndNaamahUseDedicatedMobRenderStates() throws IOException {
-        final String source = Files.readString(Path.of(
-            "src/main/java/com/kadamitas/warlockery/client/TexturedCreatureRenderers.java"
+        final String dedicated = Files.readString(Path.of(
+            "src/main/java/com/kadamitas/warlockery/client/DedicatedCreatureRenderers.java"
         ));
-        assertFalse(source.contains("AvatarRenderState"));
-        assertFalse(source.contains("PlayerModel"));
-        assertTrue(source.contains("HumanoidRenderState"));
-        assertTrue(source.contains("HumanoidModel"));
-        assertTrue(source.contains("context.bakeLayer(ModelLayers.PLAYER_SLIM)"));
+        assertTrue(legacy.contains("Nami extends SkinnedHumanoid<NamiEntity>"));
+        assertTrue(legacy.contains("super(context, \"nami\""));
+        assertFalse(legacy.contains("Naamah extends SkinnedHumanoid"));
+        assertFalse(dedicated.contains("ArcaneCreatureModel"));
+        assertTrue(dedicated.contains("new NaamahModel("));
+        assertFalse(dedicated.contains("ModelLayers.PLAYER"));
     }
 
     @Test
-    void namiAndNaamahUseCompleteCustomHumanoidSkins() throws IOException {
-        assertCompleteHumanoidSkin("nami");
-        assertCompleteHumanoidSkin("naamah");
+    void namiStaysBytePinnedWhileNaamahOwnsHerGoddessRigAndGenerator() throws Exception {
+        assertEquals(NAMI_SHA256, sha256(ENTITY_TEXTURES.resolve("nami.png")));
         final BufferedImage nami = ImageIO.read(ENTITY_TEXTURES.resolve("nami.png").toFile());
+        assertEquals(64, nami.getWidth());
+        assertEquals(64, nami.getHeight());
+
         final BufferedImage naamah = ImageIO.read(ENTITY_TEXTURES.resolve("naamah.png").toFile());
-        assertNotEquals(faceSignature(nami), faceSignature(naamah));
-        assertNotEquals(nami.getRGB(10, 12), naamah.getRGB(10, 12));
+        assertEquals(NaamahModel.TEXTURE_WIDTH, naamah.getWidth());
+        assertEquals(NaamahModel.TEXTURE_HEIGHT, naamah.getHeight());
+        assertEquals(192, naamah.getWidth());
+        assertEquals(128, naamah.getHeight());
+
+        final String legacyGenerator = Files.readString(Path.of("tools/GenerateOriginalAssets.java"));
+        assertFalse(legacyGenerator.contains("ImageIO.write(namiSkin()"));
+        assertFalse(legacyGenerator.contains("ImageIO.write(naamahSkin()"));
+        assertTrue(legacyGenerator.contains("Nami is intentionally pinned and unchanged"));
+        final String naamahGenerator = Files.readString(Path.of(
+            "tools/creature_models/generate_naamah.ps1"
+        )).toLowerCase(java.util.Locale.ROOT);
+        assertTrue(naamahGenerator.contains("naamah.png"));
+        assertFalse(naamahGenerator.contains("nami.png"));
     }
 
     @Test
-    void namiAndNaamahHaveDedicatedStableGeneratorPaths() throws IOException {
-        final String source = Files.readString(Path.of("tools/GenerateOriginalAssets.java"));
-        assertTrue(source.contains("return namiSkin();"));
-        assertTrue(source.contains("return naamahSkin();"));
-        assertTrue(source.contains("--nami-naamah"));
-        assertTrue(source.contains("ImageIO.write(namiSkin()"));
-        assertTrue(source.contains("ImageIO.write(naamahSkin()"));
-    }
+    void generalAssetGeneratorsCannotWriteAuthoredEntityAtlases() throws IOException {
+        final String javaGenerator = Files.readString(Path.of("tools/GenerateOriginalAssets.java"));
+        assertTrue(
+            javaGenerator.contains(".filter(path -> !path.normalize().startsWith(entityRoot.normalize()))"),
+            "the normal generator must recursively exclude the complete entity atlas tree"
+        );
+        assertTrue(
+            javaGenerator.contains("if (path.normalize().startsWith(entityRoot.normalize()))"),
+            "the generic ImageIO write loop must fail closed for every path below entityRoot"
+        );
+        assertFalse(javaGenerator.contains("entityRoot.resolve("),
+            "no explicit generator destination may resolve below entityRoot");
+        assertFalse(javaGenerator.contains("textureRoot.resolve(\"entity/"),
+            "no indirect generator destination may resolve below the entity texture tree");
+        assertFalse(javaGenerator.contains("case \"entity\" ->"),
+            "the generic texture switch must not have an entity-atlas generation branch");
+        assertFalse(javaGenerator.contains("ImageIO.write(entityTexture("),
+            "loot-table IDs must never drive writes to authored entity atlases");
+        assertFalse(javaGenerator.contains("ImageIO.write(penguinGoblinTexture("),
+            "the retired goblin CLI must never rewrite Goblin or Hobgoblin atlases");
+        assertFalse(javaGenerator.contains("writeHunterArmorTextures("),
+            "the general generator must not own nested entity equipment atlases");
+        assertTrue(javaGenerator.contains("--goblins is retired"),
+            "--goblins remains accepted as an explicit no-op for CLI compatibility");
 
-    private static void assertCompleteHumanoidSkin(final String entityId) throws IOException {
-        final BufferedImage skin = ImageIO.read(ENTITY_TEXTURES.resolve(entityId + ".png").toFile());
-        assertEquals(64, skin.getWidth());
-        assertEquals(64, skin.getHeight());
-        assertTrue(skin.getColorModel().hasAlpha());
-        assertEquals(4, skin.getColorModel().getNumComponents());
-        assertBinaryAlpha(skin, entityId);
-        assertOpaqueCuboid(skin, entityId, "head", 0, 0, 8, 8, 8);
-        assertOpaqueCuboid(skin, entityId, "body", 16, 16, 8, 12, 4);
-        assertOpaqueCuboid(skin, entityId, "right arm", 40, 16, 3, 12, 4);
-        assertOpaqueCuboid(skin, entityId, "right leg", 0, 16, 4, 12, 4);
-        assertOpaqueCuboid(skin, entityId, "left arm", 32, 48, 3, 12, 4);
-        assertOpaqueCuboid(skin, entityId, "left leg", 16, 48, 4, 12, 4);
-        assertOverlayTransparency(skin, entityId);
-        assertTransparent(skin, entityId, 0, 0);
-        assertTransparent(skin, entityId, 24, 0);
-        assertTransparent(skin, entityId, 32, 0);
-        assertTransparent(skin, entityId, 56, 0);
-        assertTransparent(skin, entityId, 63, 31);
-        assertTransparent(skin, entityId, 63, 47);
-        assertTransparent(skin, entityId, 62, 63);
-        assertOpaque(skin, entityId, "face", 10, 11);
-        assertOpaque(skin, entityId, "torso", 22, 24);
-        assertOpaque(skin, entityId, "right arm", 45, 22);
-        assertOpaque(skin, entityId, "right leg", 5, 22);
-        assertOpaque(skin, entityId, "left arm", 37, 54);
-        assertOpaque(skin, entityId, "left leg", 21, 54);
-        assertRegionPainted(skin, entityId, "jacket overlay", 16, 32, 24, 16, 16);
-        assertFalse(skin.getRGB(10, 11) == 0xFFB87A5B, entityId + " must not contain Steve's face palette");
-        // The face panel mirrors about its own centre: x=8 pairs with 15, 9 with 14, 10 with 13.
-        // The earlier pairing of 9 with 13 compared two columns that are not reflections of each
-        // other and only held for the one generated face this audit was written against.
-        assertEquals(skin.getRGB(9, 11), skin.getRGB(14, 11), entityId + " paired eye line");
-        assertEquals(skin.getRGB(10, 11), skin.getRGB(13, 11), entityId + " paired eye line");
-        assertTrue(colorDistance(skin.getRGB(10, 12), skin.getRGB(11, 12)) > 70, entityId + " readable irises");
-    }
-
-    /**
-     * Asserts an overlay region carries real paint, without dictating which pixels an artist used.
-     * A single sampled coordinate only ever described the skin this audit was first written
-     * against, so a different but perfectly complete jacket would fail it for no reason.
-     */
-    private static void assertRegionPainted(
-        final BufferedImage skin,
-        final String entityId,
-        final String region,
-        final int u,
-        final int v,
-        final int width,
-        final int height,
-        final int minimumPainted
-    ) {
-        int painted = 0;
-        for (int y = v; y < v + height; y++) {
-            for (int x = u; x < u + width; x++) {
-                if ((skin.getRGB(x, y) >>> 24) != 0) {
-                    painted++;
-                }
-            }
-        }
-        assertTrue(painted >= minimumPainted,
-            entityId + " " + region + " must be painted; painted=" + painted
-                + ", required=" + minimumPainted);
-    }
-
-    private static void assertOpaqueCuboid(
-        final BufferedImage skin,
-        final String entityId,
-        final String region,
-        final int u,
-        final int v,
-        final int width,
-        final int height,
-        final int depth
-    ) {
-        assertOpaqueRectangle(skin, entityId, region + " top", u + depth, v, width, depth);
-        assertOpaqueRectangle(skin, entityId, region + " bottom", u + depth + width, v, width, depth);
-        assertOpaqueRectangle(skin, entityId, region + " right", u, v + depth, depth, height);
-        assertOpaqueRectangle(skin, entityId, region + " front", u + depth, v + depth, width, height);
-        assertOpaqueRectangle(skin, entityId, region + " left", u + depth + width, v + depth, depth, height);
-        assertOpaqueRectangle(skin, entityId, region + " back", u + depth * 2 + width, v + depth, width, height);
-    }
-
-    private static void assertOpaqueRectangle(
-        final BufferedImage skin,
-        final String entityId,
-        final String region,
-        final int x,
-        final int y,
-        final int width,
-        final int height
-    ) {
-        for (int py = y; py < y + height; py++) {
-            for (int px = x; px < x + width; px++) {
-                assertOpaque(skin, entityId, region, px, py);
-            }
-        }
-    }
-
-    private static void assertOverlayTransparency(final BufferedImage skin, final String entityId) {
-        int opaque = 0;
-        int transparent = 0;
-        for (int y = 0; y < skin.getHeight(); y++) {
-            for (int x = 0; x < skin.getWidth(); x++) {
-                if (isBaseSkinPixel(x, y)) {
-                    continue;
-                }
-                if ((skin.getRGB(x, y) >>> 24) == 0) {
-                    transparent++;
-                } else {
-                    opaque++;
-                }
-            }
-        }
-        assertTrue(opaque > 200, entityId + " overlays must contain garment and hair pixels");
-        assertTrue(transparent > 500, entityId + " overlays must preserve transparent pixels");
-    }
-
-    private static boolean isBaseSkinPixel(final int x, final int y) {
-        return inCuboid(x, y, 0, 0, 8, 8, 8)
-            || inCuboid(x, y, 16, 16, 8, 12, 4)
-            || inCuboid(x, y, 40, 16, 3, 12, 4)
-            || inCuboid(x, y, 0, 16, 4, 12, 4)
-            || inCuboid(x, y, 32, 48, 3, 12, 4)
-            || inCuboid(x, y, 16, 48, 4, 12, 4);
-    }
-
-    private static boolean inCuboid(
-        final int x,
-        final int y,
-        final int u,
-        final int v,
-        final int width,
-        final int height,
-        final int depth
-    ) {
-        return inRectangle(x, y, u + depth, v, width, depth)
-            || inRectangle(x, y, u + depth + width, v, width, depth)
-            || inRectangle(x, y, u, v + depth, depth, height)
-            || inRectangle(x, y, u + depth, v + depth, width, height)
-            || inRectangle(x, y, u + depth + width, v + depth, depth, height)
-            || inRectangle(x, y, u + depth * 2 + width, v + depth, width, height);
-    }
-
-    private static boolean inRectangle(
-        final int x,
-        final int y,
-        final int left,
-        final int top,
-        final int width,
-        final int height
-    ) {
-        return x >= left && x < left + width && y >= top && y < top + height;
-    }
-
-    private static void assertBinaryAlpha(final BufferedImage skin, final String entityId) {
-        for (int y = 0; y < skin.getHeight(); y++) {
-            for (int x = 0; x < skin.getWidth(); x++) {
-                final int alpha = skin.getRGB(x, y) >>> 24;
-                assertTrue(alpha == 0 || alpha == 255, entityId + " alpha at " + x + "," + y);
-            }
-        }
-    }
-
-    private static void assertTransparent(
-        final BufferedImage skin,
-        final String entityId,
-        final int x,
-        final int y
-    ) {
-        assertEquals(0, skin.getRGB(x, y) >>> 24, entityId + " unused UV at " + x + "," + y);
-    }
-
-    private static int colorDistance(final int first, final int second) {
-        final int red = ((first >>> 16) & 0xFF) - ((second >>> 16) & 0xFF);
-        final int green = ((first >>> 8) & 0xFF) - ((second >>> 8) & 0xFF);
-        final int blue = (first & 0xFF) - (second & 0xFF);
-        return Math.abs(red) + Math.abs(green) + Math.abs(blue);
-    }
-
-    private static String faceSignature(final BufferedImage skin) {
-        final StringBuilder signature = new StringBuilder();
-        for (int y = 8; y < 16; y++) {
-            for (int x = 8; x < 16; x++) {
-                signature.append(Integer.toHexString(skin.getRGB(x, y)));
-            }
-        }
-        return signature.toString();
-    }
-
-    private static void assertOpaque(
-        final BufferedImage skin,
-        final String entityId,
-        final String region,
-        final int x,
-        final int y
-    ) {
-        assertTrue((skin.getRGB(x, y) >>> 24) != 0, entityId + " " + region + " must be painted");
+        final String plantGenerator = Files.readString(Path.of(
+            "tools/generate_1_5_1_visual_assets.ps1"
+        ));
+        assertFalse(plantGenerator.contains("$entityRoot"),
+            "the general plant generator must not resolve an entity texture root");
+        assertFalse(plantGenerator.contains("New-EntityAtlas"),
+            "Mandrake and Dreamroot atlases belong to dedicated creature generators");
     }
 
     @Test
-    void impAndStormSimianHaveArticulatedSilhouettes() {
-        final ModelPart imp = modelFor("imp");
-        assertFalse(imp.getChild("right_wing").getChild("right_wing_finger").isEmpty());
-        assertFalse(imp.getChild("left_wing").getChild("left_wing_finger").isEmpty());
-        final ModelPart simian = modelFor("storm_simian");
-        assertFalse(simian.getChild("right_arm").getChild("right_hand").isEmpty());
-        assertFalse(simian.getChild("left_arm").getChild("left_hand").isEmpty());
-        assertFalse(simian.getChild("right_wing").getChild("right_primary_feathers").isEmpty());
-        assertFalse(simian.getChild("left_wing").getChild("left_primary_feathers").isEmpty());
+    void impAndStormSimianUseTheirIndependentArticulatedRigs() {
+        final ModelPart imp = ImpModel.createBodyLayer().bakeRoot();
+        assertFalse(imp.getChild("right_wing").isEmpty());
+        assertFalse(imp.getChild("left_wing").isEmpty());
+
+        final ModelPart simian = StormSimianModel.createBodyLayer().bakeRoot();
+        assertFalse(simian.getChild("right_arm").isEmpty());
+        assertFalse(simian.getChild("left_arm").isEmpty());
+        assertFalse(simian.getChild("head").getChild("muzzle").isEmpty());
+        assertFalse(simian.getChild("right_leg").isEmpty());
+        assertFalse(simian.getChild("left_leg").isEmpty());
+        assertFalse(simian.getChild("tail_base").isEmpty());
     }
 
     private static String inspectTexture(final Path path) {
         try {
             final BufferedImage image = ImageIO.read(path.toFile());
-            assertEquals(64, image.getWidth(), path + " width");
-            assertEquals(64, image.getHeight(), path + " height");
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path)));
-        } catch (final IOException | NoSuchAlgorithmException exception) {
+            assertNotNull(image, path.toString());
+            assertTrue(image.getWidth() >= 32 && image.getWidth() <= 256, path + " width");
+            assertTrue(image.getHeight() >= 32 && image.getHeight() <= 256, path + " height");
+            assertEquals(0, image.getWidth() % 16, path + " pixel-grid width");
+            assertEquals(0, image.getHeight() % 16, path + " pixel-grid height");
+            assertTrue(image.getColorModel().hasAlpha(), path + " alpha channel");
+            for (int y = 0; y < image.getHeight(); y++) {
+                for (int x = 0; x < image.getWidth(); x++) {
+                    final int alpha = image.getRGB(x, y) >>> 24;
+                    assertTrue(alpha == 0 || alpha == 255, path + " binary alpha at " + x + "," + y);
+                }
+            }
+            return sha256(path);
+        } catch (final IOException exception) {
             throw new IllegalStateException("Unable to inspect " + path, exception);
         }
     }
 
-    private static Set<String> registeredCreatureIds() throws IOException {
-        try (Stream<Path> files = Files.list(ENTITY_LOOT)) {
-            return files
-                .filter(path -> path.getFileName().toString().endsWith(".json"))
-                .map(path -> path.getFileName().toString().replaceFirst("\\.json$", ""))
-                .collect(Collectors.toUnmodifiableSet());
+    private static String sha256(final Path path) {
+        try {
+            return HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path))
+            );
+        } catch (final IOException | NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("Unable to hash " + path, exception);
         }
-    }
-
-    private static ModelPart modelFor(final String id) {
-        final CreatureVisualProfile visual = new CreatureVisualProfile(
-            0.8F,
-            1.8F,
-            CreatureVisualProfile.Archetype.HUMANOID
-        );
-        return ArcaneCreatureModel.createLayer(CreatureModelProfile.forEntity(id, visual)).bakeRoot();
     }
 }

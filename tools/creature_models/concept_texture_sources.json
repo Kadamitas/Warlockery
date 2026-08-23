@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "coordinateSystem": "top-left image pixels; every crop is half-open [x0,x1) x [y0,y1); rowIndex is zero-based",
+  "sources": [
+    {
+      "atlasId": "demon", "atlasFile": "demon.png", "modelClass": "DemonModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01a-infernal-boss-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "bd218f479d0bcb1f761b5666a5d57c4e174961d5e37603d3d5dba402169913da", "rowIndex": 0, "rowCount": 5,
+      "views": {"front":{"x0":170,"y0":4,"x1":333,"y1":203},"left":{"x0":404,"y0":4,"x1":511,"y1":203},"back":{"x0":584,"y0":4,"x1":741,"y1":203},"right":{"x0":795,"y0":4,"x1":936,"y1":203}}
+    },
+    {
+      "atlasId": "emberhorn_archfiend", "atlasFile": "emberhorn_archfiend.png", "modelClass": "EmberhornArchfiendModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01a-infernal-boss-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "bd218f479d0bcb1f761b5666a5d57c4e174961d5e37603d3d5dba402169913da", "rowIndex": 1, "rowCount": 5,
+      "views": {"front":{"x0":120,"y0":207,"x1":382,"y1":424},"left":{"x0":385,"y0":207,"x1":533,"y1":424},"back":{"x0":550,"y0":207,"x1":767,"y1":424},"right":{"x0":774,"y0":207,"x1":978,"y1":424}}
+    },
+    {
+      "atlasId": "abyssal_regent", "atlasFile": "abyssal_regent.png", "modelClass": "AbyssalRegentModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01a-infernal-boss-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "bd218f479d0bcb1f761b5666a5d57c4e174961d5e37603d3d5dba402169913da", "rowIndex": 2, "rowCount": 5,
+      "views": {"front":{"x0":103,"y0":430,"x1":390,"y1":627},"left":{"x0":419,"y0":430,"x1":528,"y1":627},"back":{"x0":542,"y0":430,"x1":771,"y1":627},"right":{"x0":782,"y0":430,"x1":969,"y1":627}}
+    },
+    {
+      "atlasId": "death", "atlasFile": "death.png", "modelClass": "DeathModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01a-infernal-boss-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "bd218f479d0bcb1f761b5666a5d57c4e174961d5e37603d3d5dba402169913da", "rowIndex": 3, "rowCount": 5,
+      "views": {"front":{"x0":97,"y0":633,"x1":319,"y1":807},"left":{"x0":361,"y0":633,"x1":517,"y1":807},"back":{"x0":569,"y0":633,"x1":757,"y1":807},"right":{"x0":770,"y0":633,"x1":962,"y1":807}}
+    },
+    {
+      "atlasId": "ironbound_sentinel", "atlasFile": "ironbound_sentinel.png", "modelClass": "IronboundSentinelModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01a-infernal-boss-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "bd218f479d0bcb1f761b5666a5d57c4e174961d5e37603d3d5dba402169913da", "rowIndex": 4, "rowCount": 5,
+      "views": {"front":{"x0":120,"y0":813,"x1":382,"y1":1014},"left":{"x0":392,"y0":813,"x1":521,"y1":1014},"back":{"x0":543,"y0":813,"x1":775,"y1":1014},"right":{"x0":785,"y0":813,"x1":979,"y1":1014}}
+    },
+    {
+      "atlasId": "banshee", "atlasFile": "banshee.png", "modelClass": "BansheeModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01b-occult-anomaly-wiki-fusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "95ccced93477a736e8c55690c2aefaff89d02ff8e197a5fbe503beee4741eb5f", "rowIndex": 0, "rowCount": 3,
+      "views": {"front":{"x0":29,"y0":43,"x1":268,"y1":334},"left":{"x0":309,"y0":43,"x1":515,"y1":334},"back":{"x0":514,"y0":43,"x1":747,"y1":334},"right":{"x0":754,"y0":43,"x1":964,"y1":334}}
+    },
+    {
+      "atlasId": "umbral_sigil", "atlasFile": "umbral_sigil.png", "modelClass": "UmbralSigilModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01b-occult-anomaly-wiki-fusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "95ccced93477a736e8c55690c2aefaff89d02ff8e197a5fbe503beee4741eb5f", "rowIndex": 1, "rowCount": 3,
+      "views": {"front":{"x0":53,"y0":408,"x1":243,"y1":633},"left":{"x0":308,"y0":400,"x1":491,"y1":633},"back":{"x0":520,"y0":400,"x1":733,"y1":633},"right":{"x0":761,"y0":400,"x1":963,"y1":633}}
+    },
+    {
+      "atlasId": "eldritch_watcher", "atlasFile": "eldritch_watcher.png", "modelClass": "EldritchWatcherModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01b-occult-anomaly-wiki-fusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "95ccced93477a736e8c55690c2aefaff89d02ff8e197a5fbe503beee4741eb5f", "rowIndex": 2, "rowCount": 3,
+      "views": {"front":{"x0":17,"y0":711,"x1":270,"y1":974},"left":{"x0":287,"y0":700,"x1":504,"y1":974},"back":{"x0":517,"y0":700,"x1":745,"y1":974},"right":{"x0":749,"y0":700,"x1":972,"y1":974}}
+    },
+    {
+      "atlasId": "ent", "atlasFile": "ent.png", "modelClass": "EntModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01c-verdant-titan-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "79be9295db8cdf3df52b6bb7f327d1151f67b58f7e7998ad869d9dcad1f21857", "rowIndex": 0, "rowCount": 3,
+      "views": {"front":{"x0":8,"y0":0,"x1":286,"y1":337},"left":{"x0":296,"y0":0,"x1":524,"y1":337},"back":{"x0":526,"y0":0,"x1":783,"y1":337},"right":{"x0":789,"y0":0,"x1":1024,"y1":337}}
+    },
+    {
+      "atlasId": "bramble_colossus", "atlasFile": "bramble_colossus.png", "modelClass": "BrambleColossusModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01c-verdant-titan-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "79be9295db8cdf3df52b6bb7f327d1151f67b58f7e7998ad869d9dcad1f21857", "rowIndex": 1, "rowCount": 3,
+      "views": {"front":{"x0":0,"y0":344,"x1":280,"y1":648},"left":{"x0":282,"y0":344,"x1":532,"y1":648},"back":{"x0":524,"y0":344,"x1":791,"y1":648},"right":{"x0":792,"y0":344,"x1":1024,"y1":648}}
+    },
+    {
+      "atlasId": "thorned_pursuer", "atlasFile": "thorned_pursuer.png", "modelClass": "ThornedPursuerModel",
+      "board": "docs/art-source/creature-concepts/production/wave-01c-verdant-titan-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "79be9295db8cdf3df52b6bb7f327d1151f67b58f7e7998ad869d9dcad1f21857", "rowIndex": 2, "rowCount": 3,
+      "views": {"front":{"x0":0,"y0":658,"x1":276,"y1":996},"left":{"x0":282,"y0":658,"x1":519,"y1":996},"back":{"x0":512,"y0":658,"x1":780,"y1":996},"right":{"x0":776,"y0":658,"x1":1024,"y1":996}}
+    },
+    {
+      "atlasId": "spectral_familiar", "atlasFile": "spectral_familiar.png", "modelClass": "SpectralFamiliarModel",
+      "board": "docs/art-source/creature-concepts/production/wave-02a-embodied-spirit-wiki-fusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "c8a71286671c43fb689037276ede1630074ef4f50792834b9aacb91d043b8351", "rowIndex": 0, "rowCount": 3,
+      "views": {"front":{"x0":57,"y0":65,"x1":333,"y1":300},"left":{"x0":536,"y0":49,"x1":713,"y1":300},"back":{"x0":752,"y0":49,"x1":907,"y1":300},"right":{"x0":348,"y0":65,"x1":518,"y1":300}}
+    },
+    {
+      "atlasId": "poltergeist", "atlasFile": "poltergeist.png", "modelClass": "PoltergeistModel",
+      "board": "docs/art-source/creature-concepts/production/wave-02a-embodied-spirit-wiki-fusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "c8a71286671c43fb689037276ede1630074ef4f50792834b9aacb91d043b8351", "rowIndex": 1, "rowCount": 3,
+      "views": {"front":{"x0":23,"y0":370,"x1":337,"y1":655},"left":{"x0":532,"y0":370,"x1":716,"y1":655},"back":{"x0":724,"y0":370,"x1":908,"y1":655},"right":{"x0":340,"y0":370,"x1":525,"y1":655}}
+    },
+    {
+      "atlasId": "spectre", "atlasFile": "spectre.png", "modelClass": "SpectreModel",
+      "board": "docs/art-source/creature-concepts/production/wave-02a-embodied-spirit-wiki-fusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "c8a71286671c43fb689037276ede1630074ef4f50792834b9aacb91d043b8351", "rowIndex": 2, "rowCount": 3,
+      "views": {"front":{"x0":29,"y0":713,"x1":310,"y1":997},"left":{"x0":528,"y0":713,"x1":719,"y1":997},"back":{"x0":723,"y0":713,"x1":909,"y1":997},"right":{"x0":342,"y0":713,"x1":521,"y1":997}}
+    },
+    {
+      "atlasId": "spirit", "atlasFile": "spirit.png", "modelClass": "SpiritModel",
+      "board": "docs/art-source/creature-concepts/production/wave-02b-soul-and-shade-wiki-fusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "92734a664a6cf8252c88993819c63e701ae8acb26fbb15f1ab6aec5415ae8393", "rowIndex": 0, "rowCount": 3,
+      "views": {"front":{"x0":62,"y0":54,"x1":340,"y1":362},"left":{"x0":596,"y0":54,"x1":751,"y1":362},"back":{"x0":766,"y0":54,"x1":986,"y1":362},"right":{"x0":348,"y0":54,"x1":567,"y1":362}}
+    },
+    {
+      "atlasId": "lost_soul", "atlasFile": "lost_soul.png", "modelClass": "LostSoulModel",
+      "board": "docs/art-source/creature-concepts/production/wave-02b-soul-and-shade-wiki-fusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "92734a664a6cf8252c88993819c63e701ae8acb26fbb15f1ab6aec5415ae8393", "rowIndex": 1, "rowCount": 3,
+      "views": {"front":{"x0":145,"y0":410,"x1":319,"y1":676},"left":{"x0":582,"y0":410,"x1":749,"y1":676},"back":{"x0":770,"y0":410,"x1":981,"y1":676},"right":{"x0":360,"y0":410,"x1":561,"y1":676}}
+    },
+    {
+      "atlasId": "echo_shade", "atlasFile": "echo_shade.png", "modelClass": "EchoShadeModel",
+      "board": "docs/art-source/creature-concepts/production/wave-02b-soul-and-shade-wiki-fusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "92734a664a6cf8252c88993819c63e701ae8acb26fbb15f1ab6aec5415ae8393", "rowIndex": 2, "rowCount": 3,
+      "views": {"front":{"x0":50,"y0":719,"x1":337,"y1":1004},"left":{"x0":570,"y0":719,"x1":752,"y1":1004},"back":{"x0":759,"y0":719,"x1":985,"y1":1004},"right":{"x0":348,"y0":719,"x1":567,"y1":1004}}
+    },
+    {
+      "atlasId": "mandrake", "atlasFile": "mandrake.png", "modelClass": "MandrakeModel", "singleViewFallback": true,
+      "board": "docs/art-source/creature-concepts/verdant-creatures.png", "boardWidth": 1693, "boardHeight": 929, "boardSha256": "0e0e79b7ed629c36fa52a14e0ddcab7f5c15c139dfc1db58c416a25c4237b503", "rowIndex": 0, "rowCount": 1,
+      "views": {"front":{"x0":415,"y0":485,"x1":620,"y1":850},"left":{"x0":415,"y0":485,"x1":620,"y1":850},"back":{"x0":415,"y0":485,"x1":620,"y1":850},"right":{"x0":415,"y0":485,"x1":620,"y1":850}}
+    },
+    {
+      "atlasId": "dreamroot", "atlasFile": "dreamroot.png", "modelClass": "DreamrootModel", "singleViewFallback": true,
+      "board": "docs/art-source/creature-concepts/verdant-creatures.png", "boardWidth": 1693, "boardHeight": 929, "boardSha256": "0e0e79b7ed629c36fa52a14e0ddcab7f5c15c139dfc1db58c416a25c4237b503", "rowIndex": 0, "rowCount": 1,
+      "views": {"front":{"x0":610,"y0":205,"x1":870,"y1":850},"left":{"x0":610,"y0":205,"x1":870,"y1":850},"back":{"x0":610,"y0":205,"x1":870,"y1":850},"right":{"x0":610,"y0":205,"x1":870,"y1":850}}
+    },
+    {
+      "atlasId": "werewolf", "atlasFile": "werewolf.png", "modelClass": "WerewolfModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03a-lycan-and-canid-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "ddc25147216003b6ac57914df6100641a4910f6b8a1c15127f65da76bef17249", "rowIndex": 0, "rowCount": 3,
+      "views": {"front":{"x0":8,"y0":50,"x1":238,"y1":360},"left":{"x0":286,"y0":50,"x1":472,"y1":360},"back":{"x0":496,"y0":50,"x1":730,"y1":360},"right":{"x0":758,"y0":50,"x1":922,"y1":360}}
+    },
+    {
+      "atlasId": "feral_lycan", "atlasFile": "feral_lycan.png", "modelClass": "FeralLycanModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03a-lycan-and-canid-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "ddc25147216003b6ac57914df6100641a4910f6b8a1c15127f65da76bef17249", "rowIndex": 1, "rowCount": 3,
+      "views": {"front":{"x0":10,"y0":445,"x1":226,"y1":691},"left":{"x0":282,"y0":439,"x1":476,"y1":691},"back":{"x0":497,"y0":443,"x1":696,"y1":691},"right":{"x0":739,"y0":433,"x1":921,"y1":691}}
+    },
+    {
+      "atlasId": "hellhound", "atlasFile": "hellhound.png", "modelClass": "HellhoundModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03a-lycan-and-canid-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "ddc25147216003b6ac57914df6100641a4910f6b8a1c15127f65da76bef17249", "rowIndex": 2, "rowCount": 3,
+      "views": {"front":{"x0":25,"y0":785,"x1":193,"y1":965},"left":{"x0":209,"y0":798,"x1":521,"y1":965},"back":{"x0":536,"y0":789,"x1":699,"y1":965},"right":{"x0":704,"y0":796,"x1":970,"y1":965}}
+    },
+    {
+      "atlasId": "pale_steed", "atlasFile": "pale_steed.png", "modelClass": "PaleSteedModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03b-occult-mount-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "3301a56ad4f6a037265ace1c7d95256655a9d0f0bb3abc7c183e35dc02a6ae30", "rowIndex": 0, "rowCount": 2,
+      "views": {"front":{"x0":25,"y0":48,"x1":157,"y1":438},"left":{"x0":187,"y0":67,"x1":499,"y1":438},"back":{"x0":513,"y0":55,"x1":748,"y1":438},"right":{"x0":694,"y0":91,"x1":1004,"y1":438}}
+    },
+    {
+      "atlasId": "nightmare", "atlasFile": "nightmare.png", "modelClass": "NightmareModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03b-occult-mount-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "3301a56ad4f6a037265ace1c7d95256655a9d0f0bb3abc7c183e35dc02a6ae30", "rowIndex": 1, "rowCount": 2,
+      "views": {"front":{"x0":10,"y0":555,"x1":151,"y1":944},"left":{"x0":159,"y0":554,"x1":509,"y1":944},"back":{"x0":510,"y0":550,"x1":696,"y1":944},"right":{"x0":693,"y0":548,"x1":987,"y1":944}}
+    },
+    {
+      "atlasId": "imp", "atlasFile": "imp.png", "modelClass": "ImpModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03c-wiki-fusion-imp-storm-turnarounds.png", "boardWidth": 1717, "boardHeight": 916, "boardSha256": "0b598b3ae9845d8a917ebebccb1e740bc2bc541c0ae095d65a2652eee3ef333e", "rowIndex": 0, "rowCount": 2,
+      "views": {"front":{"x0":13,"y0":94,"x1":337,"y1":383},"left":{"x0":363,"y0":94,"x1":595,"y1":383},"back":{"x0":590,"y0":92,"x1":928,"y1":383},"right":{"x0":906,"y0":92,"x1":1140,"y1":383}}
+    },
+    {
+      "atlasId": "storm_simian", "atlasFile": "storm_simian.png", "modelClass": "StormSimianModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03c-wiki-fusion-imp-storm-turnarounds.png", "boardWidth": 1717, "boardHeight": 916, "boardSha256": "0b598b3ae9845d8a917ebebccb1e740bc2bc541c0ae095d65a2652eee3ef333e", "rowIndex": 1, "rowCount": 2,
+      "views": {"front":{"x0":14,"y0":500,"x1":330,"y1":834},"left":{"x0":348,"y0":495,"x1":605,"y1":834},"back":{"x0":580,"y0":491,"x1":930,"y1":838},"right":{"x0":914,"y0":495,"x1":1151,"y1":836}}
+    },
+    {
+      "atlasId": "hex_bat", "atlasFile": "hex_bat.png", "modelClass": "HexBatModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03c-winged-companion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "313eb3490d036e9e51ad781aea9103740898a082cce4172fab62913625a63734", "rowIndex": 2, "rowCount": 4,
+      "views": {"front":{"x0":40,"y0":546,"x1":221,"y1":735},"left":{"x0":278,"y0":546,"x1":497,"y1":735},"back":{"x0":531,"y0":548,"x1":744,"y1":735},"right":{"x0":741,"y0":545,"x1":952,"y1":735}}
+    },
+    {
+      "atlasId": "owl", "atlasFile": "owl.png", "modelClass": "OwlModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03c-winged-companion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "313eb3490d036e9e51ad781aea9103740898a082cce4172fab62913625a63734", "rowIndex": 3, "rowCount": 4,
+      "views": {"front":{"x0":55,"y0":789,"x1":198,"y1":987},"left":{"x0":306,"y0":789,"x1":489,"y1":987},"back":{"x0":550,"y0":789,"x1":710,"y1":987},"right":{"x0":727,"y0":787,"x1":916,"y1":987}}
+    },
+    {
+      "atlasId": "familiar_cat", "atlasFile": "familiar_cat.png", "modelClass": "FamiliarCatModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03d-familiar-and-vermin-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "70d0a35cbe578e5953f1a2ab2002894ada2afe28b01b12a63e6a01d8197c8ddc", "rowIndex": 0, "rowCount": 4,
+      "views": {"front":{"x0":190,"y0":68,"x1":350,"y1":296},"left":{"x0":395,"y0":68,"x1":622,"y1":297},"back":{"x0":634,"y0":72,"x1":776,"y1":297},"right":{"x0":794,"y0":70,"x1":1021,"y1":297}}
+    },
+    {
+      "atlasId": "toad", "atlasFile": "toad.png", "modelClass": "ToadModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03d-familiar-and-vermin-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "70d0a35cbe578e5953f1a2ab2002894ada2afe28b01b12a63e6a01d8197c8ddc", "rowIndex": 1, "rowCount": 4,
+      "views": {"front":{"x0":164,"y0":365,"x1":369,"y1":523},"left":{"x0":391,"y0":363,"x1":594,"y1":524},"back":{"x0":615,"y0":358,"x1":796,"y1":526},"right":{"x0":816,"y0":364,"x1":1025,"y1":525}}
+    },
+    {
+      "atlasId": "parasytic_louse", "atlasFile": "parasytic_louse.png", "modelClass": "ParasyticLouseModel",
+      "board": "docs/art-source/creature-concepts/production/wave-03d-familiar-and-vermin-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "70d0a35cbe578e5953f1a2ab2002894ada2afe28b01b12a63e6a01d8197c8ddc", "rowIndex": 2, "rowCount": 4,
+      "views": {"front":{"x0":182,"y0":584,"x1":342,"y1":736},"left":{"x0":381,"y0":586,"x1":575,"y1":735},"back":{"x0":626,"y0":584,"x1":769,"y1":737},"right":{"x0":812,"y0":586,"x1":1008,"y1":737}}
+    },
+    {
+      "atlasId": "circle_mage", "atlasFile": "circle_mage.png", "modelClass": "CircleMageModel",
+      "board": "docs/art-source/creature-concepts/production/wave-04a-practitioner-and-court-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "0071ce1e5a53c70561edbb929ed9a615babc25056322e2c808db3e78b75337ae", "rowIndex": 0, "rowCount": 5,
+      "views": {"front":{"x0":135,"y0":36,"x1":300,"y1":248},"left":{"x0":350,"y0":36,"x1":494,"y1":248},"back":{"x0":554,"y0":35,"x1":740,"y1":248},"right":{"x0":811,"y0":36,"x1":944,"y1":248}}
+    },
+    {
+      "atlasId": "hedge_crone", "atlasFile": "hedge_crone.png", "modelClass": "HedgeCroneModel",
+      "board": "docs/art-source/creature-concepts/production/wave-04a-practitioner-and-court-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "0071ce1e5a53c70561edbb929ed9a615babc25056322e2c808db3e78b75337ae", "rowIndex": 1, "rowCount": 5,
+      "views": {"front":{"x0":135,"y0":253,"x1":311,"y1":446},"left":{"x0":350,"y0":252,"x1":509,"y1":448},"back":{"x0":532,"y0":253,"x1":751,"y1":449},"right":{"x0":784,"y0":252,"x1":962,"y1":448}}
+    },
+    {
+      "atlasId": "vampire_masculine", "atlasFile": "vampire_masculine.png", "modelClass": "VampireModel",
+      "board": "docs/art-source/creature-concepts/production/wave-04a-practitioner-and-court-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "0071ce1e5a53c70561edbb929ed9a615babc25056322e2c808db3e78b75337ae", "rowIndex": 2, "rowCount": 5,
+      "views": {"front":{"x0":168,"y0":452,"x1":282,"y1":670},"left":{"x0":362,"y0":452,"x1":468,"y1":670},"back":{"x0":572,"y0":453,"x1":701,"y1":670},"right":{"x0":813,"y0":452,"x1":914,"y1":670}}
+    },
+    {
+      "atlasId": "vampire_feminine", "atlasFile": "vampire_feminine.png", "modelClass": "VampireModel",
+      "board": "docs/art-source/creature-concepts/production/wave-04a-practitioner-and-court-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "0071ce1e5a53c70561edbb929ed9a615babc25056322e2c808db3e78b75337ae", "rowIndex": 3, "rowCount": 5,
+      "views": {"front":{"x0":164,"y0":678,"x1":292,"y1":860},"left":{"x0":367,"y0":678,"x1":475,"y1":860},"back":{"x0":558,"y0":678,"x1":718,"y1":861},"right":{"x0":807,"y0":679,"x1":922,"y1":861}}
+    },
+    {
+      "atlasId": "blood_thrall", "atlasFile": "blood_thrall.png", "modelClass": "BloodThrallModel",
+      "board": "docs/art-source/creature-concepts/production/wave-04a-practitioner-and-court-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "0071ce1e5a53c70561edbb929ed9a615babc25056322e2c808db3e78b75337ae", "rowIndex": 4, "rowCount": 5,
+      "views": {"front":{"x0":136,"y0":868,"x1":306,"y1":1024},"left":{"x0":350,"y0":868,"x1":512,"y1":1024},"back":{"x0":549,"y0":868,"x1":747,"y1":1024},"right":{"x0":786,"y0":868,"x1":959,"y1":1024}}
+    },
+    {
+      "atlasId": "corpse", "atlasFile": "corpse.png", "modelClass": "CorpseModel",
+      "board": "docs/art-source/creature-concepts/production/wave-04b-grave-hunt-village-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "270b97e685a89e080d37a2c46a71a721f37d42ebb4e9377ef0fd28b642bdd714", "rowIndex": 0, "rowCount": 3,
+      "views": {"front":{"x0":108,"y0":52,"x1":279,"y1":340},"left":{"x0":300,"y0":56,"x1":449,"y1":338},"back":{"x0":480,"y0":58,"x1":628,"y1":339},"right":{"x0":656,"y0":56,"x1":806,"y1":339}}
+    },
+    {
+      "atlasId": "werewolf_hunter", "atlasFile": "werewolf_hunter.png", "modelClass": "WerewolfHunterModel",
+      "board": "docs/art-source/creature-concepts/production/wave-04b-grave-hunt-village-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "270b97e685a89e080d37a2c46a71a721f37d42ebb4e9377ef0fd28b642bdd714", "rowIndex": 1, "rowCount": 3,
+      "views": {"front":{"x0":112,"y0":399,"x1":275,"y1":678},"left":{"x0":297,"y0":399,"x1":451,"y1":679},"back":{"x0":479,"y0":398,"x1":630,"y1":680},"right":{"x0":656,"y0":398,"x1":810,"y1":678}}
+    },
+    {
+      "atlasId": "lycan_villager", "atlasFile": "lycan_villager.png", "modelClass": "LycanVillagerModel",
+      "board": "docs/art-source/creature-concepts/production/wave-04b-grave-hunt-village-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "270b97e685a89e080d37a2c46a71a721f37d42ebb4e9377ef0fd28b642bdd714", "rowIndex": 2, "rowCount": 3,
+      "views": {"front":{"x0":108,"y0":721,"x1":280,"y1":995},"left":{"x0":295,"y0":720,"x1":449,"y1":997},"back":{"x0":476,"y0":720,"x1":630,"y1":995},"right":{"x0":653,"y0":720,"x1":807,"y1":996}}
+    },
+    {
+      "atlasId": "goblin", "atlasFile": "goblin.png", "modelClass": "GoblinModel", "frontIncludesDetachedRowTitle": true,
+      "board": "docs/art-source/creature-concepts/production/wave-04c-goblin-clan-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "32af6dc4adae4ed988f3773a19dcc5762dbf5ca1ef410e63aa3975c29868acc9", "rowIndex": 0, "rowCount": 4,
+      "views": {"front":{"x0":12,"y0":18,"x1":303,"y1":251},"left":{"x0":344,"y0":38,"x1":503,"y1":250},"back":{"x0":552,"y0":39,"x1":757,"y1":250},"right":{"x0":795,"y0":38,"x1":986,"y1":250}}
+    },
+    {
+      "atlasId": "hobgoblin", "atlasFile": "hobgoblin.png", "modelClass": "HobgoblinModel", "frontIncludesDetachedRowTitle": true,
+      "board": "docs/art-source/creature-concepts/production/wave-04c-goblin-clan-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "32af6dc4adae4ed988f3773a19dcc5762dbf5ca1ef410e63aa3975c29868acc9", "rowIndex": 1, "rowCount": 4,
+      "views": {"front":{"x0":12,"y0":282,"x1":307,"y1":499},"left":{"x0":342,"y0":286,"x1":491,"y1":497},"back":{"x0":544,"y0":286,"x1":742,"y1":497},"right":{"x0":786,"y0":286,"x1":957,"y1":497}}
+    },
+    {
+      "atlasId": "stonebroker", "atlasFile": "stonebroker.png", "modelClass": "StonebrokerModel", "frontIncludesDetachedRowTitle": true,
+      "board": "docs/art-source/creature-concepts/production/wave-04c-goblin-clan-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "32af6dc4adae4ed988f3773a19dcc5762dbf5ca1ef410e63aa3975c29868acc9", "rowIndex": 2, "rowCount": 4,
+      "views": {"front":{"x0":12,"y0":525,"x1":319,"y1":742},"left":{"x0":333,"y0":528,"x1":503,"y1":741},"back":{"x0":524,"y0":527,"x1":753,"y1":741},"right":{"x0":783,"y0":527,"x1":954,"y1":741}}
+    },
+    {
+      "atlasId": "forgewarden", "atlasFile": "forgewarden.png", "modelClass": "ForgewardenModel", "frontIncludesDetachedRowTitle": true,
+      "board": "docs/art-source/creature-concepts/production/wave-04c-goblin-clan-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "32af6dc4adae4ed988f3773a19dcc5762dbf5ca1ef410e63aa3975c29868acc9", "rowIndex": 3, "rowCount": 4,
+      "views": {"front":{"x0":12,"y0":754,"x1":320,"y1":1001},"left":{"x0":331,"y0":754,"x1":500,"y1":1000},"back":{"x0":514,"y0":754,"x1":757,"y1":1000},"right":{"x0":777,"y0":754,"x1":954,"y1":1001}}
+    },
+    {
+      "atlasId": "illusion_creeper", "atlasFile": "illusion_creeper.png", "modelClass": "IllusionCreeperModel",
+      "board": "docs/art-source/creature-concepts/production/wave-05-illusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "cec340a116e301f60b1a134d9a94fb01c5922bb0bab59caea667a596a4258e49", "rowIndex": 0, "rowCount": 3,
+      "views": {"front":{"x0":50,"y0":15,"x1":214,"y1":337},"left":{"x0":309,"y0":15,"x1":456,"y1":337},"back":{"x0":527,"y0":13,"x1":694,"y1":337},"right":{"x0":789,"y0":15,"x1":940,"y1":337}}
+    },
+    {
+      "atlasId": "illusion_spider", "atlasFile": "illusion_spider.png", "modelClass": "IllusionSpiderModel",
+      "board": "docs/art-source/creature-concepts/production/wave-05-illusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "cec340a116e301f60b1a134d9a94fb01c5922bb0bab59caea667a596a4258e49", "rowIndex": 1, "rowCount": 3,
+      "views": {"front":{"x0":19,"y0":403,"x1":277,"y1":607},"left":{"x0":291,"y0":402,"x1":507,"y1":607},"back":{"x0":522,"y0":402,"x1":752,"y1":608},"right":{"x0":761,"y0":402,"x1":985,"y1":608}}
+    },
+    {
+      "atlasId": "illusion_zombie", "atlasFile": "illusion_zombie.png", "modelClass": "IllusionZombieModel",
+      "board": "docs/art-source/creature-concepts/production/wave-05-illusion-turnarounds.png", "boardWidth": 1536, "boardHeight": 1024, "boardSha256": "cec340a116e301f60b1a134d9a94fb01c5922bb0bab59caea667a596a4258e49", "rowIndex": 2, "rowCount": 3,
+      "views": {"front":{"x0":42,"y0":654,"x1":239,"y1":978},"left":{"x0":312,"y0":658,"x1":477,"y1":978},"back":{"x0":552,"y0":657,"x1":713,"y1":979},"right":{"x0":803,"y0":657,"x1":962,"y1":979}}
+    },
+    {
+      "atlasId": "naamah", "atlasFile": "naamah.png", "modelClass": "NaamahModel",
+      "board": "docs/art-source/creature-concepts/production/naamah-ocean-matriarch-turnaround.png", "boardWidth": 1774, "boardHeight": 887, "boardSha256": "349edb484a6aba0bb60b475653e217defe5250625ec09b5bda697579de1c1b96", "rowIndex": 0, "rowCount": 1,
+      "views": {"front":{"x0":5,"y0":110,"x1":310,"y1":819},"left":{"x0":329,"y0":116,"x1":527,"y1":821},"back":{"x0":531,"y0":116,"x1":766,"y1":825},"right":{"x0":761,"y0":116,"x1":1031,"y1":823}}
+    }
+  ]
+}

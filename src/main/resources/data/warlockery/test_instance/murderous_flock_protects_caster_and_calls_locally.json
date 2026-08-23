@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:murderous_flock_protects_caster_and_calls_locally",
-  "environment": "warlockery:hex_bat_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "murderous_flock_protects_caster_and_calls_locally",
+    "delegate": "warlockery:hex_bat_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 400
 }

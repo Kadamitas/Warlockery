@@ -6,6 +6,9 @@ import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,6 +33,14 @@ public final class BrambleColossusEntity extends Monster implements ArcaneCreatu
     public static final double BASE_MOVEMENT_SPEED = 0.3D;
     public static final int XP_REWARD = 5;
     static final String STATE_KEY = "WarlockeryColossusState";
+    private static final EntityDataAccessor<Boolean> DATA_PRESENTATION_POSTED =
+        SynchedEntityData.defineId(BrambleColossusEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_NERVE =
+        SynchedEntityData.defineId(BrambleColossusEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_LEG =
+        SynchedEntityData.defineId(BrambleColossusEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(BrambleColossusEntity.class, EntityDataSerializers.BYTE);
 
     private BrambleColossusState colossusState = BrambleColossusState.empty();
     private final BrambleColossusRuntime.TransientState transientState = new BrambleColossusRuntime.TransientState();
@@ -38,12 +49,43 @@ public final class BrambleColossusEntity extends Monster implements ArcaneCreatu
     public BrambleColossusEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level); xpReward = XP_REWARD;
     }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_POSTED, false);
+        builder.define(DATA_PRESENTATION_NERVE, 100);
+        builder.define(DATA_PRESENTATION_LEG, 0);
+        builder.define(DATA_PRESENTATION_PHASE,
+            EntityPresentationSync.encode(BrambleColossusRules.Phase.KEEPING));
+    }
     @Override public CreatureKind creatureKind() { return CreatureKind.BRAMBLE_COLOSSUS; }
     public BrambleColossusState colossusState() { return colossusState; }
-    public void setColossusState(BrambleColossusState state) { colossusState = state == null ? BrambleColossusState.empty() : state; }
-    public void recordPost(BlockPos position) { colossusState = colossusState.postedAt(position); }
+    public void setColossusState(BrambleColossusState state) {
+        colossusState = state == null ? BrambleColossusState.empty() : state;
+        syncPresentationFromRuntime();
+    }
+    public void recordPost(BlockPos position) {
+        colossusState = colossusState.postedAt(position);
+        syncPresentationFromRuntime();
+    }
     public BrambleColossusRuntime.TransientState colossusTransient() { return transientState; }
     public BrambleColossusRuntime.Counters colossusCounters() { return counters; }
+    public boolean presentationPosted() { return entityData.get(DATA_PRESENTATION_POSTED); }
+    public int presentationNerve() { return entityData.get(DATA_PRESENTATION_NERVE); }
+    public int presentationLeg() { return entityData.get(DATA_PRESENTATION_LEG); }
+    public BrambleColossusRules.Phase presentationPhase() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE),
+            BrambleColossusRules.Phase.KEEPING);
+    }
+    private void syncPresentationFromRuntime() {
+        final boolean posted = colossusState.posted();
+        final int nerve = colossusState.nerve();
+        final int leg = colossusState.leg();
+        final byte phase = EntityPresentationSync.encode(transientState.phase());
+        if (entityData.get(DATA_PRESENTATION_POSTED) != posted) entityData.set(DATA_PRESENTATION_POSTED, posted);
+        if (entityData.get(DATA_PRESENTATION_NERVE) != nerve) entityData.set(DATA_PRESENTATION_NERVE, nerve);
+        if (entityData.get(DATA_PRESENTATION_LEG) != leg) entityData.set(DATA_PRESENTATION_LEG, leg);
+        if (entityData.get(DATA_PRESENTATION_PHASE) != phase) entityData.set(DATA_PRESENTATION_PHASE, phase);
+    }
 
     @Override protected void registerGoals() {
         goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8));
@@ -52,7 +94,11 @@ public final class BrambleColossusEntity extends Monster implements ArcaneCreatu
     private static final class LookOnlyGoal extends RandomLookAroundGoal {
         LookOnlyGoal(BrambleColossusEntity mob) { super(mob); setFlags(EnumSet.of(Flag.LOOK)); }
     }
-    @Override protected void customServerAiStep(ServerLevel level) { super.customServerAiStep(level); BrambleColossusRuntime.tick(this, level); }
+    @Override protected void customServerAiStep(ServerLevel level) {
+        super.customServerAiStep(level);
+        BrambleColossusRuntime.tick(this, level);
+        syncPresentationFromRuntime();
+    }
     @Override public boolean canAttack(LivingEntity target) { return super.canAttack(target) && BrambleColossusRuntime.legalSubject(this, target); }
     @Override public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         float before = getHealth() + getAbsorptionAmount();
@@ -117,5 +163,6 @@ public final class BrambleColossusEntity extends Monster implements ArcaneCreatu
         for (EquipmentSlot slot : EquipmentSlot.values()) { setItemSlot(slot, ItemStack.EMPTY); setDropChance(slot,0.0F); }
         setHealth(Math.clamp(getHealth(),1.0F,getMaxHealth()));
         transientState.resetAfterLoad(); BrambleColossusRuntime.cancelMovement(this);
+        syncPresentationFromRuntime();
     }
 }

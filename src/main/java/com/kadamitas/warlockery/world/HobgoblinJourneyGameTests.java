@@ -39,7 +39,7 @@ import net.minecraft.world.phys.Vec3;
  * Five bounded live F11 fixtures, each asserting one named contract through spawned, AI-enabled,
  * self-ticking exact {@code warlockery:hobgoblin} entities.
  *
- * <p>Arena geometry: the framework seals every {@code forge:empty3x3x3} cell in a barrier shell, so
+ * <p>Arena geometry: the framework seals every {@code warlockery:empty3x3x3} cell in a barrier shell, so
  * all fixture geometry stays within relative 0..2 and every entity spawns at y=1. y=2 would clip a
  * tall body's eyes into the ceiling and every line-of-sight walk would terminate on barrier, and any
  * navigation destination outside the shell would stall the entity silently while assertions passed

@@ -51,7 +51,7 @@ import net.minecraft.world.phys.Vec3;
  * scope even when an assertion throws; and every assertion reads an exact counter, an exact
  * persisted value or an exact attribution rather than an elapsed-time guess.
  *
- * <p>Arena geometry: the framework seals the {@code forge:empty3x3x3} cell in a barrier shell, so
+ * <p>Arena geometry: the framework seals the {@code warlockery:empty3x3x3} cell in a barrier shell, so
  * every entity and every computed destination stays inside relative 0..2 with entities at y=1 over a
  * placed floor at y=0. The tenancy bands were chosen to fit: the mark opens inside three blocks, the
  * attach commits inside two and the feed lands inside one and a half, so no fixture ever needs to

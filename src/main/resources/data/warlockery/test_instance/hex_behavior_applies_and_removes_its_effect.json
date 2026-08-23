@@ -1,1 +1,1 @@
-{"type":"minecraft:function","function":"warlockery:hex_behavior_applies_and_removes_its_effect","environment":"minecraft:default","structure":"warlockery:empty3x3x3","max_ticks":100}
+{"type":"minecraft:function","function":"warlockery:hex_behavior_applies_and_removes_its_effect","environment":{"type":"warlockery:isolated","id":"hex_behavior_applies_and_removes_its_effect","delegate":"minecraft:default"},"structure":"warlockery:empty32x32x32","max_ticks":100}

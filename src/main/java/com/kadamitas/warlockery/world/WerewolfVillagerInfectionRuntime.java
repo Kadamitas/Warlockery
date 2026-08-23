@@ -86,6 +86,7 @@ public final class WerewolfVillagerInfectionRuntime {
         werewolf.setPersistenceRequired();
         werewolf.setCustomName(villager.getCustomName());
         werewolf.setCustomNameVisible(villager.isCustomNameVisible());
+        werewolf.setTransformedVillagerData(villager.getVillagerData());
         werewolf.getPersistentData().putBoolean(TRANSFORMED_VILLAGER_MARKER, true);
         werewolf.getPersistentData().putBoolean(ORIGINAL_BABY, villager.isBaby());
         werewolf.getPersistentData().putInt(ORIGINAL_LEVEL, villager.getVillagerData().level());

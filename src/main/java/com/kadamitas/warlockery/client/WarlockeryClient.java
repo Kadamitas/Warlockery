@@ -20,10 +20,12 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RenderArmEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
@@ -31,6 +33,7 @@ import net.neoforged.neoforge.common.NeoForge;
 @Mod(value = Warlockery.MOD_ID, dist = Dist.CLIENT)
 public final class WarlockeryClient {
     private static WolfFormAvatarRenderer wolfFormAvatarRenderer;
+    private static WerewolfFormAvatarRenderer werewolfFormAvatarRenderer;
 
     public WarlockeryClient(final IEventBus modBus) {
         modBus.addListener(WarlockeryClient::registerRenderers);
@@ -42,7 +45,10 @@ public final class WarlockeryClient {
         modBus.addListener(WarlockeryFluidClient::registerModels);
         modBus.addListener(ModNetwork::registerClientPayloadHandlers);
         NeoForge.EVENT_BUS.addListener(WarlockeryClient::clientTick);
+        NeoForge.EVENT_BUS.addListener((MovementInputUpdateEvent event) ->
+            PreyDriveControls.suppressMovement(event));
         NeoForge.EVENT_BUS.addListener((RenderPlayerEvent.Pre<?> event) -> renderWolfAvatar(event));
+        NeoForge.EVENT_BUS.addListener((RenderArmEvent<?> event) -> renderTransformedFirstPersonArm(event));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> clientLogout(event));
         ClientSupernaturalState.register();
     }
@@ -61,50 +67,78 @@ public final class WarlockeryClient {
         event.registerBlockEntityRenderer(ModBlockEntities.WOLF_TRAP.get(), WolfTrapOverlayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ALTAR.get(), AltarOverlayRenderer::new);
         event.registerEntityRenderer(ModEntities.BROOM.get(), BroomEntityRenderer::new);
-        ModEntities.ALL.forEach((id, type) -> {
-            if ("nami".equals(id)) {
-                TexturedCreatureRenderers.registerNami(event, type.get());
-                return;
-            }
-            if ("naamah".equals(id)) {
-                TexturedCreatureRenderers.registerNaamah(event, type.get());
-                return;
-            }
-            final CreatureVisualProfile visual = CreatureVisualProfile.forKind(ModEntities.kindFor(id));
-            TexturedCreatureRenderers.registerArcane(
-                event,
-                type.get(),
-                CreatureModelProfile.forEntity(id, visual)
-            );
-        });
+        TexturedCreatureRenderers.registerNami(event, ModEntities.NAMI.get());
+        final CreatureVisualProfile glassVisual = CreatureVisualProfile.forKind(
+            ModEntities.kindFor("glass_doppelganger")
+        );
+        TexturedCreatureRenderers.registerArcane(
+            event,
+            ModEntities.ALL.get("glass_doppelganger").get(),
+            CreatureModelProfile.forEntity("glass_doppelganger", glassVisual)
+        );
+        DedicatedCreatureRenderers.registerAll(event);
     }
 
     public static void addPlayerLayers(final EntityRenderersEvent.AddLayers event) {
         wolfFormAvatarRenderer = new WolfFormAvatarRenderer(event.getContext());
+        werewolfFormAvatarRenderer = new WerewolfFormAvatarRenderer(event.getContext());
     }
 
     private static void renderWolfAvatar(final RenderPlayerEvent.Pre<?> event) {
         final Minecraft minecraft = Minecraft.getInstance();
         if (wolfFormAvatarRenderer == null
+            || werewolfFormAvatarRenderer == null
             || minecraft.level == null
-            || !(minecraft.level.getEntity(event.getRenderState().id) instanceof AbstractClientPlayer player)
-            || !PlayerWolfVisualState.isWolf(player.getUUID())) {
+            || !(minecraft.level.getEntity(event.getRenderState().id) instanceof AbstractClientPlayer player)) {
             return;
         }
         final CameraRenderState cameraState = new CameraRenderState();
         minecraft.gameRenderer.mainCamera().extractRenderState(cameraState, event.getPartialTick());
-        wolfFormAvatarRenderer.submitAvatar(
-            player,
-            event.getRenderState(),
-            event.getPoseStack(),
-            event.getSubmitNodeCollector(),
-            cameraState
-        );
+        switch (PlayerWolfVisualState.shape(player.getUUID())) {
+            case WOLF -> wolfFormAvatarRenderer.submitAvatar(
+                player,
+                event.getRenderState(),
+                event.getPoseStack(),
+                event.getSubmitNodeCollector(),
+                cameraState
+            );
+            case WOLFMAN -> werewolfFormAvatarRenderer.submitAvatar(
+                player,
+                event.getRenderState(),
+                event.getPoseStack(),
+                event.getSubmitNodeCollector(),
+                cameraState
+            );
+            case HUMAN -> {
+                return;
+            }
+        }
+        event.setCanceled(true);
+    }
+
+    private static void renderTransformedFirstPersonArm(final RenderArmEvent<?> event) {
+        final Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || wolfFormAvatarRenderer == null || werewolfFormAvatarRenderer == null) {
+            return;
+        }
+        switch (PlayerWolfVisualState.shape(minecraft.player.getUUID())) {
+            case WOLF -> wolfFormAvatarRenderer.submitFirstPersonArm(
+                event.getPoseStack(), event.getSubmitNodeCollector(), event.getLightCoords(), event.getArm()
+            );
+            case WOLFMAN -> werewolfFormAvatarRenderer.submitFirstPersonArm(
+                event.getPoseStack(), event.getSubmitNodeCollector(), event.getLightCoords(), event.getArm()
+            );
+            case HUMAN -> {
+                return;
+            }
+        }
         event.setCanceled(true);
     }
 
     private static void clientLogout(final ClientPlayerNetworkEvent.LoggingOut event) {
         PlayerWolfVisualState.clear();
+        ClientSupernaturalState.clear();
+        SupernaturalStatusOverlay.clear();
     }
 
     public static void registerKeyMappings(final RegisterKeyMappingsEvent event) {
@@ -129,6 +163,11 @@ public final class WarlockeryClient {
     }
 
     public static void addHudLayers(final RegisterGuiLayersEvent event) {
+        event.registerAbove(
+            VanillaGuiLayers.FOOD_LEVEL,
+            VampireBloodHud.LAYER,
+            VampireBloodHud::extract
+        );
         event.registerBelow(
             VanillaGuiLayers.SLEEP_OVERLAY,
             DollStatusOverlay.LAYER,

@@ -1,7 +1,11 @@
 {
   "type": "minecraft:function",
   "function": "warlockery:storm_simian_preserves_owner_support",
-  "environment": "warlockery:storm_simian_isolated",
-  "structure": "warlockery:empty3x3x3",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "storm_simian_preserves_owner_support",
+    "delegate": "warlockery:storm_simian_isolated"
+  },
+  "structure": "warlockery:empty32x32x32",
   "max_ticks": 200
 }

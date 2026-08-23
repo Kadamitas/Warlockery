@@ -4,6 +4,9 @@ import java.util.EnumSet;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -62,6 +65,10 @@ public final class ParasyticLouseEntity extends Monster implements ArcaneCreatur
     public static final double BASE_REINFORCEMENT_CHANCE = 0.0D;
 
     static final String STATE_KEY = "WarlockeryParasyticLouseState";
+    private static final EntityDataAccessor<Byte> DATA_PRESENTATION_PHASE =
+        SynchedEntityData.defineId(ParasyticLouseEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Integer> DATA_PRESENTATION_NOURISHMENT =
+        SynchedEntityData.defineId(ParasyticLouseEntity.class, EntityDataSerializers.INT);
 
     private static final Identifier BABY_MODIFIER = Identifier.withDefaultNamespace("baby");
     private static final Identifier ZOMBIE_RANDOM_SPAWN_BONUS =
@@ -80,6 +87,14 @@ public final class ParasyticLouseEntity extends Monster implements ArcaneCreatur
     public ParasyticLouseEntity(final EntityType<? extends Monster> type, final Level level) {
         super(type, level);
         normalizeLifecycle();
+    }
+
+    @Override
+    protected void defineSynchedData(final SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PRESENTATION_PHASE,
+            EntityPresentationSync.encode(ParasyticLouseTenancyRules.Phase.FREE));
+        builder.define(DATA_PRESENTATION_NOURISHMENT, 0);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -103,6 +118,27 @@ public final class ParasyticLouseEntity extends Monster implements ArcaneCreatur
 
     public void setLouseState(final ParasyticLouseState updated) {
         state = updated == null ? ParasyticLouseState.empty() : updated;
+        syncPresentationFromRuntime();
+    }
+
+    public ParasyticLouseTenancyRules.Phase presentationPhase() {
+        return EntityPresentationSync.decode(entityData.get(DATA_PRESENTATION_PHASE),
+            ParasyticLouseTenancyRules.Phase.FREE);
+    }
+
+    public int presentationNourishment() {
+        return entityData.get(DATA_PRESENTATION_NOURISHMENT);
+    }
+
+    private void syncPresentationFromRuntime() {
+        final byte phase = EntityPresentationSync.encode(tenancy.phase());
+        final int nourishment = state.nourishment();
+        if (entityData.get(DATA_PRESENTATION_PHASE) != phase) {
+            entityData.set(DATA_PRESENTATION_PHASE, phase);
+        }
+        if (entityData.get(DATA_PRESENTATION_NOURISHMENT) != nourishment) {
+            entityData.set(DATA_PRESENTATION_NOURISHMENT, nourishment);
+        }
     }
 
     public ParasyticLouseRuntime.Counters louseCounters() {
@@ -145,6 +181,7 @@ public final class ParasyticLouseEntity extends Monster implements ArcaneCreatur
     protected void customServerAiStep(final ServerLevel level) {
         super.customServerAiStep(level);
         ParasyticLouseRuntime.tick(this, level);
+        syncPresentationFromRuntime();
     }
 
     @Override
@@ -302,5 +339,6 @@ public final class ParasyticLouseEntity extends Monster implements ArcaneCreatur
         getNavigation().stop();
         setTarget(null);
         setDeltaMovement(getDeltaMovement().x * 0.0D, getDeltaMovement().y, 0.0D);
+        syncPresentationFromRuntime();
     }
 }
