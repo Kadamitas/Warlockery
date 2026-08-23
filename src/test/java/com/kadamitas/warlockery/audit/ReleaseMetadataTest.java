@@ -94,7 +94,8 @@ final class ReleaseMetadataTest {
             assertTrue(contents.contains("- fabric"));
             assertTrue(contents.contains("supporter_neoforge_only:"));
             assertTrue(contents.contains("SUPPORTER_NEOFORGE_ONLY"));
-            assertTrue(contents.contains("v1.5.0-LlaGuiT0-26.2.0.45"));
+            assertTrue(contents.contains("endsWith(inputs.tag || github.event.release.tag_name, '-LlaGuiT0-26.2.0.45')"));
+            assertTrue(contents.contains("v*-LlaGuiT0-26.2.0.45"));
             assertTrue(contents.contains("REQUESTED_LOADER"));
             assertTrue(contents.contains("REQUESTED_RELEASE_TYPE"));
             assertTrue(contents.contains("\"neoforge\""));
