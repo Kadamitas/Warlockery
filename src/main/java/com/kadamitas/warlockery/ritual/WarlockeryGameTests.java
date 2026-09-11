@@ -944,8 +944,18 @@ public final class WarlockeryGameTests {
         helper.setBlock(relative, ModBlocks.ALL.get("spinningwheel").get());
         final MagicMachineBlockEntity machine = helper.getBlockEntity(relative, MagicMachineBlockEntity.class);
         final BlockPos altarRelative = new BlockPos(4, 1, 4);
-        withPoweredAltar(helper, altarRelative, 180, altar -> {
+        withPoweredAltar(helper, altarRelative, 0, altar -> {
             machine.setItem(0, new ItemStack(Items.STRING, 8));
+            IntStream.range(0, 20).forEach(_ -> MagicMachineBlockEntity.serverTick(
+                helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
+            ));
+            helper.assertValueEqual(machine.getItem(0).getCount(), 8,
+                "an unpowered machine preserves its waiting ingredients");
+            helper.assertValueEqual(machine.getProgress(), 0,
+                "an unpowered machine cannot advance its recipe");
+            helper.assertValueEqual(altar.receivePower(180), 180,
+                "power arrives after the waiting machine has cached its recipe");
+            assertAltarServiceReach(helper, altarRelative, altar);
             final int powerBefore = totalAltarPower(helper, altarRelative);
             IntStream.range(0, 300).forEach(_ -> MagicMachineBlockEntity.serverTick(
                 helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
@@ -975,6 +985,110 @@ public final class WarlockeryGameTests {
             helper.assertTrue(brazier.isEmpty(), "water reset clears every brazier slot");
             helper.succeed();
         });
+    }
+
+    private static void assertAltarServiceReach(
+        final GameTestHelper helper,
+        final BlockPos relativeAltar,
+        final AltarBlockEntity altar
+    ) {
+        final BlockPos origin = helper.absolutePos(relativeAltar);
+        for (final int distance : new int[]{31, 32}) {
+            helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+                helper.getLevel(), origin.west(distance)), 180, "ordinary altar range " + distance);
+        }
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            helper.getLevel(), origin.west(33)), 0, "ordinary altar stops after32 blocks");
+        helper.assertTrue(altar.installRangeFocus(new ItemStack(ModItems.ALL.get("ritual_knife").get())),
+            "a Ritual Knife extends service range");
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            helper.getLevel(), origin.west(64)), 180, "focused altar reaches64 blocks");
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            helper.getLevel(), origin.west(65)), 0, "focused altar stops after64 blocks");
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            helper.getLevel(), origin.above(8)), 180, "focused altar reaches8 blocks down");
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            helper.getLevel(), origin.above(9)), 0, "focused altar stops after8 blocks down");
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            helper.getLevel(), origin.below(12)), 180, "focused altar reaches12 blocks up");
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            helper.getLevel(), origin.below(13)), 0, "focused altar stops after12 blocks up");
+        altar.removeRangeFocus();
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            helper.getLevel(), origin.west(64)), 0, "removing the focus restores ordinary range");
+
+        final BlockPos unloaded = origin.offset(4_096, 0, 4_096);
+        helper.assertFalse(helper.getLevel().hasChunkAt(unloaded), "stale index fixture begins unloaded");
+        com.kadamitas.warlockery.crafting.AltarRangeIndex.update(helper.getLevel(), unloaded, false);
+        helper.assertTrue(com.kadamitas.warlockery.crafting.AltarPowerNetwork.best(
+            helper.getLevel(), unloaded).isEmpty(), "a stale unloaded position cannot supply power");
+        helper.assertFalse(helper.getLevel().hasChunkAt(unloaded), "altar queries must not load chunks");
+        com.kadamitas.warlockery.crafting.AltarRangeIndex.remove(helper.getLevel(), unloaded);
+
+        final BlockPos invalidRelative = new BlockPos(0, 1, 0);
+        helper.setBlock(invalidRelative, ModBlocks.ALTAR.get());
+        final AltarBlockEntity invalid = helper.getBlockEntity(invalidRelative, AltarBlockEntity.class);
+        final BlockPos invalidPosition = helper.absolutePos(invalidRelative);
+        AltarBlockEntity.serverTick(helper.getLevel(), invalidPosition,
+            helper.getLevel().getBlockState(invalidPosition), invalid);
+        helper.assertTrue(com.kadamitas.warlockery.crafting.AltarPowerNetwork.best(
+            helper.getLevel(), invalidPosition.west(32)).isEmpty(), "an incomplete altar cannot serve a machine");
+        helper.setBlock(invalidRelative, Blocks.AIR);
+        helper.assertFalse(com.kadamitas.warlockery.crafting.AltarRangeIndex.within(
+            helper.getLevel(), invalidPosition, 32, 4, 6).anyMatch(invalidPosition::equals),
+            "removing an altar removes its indexed position");
+        assertAltarIndexReloadLifecycle(helper, origin, altar);
+    }
+
+    private static void assertAltarIndexReloadLifecycle(
+        final GameTestHelper helper,
+        final BlockPos position,
+        final AltarBlockEntity original
+    ) {
+        final var level = helper.getLevel();
+        final var saved = original.saveCustomOnly(level.registryAccess());
+        final var chunk = level.getChunkAt(position);
+        chunk.removeBlockEntity(position);
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            level, position.west(32)), 0, "removing the loaded altar removes its spendable power");
+
+        final AltarBlockEntity restored = new AltarBlockEntity(position, level.getBlockState(position));
+        restored.loadCustomOnly(net.minecraft.world.level.storage.TagValueInput.create(
+            net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), saved.copy()));
+        helper.assertTrue(restored.isMultiblockValid(), "deserialization restores the valid multiblock state");
+        chunk.setBlockEntity(restored);
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            level, position.west(32)), 180, "a deserialized altar serves power before its first tick");
+
+        restored.installRangeFocus(new ItemStack(ModItems.ALL.get("ritual_knife").get()));
+        final var focusedSave = restored.saveCustomOnly(level.registryAccess());
+        final AltarBlockEntity replacement = new AltarBlockEntity(position, level.getBlockState(position));
+        replacement.loadCustomOnly(net.minecraft.world.level.storage.TagValueInput.create(
+            net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), focusedSave.copy()));
+        chunk.setBlockEntity(replacement);
+        helper.assertTrue(restored.isRemoved(), "replacing a block entity removes its predecessor");
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            level, position.west(64)), 180, "old-instance removal preserves its replacement's indexed focus");
+        restored.setRemoved();
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            level, position.west(64)), 180, "repeated stale removal cannot erase the replacement");
+
+        replacement.setRemoved();
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            level, position.west(64)), 0, "unloading the current instance removes its power");
+        replacement.clearRemoved();
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            level, position.west(64)), 180, "reinstalling a loaded altar restores service before ticking");
+
+        replacement.loadCustomOnly(net.minecraft.world.level.storage.TagValueInput.create(
+            net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), saved.copy()));
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            level, position.west(64)), 0, "loading unfocused data updates the index immediately");
+        replacement.loadCustomOnly(net.minecraft.world.level.storage.TagValueInput.create(
+            net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), focusedSave.copy()));
+        helper.assertValueEqual(com.kadamitas.warlockery.crafting.AltarPowerNetwork.available(
+            level, position.west(64)), 180, "loading focused data updates the index before ticking");
+        replacement.removeRangeFocus();
     }
 
     public static void commonMaterialAndWoodTagsArePopulated(final GameTestHelper helper) {

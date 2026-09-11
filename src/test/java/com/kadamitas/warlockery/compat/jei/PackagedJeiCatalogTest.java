@@ -32,6 +32,17 @@ final class PackagedJeiCatalogTest {
     }
 
 
+    @Test
+    void packagedCatalogDecodesEveryCustomComponentAndRole() throws IOException {
+        final var components = PackagedJeiCatalog.customBrews();
+        try (var files = Files.walk(DATA_ROOT.resolve("custom_brew_component"))) {
+            assertEquals(files.filter(path -> path.toString().endsWith(".json")).count(), components.size());
+        }
+        assertEquals(components.size(), components.stream().map(CustomBrewJeiRecipe::id).distinct().count());
+        assertTrue(components.stream().allMatch(component -> component.definition().structurallyValid()));
+        assertEquals(Set.of(com.kadamitas.warlockery.brew.custom.CustomBrewComponentRole.values()),
+            components.stream().map(component -> component.definition().role()).collect(Collectors.toSet()));
+    }
     private static long packagedFileCount(final Path directory) throws IOException {
         try (var paths = Files.list(directory)) {
             return paths.filter(path -> path.toString().endsWith(".json")).count();

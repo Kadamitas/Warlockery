@@ -226,7 +226,7 @@ final class LocalizationIntegrityTest {
         final Map<Path, List<String>> violations;
         try (Stream<Path> paths = Files.walk(JAVA)) {
             violations = paths.filter(path -> path.toString().endsWith(".java"))
-                .map(path -> Map.entry(path, ENGLISH_LITERAL.matcher(read(path)).results()
+                .map(path -> Map.entry(path, ENGLISH_LITERAL.matcher(decodeUnicodeEscapes(read(path))).results()
                     .map(MatchResult::group)
                     .toList()))
                 .filter(entry -> !entry.getValue().isEmpty())
@@ -291,6 +291,20 @@ final class LocalizationIntegrityTest {
 
     private static JsonObject json(final Path path) {
         return JsonParser.parseString(read(path)).getAsJsonObject();
+    }
+
+    @Test
+    void literalAuditDecodesUnicodeBeforeCheckingForEnglish() {
+        assertFalse(ENGLISH_LITERAL.matcher(decodeUnicodeEscapes("Component.literal(\"\\u2039\")")).find());
+        assertFalse(ENGLISH_LITERAL.matcher(decodeUnicodeEscapes("Component.literal(\"\\u203a\")")).find());
+        assertTrue(ENGLISH_LITERAL.matcher(decodeUnicodeEscapes("Component.literal(\"\\u0042ack\")")).find());
+        assertTrue(ENGLISH_LITERAL.matcher(decodeUnicodeEscapes("Component.literal(\"Back\")")).find());
+    }
+
+    private static String decodeUnicodeEscapes(final String source) {
+        return Pattern.compile("\\\\u+([0-9a-fA-F]{4})").matcher(source)
+            .replaceAll(match -> java.util.regex.Matcher.quoteReplacement(
+                String.valueOf((char) Integer.parseInt(match.group(1), 16))));
     }
 
     private static String read(final Path path) {

@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:ingots/silver"
+    },
+    {
+      "ingredient": "warlockery:ingredient_wolfsbane"
     }
   ],
   "outputs": [

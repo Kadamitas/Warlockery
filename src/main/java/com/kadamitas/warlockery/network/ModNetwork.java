@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.network;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.compat.viewer.RecipeViewerCatalogSync;
 import com.kadamitas.warlockery.item.FlyingBroomItem;
 import com.kadamitas.warlockery.ritual.RitualManager;
 import com.kadamitas.warlockery.ritual.RitualRequirementText;
@@ -33,6 +34,7 @@ public final class ModNetwork {
     private static final int MAX_RITUALS = 128;
     private static final int MAX_REQUIREMENTS = 32;
     private static final int MAX_STRING = 256;
+    private static java.util.function.BiConsumer<Object, RecipeViewerCatalogPayload> clientCatalogHandler = (connection, payload) -> { };
     private static Consumer<OpenRitualScreenPayload> clientScreenHandler = payload -> {
     };
     private static Consumer<DollActivationPayload> clientDollHandler = payload -> {
@@ -50,6 +52,8 @@ public final class ModNetwork {
     }
 
     public static void registerClientPayloadHandlers(final RegisterClientPayloadHandlersEvent event) {
+        event.register(RecipeViewerCatalogPayload.TYPE,
+            (payload, context) -> clientCatalogHandler.accept(context.connection(), payload));
         event.register(OpenRitualScreenPayload.TYPE, ModNetwork::handleOpenScreen);
         event.register(DollActivationPayload.TYPE, ModNetwork::handleDollActivation);
         event.register(SupernaturalSnapshotPayload.TYPE, ModNetwork::handleSupernaturalSnapshot);
@@ -57,7 +61,8 @@ public final class ModNetwork {
     }
 
     private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("8");
+        final PayloadRegistrar registrar = event.registrar("10");
+        registrar.playToClient(RecipeViewerCatalogPayload.TYPE, RecipeViewerCatalogPayload.STREAM_CODEC);
         registrar.playToClient(OpenRitualScreenPayload.TYPE, OpenRitualScreenPayload.STREAM_CODEC);
         registrar.playToClient(DollActivationPayload.TYPE, DollActivationPayload.STREAM_CODEC);
         registrar.playToClient(SupernaturalSnapshotPayload.TYPE, SupernaturalSnapshotPayload.STREAM_CODEC);
@@ -75,8 +80,38 @@ public final class ModNetwork {
         );
     }
 
+    public static void queueRecipeViewerCatalog(
+        final net.minecraft.server.MinecraftServer server, final List<ServerPlayer> players
+    ) {
+        final List<ServerPlayer> recipients = List.copyOf(players);
+        server.execute(() -> sendRecipeViewerCatalog(recipients));
+    }
+
+    public static void sendRecipeViewerCatalog(final List<ServerPlayer> players) {
+        if (players.isEmpty()) return;
+        final List<RecipeViewerCatalogPayload> packets;
+        try {
+            packets = RecipeViewerCatalogSync.serverPackets();
+        } catch (RuntimeException exception) {
+            Warlockery.LOGGER.error("Unable to synchronize recipe viewer catalog", exception);
+            return;
+        }
+        for (ServerPlayer player : players) {
+            if (player.connection == null) continue;
+            for (RecipeViewerCatalogPayload payload : packets) {
+                if (player.connection.hasChannel(RecipeViewerCatalogPayload.TYPE)) PacketDistributor.sendToPlayer(player, payload);
+            }
+        }
+    }
+
     public static void openRitualScreen(final ServerPlayer player, final BlockPos center) {
-        sendOptions(player, center);
+        sendOptions(player, center, true);
+    }
+
+    public static void setClientCatalogHandler(
+        final java.util.function.BiConsumer<Object, RecipeViewerCatalogPayload> handler
+    ) {
+        clientCatalogHandler = Objects.requireNonNull(handler, "handler");
     }
 
     public static void setClientScreenHandler(final Consumer<OpenRitualScreenPayload> handler) {
@@ -181,7 +216,7 @@ public final class ModNetwork {
         ClientPacketDistributor.sendToServer(new RitualActionPayload(center, "", false, true));
     }
 
-    private static void sendOptions(final ServerPlayer player, final BlockPos center) {
+    private static void sendOptions(final ServerPlayer player, final BlockPos center, final boolean mayOpen) {
         if (!(player.level() instanceof ServerLevel level)
             || player.connection == null
             || !player.connection.hasChannel(OpenRitualScreenPayload.TYPE)) {
@@ -189,7 +224,7 @@ public final class ModNetwork {
         }
         PacketDistributor.sendToPlayer(
             player,
-            new OpenRitualScreenPayload(center, RitualManager.INSTANCE.options(level, center, player))
+            new OpenRitualScreenPayload(center, RitualManager.INSTANCE.options(level, center, player), mayOpen)
         );
     }
 
@@ -281,12 +316,13 @@ public final class ModNetwork {
                 ));
             }
         }
-        sendOptions(player, payload.center());
+        sendOptions(player, payload.center(), false);
     }
 
     public record OpenRitualScreenPayload(
         BlockPos center,
-        List<RitualManager.RitualOption> options
+        List<RitualManager.RitualOption> options,
+        boolean mayOpen
     ) implements CustomPacketPayload {
         public static final Type<OpenRitualScreenPayload> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "open_ritual_screen")
@@ -300,7 +336,7 @@ public final class ModNetwork {
                     final List<RitualManager.RitualOption> options = IntStream.range(0, count)
                         .mapToObj(_ -> readOption(input))
                         .toList();
-                    return new OpenRitualScreenPayload(center, options);
+                    return new OpenRitualScreenPayload(center, options, input.readBoolean());
                 }
 
                 @Override
@@ -309,6 +345,7 @@ public final class ModNetwork {
                     final List<RitualManager.RitualOption> options = value.options().stream().limit(MAX_RITUALS).toList();
                     output.writeVarInt(options.size());
                     options.forEach(option -> writeOption(output, option));
+                    output.writeBoolean(value.mayOpen());
                 }
             };
 

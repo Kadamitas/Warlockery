@@ -2,7 +2,6 @@ package com.kadamitas.warlockery.crafting;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.brew.custom.CustomBrewDefinitionManager;
-import com.kadamitas.warlockery.compat.jei.JeiRecipeRefreshSignal;
 import com.kadamitas.warlockery.util.FluidIngredient;
 import com.kadamitas.warlockery.util.ItemIngredient;
 import com.mojang.serialization.Codec;
@@ -60,7 +59,6 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
         catalog = loaded;
         revision++;
         Warlockery.LOGGER.info("Loaded {} Warlockery machine recipes", loaded.definitions().size());
-        JeiRecipeRefreshSignal.publish();
     }
 
     public Optional<Match> find(final MachineProfile profile, final NonNullList<ItemStack> inventory) {
@@ -86,6 +84,17 @@ public final class MachineRecipeManager extends SimpleJsonResourceReloadListener
             .filter(candidate -> candidate.inputsReady(profile))
             .findFirst()
             .map(candidate -> new Match(candidate.id(), candidate.recipe()));
+    }
+
+    public static java.util.function.Function<NonNullList<ItemStack>, Optional<Match>> inputMatcher(
+        final List<Match> recipes, final MachineProfile profile
+    ) {
+        final MachineRecipeCatalog supplied = MachineRecipeCatalog.create(recipes.stream()
+            .collect(Collectors.toUnmodifiableMap(Match::id, Match::recipe)));
+        return inventory -> supplied.forMachine(profile.recipeType()).stream()
+            .map(recipe -> inspect(recipe, profile, inventory, FluidStack.EMPTY, Integer.MAX_VALUE))
+            .filter(candidate -> candidate.inputsReady(profile))
+            .findFirst().map(candidate -> new Match(candidate.id(), candidate.recipe()));
     }
 
     static int specificity(final MachineRecipeDefinition recipe) {

@@ -587,11 +587,11 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
     private Optional<MachineRecipeManager.Match> findRecipe(final MachineProfile profile) {
         final MachineRecipeManager manager = MachineRecipeManager.INSTANCE;
         if (recipeDirty || cachedRevision != manager.revision()) {
+            // Cache only ingredient selection. Live altar power is checked before every processing tick.
             cachedRecipe = manager.find(
                 profile,
                 items,
-                profile.supportsFluids() ? fluidStack() : FluidStack.EMPTY,
-                getAvailableAltarPower()
+                profile.supportsFluids() ? fluidStack() : FluidStack.EMPTY
             );
             cachedRevision = manager.revision();
             recipeDirty = false;

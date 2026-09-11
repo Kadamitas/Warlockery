@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:foods"
+    },
+    {
+      "ingredient": "warlockery:ingredient_purified_milk"
     }
   ],
   "outputs": [

@@ -233,6 +233,9 @@ public record ManualProfile(
     }
 
     public String translatedSectionKey(final String section) {
+        if (section.startsWith("crafting_")) {
+            return "manual.warlockery.crafting.intro";
+        }
         if (isRitualSection(section)) {
             return "ritual.warlockery." + section.substring(RITUAL_PREFIX.length()) + ".description";
         }
@@ -249,6 +252,16 @@ public record ManualProfile(
     }
 
     public String translatedSectionTitleKey(final String section) {
+        if (section.startsWith("crafting_")) {
+            final String recipe = section.substring("crafting_".length());
+            return switch (recipe) {
+                case "chalkheart_from_gypsum" -> "item.warlockery.chalkheart";
+                case "ingredient_clay_jar_from_smelting" -> "item.warlockery.ingredient_clay_jar";
+                case "ingredient_soft_clay_jar" -> "item.warlockery.ingredient_clay_jar_soft";
+                case "altar", "alchemical_oven", "distilleryidle", "cauldron", "kettle", "silvervat", "brazier", "spinningwheel" -> "block.warlockery." + recipe;
+                default -> "item.warlockery." + recipe;
+            };
+        }
         if ("preamble".equals(section)) {
             return "manual.warlockery.preamble.title";
         }
@@ -330,13 +343,27 @@ public record ManualProfile(
         final Map<String, List<String>> grouped = groupSections(RITUAL_SECTIONS, ManualProfile::ritualChapter);
         final List<Chapter> chapters = Stream.of(
             Stream.of(chapter(
+                "chalk", "manual.warlockery.chapter.chalk",
+                "chalk", "crafting_chalkritual", "crafting_chalkinfernal", "crafting_chalk_veil",
+                "crafting_chalkheart_from_gypsum", "golden_chalk",
+                "crafting_ingredient_clay_jar_soft", "crafting_ingredient_clay_jar_from_smelting",
+                "crafting_alchemical_oven", "machine_recipe_oven_logs", "crafting_ingredient_quicklime",
+                "crafting_altar", "machine_recipe_oven_fume_breath_of_the_goddess",
+                "crafting_distilleryidle", "machine_recipe_distill_vitriol"
+            )),
+            Stream.of(chapter("introduction", "manual.warlockery.preamble.title", "preamble")),
+            Stream.of(chapter(
                 "foundations",
                 "manual.warlockery.chapter.foundations",
-                "chalk",
+                "arthana",
                 "spirit_locator",
                 "veil_waystones",
                 "ritual_ui",
                 "power"
+            )),
+            Stream.of(chapter(
+                "crafting", "manual.warlockery.crafting.title",
+                "crafting_ritual_knife", "crafting_arcane_focus"
             )),
             grouped.entrySet().stream().map(entry -> chapter(
                 entry.getKey(),
@@ -349,7 +376,10 @@ public record ManualProfile(
                 WEREWOLF_PROGRESSION_SECTIONS.toArray(String[]::new)
             ))
         ).flatMap(Function.identity()).toList();
-        return groupedProfile("ingredient_book_circle_magic", "circles", chapters.toArray(Chapter[]::new));
+        return new ManualProfile(
+            "ingredient_book_circle_magic", "circles",
+            chapters.stream().flatMap(chapter -> chapter.sections().stream()).toList(), chapters
+        );
     }
 
     private static ManualProfile brewProfile() {
@@ -358,6 +388,14 @@ public record ManualProfile(
             Stream.of(chapter(
                 "brewing_primer",
                 "manual.warlockery.chapter.brewing_primer",
+                "crafting_kettle",
+                "crafting_ingredient_annointing_paste",
+                "machines",
+                "machine_recipe_cauldron_colored_brew_water",
+                "machine_recipe_cauldron_drop_of_luck",
+                "machine_recipe_cauldron_flowing_spirit",
+                "machine_recipe_cauldron_playercompass",
+                "machine_recipe_cauldron_verdant_catalyst_prime",
                 "custom_brews",
                 "antidotes",
                 "circle_brewing",
@@ -417,6 +455,12 @@ public record ManualProfile(
         return groupedProfile(
             "ingredient_book_burning",
             "conjuration",
+            chapter("brazier_workshop", "manual.warlockery.chapter.brazier_workshop",
+                "crafting_brazier", "brazier",
+                "machine_recipe_brazier_summon_spectre", "machine_recipe_brazier_summon_banshee",
+                "machine_recipe_brazier_summon_poltergeist", "machine_recipe_brazier_deathly_veil",
+                "machine_recipe_brazier_graveyard_mist", "machine_recipe_brazier_fortification_of_the_corpse",
+                "machine_recipe_brazier_anguish_of_the_dead", "machine_recipe_brazier_drain_growth"),
             chapter(
                 "conjuration",
                 "manual.warlockery.chapter.conjuration",
@@ -495,6 +539,9 @@ public record ManualProfile(
             chapter(
                 "distilling_practice",
                 "manual.warlockery.chapter.distilling_practice",
+                "crafting_distilleryidle",
+                "crafting_altar",
+                "power",
                 "inputs",
                 "outputs",
                 "automation"
@@ -503,7 +550,10 @@ public record ManualProfile(
                 "distilling_recipes",
                 "manual.warlockery.chapter.distilling_recipes",
                 DISTILLING_RECIPE_SECTIONS.toArray(String[]::new)
-            )
+            ),
+            chapter("workshop_tools", "manual.warlockery.chapter.workshop_tools", "crafting_spinningwheel", "spinningwheel",
+                "machine_recipe_spin_wool", "machine_recipe_spin_fanciful_thread", "machine_recipe_spin_golden_thread",
+                "machine_recipe_spin_tormented_twine", "crafting_silvervat", "silvervat", "machine_recipe_silver_vat_silver_dust")
         );
     }
 
@@ -592,6 +642,9 @@ public record ManualProfile(
             chapter(
                 "fume_workshop",
                 "manual.warlockery.chapter.fume_workshop",
+                "crafting_alchemical_oven",
+                "crafting_ingredient_soft_clay_jar",
+                "crafting_ingredient_clay_jar_from_smelting",
                 "oven",
                 "jars",
                 "funnels"

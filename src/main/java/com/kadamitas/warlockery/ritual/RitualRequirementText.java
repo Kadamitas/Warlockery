@@ -2,8 +2,10 @@ package com.kadamitas.warlockery.ritual;
 
 import com.kadamitas.warlockery.util.ItemDisplayNames;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 /**
  * The one place a {@link RitualManager.RequirementStatus} is turned into words.
@@ -48,7 +50,7 @@ public final class RitualRequirementText {
     public static Component label(final RitualManager.RequirementStatus requirement) {
         return switch (requirement.category()) {
             case "chalk" -> Component.translatable("block.warlockery." + requirement.label());
-            case "ingredient" -> ItemDisplayNames.component(requirement.label());
+            case "ingredient" -> ingredientLabel(requirement.label());
             case "entity" -> requirement.label().startsWith("#")
                 ? Component.literal(requirement.label())
                 : Component.translatable("entity." + requirement.label().replace(':', '.'));
@@ -60,6 +62,32 @@ public final class RitualRequirementText {
             case "condition" -> Component.translatable("screen.warlockery.ritual.requirement." + requirement.label().replace(':', '.'));
             default -> Component.literal(requirement.label());
         };
+    }
+
+    private static Component ingredientLabel(final String ingredient) {
+        if (ingredient == null || !ingredient.startsWith("#")) {
+            return ItemDisplayNames.component(ingredient);
+        }
+        final String tag = ingredient.substring(1);
+        final String fallback = humanizeTag(tag);
+        final Identifier id = Identifier.tryParse(tag);
+        return id == null ? Component.literal(fallback) : Component.translatableWithFallback(
+            "tag.item." + id.toString().replace(':', '.').replace('/', '.'), fallback
+        );
+    }
+
+    private static String humanizeTag(final String tag) {
+        final String path = tag.substring(tag.indexOf(':') + 1);
+        final String[] parts = path.split("/");
+        if (parts.length < 2) return humanize(path);
+        final String category = parts[parts.length - 2];
+        final String singular = category.endsWith("s") ? category.substring(0, category.length() - 1) : category;
+        return humanize(parts[parts.length - 1]) + " " + humanize(singular).toLowerCase(Locale.ROOT);
+    }
+
+    private static String humanize(final String word) {
+        final String words = word.replace('_', ' ').replace('-', ' ').strip();
+        return words.isEmpty() ? "?" : words.substring(0, 1).toUpperCase(Locale.ROOT) + words.substring(1);
     }
 
     /**

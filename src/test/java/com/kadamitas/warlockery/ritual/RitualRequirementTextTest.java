@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.ritual;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -19,6 +20,15 @@ final class RitualRequirementTextTest {
     static void bootstrapMinecraftRegistries() {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
+        for (final var item : List.of(net.minecraft.world.item.Items.COAL, net.minecraft.world.item.Items.STONE)) {
+            final var holder = item.builtInRegistryHolder();
+            final var components = net.minecraft.core.component.DataComponentMap.builder();
+            if (holder.areComponentsBound()) components.addAll(holder.components());
+            holder.bindComponents(components
+                .set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 64)
+                .set(net.minecraft.core.component.DataComponents.ITEM_NAME, Component.translatable(item.getDescriptionId()))
+                .build());
+        }
     }
 
     @Test
@@ -67,6 +77,50 @@ final class RitualRequirementTextTest {
             "a fifteen row rite must not empty its whole checklist into chat: " + named
         );
         assertTrue(named.contains("ritual.more"), "the notice must say how many it left out: " + named);
+    }
+
+    @Test
+    void ingredientTagsUseClientTranslatedLabelsInsteadOfRegistrySyntax() {
+        final var requirement = ingredient("#minecraft:coals", 1, 1, true);
+        final Component label = RitualRequirementText.label(requirement);
+        assertEquals("tag.item.minecraft.coals", key(label));
+        assertFalse(label.getString().contains("#minecraft:"));
+        assertEquals("#minecraft:coals", requirement.label(), "display names must not replace matching identifiers");
+    }
+
+    @Test
+    void untranslatedMaterialTagsKeepBothTheMaterialAndIngredientKind() {
+        final Component ingot = RitualRequirementText.label(ingredient("#othermod:ingots/blue_steel", 3, 1, false));
+        assertEquals("tag.item.othermod.ingots.blue_steel", key(ingot));
+        assertEquals("Blue steel ingot", ingot.getString());
+        assertEquals("Ancient bones", RitualRequirementText.label(
+            ingredient("#othermod:ancient_bones", 2, 0, false)).getString());
+    }
+
+    @Test
+    void readableTagsPreserveChecklistCountsMarksAndColors() {
+        final Component met = RitualRequirementText.line(ingredient("#minecraft:coals", 2, 2, true));
+        assertTrue(met.getString().startsWith("✓ "));
+        assertEquals(0x55FF55, met.getStyle().getColor().getValue());
+        final var counted = (TranslatableContents) met.getSiblings().getFirst().getContents();
+        assertEquals("tag.item.minecraft.coals", key((Component) counted.getArgs()[0]));
+        assertEquals(2, counted.getArgs()[1]);
+        assertEquals(2, counted.getArgs()[2]);
+        final Component missing = RitualRequirementText.line(ingredient("#minecraft:coals", 2, 1, false));
+        assertTrue(missing.getString().startsWith("✗ "));
+        assertEquals(0xFF5555, missing.getStyle().getColor().getValue());
+        assertFalse(RitualRequirementText.summary(List.of(ingredient("#minecraft:coals", 2, 1, false)))
+            .orElseThrow().getString().contains("#minecraft:"));
+    }
+
+    @Test
+    void directItemsRetainTheirRegisteredItemAndBlockNames() {
+        assertEquals("item.minecraft.coal", key(RitualRequirementText.label(ingredient("minecraft:coal", 1, 1, true))));
+        assertEquals("block.minecraft.stone", key(RitualRequirementText.label(ingredient("minecraft:stone", 1, 1, true))));
+    }
+
+    private static RitualManager.RequirementStatus ingredient(final String label, final int required, final int present, final boolean met) {
+        return new RitualManager.RequirementStatus("ingredient", label, required, present, met);
     }
 
     private static String key(final Component component) {

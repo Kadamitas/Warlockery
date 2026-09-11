@@ -3,6 +3,7 @@ issueTrackerURL="https://github.com/Kadamitas/Warlockery/issues"
 
 [[mods]]
 modId="warlockery"
+rrv_client="com.kadamitas.warlockery.compat.rrv.WarlockeryRrvPlugin"
 version="${mod_version}"
 displayName="Warlockery"
 displayURL="https://github.com/Kadamitas/Warlockery"
@@ -39,3 +40,24 @@ silver-equipped Werewolf Hunters, and modern ore progression.'''
     versionRange="[26.2,26.3)"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.warlockery]]
+    modId="roughlyenoughitems"
+    type="optional"
+    versionRange="[26.2.820,)"
+    ordering="AFTER"
+    side="CLIENT"
+
+[[dependencies.warlockery]]
+    modId="rrv"
+    type="optional"
+    versionRange="[8.10.4,)"
+    ordering="AFTER"
+    side="CLIENT"
+
+[[dependencies.warlockery]]
+    modId="emi"
+    type="optional"
+    versionRange="[1.1.24,)"
+    ordering="AFTER"
+    side="CLIENT"

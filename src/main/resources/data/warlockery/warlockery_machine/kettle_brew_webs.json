@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#minecraft:swords"
+    },
+    {
+      "ingredient": "minecraft:cobweb"
     }
   ],
   "outputs": [

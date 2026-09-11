@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#minecraft:coals"
+    },
+    {
+      "ingredient": "minecraft:fire_charge"
     }
   ],
   "outputs": [
