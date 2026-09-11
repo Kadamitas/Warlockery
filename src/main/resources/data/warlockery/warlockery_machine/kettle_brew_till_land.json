@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#minecraft:hoes"
+    },
+    {
+      "ingredient": "minecraft:dirt"
     }
   ],
   "outputs": [

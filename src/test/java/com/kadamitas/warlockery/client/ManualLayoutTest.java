@@ -35,6 +35,15 @@ final class ManualLayoutTest {
         assertEquals(1, ManualLayout.calculate(640, 360).controlRows());
     }
 
+    @Test
+    void wrappedNavigationKeepsTheScrollIndicatorUncovered() {
+        for (final Resolution resolution : COMMON_SCALED_RESOLUTIONS) {
+            final ManualLayout layout = ManualLayout.calculate(resolution.width(), resolution.height());
+            assertTrue(layout.sectionListTop() + layout.sectionListHeight() <= layout.bottom() - 26,
+                "Navigation entries must finish above the down-scroll indicator");
+        }
+    }
+
     private static void verifyLayout(final Resolution resolution) {
         final ManualLayout layout = ManualLayout.calculate(resolution.width(), resolution.height());
         assertTrue(layout.left() >= 0);

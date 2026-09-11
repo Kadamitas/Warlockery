@@ -38,6 +38,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 public final class AltarBlockEntity extends BlockEntity {
     private static final int SCAN_INTERVAL = 40;
     private static final int SEARCH_RADIUS = 16;
+    private final Object rangeIndexIdentity = new Object();
     private int power;
     private int escrowed;
     private int capacity;
@@ -62,11 +63,9 @@ public final class AltarBlockEntity extends BlockEntity {
         final BlockState state,
         final AltarBlockEntity altar
     ) {
+        altar.registerRangeIndex();
         if (level.getGameTime() % SCAN_INTERVAL != 0) {
             return;
-        }
-        if (level instanceof ServerLevel serverLevel) {
-            AltarRangeIndex.update(serverLevel, pos, altar.hasRangeFocus());
         }
         final AltarDisplay previous = altar.getDisplay();
         final AltarMultiblockLayout.Result layout = AltarMultiblockLayout.inspect(
@@ -107,6 +106,35 @@ public final class AltarBlockEntity extends BlockEntity {
         if (!previous.equals(altar.getDisplay())) {
             level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
         }
+    }
+
+    @Override
+    public void setLevel(final Level level) {
+        if (this.level instanceof ServerLevel previousLevel && previousLevel != level) {
+            AltarRangeIndex.remove(previousLevel, worldPosition, rangeIndexIdentity);
+        }
+        super.setLevel(level);
+        registerRangeIndex();
+    }
+
+    @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        registerRangeIndex();
+    }
+
+    private void registerRangeIndex() {
+        if (level instanceof ServerLevel serverLevel && !isRemoved()) {
+            AltarRangeIndex.update(serverLevel, worldPosition, hasRangeFocus(), rangeIndexIdentity);
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        if (level instanceof ServerLevel serverLevel) {
+            AltarRangeIndex.remove(serverLevel, worldPosition, rangeIndexIdentity);
+        }
+        super.setRemoved();
     }
 
     private EnvironmentScan scanEnvironment(final Level level, final BlockPos origin) {
@@ -351,7 +379,7 @@ public final class AltarBlockEntity extends BlockEntity {
     private void synchronizeAttachments() {
         setChanged();
         if (level instanceof ServerLevel serverLevel) {
-            AltarRangeIndex.update(serverLevel, worldPosition, hasRangeFocus());
+            registerRangeIndex();
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
@@ -389,6 +417,7 @@ public final class AltarBlockEntity extends BlockEntity {
                 .filter(stack -> !stack.isEmpty())
                 .ifPresent(stack -> attachments.set(0, stack));
         }
+        registerRangeIndex();
     }
 
     @Override

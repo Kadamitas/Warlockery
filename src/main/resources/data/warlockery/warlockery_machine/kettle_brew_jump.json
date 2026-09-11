@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#minecraft:foot_armor"
+    },
+    {
+      "ingredient": "minecraft:rabbit_foot"
     }
   ],
   "outputs": [

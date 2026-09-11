@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#minecraft:arrows"
+    },
+    {
+      "ingredient": "#c:gunpowders"
     }
   ],
   "outputs": [

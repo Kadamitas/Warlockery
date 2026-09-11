@@ -58,7 +58,7 @@ abstract class ReleaseBundleTask extends DefaultTask {
     }
 }
 
-version = '1.5.1'
+version = '1.5.2'
 group = 'com.kadamitas.warlockery'
 
 java {
@@ -107,6 +107,9 @@ minecraft {
     }
 }
 
+def recipeViewer = providers.gradleProperty('warlockeryRecipeViewer').orElse('jei').get()
+if (!['jei', 'none'].contains(recipeViewer)) throw new GradleException('Unsupported recipe viewer profile: ' + recipeViewer)
+
 repositories {
     minecraft.mavenizer(it)
     maven fg.forgeMaven
@@ -115,12 +118,17 @@ repositories {
         url = 'https://maven.blamejared.com'
         content { includeGroup 'mezz.jei' }
     }
+    maven { url = 'https://maven.shedaniel.me' }
+    maven { url = 'https://maven.architectury.dev' }
+    maven { url = 'https://maven.cassian.cc' }
+    maven { url = 'https://cursemaven.com'; content { includeGroup 'curse.maven' } }
     mavenCentral()
 }
 
 dependencies {
     implementation minecraft.dependency('net.minecraftforge:forge:26.2-65.1.2')
     compileOnly 'mezz.jei:jei-26.2-common-api:30.15.0.104'
+    if (recipeViewer == 'jei') runtimeOnly 'curse.maven:just-enough-items-for-forge-1656683:8669937'
     annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.5'
     testImplementation platform('org.junit:junit-bom:6.1.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'

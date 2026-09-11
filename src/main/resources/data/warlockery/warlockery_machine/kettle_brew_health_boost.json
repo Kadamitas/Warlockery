@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:foods/cooked_meat"
+    },
+    {
+      "ingredient": "minecraft:golden_apple"
     }
   ],
   "outputs": [

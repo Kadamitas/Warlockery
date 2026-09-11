@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["G G", "IBI", "III"],
+  "key": {"G": "#c:glass_blocks/colorless", "I": "#c:ingots/iron", "B": "minecraft:bucket"},
+  "result": {"id": "warlockery:silvervat"}
+}

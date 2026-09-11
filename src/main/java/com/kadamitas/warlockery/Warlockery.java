@@ -98,6 +98,8 @@ public final class Warlockery {
         EntityAttributeCreationEvent.BUS.addListener(ModEntities::registerAttributes);
         SpawnPlacementRegisterEvent.BUS.addListener(ModEntities::registerSpawnPlacements);
         ModNetwork.init();
+        net.minecraftforge.event.OnDatapackSyncEvent.BUS.addListener(event ->
+            ModNetwork.queueRecipeViewerCatalog(event.getPlayerList().getServer(), event.getPlayers()));
         BrewPersistentRuntime.registerEvents();
         SpiritWorldRuntime.registerEvents();
         MagicPathRuntime.registerEvents();

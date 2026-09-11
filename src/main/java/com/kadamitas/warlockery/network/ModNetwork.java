@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.network;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.compat.viewer.RecipeViewerCatalogSync;
 import com.kadamitas.warlockery.item.FlyingBroomItem;
 import com.kadamitas.warlockery.ritual.RitualManager;
 import com.kadamitas.warlockery.ritual.RitualRequirementText;
@@ -29,6 +30,7 @@ public final class ModNetwork {
     private static final int MAX_RITUALS = 128;
     private static final int MAX_REQUIREMENTS = 32;
     private static final int MAX_STRING = 256;
+    private static java.util.function.BiConsumer<Object, RecipeViewerCatalogPayload> clientCatalogHandler = (connection, payload) -> { };
     private static Consumer<OpenRitualScreenPayload> clientScreenHandler = payload -> {
     };
     private static Consumer<DollActivationPayload> clientDollHandler = payload -> {
@@ -40,7 +42,7 @@ public final class ModNetwork {
 
     private static final SimpleChannel CHANNEL = ChannelBuilder
         .named(Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "main"))
-        .networkProtocolVersion(8)
+        .networkProtocolVersion(10)
         .simpleChannel()
         .play()
         .clientbound()
@@ -56,6 +58,10 @@ public final class ModNetwork {
             PlayerWolfVisualPayload.STREAM_CODEC,
             ModNetwork::handlePlayerWolfVisual
         )
+        .addMain(RecipeViewerCatalogPayload.class, RecipeViewerCatalogPayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (context.isClientSide()) clientCatalogHandler.accept(context.getConnection(), payload);
+            })
         .serverbound()
         .addMain(RitualActionPayload.class, RitualActionPayload.STREAM_CODEC, ModNetwork::handleRitualAction)
         .addMain(
@@ -72,8 +78,38 @@ public final class ModNetwork {
     public static void init() {
     }
 
+    public static void queueRecipeViewerCatalog(
+        final net.minecraft.server.MinecraftServer server, final List<ServerPlayer> players
+    ) {
+        final List<ServerPlayer> recipients = List.copyOf(players);
+        server.execute(() -> sendRecipeViewerCatalog(recipients));
+    }
+
+    public static void sendRecipeViewerCatalog(final List<ServerPlayer> players) {
+        if (players.isEmpty()) return;
+        final List<RecipeViewerCatalogPayload> packets;
+        try {
+            packets = RecipeViewerCatalogSync.serverPackets();
+        } catch (RuntimeException exception) {
+            Warlockery.LOGGER.error("Unable to synchronize recipe viewer catalog", exception);
+            return;
+        }
+        for (ServerPlayer player : players) {
+            if (player.connection == null) continue;
+            for (RecipeViewerCatalogPayload payload : packets) {
+                CHANNEL.send(payload, PacketDistributor.PLAYER.with(player));
+            }
+        }
+    }
+
     public static void openRitualScreen(final ServerPlayer player, final BlockPos center) {
-        sendOptions(player, center);
+        sendOptions(player, center, true);
+    }
+
+    public static void setClientCatalogHandler(
+        final java.util.function.BiConsumer<Object, RecipeViewerCatalogPayload> handler
+    ) {
+        clientCatalogHandler = Objects.requireNonNull(handler, "handler");
     }
 
     public static void setClientScreenHandler(final Consumer<OpenRitualScreenPayload> handler) {
@@ -175,12 +211,12 @@ public final class ModNetwork {
         CHANNEL.send(new RitualActionPayload(center, "", false, true), PacketDistributor.SERVER.noArg());
     }
 
-    private static void sendOptions(final ServerPlayer player, final BlockPos center) {
+    private static void sendOptions(final ServerPlayer player, final BlockPos center, final boolean mayOpen) {
         if (!(player.level() instanceof ServerLevel level)) {
             return;
         }
         CHANNEL.send(
-            new OpenRitualScreenPayload(center, RitualManager.INSTANCE.options(level, center, player)),
+            new OpenRitualScreenPayload(center, RitualManager.INSTANCE.options(level, center, player), mayOpen),
             PacketDistributor.PLAYER.with(player)
         );
     }
@@ -283,10 +319,10 @@ public final class ModNetwork {
                 ));
             }
         }
-        sendOptions(player, payload.center());
+        sendOptions(player, payload.center(), false);
     }
 
-    public record OpenRitualScreenPayload(BlockPos center, List<RitualManager.RitualOption> options) {
+    public record OpenRitualScreenPayload(BlockPos center, List<RitualManager.RitualOption> options, boolean mayOpen) {
         public static final StreamCodec<RegistryFriendlyByteBuf, OpenRitualScreenPayload> STREAM_CODEC =
             new StreamCodec<>() {
                 @Override
@@ -296,7 +332,7 @@ public final class ModNetwork {
                     final List<RitualManager.RitualOption> options = IntStream.range(0, count)
                         .mapToObj(_ -> readOption(input))
                         .toList();
-                    return new OpenRitualScreenPayload(center, options);
+                    return new OpenRitualScreenPayload(center, options, input.readBoolean());
                 }
 
                 @Override
@@ -305,6 +341,7 @@ public final class ModNetwork {
                     final List<RitualManager.RitualOption> options = value.options().stream().limit(MAX_RITUALS).toList();
                     output.writeVarInt(options.size());
                     options.forEach(option -> writeOption(output, option));
+                    output.writeBoolean(value.mayOpen());
                 }
             };
 

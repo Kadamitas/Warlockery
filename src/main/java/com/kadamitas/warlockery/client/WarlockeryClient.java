@@ -1,5 +1,8 @@
 package com.kadamitas.warlockery.client;
 
+import com.kadamitas.warlockery.compat.viewer.RecipeViewerCatalogSync;
+import com.kadamitas.warlockery.compat.viewer.RecipeViewerRefreshSignal;
+
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.entity.CreatureVisualProfile;
 import com.kadamitas.warlockery.item.ManualScreenBridge;
@@ -37,9 +40,10 @@ public final class WarlockeryClient {
 
     @SubscribeEvent
     public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
+        ModNetwork.setClientCatalogHandler(RecipeViewerCatalogSync::accept);
         ManualScreenBridge.setOpenHandler(ManualScreen::open);
         ModNetwork.setClientScreenHandler(payload ->
-            RitualSelectionScreen.openOrUpdate(payload.center(), payload.options()));
+            RitualSelectionScreen.openOrUpdate(payload.center(), payload.options(), payload.mayOpen()));
         ModNetwork.setClientDollHandler(DollStatusOverlay::activate);
         ModNetwork.setClientSupernaturalHandler(payload -> {
             SupernaturalStatusOverlay.update(payload);
@@ -152,7 +156,20 @@ public final class WarlockeryClient {
     }
 
     @SubscribeEvent
+    public static void clientLogin(final ClientPlayerNetworkEvent.LoggingIn event) {
+        RecipeViewerCatalogSync.beginConnection(event.getConnection());
+    }
+
+    @SubscribeEvent
+    public static void clientTagsUpdated(final net.minecraftforge.event.TagsUpdatedEvent event) {
+        if (event.getUpdateCause() == net.minecraftforge.event.TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
+            RecipeViewerRefreshSignal.publish();
+        }
+    }
+
+    @SubscribeEvent
     public static void clientLogout(final ClientPlayerNetworkEvent.LoggingOut event) {
+        RecipeViewerCatalogSync.disconnect(event.getConnection());
         PlayerWolfVisualState.clear();
         ClientSupernaturalState.clear();
         SupernaturalStatusOverlay.clear();

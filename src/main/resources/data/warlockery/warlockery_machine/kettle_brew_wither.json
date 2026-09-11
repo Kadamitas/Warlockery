@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:bones"
+    },
+    {
+      "ingredient": "minecraft:wither_rose"
     }
   ],
   "outputs": [
