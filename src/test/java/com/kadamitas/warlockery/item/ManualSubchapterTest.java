@@ -16,6 +16,46 @@ import org.junit.jupiter.api.Test;
 
 final class ManualSubchapterTest {
     @Test
+    void circleMagicBeginsWithChalkAndEveryChalkRecipe() throws IOException {
+        final ManualProfile profile = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        final ManualProfile.Chapter chalk = profile.chapters().getFirst();
+
+        assertEquals("chalk", chalk.id());
+        assertEquals("manual.warlockery.chapter.chalk", chalk.titleKey());
+        assertEquals("chalk", chalk.sections().getFirst());
+        assertTrue(chalk.sections().containsAll(List.of(
+            "chalk", "golden_chalk", "crafting_chalkritual",
+            "crafting_chalkinfernal", "crafting_chalk_veil", "crafting_chalkheart_from_gypsum"
+        )));
+        assertEquals(List.of("preamble"), profile.chapters().get(1).sections());
+        final Set<String> chalkOutputs = chalk.sections().stream()
+            .filter(section -> section.startsWith("crafting_chalk"))
+            .map(section -> section.substring("crafting_".length()))
+            .map(ManualSubchapterTest::craftingOutput)
+            .collect(Collectors.toSet());
+        assertEquals(Set.of("warlockery:chalkritual", "warlockery:chalkinfernal",
+            "warlockery:chalk_veil", "warlockery:chalkheart"), chalkOutputs);
+        final var translations = JsonParser.parseString(Files.readString(
+            Path.of("src/main/resources/assets/warlockery/lang/en_us.json")
+        )).getAsJsonObject();
+        assertEquals("Chalk", translations.get(chalk.titleKey()).getAsString());
+    }
+
+    @Test
+    void chalkChapterIncludesTheCompleteGypsumCraftingRoute() {
+        final ManualProfile profile = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        final ManualProfile.Chapter chalk = profile.chapters().getFirst();
+
+        assertTrue(chalk.sections().containsAll(List.of(
+            "crafting_ingredient_clay_jar_soft", "crafting_ingredient_clay_jar_from_smelting",
+            "crafting_ingredient_quicklime", "crafting_alchemical_oven", "crafting_distilleryidle",
+            "crafting_altar", "machine_recipe_oven_logs", "machine_recipe_oven_fume_breath_of_the_goddess",
+            "machine_recipe_distill_vitriol"
+        )));
+        assertEquals(profile.sections().size(), Set.copyOf(profile.sections()).size());
+    }
+
+    @Test
     void everyManualSectionBelongsToExactlyOneOrderedChapter() {
         ManualProfile.profiles().forEach(profile -> {
             final List<String> grouped = profile.chapters().stream()
@@ -108,9 +148,12 @@ final class ManualSubchapterTest {
             recipeSections(ManualProfile.find("ingredient_book_oven").orElseThrow())
         );
         assertEquals(
-            recipes("distill_"),
+            java.util.stream.Stream.of(recipes("distill_"), recipes("spin_"), recipes("silver_vat_"))
+                .flatMap(Set::stream).collect(Collectors.toSet()),
             recipeSections(ManualProfile.find("ingredient_book_distilling").orElseThrow())
         );
+        assertEquals(recipes("brazier_"), recipeSections(ManualProfile.find("ingredient_book_burning").orElseThrow()));
+        assertEquals(recipes("cauldron_"), recipeSections(ManualProfile.find("cauldronbook").orElseThrow()));
     }
 
     @Test
@@ -152,6 +195,16 @@ final class ManualSubchapterTest {
                 .filter(name -> name.startsWith(prefix) && name.endsWith(".json"))
                 .map(name -> name.substring(0, name.length() - ".json".length()))
                 .collect(Collectors.toSet());
+        }
+    }
+
+    private static String craftingOutput(final String recipe) {
+        try {
+            return JsonParser.parseString(Files.readString(Path.of(
+                "src/main/resources/data/warlockery/recipe", recipe + ".json"
+            ))).getAsJsonObject().getAsJsonObject("result").get("id").getAsString();
+        } catch (IOException exception) {
+            throw new java.io.UncheckedIOException(exception);
         }
     }
 

@@ -30,6 +30,9 @@ final class ManualArticleCatalog {
     }
 
     static Article article(final ManualProfile manual, final String section) {
+        if (section.startsWith("crafting_")) {
+            return crafting(section.substring("crafting_".length()));
+        }
         if (section.startsWith(RITUAL_PREFIX)) {
             return ritual(section.substring(RITUAL_PREFIX.length()));
         }
@@ -40,13 +43,86 @@ final class ManualArticleCatalog {
             return biome(section.substring(BIOME_PREFIX.length()));
         }
         if (section.startsWith(MACHINE_RECIPE_PREFIX)) {
-            return machineRecipe(section.substring(MACHINE_RECIPE_PREFIX.length()));
+            final Article article = machineRecipe(section.substring(MACHINE_RECIPE_PREFIX.length()));
+            return new Article(ManualBookLinks.append(article.body(), manual, section), article.glyphs(), article.pictograms());
+        }
+        final MutableComponent text = Component.translatable(manual.translatedSectionKey(section));
+        if ("ingredient_book_distilling".equals(manual.id()) && "power".equals(section)) {
+            return new Article(Component.translatable("manual.warlockery.onboarding.altar"), Map.of(),
+                List.of(picture("warlockery:altar", 6)));
+        }
+        final String guidance = switch (manual.id() + "/" + section) {
+            case "ingredient_book_oven/preamble" -> "first_steps";
+            case "ingredient_book_distilling/inputs" -> "distillery";
+            case "ingredient_book_circle_magic/power" -> "altar";
+            case "ingredient_book_circle_magic/ritual_ui" -> "cast";
+            case "ingredient_book_herbology/preamble", "ingredient_book_herbology/plant_belladonna",
+                "ingredient_book_herbology/plant_mandrake" -> "seeds";
+            default -> "";
+        };
+        if (!guidance.isEmpty()) text.append("\n\n").append(Component.translatable("manual.warlockery.onboarding." + guidance));
+        if ("preamble".equals(section) && !"ingredient_vbook_page".equals(manual.id())) {
+            text.append("\n\n").append(crafting(manual.id()).body());
         }
         return new Article(
-            Component.translatable(manual.translatedSectionKey(section)),
+            ManualBookLinks.append(text, manual, section),
             Map.of(),
             manualPictograms(manual, section)
         );
+    }
+
+    private static Article crafting(final String id) {
+        final JsonObject recipe = resource("/data/warlockery/recipe/" + id + ".json");
+        final MutableComponent body = Component.translatable("manual.warlockery.crafting.intro").copy();
+        final String type = recipe.get("type").getAsString();
+        final Map<String, Integer> amounts = new LinkedHashMap<>();
+        if ("minecraft:crafting_shaped".equals(type)) {
+            final JsonObject key = recipe.getAsJsonObject("key");
+            final JsonArray pattern = recipe.getAsJsonArray("pattern");
+            body.append("\n\n").append(Component.translatable("manual.warlockery.crafting.shaped"));
+            for (int row = 0; row < pattern.size(); row++) {
+                final String cells = pattern.get(row).getAsString();
+                final MutableComponent contents = Component.empty();
+                for (int column = 0; column < cells.length(); column++) {
+                    if (column > 0) contents.append(" | ");
+                    final String symbol = cells.substring(column, column + 1);
+                    if (" ".equals(symbol)) {
+                        contents.append(Component.translatable("manual.warlockery.crafting.empty"));
+                    } else {
+                        final String ingredient = key.get(symbol).getAsString();
+                        contents.append(craftingIngredientName(ingredient));
+                        amounts.merge(ingredient, 1, Integer::sum);
+                    }
+                }
+                body.append("\n").append(Component.translatable("manual.warlockery.crafting.row", row + 1, contents));
+            }
+        } else if ("minecraft:crafting_shapeless".equals(type)) {
+            body.append("\n\n").append(Component.translatable("manual.warlockery.crafting.shapeless"));
+            recipe.getAsJsonArray("ingredients").forEach(value -> amounts.merge(value.getAsString(), 1, Integer::sum));
+        } else if ("minecraft:smelting".equals(type)) {
+            body.append("\n\n").append(Component.translatable("manual.warlockery.crafting.smelting"));
+            amounts.put(recipe.get("ingredient").getAsString(), 1);
+        } else {
+            throw new IllegalArgumentException("Unsupported manual crafting type: " + type);
+        }
+        append(body, "manual.warlockery.entry.ingredients", amounts.entrySet().stream()
+            .map(entry -> Component.translatable("manual.warlockery.entry.amount", entry.getValue(), craftingIngredientName(entry.getKey())))
+            .toList());
+        final JsonObject result = recipe.getAsJsonObject("result");
+        final String output = result.get("id").getAsString();
+        final int count = result.has("count") ? result.get("count").getAsInt() : 1;
+        append(body, "manual.warlockery.entry.workings", List.of(Component.translatable(
+            "manual.warlockery.machine_recipe.produces", count, ingredientName(output))));
+        final java.util.ArrayList<Pictogram> pictures = new java.util.ArrayList<>();
+        pictures.add(picture(output, count));
+        amounts.forEach((ingredient, amount) -> pictures.add(picture(representativeItem(ingredient), amount)));
+        return new Article(body, Map.of(), List.copyOf(pictures));
+    }
+
+    private static Component craftingIngredientName(final String ingredient) {
+        final String example = representativeItem(ingredient);
+        return ingredientName(ingredient.startsWith("#") && !"minecraft:paper".equals(example)
+            ? example : ingredient);
     }
 
     private static Article biome(final String id) {
@@ -65,6 +141,13 @@ final class ManualArticleCatalog {
         final JsonArray inputs = recipe.getAsJsonArray("inputs");
         appendIngredients(body, inputs);
         final java.util.List<Component> workings = new java.util.ArrayList<>();
+        com.kadamitas.warlockery.crafting.MachineProfiles.forRecipeType(recipe.get("machine").getAsString()).ifPresent(profile -> {
+            if (profile.requiresExternalHeat()) workings.add(Component.translatable("manual.warlockery.machine_recipe.heat"));
+            if (profile.hasFuelSlot()) workings.add(Component.translatable("manual.warlockery.machine_recipe.requires_fuel"));
+        });
+        if ("brazier".equals(recipe.get("machine").getAsString())) {
+            workings.add(Component.translatable("manual.warlockery.machine_recipe.ignite"));
+        }
         final JsonArray outputs = recipe.getAsJsonArray("outputs");
         if (outputs != null) {
             java.util.stream.StreamSupport.stream(outputs.spliterator(), false).forEach(element -> {
@@ -83,10 +166,18 @@ final class ManualArticleCatalog {
                 decimal(recipe.get("processing_time").getAsInt() / 20.0F)
             ));
         }
+        com.kadamitas.warlockery.crafting.BrazierEffectRuntime.Effect.fromRecipe(Identifier.fromNamespaceAndPath("warlockery", id))
+            .ifPresent(effect -> workings.add(Component.translatable("jei.warlockery.effect." + effect.recipePath())));
         if (recipe.has("requires_fuel") && recipe.get("requires_fuel").getAsBoolean()) {
             workings.add(Component.translatable("manual.warlockery.machine_recipe.requires_fuel"));
         }
         append(body, "manual.warlockery.entry.workings", workings);
+        if (recipe.has("altar_power") && recipe.get("altar_power").getAsInt() > 0) {
+            append(body, "manual.warlockery.entry.altar_power", List.of(Component.literal(recipe.get("altar_power").getAsString())));
+            if (recipe.has("power_mode") && "continuous".equals(recipe.get("power_mode").getAsString())) {
+                body.append("\n").append(Component.translatable("manual.warlockery.machine_recipe.continuous_power"));
+            }
+        }
         if (recipe.has("fluid")) {
             final JsonObject fluid = recipe.getAsJsonObject("fluid");
             append(body, "manual.warlockery.entry.fluid", java.util.List.of(
@@ -119,6 +210,18 @@ final class ManualArticleCatalog {
         appendIngredients(body, ingredients);
         appendEntities(body, entities);
         appendConditions(body, ritual, requirements);
+        body.append("\n\n").append(Component.translatable("manual.warlockery.ritual.cast_time",
+            decimal((ritual.has("casting_time") ? ritual.get("casting_time").getAsInt() : 80) / 20.0F)));
+        final String action = ritual.get("action").getAsString();
+        if ("summon_item".equals(action)) body.append("\n\n").append(Component.translatable(
+            "manual.warlockery.ritual.item_result", ritual.has("count") ? ritual.get("count").getAsInt() : 1,
+            ingredientName(ritual.get("target").getAsString())));
+        if ("summon_entity".equals(action) || "summon_huntsman".equals(action)) body.append("\n\n").append(Component.translatable(
+            "manual.warlockery.ritual.entity_result", ritual.has("count") ? ritual.get("count").getAsInt() : 1,
+            entityName(ritual.get("target").getAsString())));
+        if ("bind_fetish".equals(action)) body.append("\n\n").append(Component.translatable("manual.warlockery.ritual.fetish_setup"));
+        if ("summon_huntsman".equals(action)) body.append("\n\n").append(Component.translatable("manual.warlockery.ritual.huntsman_setup"));
+        if ("cook".equals(action)) body.append("\n\n").append(Component.translatable("manual.warlockery.ritual.cook_setup"));
         if ("climate_change".equals(id)) {
             append(body, "manual.warlockery.entry.climate_reach", List.of(
                 Component.translatable("manual.warlockery.ritual.climate_change.guide")
@@ -127,6 +230,7 @@ final class ManualArticleCatalog {
         if ("glyph_transform".equals(ritual.get("action").getAsString())) {
             body.append("\n").append(Component.translatable("manual.warlockery.glyph_transform.sizes"));
         }
+        body.append(ManualRitualInstructions.additional(id, ritual));
         return new Article(body, glyphs, ritualPictograms(ritual, requirements, ingredients, entities));
     }
 
@@ -184,7 +288,7 @@ final class ManualArticleCatalog {
             )
             : List.of();
         return java.util.stream.Stream.of(
-            java.util.stream.Stream.of(picture("warlockery:ritual_knife", 1)),
+            java.util.stream.Stream.of(picture("warlockery:arcane_focus", 1)),
             climateFocus.stream(),
             conditionPictograms(ritual, requirements).stream(),
             pictograms(ingredients).stream(),
@@ -375,6 +479,26 @@ final class ManualArticleCatalog {
             return raw;
         }
         final String tag = raw.substring(1);
+        final var loaded = loadedTagItems(tag).stream().findFirst();
+        if (loaded.isPresent()) return loaded.orElseThrow();
+        final String basic = switch (tag) {
+            case "c:dyes/red" -> "minecraft:red_dye";
+            case "c:dyes/yellow" -> "minecraft:yellow_dye";
+            case "c:dusts/redstone" -> "minecraft:redstone";
+            case "c:fertilizers" -> "minecraft:bone_meal";
+            case "c:ender_pearls" -> "minecraft:ender_pearl";
+            case "c:stones" -> "minecraft:stone";
+            case "c:player_workstations/furnaces" -> "minecraft:furnace";
+            case "c:bars/iron" -> "minecraft:iron_bars";
+            case "c:glass_blocks/colorless" -> "minecraft:glass";
+            case "minecraft:planks" -> "minecraft:oak_planks";
+            case "minecraft:coals" -> "minecraft:coal";
+            case "warlockery:crafting/flints" -> "minecraft:flint";
+            default -> null;
+        };
+        if (basic != null) {
+            return basic;
+        }
         if (tag.contains("ingots/gold")) {
             return "minecraft:gold_ingot";
         }
@@ -496,7 +620,7 @@ final class ManualArticleCatalog {
         body.append("\n");
         for (int index = 0; index < values.size(); index++) {
             if (index > 0) {
-                body.append("; ");
+                body.append("\n");
             }
             body.append(values.get(index));
         }
@@ -505,10 +629,10 @@ final class ManualArticleCatalog {
     private static Component ingredientName(final String raw) {
         if (raw.startsWith("#")) {
             final String tag = raw.substring(1);
-            return translatedFallback(
-                "tag." + tag.replace(':', '.').replace('/', '.'),
-                humanizeTag(tag)
-            );
+            final var examples = loadedTagItems(tag).stream().map(id -> ingredientName(id).getString()).limit(4).toList();
+            final Component label = translatedFallback("tag.item." + tag.replace(':', '.').replace('/', '.'), humanizeTag(tag));
+            return examples.isEmpty() ? label : Component.translatable("manual.warlockery.entry.ingredient_examples",
+                label, String.join(", ", examples));
         }
         final Identifier id = Identifier.tryParse(raw);
         if (id == null) {
@@ -527,6 +651,17 @@ final class ManualArticleCatalog {
             : translatedFallback(id.toLanguageKey("entity"), humanize(raw));
     }
 
+    private static List<String> loadedTagItems(final String tag) {
+        try {
+            return java.util.stream.StreamSupport.stream(BuiltInRegistries.ITEM.getTagOrEmpty(
+                net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, Identifier.parse(tag)))
+                .spliterator(), false).map(holder -> BuiltInRegistries.ITEM.getKey(holder.value()).toString()).sorted().toList();
+        } catch (final IllegalStateException unboundTags) {
+            if (unboundTags.getMessage() != null && unboundTags.getMessage().startsWith("Tags not bound")) return List.of();
+            throw unboundTags;
+        }
+    }
+
     private static Component effectName(final String raw) {
         final Identifier id = Identifier.tryParse(raw);
         if (id == null) {
@@ -539,7 +674,8 @@ final class ManualArticleCatalog {
     }
 
     private static Component machineName(final String raw) {
-        final Identifier id = Identifier.fromNamespaceAndPath("warlockery", raw);
+        final Identifier id = Identifier.fromNamespaceAndPath("warlockery",
+            com.kadamitas.warlockery.crafting.MachineProfiles.forRecipeType(raw).map(profile -> profile.displayBlock()).orElse(raw));
         return translatedFallback(id.toLanguageKey("block"), humanize(raw));
     }
 

@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:foods"
+    },
+    {
+      "ingredient": "minecraft:glistering_melon_slice"
     }
   ],
   "outputs": [

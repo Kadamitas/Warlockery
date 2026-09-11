@@ -54,7 +54,8 @@ final class ManualLibraryTest {
     void chapterNavigationCyclesInBothDirections() {
         final ManualProfile profile = ManualProfile.find("cauldronbook").orElseThrow();
         assertEquals("antidotes", profile.adjacentSection("custom_brews", 1));
-        assertEquals("preamble", profile.adjacentSection("custom_brews", -1));
+        assertEquals("machine_recipe_cauldron_verdant_catalyst_prime", profile.adjacentSection("custom_brews", -1));
+        assertEquals("crafting_kettle", profile.adjacentSection("preamble", 1));
         assertEquals("brew_entry_heal", profile.adjacentSection("diagnostics", 1));
     }
 
@@ -81,14 +82,16 @@ final class ManualLibraryTest {
     }
 
     @Test
-    void everyPhysicalManualStartsWithALocalizedSummaryPreamble() {
+    void everyPhysicalManualKeepsALocalizedPreambleAndCirclesStartsWithChalk() {
         final List<ManualProfile> manuals = ManualProfile.profiles().stream()
             .filter(profile -> !profile.id().equals("ingredient_vbook_page"))
             .toList();
 
         manuals.forEach(profile -> {
-            assertEquals("preamble", profile.sections().getFirst(), profile.id());
-            assertEquals("preamble", profile.chapters().getFirst().sections().getFirst(), profile.id());
+            final String opening = profile.id().equals("ingredient_book_circle_magic") ? "chalk" : "preamble";
+            assertEquals(opening, profile.sections().getFirst(), profile.id());
+            assertEquals(opening, profile.chapters().getFirst().sections().getFirst(), profile.id());
+            assertEquals(List.of("preamble"), profile.chapterFor("preamble").sections(), profile.id());
         });
 
         final JsonObject english = translations();

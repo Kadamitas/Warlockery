@@ -34,7 +34,7 @@ record ManualLayout(
         final int availableWidth = Math.max(2, bookWidth - pageInset * 2 - gutter);
         final int navigationWidth = bookWidth < 520
             ? Math.min(132, Math.max(88, availableWidth / 3))
-            : availableWidth / 2;
+            : Math.min(280, availableWidth * 2 / 5);
         final int contentWidth = Math.max(1, availableWidth - navigationWidth);
         final int controlRows = contentWidth < 270 ? 2 : 1;
         final int sectionRows = Math.max(1, (bookHeight - 115) / SECTION_ROW_HEIGHT);
@@ -98,6 +98,10 @@ record ManualLayout(
 
     int sectionListTop() {
         return top + 99;
+    }
+
+    int sectionListHeight() {
+        return bottom() - 26 - sectionListTop();
     }
 
     int sectionRowHeight() {

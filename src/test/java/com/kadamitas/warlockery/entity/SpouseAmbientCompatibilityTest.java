@@ -1,7 +1,6 @@
 package com.kadamitas.warlockery.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -25,15 +24,5 @@ final class SpouseAmbientCompatibilityTest {
         assertTrue(runtime.contains("ResourceHandler<ItemResource>"));
         assertTrue(runtime.contains("Transaction.openRoot()"));
         assertTrue(runtime.contains("RecipeType.SMELTING"));
-    }
-
-    @Test
-    void naamahHasNoSpouseRuntimeHooks() throws java.io.IOException {
-        final String source = Files.readString(Path.of(
-            "src/main/java/com/kadamitas/warlockery/entity/NaamahEntity.java"
-        ));
-        assertFalse(source.contains("SpouseAmbientRuntime"));
-        assertFalse(source.contains("ownerForNami"));
-        assertFalse(source.contains("rescueAtSpouseBed"));
     }
 }

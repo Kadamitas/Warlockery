@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.nio.file.Path;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -19,11 +20,12 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 
 public final class ManualScreen extends Screen {
-    private static final int DIAGRAM_HEIGHT = 58;
+    private static final int DIAGRAM_HEIGHT = 84;
     private static final int PICTOGRAM_HEIGHT = 27;
     private final ManualView view;
     private final ManualProfile manual;
     private final List<String> availableSections;
+    private final Path readingPreferences;
     private String selectedSection;
     private String selectedChapter;
     private String query = "";
@@ -32,15 +34,24 @@ public final class ManualScreen extends Screen {
     private boolean refocusSearch;
     private boolean chapterIndex = true;
     private int sectionOffset;
+    private int navigationEnd;
     private int bodyPage;
     private EditBox searchBox;
+    private ManualScreen returnScreen;
+    private boolean recipePreview;
 
     private ManualScreen(final ManualView view) {
         super(Component.translatable(view.profile().translatedTitleKey()));
         this.view = view;
         manual = view.profile();
         availableSections = view.sections();
-        selectedSection = availableSections.getFirst();
+        readingPreferences = Minecraft.getInstance().gameDirectory.toPath()
+            .resolve("config/warlockery-manual-reading.properties");
+        final ManualReadingPosition position = ManualReadingPosition.load(
+            readingPreferences, manual.id(), availableSections);
+        selectedSection = position.section();
+        bodyPage = position.page();
+        chapterIndex = selectedSection.equals(availableSections.getFirst()) && bodyPage == 0;
         selectedChapter = manual.chapterFor(selectedSection).id();
         filteredSections = availableSections;
     }
@@ -50,8 +61,45 @@ public final class ManualScreen extends Screen {
     }
 
     @Override
+    public void onClose() {
+        Minecraft.getInstance().gui.setScreen(returnScreen);
+    }
+
+    private void openReference(final ManualBookLinks.Reference reference) {
+        final var player = Minecraft.getInstance().player;
+        if (player == null) return;
+        final var inventory = new java.util.ArrayList<ManualView>();
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            final ItemStack stack = player.getInventory().getItem(slot);
+            if (!stack.isEmpty() && BuiltInRegistries.ITEM.getKey(stack.getItem()).equals(
+                Identifier.fromNamespaceAndPath("warlockery", reference.profile().id()))) {
+                inventory.add(ManualView.from(reference.profile(), stack));
+            }
+        }
+        final var owned = reference.ownedView(inventory);
+        if (owned.isEmpty() && !inventory.isEmpty()) {
+            player.sendOverlayMessage(Component.translatable("screen.warlockery.manual.section_locked"));
+            return;
+        }
+        final ManualScreen target = new ManualScreen(owned.orElseGet(reference::recipeView));
+        target.recipePreview = owned.isEmpty();
+        target.selectedSection = owned.isPresent() ? reference.section() : target.availableSections.getFirst();
+        target.selectedChapter = target.manual.chapterFor(target.selectedSection).id();
+        target.bodyPage = 0;
+        target.chapterIndex = false;
+        target.returnScreen = this;
+        Minecraft.getInstance().gui.setScreen(target);
+    }
+
+    @Override
     protected void init() {
         rebuildWidgets();
+    }
+
+    @Override
+    public void removed() {
+        ManualReadingPosition.save(readingPreferences, manual.id(), selectedSection, bodyPage);
+        super.removed();
     }
 
     @Override
@@ -74,12 +122,24 @@ public final class ManualScreen extends Screen {
 
     @Override
     protected void rebuildWidgets() {
+        rebuildWidgets(true);
+    }
+
+    private void rebuildWidgets(final boolean revealSelection) {
         if (width <= 0 || height <= 0) {
             return;
         }
         clearWidgets();
         final ManualLayout layout = layout();
-        keepNavigationSelectionVisible(layout);
+        final List<Component> navigationLabels = navigationLabels();
+        final List<Integer> navigationHeights = navigationLabels.stream()
+            .map(label -> ManualNavigationButton.heightFor(font, label,
+                layout.navigationWidth() - layout.textInset() * 2))
+            .toList();
+        if (revealSelection) {
+            keepNavigationSelectionVisible(layout, navigationHeights);
+        }
+        navigationEnd = ManualNavigation.end(navigationHeights, sectionOffset, layout.sectionListHeight());
         final int navigationInset = layout.textInset();
         searchBox = addRenderableWidget(new EditBox(
             font,
@@ -100,6 +160,9 @@ public final class ManualScreen extends Screen {
             refocusSearch = false;
             setInitialFocus(searchBox);
             searchBox.setFocused(true);
+        } else {
+            searchBox.setCursorPosition(0);
+            searchBox.setHighlightPos(0);
         }
 
         final List<ManualLayout.Bounds> chapterControls = layout.chapterControls();
@@ -134,9 +197,9 @@ public final class ManualScreen extends Screen {
         nextChapter.active = chapterChoices.size() > 1;
 
         if (chapterIndex) {
-            addChapterButtons(layout, navigationInset);
+            addChapterButtons(layout, navigationInset, navigationLabels);
         } else {
-            addSubchapterButtons(layout, navigationInset);
+            addSubchapterButtons(layout, navigationInset, navigationLabels);
         }
 
         final List<ManualLayout.Bounds> controls = layout.controls();
@@ -151,23 +214,48 @@ public final class ManualScreen extends Screen {
                 controls.get(1).x(), controls.get(1).y(), controls.get(1).width(), controls.get(1).height()
             ).build());
         addRenderableWidget(Button.builder(ManualTypography.readable(
-            Component.translatable("screen.warlockery.manual.close")), button -> onClose())
+            Component.translatable(returnScreen == null ? "screen.warlockery.manual.close" : "screen.warlockery.manual.back")), button -> onClose())
             .bounds(
                 controls.get(2).x(), controls.get(2).y(), controls.get(2).width(), controls.get(2).height()
             ).build());
+        addReferenceButtons(layout);
     }
 
-    private void addChapterButtons(final ManualLayout layout, final int navigationInset) {
+    private void addReferenceButtons(final ManualLayout layout) {
+        final var pages = bodyPages(layout, selectedSection);
+        bodyPage = Math.clamp(bodyPage, 0, pages.size() - 1);
+        final int inset = Math.min(14, Math.max(6, layout.contentWidth() / 12));
+        final int left = layout.contentLeft() + inset;
+        int y = layout.bodyTextTop() + (bodyPage == 0 ? visualHeight(article(selectedSection)) : 0);
+        for (final FormattedCharSequence line : pages.get(bodyPage)) {
+            final int lineY = y;
+            final int[] x = {left};
+            final java.util.Map<Identifier, int[]> spans = new java.util.LinkedHashMap<>();
+            line.accept((index, style, codePoint) -> {
+                final int glyphWidth = font.width(Component.literal(Character.toString(codePoint)).setStyle(style));
+                if (style.getClickEvent() instanceof net.minecraft.network.chat.ClickEvent.Custom click
+                    && ManualBookLinks.decode(click.id()).isPresent()) {
+                    spans.computeIfAbsent(click.id(), ignored -> new int[] {x[0], x[0]})[1] = x[0] + glyphWidth;
+                }
+                x[0] += glyphWidth;
+                return true;
+            });
+            spans.forEach((id, span) -> ManualBookLinks.decode(id).ifPresent(reference ->
+                addRenderableWidget(new ManualReferenceButton(span[0], lineY, span[1] - span[0], reference.label(),
+                    button -> openReference(reference)))));
+            y += ManualTypography.BODY_LINE_HEIGHT;
+        }
+    }
+
+    private void addChapterButtons(final ManualLayout layout, final int navigationInset,
+        final List<Component> labels) {
         final List<ManualProfile.Chapter> chapters = chapterChoices();
-        final int end = Math.min(chapters.size(), sectionOffset + layout.sectionRows());
-        for (int index = sectionOffset; index < end; index++) {
+        int y = layout.sectionListTop();
+        for (int index = sectionOffset; index < navigationEnd; index++) {
             final ManualProfile.Chapter chapter = chapters.get(index);
-            final Component label = ManualTypography.readable(
-                Component.literal(chapter.id().equals(selectedChapter) ? "▶ " : "")
-                    .append(Component.translatable(chapter.titleKey()))
-            );
-            final int row = index - sectionOffset;
-            addRenderableWidget(Button.builder(label, button -> {
+            final ManualNavigationButton entry = addRenderableWidget(new ManualNavigationButton(
+                font, layout.navigationLeft() + navigationInset, y,
+                layout.navigationWidth() - navigationInset * 2, labels.get(index), button -> {
                 selectedChapter = chapter.id();
                 selectedSection = chapter.sections().stream()
                     .filter(filteredSections::contains)
@@ -177,35 +265,25 @@ public final class ManualScreen extends Screen {
                 chapterIndex = false;
                 sectionOffset = 0;
                 rebuildWidgets();
-            }).bounds(
-                layout.navigationLeft() + navigationInset,
-                layout.sectionListTop() + row * layout.sectionRowHeight(),
-                Math.max(20, layout.navigationWidth() - navigationInset * 2),
-                layout.sectionButtonHeight()
-            ).build());
+            }));
+            y += entry.getHeight() + ManualNavigation.GAP;
         }
     }
 
-    private void addSubchapterButtons(final ManualLayout layout, final int navigationInset) {
+    private void addSubchapterButtons(final ManualLayout layout, final int navigationInset,
+        final List<Component> labels) {
         final List<String> sections = navigationSections();
-        final int end = Math.min(sections.size(), sectionOffset + layout.sectionRows());
-        for (int index = sectionOffset; index < end; index++) {
+        int y = layout.sectionListTop();
+        for (int index = sectionOffset; index < navigationEnd; index++) {
             final String section = sections.get(index);
-            final Component label = ManualTypography.readable(
-                Component.literal(section.equals(selectedSection) ? "▶ " : "")
-                    .append(Component.translatable(manual.translatedSectionTitleKey(section)))
-            );
-            final int row = index - sectionOffset;
-            addRenderableWidget(Button.builder(label, button -> {
+            final ManualNavigationButton entry = addRenderableWidget(new ManualNavigationButton(
+                font, layout.navigationLeft() + navigationInset, y,
+                layout.navigationWidth() - navigationInset * 2, labels.get(index), button -> {
                 selectedSection = section;
                 bodyPage = 0;
                 rebuildWidgets();
-            }).bounds(
-                layout.navigationLeft() + navigationInset,
-                layout.sectionListTop() + row * layout.sectionRowHeight(),
-                Math.max(20, layout.navigationWidth() - navigationInset * 2),
-                layout.sectionButtonHeight()
-            ).build());
+            }));
+            y += entry.getHeight() + ManualNavigation.GAP;
         }
     }
 
@@ -219,10 +297,12 @@ public final class ManualScreen extends Screen {
         final int pageCount = bodyPageCount(layout, selectedSection);
         if (direction > 0 && bodyPage + 1 < pageCount) {
             bodyPage++;
+            rebuildWidgets(false);
             return;
         }
         if (direction < 0 && bodyPage > 0) {
             bodyPage--;
+            rebuildWidgets(false);
             return;
         }
         selectedSection = adjacentSection(direction);
@@ -285,7 +365,18 @@ public final class ManualScreen extends Screen {
         return manual.sectionsInChapter(selectedChapter, filteredSections);
     }
 
-    private void keepNavigationSelectionVisible(final ManualLayout layout) {
+    private List<Component> navigationLabels() {
+        if (chapterIndex) {
+            return chapterChoices().stream().map(chapter -> (Component) ManualTypography.readable(
+                Component.literal(chapter.id().equals(selectedChapter) ? "▶ " : "")
+                    .append(Component.translatable(chapter.titleKey())))).toList();
+        }
+        return navigationSections().stream().map(section -> (Component) ManualTypography.readable(
+            Component.literal(section.equals(selectedSection) ? "▶ " : "")
+                .append(Component.translatable(manual.translatedSectionTitleKey(section))))).toList();
+    }
+
+    private void keepNavigationSelectionVisible(final ManualLayout layout, final List<Integer> heights) {
         final List<ManualProfile.Chapter> chapters = chapterChoices();
         final int selectedIndex = chapterIndex
             ? java.util.stream.IntStream.range(0, chapters.size())
@@ -293,15 +384,7 @@ public final class ManualScreen extends Screen {
                 .findFirst()
                 .orElse(0)
             : navigationSections().indexOf(selectedSection);
-        final int maximumOffset = Math.max(0, navigationEntryCount() - layout.sectionRows());
-        if (selectedIndex >= 0) {
-            if (selectedIndex < sectionOffset) {
-                sectionOffset = selectedIndex;
-            } else if (selectedIndex >= sectionOffset + layout.sectionRows()) {
-                sectionOffset = selectedIndex - layout.sectionRows() + 1;
-            }
-        }
-        sectionOffset = Math.clamp(sectionOffset, 0, maximumOffset);
+        sectionOffset = ManualNavigation.reveal(heights, sectionOffset, selectedIndex, layout.sectionListHeight());
     }
 
     @Override
@@ -316,18 +399,21 @@ public final class ManualScreen extends Screen {
         }
         final ManualLayout layout = layout();
         final int direction = scrollY > 0.0D ? -1 : 1;
-        if (layout.overNavigation(mouseX, mouseY) && navigationEntryCount() > layout.sectionRows()) {
-            final int maximumOffset = navigationEntryCount() - layout.sectionRows();
+        if (layout.overNavigation(mouseX, mouseY)
+            && (sectionOffset > 0 || navigationEnd < navigationEntryCount())) {
+            final int maximumOffset = navigationEnd < navigationEntryCount()
+                ? navigationEntryCount() - 1 : sectionOffset;
             final int nextOffset = Math.clamp(sectionOffset + direction, 0, maximumOffset);
             if (nextOffset != sectionOffset) {
                 sectionOffset = nextOffset;
-                rebuildWidgets();
+                rebuildWidgets(false);
             }
             return true;
         }
         if (layout.overContent(mouseX, mouseY)) {
             final int maximumPage = bodyPageCount(layout, selectedSection) - 1;
             bodyPage = Math.clamp(bodyPage + direction, 0, maximumPage);
+            rebuildWidgets(false);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
@@ -369,7 +455,7 @@ public final class ManualScreen extends Screen {
                 drawText(graphics, layout.navigationRight() - navigationInset - 6, layout.top() + 81,
                     ManualTypography.readable(Component.literal("↑"), 0x795A44));
             }
-            if (sectionOffset + layout.sectionRows() < navigationEntryCount()) {
+            if (navigationEnd < navigationEntryCount()) {
                 drawText(graphics, layout.navigationRight() - navigationInset - 6, layout.bottom() - 22,
                     ManualTypography.readable(Component.literal("↓"), 0x795A44));
             }
@@ -389,22 +475,19 @@ public final class ManualScreen extends Screen {
             sectionTitleY += ManualTypography.TITLE_LINE_HEIGHT;
         }
 
-        final List<FormattedCharSequence> bodyLines = bodyLines(selectedSection, contentTextWidth);
-        final int lineCapacity = bodyLineCapacity(layout, selectedSection);
-        final int pageCount = Math.max(1, Math.ceilDiv(bodyLines.size(), lineCapacity));
+        final List<List<FormattedCharSequence>> pages = bodyPages(layout, selectedSection);
+        final int pageCount = pages.size();
         bodyPage = Math.clamp(bodyPage, 0, pageCount - 1);
-        final int firstLine = bodyPage * lineCapacity;
-        final int lastLine = Math.min(bodyLines.size(), firstLine + lineCapacity);
-        final ManualArticleCatalog.Article article = ManualArticleCatalog.article(manual, selectedSection);
-        if (article.hasDiagram()) {
-            drawCircleDiagram(graphics, layout, contentTextX, article);
+        final ManualArticleCatalog.Article article = article(selectedSection);
+        if (bodyPage == 0 && article.hasDiagram()) {
+            drawCircleDiagram(graphics, layout, contentTextX, contentTextWidth, article);
         }
-        if (article.hasPictograms()) {
+        if (bodyPage == 0 && article.hasPictograms()) {
             drawPictograms(graphics, layout, contentTextX, contentTextWidth, mouseX, mouseY, article);
         }
-        int bodyY = layout.bodyTextTop() + visualHeight(article);
-        for (int index = firstLine; index < lastLine; index++) {
-            drawScaledText(graphics, contentTextX, bodyY, bodyLines.get(index), ManualTypography.BODY_SCALE);
+        int bodyY = layout.bodyTextTop() + (bodyPage == 0 ? visualHeight(article) : 0);
+        for (final FormattedCharSequence line : pages.get(bodyPage)) {
+            drawScaledText(graphics, contentTextX, bodyY, line, ManualTypography.BODY_SCALE);
             bodyY += ManualTypography.BODY_LINE_HEIGHT;
         }
 
@@ -422,7 +505,9 @@ public final class ManualScreen extends Screen {
         final Component readableChapter = ManualTypography.readable(chapter, 0x795A44);
         final Component readablePage = ManualTypography.readable(page, 0x795A44);
         final int counterY = layout.controlTop() - 13;
-        drawText(graphics, contentTextX, counterY, readableChapter);
+        if (font.width(readableChapter) + font.width(readablePage) + 8 <= contentTextWidth) {
+            drawText(graphics, contentTextX, counterY, readableChapter);
+        }
         drawText(
             graphics,
             Math.max(contentTextX, layout.contentRight() - contentInset - font.width(readablePage)),
@@ -434,41 +519,63 @@ public final class ManualScreen extends Screen {
 
     private List<FormattedCharSequence> bodyLines(final String section, final int width) {
         return font.split(
-            ManualTypography.readable(ManualArticleCatalog.article(manual, section).body(), 0x3A271F),
+            ManualTypography.readable(article(section).body(), 0x3A271F),
             ManualTypography.wrappingWidth(width, ManualTypography.BODY_SCALE)
         );
+    }
+
+    private ManualArticleCatalog.Article article(final String section) {
+        final var article = ManualArticleCatalog.article(manual, section);
+        final Component body = recipePreview
+            ? Component.translatable("screen.warlockery.manual.book_missing").append("\n\n").append(article.body())
+            : section.startsWith("rite_") || section.startsWith("crafting_") || section.startsWith("brew_entry_")
+                ? ManualBookLinks.append(article.body(), manual, section) : article.body();
+        return new ManualArticleCatalog.Article(body, article.glyphs(), article.pictograms());
     }
 
     private void drawCircleDiagram(
         final GuiGraphicsExtractor graphics,
         final ManualLayout layout,
         final int textX,
+        final int textWidth,
         final ManualArticleCatalog.Article article
     ) {
-        final int centerX = textX + 30;
-        final int centerY = layout.bodyTextTop() + 25;
+        final int gridSize = 79;
+        final int gridTop = layout.bodyTextTop();
+        final int centerX = textX + 39;
+        final int centerY = gridTop + 39;
+        graphics.fill(textX, gridTop, textX + gridSize, gridTop + gridSize, 0xFF242632);
+        for (int line = 0; line <= 15; line++) {
+            final int offset = 2 + line * 5;
+            graphics.fill(textX + offset, gridTop + 2, textX + offset + 1, gridTop + 78, 0xFF41424B);
+            graphics.fill(textX + 2, gridTop + offset, textX + 78, gridTop + offset + 1, 0xFF41424B);
+        }
+        graphics.fill(centerX - 1, centerY - 1, centerX + 3, centerY + 3, 0xFFFFD866);
         final List<Map.Entry<String, Integer>> glyphs = article.glyphs().entrySet().stream()
             .sorted(Comparator.comparingInt(entry -> ChalkCircleLayout.Size.forMarkCount(entry.getValue()).ordinal()))
             .toList();
         for (int index = 0; index < glyphs.size(); index++) {
             final Map.Entry<String, Integer> glyph = glyphs.get(index);
             final ChalkCircleLayout.Size size = ChalkCircleLayout.Size.forMarkCount(glyph.getValue());
-            final int radius = 10 + size.ordinal() * 9;
             final int color = glyphColor(glyph.getKey());
-            final int points = glyph.getValue();
-            for (int point = 0; point < points; point++) {
-                final double angle = Math.PI * 2.0D * point / points;
-                final int x = centerX + (int) Math.round(Math.cos(angle) * radius);
-                final int y = centerY + (int) Math.round(Math.sin(angle) * radius);
-                graphics.fill(x - 1, y - 1, x + 1, y + 1, color);
+            for (final var offset : size.offsets()) {
+                final int x = centerX + offset.getX() * 5;
+                final int y = centerY + offset.getZ() * 5;
+                graphics.fill(x - 1, y - 1, x + 3, y + 3, color);
             }
             final Component label = ManualTypography.readable(Component.translatable(
                 "screen.warlockery.manual.chalk_count",
                 Component.translatable(glyphLabelKey(glyph.getKey())),
                 glyph.getValue()
-            ), color & 0xFFFFFF);
-            drawScaledText(graphics, textX + 62, layout.bodyTextTop() + 5 + index * 11, label,
-                ManualTypography.BODY_SCALE);
+            ), 0x3A271F);
+            final int labelY = gridTop + index * 27;
+            final int labelX = textX + gridSize + 11;
+            graphics.fill(textX + gridSize + 3, labelY, textX + gridSize + 9, labelY + 8, 0xFF242632);
+            graphics.fill(textX + gridSize + 4, labelY + 1, textX + gridSize + 8, labelY + 7, color);
+            final List<FormattedCharSequence> labelLines = font.split(label, Math.max(1, textX + textWidth - labelX));
+            for (int line = 0; line < Math.min(2, labelLines.size()); line++) {
+                drawText(graphics, labelX, labelY + line * ManualTypography.TITLE_LINE_HEIGHT, labelLines.get(line));
+            }
         }
     }
 
@@ -486,8 +593,12 @@ public final class ManualScreen extends Screen {
             Component.translatable("screen.warlockery.manual.pictograms"),
             0x6B3D27
         );
-        drawScaledText(graphics, textX, y + 5, heading, ManualTypography.BODY_SCALE);
-        final int iconsX = textX + Math.min(82, Math.max(54, textWidth / 4));
+        final int headingWidth = font.width(heading);
+        final boolean showHeading = headingWidth + 28 <= textWidth;
+        if (showHeading) {
+            drawText(graphics, textX, y + 5, heading);
+        }
+        final int iconsX = textX + (showHeading ? headingWidth + 8 : 0);
         final int capacity = Math.max(1, (textX + textWidth - iconsX) / 20);
         final int shown = Math.min(capacity, article.pictograms().size());
         for (int index = 0; index < shown; index++) {
@@ -591,17 +702,21 @@ public final class ManualScreen extends Screen {
     }
 
     private int bodyPageCount(final ManualLayout layout, final String section) {
-        final int inset = Math.min(14, Math.max(6, layout.contentWidth() / 12));
-        final int textWidth = Math.max(1, layout.contentWidth() - inset * 2);
-        return Math.max(1, Math.ceilDiv(bodyLines(section, textWidth).size(), bodyLineCapacity(layout, section)));
+        return bodyPages(layout, section).size();
     }
 
-    private int bodyLineCapacity(final ManualLayout layout, final String section) {
-        final ManualArticleCatalog.Article article = ManualArticleCatalog.article(manual, section);
-        return Math.max(
-            3,
-            layout.bodyLineCapacity() - Math.ceilDiv(visualHeight(article), ManualTypography.BODY_LINE_HEIGHT)
-        );
+    private List<List<FormattedCharSequence>> bodyPages(final ManualLayout layout, final String section) {
+        final int inset = Math.min(14, Math.max(6, layout.contentWidth() / 12));
+        final int textWidth = Math.max(1, layout.contentWidth() - inset * 2);
+        final ManualArticleCatalog.Article article = article(section);
+        final int firstCapacity = Math.max(0,
+            (layout.bodyTextBottom() - layout.bodyTextTop() - visualHeight(article)) / ManualTypography.BODY_LINE_HEIGHT);
+        return ManualPagination.pages(bodyLines(section, textWidth), firstCapacity, layout.bodyLineCapacity(),
+            ManualScreen::blankLine);
+    }
+
+    private static boolean blankLine(final FormattedCharSequence line) {
+        return line.accept((index, style, codePoint) -> Character.isWhitespace(codePoint));
     }
 
     private static int visualHeight(final ManualArticleCatalog.Article article) {

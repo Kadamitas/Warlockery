@@ -20,6 +20,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeManager.Match> {
+    static final int POWER_TEXT_HEIGHT = 36;
+    static final int IGNITION_TEXT_HEIGHT = 36;
+    static final int EFFECT_TEXT_HEIGHT = 24;
+    private static final int DIAGRAM_Y_OFFSET = 24;
     private final MachineProfile profile;
     private final MachineUiLayout layout;
 
@@ -40,8 +44,8 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
             recipeType,
             title(profile),
             icon(profile, guiHelper),
-            MachineUiLayout.forKind(profile.recipeType()).width(),
-            MachineUiLayout.forKind(profile.recipeType()).statusY() + 28
+            240,
+            MachineUiLayout.forKind(profile.recipeType()).statusY() - DIAGRAM_Y_OFFSET + (profile.recipeType().equals("brazier") ? 132 : 68)
         );
         this.profile = profile;
         layout = MachineUiLayout.forKind(profile.recipeType());
@@ -58,24 +62,21 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
         for (int index = 0; index < recipe.inputs().size(); index++) {
             final MachineRecipeDefinition.Input input = recipe.inputs().get(index);
             final MachineUiLayout.SlotPosition position = layout.slots().get(inputSlots.get(index));
-            JeiIngredients.addItem(
-                builder.addInputSlot(position.x(), position.y()).setStandardSlotBackground(),
-                input.ingredient(),
-                input.count()
-            );
+            builder.addInputSlot(position.x(), position.y() - DIAGRAM_Y_OFFSET).setStandardSlotBackground()
+                .addItemStacks(JeiMachineInputs.itemStacks(match, index));
         }
         recipe.fluid().ifPresent(fluid -> {
             final int[] fluidPosition = fluidPosition(layout.kind());
-            final var slot = builder.addInputSlot(fluidPosition[0], fluidPosition[1])
+            final var slot = builder.addInputSlot(fluidPosition[0], fluidPosition[1] - DIAGRAM_Y_OFFSET)
                 .setStandardSlotBackground()
-                .setFluidRenderer(fluid.amount(), true, 16, 16);
+                .setFluidRenderer(JeiIngredients.fluidAmount(fluid.amount()), true, 16, 16);
             JeiIngredients.addFluid(slot, fluid.ingredient(), fluid.amount());
         });
         for (int index = 0; index < recipe.outputs().size(); index++) {
             final MachineRecipeDefinition.Output output = recipe.outputs().get(index);
             final MachineUiLayout.SlotPosition position = layout.slots().get(profile.outputStart() + index);
             JeiIngredients.directItem(output.item(), output.count()).ifPresent(stack -> builder
-                .addOutputSlot(position.x(), position.y())
+                .addOutputSlot(position.x(), position.y() - DIAGRAM_Y_OFFSET)
                 .setOutputSlotBackground()
                 .add(stack));
         }
@@ -89,7 +90,7 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
     ) {
         final MachineRecipeDefinition recipe = match.recipe();
         final int[] arrow = arrowPosition(layout.kind());
-        builder.addAnimatedRecipeArrow(recipe.processingTime()).setPosition(arrow[0], arrow[1]);
+        builder.addAnimatedRecipeArrow(recipe.processingTime()).setPosition(arrow[0], arrow[1] - DIAGRAM_Y_OFFSET);
         Component details = Component.translatable(
             "jei.warlockery.machine.processing_time",
             Math.max(1, recipe.processingTime() / 20)
@@ -106,9 +107,21 @@ final class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipeMa
         if (profile.requiresExternalHeat()) {
             details = details.copy().append("  ").append(Component.translatable("jei.warlockery.machine.heat"));
         }
-        builder.addText(details, layout.width() - 4, 24)
-            .setPosition(2, layout.statusY() + 2)
+        builder.addText(details, getWidth() - 4, 24)
+            .setPosition(2, layout.statusY() - DIAGRAM_Y_OFFSET + 2)
             .setColor(0xFF404040);
+        if (recipe.powerMode() == com.kadamitas.warlockery.crafting.PowerMode.CONTINUOUS) {
+            builder.addText(Component.translatable("manual.warlockery.machine_recipe.continuous_power"), getWidth() - 4, POWER_TEXT_HEIGHT)
+                .setPosition(2, layout.statusY() - DIAGRAM_Y_OFFSET + 28).setColor(0xFF404040);
+        }
+        if (profile.recipeType().equals("brazier")) {
+            builder.addText(Component.translatable("manual.warlockery.machine_recipe.ignite"), getWidth() - 4, IGNITION_TEXT_HEIGHT)
+                .setPosition(2, layout.statusY() - DIAGRAM_Y_OFFSET + 68).setColor(0xFF404040);
+        }
+        com.kadamitas.warlockery.crafting.BrazierEffectRuntime.Effect.fromRecipe(match.id()).ifPresent(effect -> {
+            builder.addText(Component.translatable("jei.warlockery.effect." + effect.recipePath()), getWidth() - 4, EFFECT_TEXT_HEIGHT)
+                .setPosition(2, layout.statusY() - DIAGRAM_Y_OFFSET + 108).setColor(0xFF404040);
+        });
     }
 
     @Override

@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:foods/raw_meat"
+    },
+    {
+      "ingredient": "minecraft:fermented_spider_eye"
     }
   ],
   "outputs": [

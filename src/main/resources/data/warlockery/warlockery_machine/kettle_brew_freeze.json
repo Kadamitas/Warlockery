@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#minecraft:foot_armor"
+    },
+    {
+      "ingredient": "minecraft:packed_ice"
     }
   ],
   "outputs": [
