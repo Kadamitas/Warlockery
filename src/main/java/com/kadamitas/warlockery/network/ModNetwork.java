@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.network;
 
 import com.kadamitas.warlockery.Warlockery;
+import com.kadamitas.warlockery.compat.viewer.RecipeViewerCatalogSync;
 import com.kadamitas.warlockery.item.FlyingBroomItem;
 import com.kadamitas.warlockery.ritual.RitualManager;
 import com.kadamitas.warlockery.ritual.RitualRequirementText;
@@ -28,7 +29,7 @@ public final class ModNetwork {
     private static final int MAX_RITUALS = 128;
     private static final int MAX_REQUIREMENTS = 32;
     private static final int MAX_STRING = 256;
-    private static final String PROTOCOL_PATH = "network/v7/";
+    private static final String PROTOCOL_PATH = "network/v8/";
     private static boolean initialized;
 
     private ModNetwork() {
@@ -38,6 +39,7 @@ public final class ModNetwork {
         if (initialized) {
             return;
         }
+        PayloadTypeRegistry.clientboundPlay().register(RecipeViewerCatalogPayload.TYPE, RecipeViewerCatalogPayload.STREAM_CODEC);
         PayloadTypeRegistry.clientboundPlay().register(
             OpenRitualScreenPayload.TYPE,
             OpenRitualScreenPayload.STREAM_CODEC
@@ -75,8 +77,32 @@ public final class ModNetwork {
         initialized = true;
     }
 
+    public static void queueRecipeViewerCatalog(
+        final net.minecraft.server.MinecraftServer server, final List<ServerPlayer> players
+    ) {
+        final List<ServerPlayer> recipients = List.copyOf(players);
+        server.execute(() -> sendRecipeViewerCatalog(recipients));
+    }
+
+    public static void sendRecipeViewerCatalog(final List<ServerPlayer> players) {
+        if (players.isEmpty()) return;
+        final List<RecipeViewerCatalogPayload> packets;
+        try {
+            packets = RecipeViewerCatalogSync.serverPackets();
+        } catch (RuntimeException exception) {
+            Warlockery.LOGGER.error("Unable to synchronize recipe viewer catalog", exception);
+            return;
+        }
+        for (ServerPlayer player : players) {
+            if (player.connection == null) continue;
+            for (RecipeViewerCatalogPayload payload : packets) {
+                send(player, payload);
+            }
+        }
+    }
+
     public static void openRitualScreen(final ServerPlayer player, final BlockPos center) {
-        sendOptions(player, center);
+        sendOptions(player, center, true);
     }
 
     public static void notifyDollActivation(
@@ -124,11 +150,11 @@ public final class ModNetwork {
         PlayerLookup.tracking(player).forEach(recipient -> send(recipient, payload));
     }
 
-    private static void sendOptions(final ServerPlayer player, final BlockPos center) {
+    private static void sendOptions(final ServerPlayer player, final BlockPos center, final boolean mayOpen) {
         if (!(player.level() instanceof ServerLevel level)) {
             return;
         }
-        send(player, new OpenRitualScreenPayload(center, RitualManager.INSTANCE.options(level, center, player)));
+        send(player, new OpenRitualScreenPayload(center, RitualManager.INSTANCE.options(level, center, player), mayOpen));
     }
 
     private static void handleSupernaturalAction(
@@ -185,7 +211,7 @@ public final class ModNetwork {
                 ));
             }
         }
-        sendOptions(player, payload.center());
+        sendOptions(player, payload.center(), false);
     }
 
     private static void send(final ServerPlayer player, final CustomPacketPayload payload) {
@@ -200,7 +226,7 @@ public final class ModNetwork {
         );
     }
 
-    public record OpenRitualScreenPayload(BlockPos center, List<RitualManager.RitualOption> options)
+    public record OpenRitualScreenPayload(BlockPos center, List<RitualManager.RitualOption> options, boolean mayOpen)
         implements CustomPacketPayload {
         public static final Type<OpenRitualScreenPayload> TYPE = payloadType("open_ritual_screen");
         public static final StreamCodec<RegistryFriendlyByteBuf, OpenRitualScreenPayload> STREAM_CODEC =
@@ -212,7 +238,7 @@ public final class ModNetwork {
                     final List<RitualManager.RitualOption> options = IntStream.range(0, count)
                         .mapToObj(_ -> readOption(input))
                         .toList();
-                    return new OpenRitualScreenPayload(center, options);
+                    return new OpenRitualScreenPayload(center, options, input.readBoolean());
                 }
 
                 @Override
@@ -221,6 +247,7 @@ public final class ModNetwork {
                     final List<RitualManager.RitualOption> options = value.options().stream().limit(MAX_RITUALS).toList();
                     output.writeVarInt(options.size());
                     options.forEach(option -> writeOption(output, option));
+                    output.writeBoolean(value.mayOpen());
                 }
             };
 

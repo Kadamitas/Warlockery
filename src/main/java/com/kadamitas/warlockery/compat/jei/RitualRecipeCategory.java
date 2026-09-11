@@ -21,8 +21,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 final class RitualRecipeCategory extends AbstractRecipeCategory<RitualManager.Entry> {
-    private static final int WIDTH = 176;
-    private static final int HEIGHT = 132;
+    private static final int WIDTH = 240;
+    private static final int HEIGHT = 214;
 
     RitualRecipeCategory(final IGuiHelper guiHelper) {
         super(
@@ -44,7 +44,7 @@ final class RitualRecipeCategory extends AbstractRecipeCategory<RitualManager.En
         final List<RitualDefinition.Ingredient> ingredients = definition.requirements().ingredients();
         for (int index = 0; index < ingredients.size(); index++) {
             final RitualDefinition.Ingredient ingredient = ingredients.get(index);
-            final var slot = builder.addInputSlot(4 + index * 20, 48).setStandardSlotBackground();
+            final var slot = builder.addInputSlot(4 + index * 20, 80).setStandardSlotBackground();
             JeiIngredients.addItem(slot, ingredient.ingredient(), ingredient.count());
             if ("glyph_transform".equals(definition.action())) {
                 slot.addRichTooltipCallback((_, tooltip) ->
@@ -55,19 +55,30 @@ final class RitualRecipeCategory extends AbstractRecipeCategory<RitualManager.En
                     tooltip.add(Component.translatable("jei.warlockery.ritual.not_consumed")));
             }
         }
-        int glyphIndex = 0;
+        builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 4, 104)
+            .setStandardSlotBackground()
+            .add(new ItemStack(ModItems.ALL.get("chalkheart").get()));
+        int glyphIndex = 1;
         for (final ChalkCircleLayout.Ring ring : ChalkCircleLayout.rings(definition.glyphs())) {
+            final String chalk = switch (ring.glyph()) {
+                case "circleglyphgolden" -> "chalkheart";
+                case "circleglyphritual" -> "chalkritual";
+                case "circleglyphinfernal" -> "chalkinfernal";
+                case "circleglyph_veil" -> "chalk_veil";
+                default -> "";
+            };
+            final var tool = ModItems.ALL.get(chalk);
             final var block = ModBlocks.ALL.get(ring.glyph());
-            if (block != null) {
-                builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 4 + glyphIndex * 20, 70)
+            if (tool != null || block != null) {
+                builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 4 + glyphIndex * 20, 104)
                     .setStandardSlotBackground()
-                    .add(new ItemStack(block.get(), ring.requiredCount()))
+                    .add(tool != null ? new ItemStack(tool.get()) : new ItemStack(block.get(), ring.requiredCount()))
                     .addRichTooltipCallback((_, tooltip) ->
-                        tooltip.add(Component.translatable("jei.warlockery.ritual.not_consumed")));
+                        tooltip.add(Component.translatable("jei.warlockery.ritual.chalk_marks", ring.requiredCount())));
                 glyphIndex++;
             }
         }
-        output(definition).ifPresent(stack -> builder.addOutputSlot(154, 58).setOutputSlotBackground().add(stack));
+        output(definition).ifPresent(stack -> builder.addOutputSlot(218, 86).setOutputSlotBackground().add(stack));
     }
 
     @Override
@@ -77,11 +88,11 @@ final class RitualRecipeCategory extends AbstractRecipeCategory<RitualManager.En
         final IFocusGroup focuses
     ) {
         final RitualDefinition definition = entry.definition();
-        builder.addText(Component.translatable(definition.title()), WIDTH, 12)
+        builder.addText(Component.translatable(definition.title()), WIDTH - 4, 22)
             .setPosition(2, 0)
             .setColor(0xFF342040);
-        builder.addText(Component.translatable(definition.description()), WIDTH, 30)
-            .setPosition(2, 14)
+        builder.addText(Component.translatable(definition.description()), WIDTH - 4, 50)
+            .setPosition(2, 26)
             .setColor(0xFF505050);
         final Component timing = Component.translatable("jei.warlockery.ritual.power", definition.power())
             .append("  ")
@@ -89,14 +100,14 @@ final class RitualRecipeCategory extends AbstractRecipeCategory<RitualManager.En
                 "jei.warlockery.ritual.casting_time",
                 Math.max(1, definition.castingTime() / 20)
             ));
-        builder.addText(timing, WIDTH, 12).setPosition(2, 94).setColor(0xFF404040);
+        builder.addText(timing, WIDTH - 4, 24).setPosition(2, 128).setColor(0xFF404040);
         final Component conditions = conditions(definition);
         if (!conditions.getString().isBlank()) {
             builder.addText(
                 Component.translatable("jei.warlockery.ritual.conditions", conditions),
-                WIDTH,
-                24
-            ).setPosition(2, 108).setColor(0xFF505050);
+                WIDTH - 4,
+                58
+            ).setPosition(2, 154).setColor(0xFF505050);
         }
     }
 
@@ -106,10 +117,14 @@ final class RitualRecipeCategory extends AbstractRecipeCategory<RitualManager.En
     }
 
     private static Optional<ItemStack> output(final RitualDefinition definition) {
-        if (!List.of("summon_item", "bind_item", "bind_circle").contains(definition.action())) {
-            return Optional.empty();
-        }
-        return JeiIngredients.directItem(definition.target(), definition.count());
+        return switch (definition.action()) {
+            case "summon_item", "bind_item", "bind_circle" ->
+                JeiIngredients.directItem(definition.target(), definition.count());
+            case "bind_fetish" -> JeiIngredients.directItem(definition.target(), 1);
+            case "bind_waystone", "copy_waystone" ->
+                JeiIngredients.directItem("warlockery:ingredient_waystone_bound", 1);
+            default -> Optional.empty();
+        };
     }
 
     private static Component conditions(final RitualDefinition definition) {

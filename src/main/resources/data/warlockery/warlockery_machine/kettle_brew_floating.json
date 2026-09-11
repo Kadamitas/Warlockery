@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#minecraft:wool"
+    },
+    {
+      "ingredient": "minecraft:shulker_shell"
     }
   ],
   "outputs": [

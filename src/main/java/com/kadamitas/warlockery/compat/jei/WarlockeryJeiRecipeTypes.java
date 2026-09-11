@@ -19,6 +19,10 @@ public final class WarlockeryJeiRecipeTypes {
         "brazier"
     );
     public static final Map<String, IRecipeType<MachineRecipeManager.Match>> MACHINES = createMachineTypes();
+    public static final IRecipeType<CustomBrewJeiRecipe> CUSTOM_BREWS = IRecipeType.create(
+        Warlockery.MOD_ID, "custom_brewing", CustomBrewJeiRecipe.class);
+    public static final IRecipeType<WorldInteractionJeiRecipe> WORLD_INTERACTIONS = IRecipeType.create(
+        Warlockery.MOD_ID, "world_interactions", WorldInteractionJeiRecipe.class);
     public static final IRecipeType<RitualManager.Entry> RITUALS = IRecipeType.create(
         Warlockery.MOD_ID,
         "circle_rites",

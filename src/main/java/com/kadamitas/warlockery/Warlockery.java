@@ -32,6 +32,12 @@ public final class Warlockery implements ModInitializer {
         WarlockeryConfig.initialize();
         WarlockeryEntityData.initialize();
         ModNetwork.init();
+        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
+            ModNetwork.queueRecipeViewerCatalog(server, java.util.List.of(handler.getPlayer())));
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(
+            (server, resources, success) -> {
+                if (success) ModNetwork.queueRecipeViewerCatalog(server, server.getPlayerList().getPlayers());
+            });
         FabricEnergyCompatibility.initialize();
 
         ModFluids.register();

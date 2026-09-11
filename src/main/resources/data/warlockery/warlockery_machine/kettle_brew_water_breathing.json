@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:foods/raw_meat"
+    },
+    {
+      "ingredient": "minecraft:pufferfish"
     }
   ],
   "outputs": [

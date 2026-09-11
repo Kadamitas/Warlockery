@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:bones"
+    },
+    {
+      "ingredient": "#c:fertilizers"
     }
   ],
   "outputs": [

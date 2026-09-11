@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["I I", "ICI", "SSS"],
+  "key": {"I": "minecraft:iron_bars", "C": "#minecraft:coals", "S": "#c:stones"},
+  "result": {"id": "warlockery:brazier"}
+}

@@ -1,3 +1,9 @@
+Warlockery 1.5.2
+================
+
+- Improved in-game books with clearer progression guidance, saved reading positions, pagination, and readable circle diagrams.
+- Added recipe discovery for JEI, REI, RRV, and EMI, plus conventional crafting and furnace recipe unlocks for the Minecraft recipe book.
+
 Warlockery 1.5.1
 ================
 

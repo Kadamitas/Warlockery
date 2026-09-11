@@ -109,11 +109,11 @@ class SupernaturalSnapshotTest {
     }
 
     @Test
-    void protocolV7AppendsSanguineBeforeTheNormalizedPreyTarget() throws Exception {
+    void protocolV8AppendsSanguineBeforeTheNormalizedPreyTarget() throws Exception {
         final String source = Files.readString(Path.of(
             "src/main/java/com/kadamitas/warlockery/network/ModNetwork.java"
         ));
-        assertTrue(source.contains("PROTOCOL_PATH = \"network/v7/\""));
+        assertTrue(source.contains("PROTOCOL_PATH = \"network/v8/\""));
         final int sanguine = source.indexOf("output.writeBoolean(snapshot.sanguine())");
         final int preyTarget = source.indexOf("output.writeVarInt(snapshot.preyTargetEntityId())");
         assertTrue(sanguine >= 0);

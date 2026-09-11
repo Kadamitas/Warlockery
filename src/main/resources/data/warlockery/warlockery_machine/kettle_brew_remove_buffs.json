@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:foods"
+    },
+    {
+      "ingredient": "minecraft:milk_bucket"
     }
   ],
   "outputs": [

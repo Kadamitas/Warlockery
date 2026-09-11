@@ -3,8 +3,8 @@ package com.kadamitas.warlockery.ritual;
 import com.kadamitas.warlockery.data.WarlockeryEntityData;
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
-import com.kadamitas.warlockery.compat.jei.JeiRecipeRefreshSignal;
 import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
+import com.kadamitas.warlockery.crafting.AltarPowerNetwork;
 import com.kadamitas.warlockery.item.DollItem;
 import com.kadamitas.warlockery.block.FetishRuntime;
 import com.kadamitas.warlockery.block.FetishBindingRules;
@@ -136,7 +136,6 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             ))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (_, second) -> second, java.util.LinkedHashMap::new)));
         Warlockery.LOGGER.info("Loaded {} Warlockery rituals", rituals.size());
-        JeiRecipeRefreshSignal.publish();
     }
 
     /**
@@ -967,13 +966,7 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
      * power that is already promised away.
      */
     private static Optional<AltarBlockEntity> findBestAltar(final ServerLevel level, final BlockPos center) {
-        final int range = 12;
-        return BlockPos.betweenClosedStream(center.offset(-range, -4, -range), center.offset(range, 6, range))
-            .map(level::getBlockEntity)
-            .filter(AltarBlockEntity.class::isInstance)
-            .map(AltarBlockEntity.class::cast)
-            .filter(AltarBlockEntity::isMultiblockValid)
-            .max(Comparator.comparingInt(AltarBlockEntity::availablePower));
+        return AltarPowerNetwork.best(level, center);
     }
 
     private static void perform(

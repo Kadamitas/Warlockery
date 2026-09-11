@@ -23,6 +23,17 @@ public final class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     }
 
     @Override
+    protected void init() {
+        super.init();
+        if (com.kadamitas.warlockery.compat.viewer.RecipeViewerNavigation.available()) {
+            addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
+                Component.translatable("screen.warlockery.machine.recipes"),
+                _ -> com.kadamitas.warlockery.compat.viewer.RecipeViewerNavigation.openMachine(menu.kind()))
+                .bounds(leftPos + imageWidth - 62, topPos + 5, 54, 16).build());
+        }
+    }
+
+    @Override
     public void extractBackground(
         final GuiGraphicsExtractor graphics,
         final int mouseX,

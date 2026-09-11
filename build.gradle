@@ -131,11 +131,18 @@ loom {
     }
 }
 
+def recipeViewer = providers.gradleProperty('warlockeryRecipeViewer').orElse('jei').get()
+if (!['jei', 'rei', 'rrv', 'emi', 'none'].contains(recipeViewer)) throw new GradleException('Unsupported recipe viewer profile: ' + recipeViewer)
+
 repositories {
     maven {
         url = 'https://maven.blamejared.com'
         content { includeGroup 'mezz.jei' }
     }
+    maven { url = 'https://maven.shedaniel.me' }
+    maven { url = 'https://maven.architectury.dev' }
+    maven { url = 'https://maven.cassian.cc' }
+    maven { url = 'https://cursemaven.com'; content { includeGroup 'curse.maven' } }
     mavenCentral()
 }
 
@@ -143,13 +150,49 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    compileOnly 'me.shedaniel:RoughlyEnoughItems-api-fabric:26.2.820'
+    compileOnly 'me.shedaniel:RoughlyEnoughItems-fabric:26.2.820'
+    compileOnly 'dev.architectury:architectury-fabric:21.0.2'
+    compileOnly 'me.shedaniel.cloth:basic-math:0.6.1'
+    compileOnly 'cc.cassian.rrv:reliable-recipe-viewer-fabric:8.10.4+26.2'
+    compileOnly('curse.maven:emi-unofficial-port-unstable-1544558:8616656') { transitive = false }
+    if (recipeViewer == 'rei') {
+        runtimeOnly 'me.shedaniel:RoughlyEnoughItems-fabric:26.2.820'
+        runtimeOnly 'dev.architectury:architectury-fabric:21.0.2'
+        runtimeOnly 'me.shedaniel.cloth:cloth-config-fabric:26.2.155'
+    }
+    if (recipeViewer == 'rrv') runtimeOnly 'cc.cassian.rrv:reliable-recipe-viewer-fabric:8.10.4+26.2'
+    if (recipeViewer == 'emi') runtimeOnly 'curse.maven:emi-unofficial-port-unstable-1544558:8616656'
     compileOnly 'mezz.jei:jei-26.2-fabric-api:30.7.0.41'
-    runtimeOnly 'mezz.jei:jei-26.2-fabric:30.7.0.41'
+    if (recipeViewer == 'jei') runtimeOnly 'mezz.jei:jei-26.2-fabric:30.7.0.41'
 
     testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
     testImplementation platform('org.junit:junit-bom:6.1.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'warlockery_client_tests'
+        enableGameTests = false
+        enableClientGameTests = true
+        eula = true
+        clearRunDirectory = true
+    }
+}
+
+dependencies {
+    gametestCompileOnly 'mezz.jei:jei-26.2-fabric-api:30.7.0.41'
+    if (recipeViewer == 'jei') gametestRuntimeOnly 'mezz.jei:jei-26.2-fabric:30.7.0.41'
+}
+
+tasks.named('runClientGameTest') {
+    systemProperty 'warlockery.recipeViewer', recipeViewer
+    systemProperty 'warlockery.machineTypes', providers.gradleProperty('warlockeryMachineTypes').orElse('').get()
+    systemProperty 'warlockery.jeiAuditMachineOnly', providers.gradleProperty('warlockeryJeiMachineOnly').orElse('false').get()
+    systemProperty 'warlockery.clientEvidence', layout.projectDirectory.dir('.codex-local/client-acceptance').asFile.absolutePath
 }
 
 tasks.named('processResources', ProcessResources) {
@@ -235,4 +278,27 @@ tasks.register('releaseBundle', ReleaseBundleTask) {
     licenseFile.set(layout.projectDirectory.file('LICENSE'))
     changelogFile.set(layout.projectDirectory.file('changelog.txt'))
     destinationDirectory.set(releaseDirectory)
+}
+
+// Select bounded reruns without changing the normal acceptance descriptor.
+def clientAcceptanceSuite = providers.gradleProperty('warlockeryClientSuite').orElse('all')
+tasks.named('processGametestResources') {
+    inputs.property('clientAcceptanceSuite', clientAcceptanceSuite)
+    filesMatching('fabric.mod.json') {
+        filter { line ->
+            def selected = [
+                viewers: ['RecipeViewerAcceptance'],
+                recipebook: ['RecipeBookAcceptance'],
+                operational: ['JeiCatalogAcceptance', 'MachineWalkthroughAcceptance', 'RitualWalkthroughAcceptance'],
+                walkthroughs: ['RitualWalkthroughAcceptance', 'MachineWalkthroughAcceptance'],
+                rituals: ['RitualWalkthroughAcceptance'],
+                machines: ['MachineWalkthroughAcceptance'],
+                catalogue: ['JeiCatalogAcceptance']
+            ][clientAcceptanceSuite.get()]
+            if (selected != null && line.contains('"fabric-client-gametest"')) {
+                return '    "fabric-client-gametest": [' + selected.collect { '"com.kadamitas.warlockery.client.' + it + '"' }.join(', ') + '],'
+            }
+            return line
+        }
+    }
 }

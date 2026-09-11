@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "warlockery_client_tests",
+  "version": "1.0.0",
+  "name": "Warlockery Client Acceptance Tests",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": ["com.kadamitas.warlockery.client.ManualClientAcceptance", "com.kadamitas.warlockery.client.JeiCatalogAcceptance", "com.kadamitas.warlockery.client.MachineWalkthroughAcceptance", "com.kadamitas.warlockery.client.RitualWalkthroughAcceptance"],
+    "jei_mod_plugin": ["com.kadamitas.warlockery.client.ManualJeiAcceptance"]
+  },
+  "depends": { "warlockery": "*", "fabric-api": "*" }
+}

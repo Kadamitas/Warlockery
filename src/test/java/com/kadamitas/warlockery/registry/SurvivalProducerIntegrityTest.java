@@ -272,7 +272,7 @@ final class SurvivalProducerIntegrityTest {
         expected.put("kettle_ingredient_brew_hitchcock", machine(
             "warlockery:ingredient_brew_hitchcock", 0,
             "#c:mushrooms", "#c:seeds", "#warlockery:bodega_thorn_brews",
-            "#warlockery:bat_binding_fibers", "#c:feathers", "#warlockery:bodega_owl_wings"
+            "#c:eggs", "#c:feathers", "#warlockery:bodega_owl_wings"
         ));
         expected.put("kettle_ingredient_brew_sleep", machine(
             "warlockery:ingredient_brew_sleep", 0,

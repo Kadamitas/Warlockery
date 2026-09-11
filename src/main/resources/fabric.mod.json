@@ -21,6 +21,18 @@
     ],
     "client": [
       "com.kadamitas.warlockery.client.WarlockeryClient"
+    ],
+    "jei_mod_plugin": [
+      "com.kadamitas.warlockery.compat.jei.WarlockeryJeiPlugin"
+    ],
+    "rei_client": [
+      "com.kadamitas.warlockery.compat.rei.WarlockeryReiPlugin"
+    ],
+    "rrv_client": [
+      "com.kadamitas.warlockery.compat.rrv.WarlockeryRrvPlugin"
+    ],
+    "emi": [
+      "com.kadamitas.warlockery.compat.emi.WarlockeryEmiPlugin"
     ]
   },
   "mixins": [
@@ -33,6 +45,9 @@
     "java": ">=25"
   },
   "suggests": {
-    "jei": "*"
+    "jei": "*",
+    "roughlyenoughitems": "*",
+    "rrv": "*",
+    "emi": "*"
   }
 }

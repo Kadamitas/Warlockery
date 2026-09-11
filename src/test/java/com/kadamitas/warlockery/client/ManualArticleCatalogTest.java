@@ -28,6 +28,47 @@ final class ManualArticleCatalogTest {
     }
 
     @Test
+    void craftingGuidesPictureRealIngredientsAndEveryListedRecipeLoads() {
+        final var circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        circles.sections().stream().filter(section -> section.startsWith("crafting_")).forEach(section -> {
+            final var article = ManualArticleCatalog.article(circles, section);
+            assertTrue(article.hasPictograms(), section);
+            assertTrue(article.pictograms().stream().noneMatch(p -> p.itemId().equals("minecraft:paper")), section);
+        });
+        assertTrue(ManualArticleCatalog.article(circles, "crafting_chalkheart_from_gypsum").pictograms().stream()
+            .anyMatch(p -> p.itemId().equals("minecraft:yellow_dye")));
+        assertFalse(ManualArticleCatalog.article(circles, "crafting_chalkheart_from_gypsum").pictograms().stream()
+            .anyMatch(p -> p.itemId().equals("minecraft:red_dye")));
+    }
+
+    @Test
+    void circleFoundationsExplainGoldenChalkAndArthanaAndShowCraftingPatterns() {
+        final ManualProfile circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        assertTrue(circles.sections().containsAll(java.util.List.of("golden_chalk", "arthana",
+            "crafting_ritual_knife", "crafting_chalkheart_from_gypsum", "crafting_arcane_focus")));
+        final String knife = net.minecraft.network.chat.ComponentSerialization.CODEC.encodeStart(
+            com.mojang.serialization.JsonOps.INSTANCE,
+            ManualArticleCatalog.article(circles, "crafting_ritual_knife").body()).getOrThrow().toString();
+        assertTrue(knife.contains("manual.warlockery.crafting.row"));
+        assertTrue(knife.contains("manual.warlockery.crafting.empty"));
+        assertTrue(knife.contains("manual.warlockery.entry.ingredients"));
+        assertTrue(knife.contains("item.minecraft.flint"), "Crafting rows should name recognizable ingredient examples");
+        assertTrue(knife.contains("item.minecraft.stick"));
+        final var golden = ManualArticleCatalog.article(circles, "crafting_chalkheart_from_gypsum");
+        assertTrue(golden.body().getString().contains("manual.warlockery.crafting.shapeless"));
+        assertTrue(golden.pictograms().stream().anyMatch(p -> p.itemId().equals("warlockery:chalkheart") && p.count() == 1));
+    }
+
+    @Test
+    void distilleryArticleShowsItsRequiredPowerAndEachInputOnItsOwnLine() {
+        final var profile = ManualProfile.find("ingredient_book_distilling").orElseThrow();
+        final String text = ManualArticleCatalog.article(profile, "machine_recipe_distill_vitriol").body().getString();
+        assertTrue(text.contains("manual.warlockery.entry.altar_power"));
+        assertTrue(text.contains("480"));
+        assertFalse(text.contains("; "));
+    }
+
+    @Test
     void everyRitualArticleLoadsItsEffectIngredientsConditionsAndDiagram() {
         final ManualProfile circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
         circles.sections().stream().filter(section -> section.startsWith("rite_")).forEach(section -> {

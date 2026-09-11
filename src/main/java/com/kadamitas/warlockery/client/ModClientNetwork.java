@@ -1,5 +1,8 @@
 package com.kadamitas.warlockery.client;
 
+import com.kadamitas.warlockery.compat.viewer.RecipeViewerCatalogSync;
+import com.kadamitas.warlockery.compat.viewer.RecipeViewerRefreshSignal;
+
 import com.kadamitas.warlockery.network.ModNetwork;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -16,10 +19,22 @@ public final class ModClientNetwork {
         if (initialized) {
             return;
         }
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register(
+            (handler, sender, client) -> RecipeViewerCatalogSync.beginConnection(handler.getConnection()));
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register(
+            (handler, client) -> RecipeViewerCatalogSync.disconnect(handler.getConnection()));
+        net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
+            if (client) RecipeViewerRefreshSignal.publish();
+        });
+        ClientPlayNetworking.registerGlobalReceiver(com.kadamitas.warlockery.network.RecipeViewerCatalogPayload.TYPE,
+            (payload, context) -> {
+                final var connection = context.player().connection.getConnection();
+                context.client().execute(() -> RecipeViewerCatalogSync.accept(connection, payload));
+            });
         ClientPlayNetworking.registerGlobalReceiver(
             ModNetwork.OpenRitualScreenPayload.TYPE,
             (payload, context) -> context.client().execute(() ->
-                RitualSelectionScreen.openOrUpdate(payload.center(), payload.options()))
+                RitualSelectionScreen.openOrUpdate(payload.center(), payload.options(), payload.mayOpen()))
         );
         ClientPlayNetworking.registerGlobalReceiver(
             ModNetwork.DollActivationPayload.TYPE,

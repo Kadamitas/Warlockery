@@ -10,6 +10,9 @@
     },
     {
       "ingredient": "#c:crops"
+    },
+    {
+      "ingredient": "minecraft:spider_eye"
     }
   ],
   "outputs": [

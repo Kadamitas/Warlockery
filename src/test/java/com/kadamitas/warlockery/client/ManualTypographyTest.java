@@ -23,15 +23,13 @@ final class ManualTypographyTest {
     }
 
     @Test
-    void compactManualTypeFitsMoreTextWithoutShrinkingToIllegibility() {
-        assertTrue(ManualTypography.TITLE_SCALE < 1.0F);
-        assertTrue(ManualTypography.TITLE_SCALE >= 0.8F);
-        assertTrue(ManualTypography.BODY_SCALE < ManualTypography.TITLE_SCALE);
-        assertTrue(ManualTypography.BODY_SCALE >= 0.75F);
-        assertEquals(8, ManualTypography.BODY_LINE_HEIGHT);
-        assertTrue(ManualTypography.wrappingWidth(300, ManualTypography.BODY_SCALE) > 390);
+    void manualTextUsesNativeSizeWithComfortableLineSpacing() {
+        assertEquals(1.0F, ManualTypography.TITLE_SCALE);
+        assertEquals(1.0F, ManualTypography.BODY_SCALE);
+        assertTrue(ManualTypography.BODY_LINE_HEIGHT >= 11);
+        assertTrue(ManualTypography.TITLE_LINE_HEIGHT >= 11);
+        assertEquals(300, ManualTypography.wrappingWidth(300, ManualTypography.BODY_SCALE));
     }
-
     @Test
     void manualRenderingDisablesDarkDropShadows() throws IOException {
         final String source = Files.readString(Path.of(

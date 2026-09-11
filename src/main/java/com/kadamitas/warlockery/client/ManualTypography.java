@@ -9,10 +9,10 @@ final class ManualTypography {
     static final FontDescription.Resource FONT = new FontDescription.Resource(
         Identifier.withDefaultNamespace("uniform")
     );
-    static final float TITLE_SCALE = 0.86F;
-    static final float BODY_SCALE = 0.76F;
-    static final int TITLE_LINE_HEIGHT = 9;
-    static final int BODY_LINE_HEIGHT = 8;
+    static final float TITLE_SCALE = 1.0F;
+    static final float BODY_SCALE = 1.0F;
+    static final int TITLE_LINE_HEIGHT = 11;
+    static final int BODY_LINE_HEIGHT = 12;
 
     private ManualTypography() {
     }

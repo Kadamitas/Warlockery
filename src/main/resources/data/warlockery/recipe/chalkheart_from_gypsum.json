@@ -3,10 +3,10 @@
   "category": "misc",
   "ingredients": [
     "warlockery:ingredient_gypsum",
-    "#c:dyes/red"
+    "#c:dyes/yellow"
   ],
   "result": {
     "id": "warlockery:chalkheart",
-    "count": 4
+    "count": 1
   }
 }
