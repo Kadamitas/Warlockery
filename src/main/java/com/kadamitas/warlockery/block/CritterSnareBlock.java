@@ -71,7 +71,8 @@ public final class CritterSnareBlock extends BushBlock {
         }
         if (level instanceof ServerLevel serverLevel) {
             payload.create(serverLevel).ifPresent(critter -> {
-                critter.snapTo(pos.getX() + 0.5, pos.getY() + 0.25, pos.getZ() + 0.5);
+                final BlockPos release = pos.relative(player.getDirection().getOpposite());
+                critter.snapTo(release.getX() + 0.5, release.getY() + 0.25, release.getZ() + 0.5);
                 serverLevel.addFreshEntity(critter);
             });
             level.setBlockAndUpdate(pos, state.setValue(PAYLOAD, CritterSnarePayload.EMPTY));

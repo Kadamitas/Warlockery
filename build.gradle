@@ -190,7 +190,31 @@ dependencies {
 
 tasks.named('runClientGameTest') {
     systemProperty 'warlockery.recipeViewer', recipeViewer
+    systemProperty 'warlockery.itemIds', providers.gradleProperty('warlockeryItemIds').orElse('').get()
+    systemProperty 'warlockery.ritualIds', providers.gradleProperty('warlockeryRitualIds').orElse('').get()
+    systemProperty 'warlockery.dollIds', providers.gradleProperty('warlockeryDollIds').orElse('').get()
+    systemProperty 'warlockery.brewWorldIds', providers.gradleProperty('warlockeryBrewWorldIds').orElse('').get()
+    systemProperty 'warlockery.equipmentCases', providers.gradleProperty('warlockeryEquipmentCases').orElse('').get()
+    systemProperty 'warlockery.brewNatureIds', providers.gradleProperty('warlockeryBrewNatureIds').orElse('').get()
+    systemProperty 'warlockery.brewSummoningIds', providers.gradleProperty('warlockeryBrewSummoningIds').orElse('').get()
+    systemProperty 'warlockery.deviceIds', providers.gradleProperty('warlockeryDeviceIds').orElse('').get()
+    systemProperty 'warlockery.utilityToolIds', providers.gradleProperty('warlockeryUtilityToolIds').orElse('').get()
+    systemProperty 'warlockery.brewCombatIds', providers.gradleProperty('warlockeryBrewCombatIds').orElse('').get()
+    systemProperty 'warlockery.brewTerrainIds', providers.gradleProperty('warlockeryBrewTerrainIds').orElse('').get()
+    systemProperty 'warlockery.resourceItemIds', providers.gradleProperty('warlockeryResourceItemIds').orElse('').get()
+    systemProperty 'warlockery.remainingToolIds', providers.gradleProperty('warlockeryRemainingToolIds').orElse('').get()
+    systemProperty 'warlockery.otherDeviceIds', providers.gradleProperty('warlockeryOtherDeviceIds').orElse('').get()
+    systemProperty 'warlockery.brewRemainingIds', providers.gradleProperty('warlockeryBrewRemainingIds').orElse('').get()
+    systemProperty 'warlockery.brewAdvancedIds', providers.gradleProperty('warlockeryBrewAdvancedIds').orElse('').get()
+    systemProperty 'warlockery.brewPotionEffectsIds', providers.gradleProperty('warlockeryBrewPotionEffectsIds').orElse('').get()
+    systemProperty 'warlockery.equipmentSetCases', providers.gradleProperty('warlockeryEquipmentSetCases').orElse('').get()
+    systemProperty 'warlockery.bookIds', providers.gradleProperty('warlockeryBookIds').orElse('').get()
+    systemProperty 'warlockery.craftingKinds', providers.gradleProperty('warlockeryCraftingKinds').orElse('all').get()
+    systemProperty 'warlockery.craftingIds', providers.gradleProperty('warlockeryCraftingIds').orElse('').get()
     systemProperty 'warlockery.machineTypes', providers.gradleProperty('warlockeryMachineTypes').orElse('').get()
+    systemProperty 'warlockery.machineRepresentativeTypes', providers.gradleProperty('warlockeryMachineRepresentativeTypes').orElse('').get()
+    systemProperty 'warlockery.machineRecipeIds', providers.gradleProperty('warlockeryMachineRecipeIds').orElse('').get()
+    systemProperty 'warlockery.placedMirrorIds', providers.gradleProperty('warlockeryPlacedMirrorIds').orElse('').get()
     systemProperty 'warlockery.jeiAuditMachineOnly', providers.gradleProperty('warlockeryJeiMachineOnly').orElse('false').get()
     systemProperty 'warlockery.clientEvidence', layout.projectDirectory.dir('.codex-local/client-acceptance').asFile.absolutePath
 }
@@ -287,6 +311,37 @@ tasks.named('processGametestResources') {
     filesMatching('fabric.mod.json') {
         filter { line ->
             def selected = [
+                books: ['AllBooksClientAcceptance'],
+                diagonal_chalk: ['DiagonalChalkClientAcceptance'],
+                louse: ['LouseAbilitiesClientAcceptance'],
+                placed_mirrors: ['PlacedMirrorAbilitiesClientAcceptance'],
+                grave_doors: ['GraveAndDoorAbilitiesClientAcceptance'],
+                crafting: ['CraftingCatalogAcceptance'],
+                items: ['AllItemsClientAcceptance'],
+                dolls: ['DollAbilitiesClientAcceptance'],
+                specialty: ['SpecialtyToolsClientAcceptance'],
+                brew_world: ['BrewWorldAbilitiesClientAcceptance'],
+                equipment: ['EquipmentAbilitiesClientAcceptance'],
+                ritual_tools: ['RitualToolsAbilitiesClientAcceptance'],
+                brew_nature: ['BrewNatureAbilitiesClientAcceptance'],
+                brew_summoning: ['BrewSummoningAbilitiesClientAcceptance'],
+                devices: ['DeviceAbilitiesClientAcceptance'],
+                fluids: ['FluidAbilitiesClientAcceptance'],
+                equipment_sets: ['EquipmentSetAbilitiesClientAcceptance'],
+                utility_tools: ['UtilityToolsAbilitiesClientAcceptance'],
+                brew_combat: ['BrewCombatAbilitiesClientAcceptance'],
+                brew_terrain: ['BrewTerrainAbilitiesClientAcceptance'],
+                resource_items: ['ResourceItemsAbilitiesClientAcceptance'],
+                remaining_tools: ['RemainingToolsAbilitiesClientAcceptance'],
+                other_devices: ['OtherDevicesAbilitiesClientAcceptance'],
+                device_combat: ['DeviceAbilitiesClientAcceptance', 'BrewCombatAbilitiesClientAcceptance'],
+                brew_regressions: ['BrewCombatAbilitiesClientAcceptance', 'BrewSummoningAbilitiesClientAcceptance', 'BrewTerrainAbilitiesClientAcceptance'],
+                utility_resources: ['UtilityToolsAbilitiesClientAcceptance', 'ResourceItemsAbilitiesClientAcceptance'],
+                remaining_devices: ['RemainingToolsAbilitiesClientAcceptance', 'OtherDevicesAbilitiesClientAcceptance'],
+                new_acquisition: ['CraftingCatalogAcceptance', 'RecipeBookAcceptance'],
+                brew_remaining: ['BrewRemainingAbilitiesClientAcceptance'],
+                brew_advanced: ['BrewAdvancedAbilitiesClientAcceptance'],
+                brew_potion_effects: ['BrewPotionEffectsAbilitiesClientAcceptance'],
                 viewers: ['RecipeViewerAcceptance'],
                 recipebook: ['RecipeBookAcceptance'],
                 operational: ['JeiCatalogAcceptance', 'MachineWalkthroughAcceptance', 'RitualWalkthroughAcceptance'],

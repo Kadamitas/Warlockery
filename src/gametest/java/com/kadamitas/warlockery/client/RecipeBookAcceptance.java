@@ -50,7 +50,8 @@ public final class RecipeBookAcceptance implements FabricClientGameTest {
                         ManualClientAcceptance.check(player.getRecipeBook().contains(recipe.id()), "Ingredient acquisition unlocks " + recipe.id().identifier());
                         unlocked.add(recipe.id().identifier().toString());
                     }
-                    ManualClientAcceptance.check(unlocked.size() == 175, "All 175 native recipes unlock without recipe commands");
+                    ManualClientAcceptance.check(recipes.size() == 180 && unlocked.size() == recipes.size(),
+                        "All 180 native recipes unlock from ingredient acquisition without recipe commands");
                     player.getInventory().clearContent();
                     player.getInventory().setItem(9, new ItemStack(ModItems.ALL.get("ingredient_gypsum").get()));
                     player.getInventory().setItem(10, new ItemStack(Items.DYE.yellow()));

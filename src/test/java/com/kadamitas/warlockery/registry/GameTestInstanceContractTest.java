@@ -488,7 +488,7 @@ final class GameTestInstanceContractTest {
         assertTrue(template.getListOrEmpty("entities").isEmpty(), "isolation template must be entity-free");
 
         final Set<String> fixtureIds = fixtureIds();
-        assertEquals(368, fixtureIds.size(), "registered fixture count");
+        assertEquals(372, fixtureIds.size(), "registered fixture count");
         assertTrue(fixtureIds.containsAll(RELEASE_1_5_1_FIXTURES), "missing 1.5.1 fixtures");
         assertEquals(9, GEOMETRY_SENSITIVE_THREE_CUBE_FIXTURES.size(), "three-cube allowlist size");
         assertEquals(1, FORCE_TICKED_FIFTEEN_CUBE_FIXTURES.size(), "force-ticked 15-cube allowlist size");
@@ -503,7 +503,7 @@ final class GameTestInstanceContractTest {
             .filter(fixtureId -> "warlockery:empty15x15x15".equals(
                 readFixture(fixtureId).get("structure").getAsString()))
             .count();
-        assertEquals(332, thirtyTwoCubeCount, "owned 32-cube fixture count");
+        assertEquals(336, thirtyTwoCubeCount, "owned 32-cube fixture count");
         assertEquals(9, threeCubeCount, "owned three-cube fixture count");
         assertEquals(27, fifteenCubeCount, "owned 15-cube fixture count");
 

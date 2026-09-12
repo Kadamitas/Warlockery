@@ -248,6 +248,9 @@ public final class ModEntities {
         AttributeFactoryRule.exact("umbral_sigil", _ -> Vex.createAttributes()
             .add(Attributes.FLYING_SPEED, UmbralSigilRules.FLYING_SPEED)
             .build()),
+        new AttributeFactoryRule(Set.of("lost_soul", "poltergeist", "spirit")::contains, _ -> Vex.createAttributes()
+            .add(Attributes.FLYING_SPEED, 0.34D)
+            .build()),
         new AttributeFactoryRule(SPIRIT_IDS::contains, _ -> Vex.createAttributes().build())
     );
 

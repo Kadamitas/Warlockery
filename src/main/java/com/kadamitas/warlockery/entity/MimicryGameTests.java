@@ -688,7 +688,6 @@ public final class MimicryGameTests {
             actor.setNoAi(true);
             sharedHookActors.add(actor);
         }
-        final List<Vec3> sharedHookStarts = sharedHookActors.stream().map(Entity::position).toList();
         final boolean[] sharedHookMoved = new boolean[sharedHookActors.size()];
         helper.runAfterDelay(2L, () -> {
             final MimicryRules.Phase phase = copy.mimicCore().scratch().phase();
@@ -738,12 +737,26 @@ public final class MimicryGameTests {
                 final ArcaneCreature creature = (ArcaneCreature) actor;
                 final CreatureBehaviorProfile profile = CreatureBehaviorProfile.find(creature.creatureKind())
                     .orElseThrow();
+                final Vec3 probeStart = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(7, 3, 7)));
+                actor.teleportTo(probeStart.x, probeStart.y, probeStart.z);
+                for (int x = -4; x <= 4; x++) for (int z = -4; z <= 4; z++) {
+                    final var landingBox = actor.getBoundingBox().move(x, -2.0D, z);
+                    helper.assertTrue(helper.getLevel().getBlockState(BlockPos.containing(probeStart.add(x, -3.0D, z))).blocksMotion()
+                            && helper.getLevel().noCollision(actor, landingBox)
+                            && !helper.getLevel().containsAnyLiquid(landingBox),
+                        "every first shared-hook proposal has a supported clear landing for " + sharedHookIds.get(index));
+                }
                 for (int attempt = 0; attempt < 8; attempt++) {
                     CreatureBehaviorRuntime.afterHurt(
                         actor, helper.getLevel(), helper.getLevel().damageSources().magic(), 2.0F, profile
                     );
                     sharedHookMoved[index] |= actor.position()
-                        .distanceToSqr(sharedHookStarts.get(index)) > 0.01D;
+                        .distanceToSqr(probeStart) > 0.01D;
+                    if (attempt == 0) {
+                        helper.assertTrue(sharedHookMoved[index] == !sharedHookIds.get(index).equals("banshee"),
+                            "the first supported shared-hook proposal preserves Banshee and phases " + sharedHookIds.get(index)
+                                + "; before=" + probeStart + ", after=" + actor.position());
+                    }
                 }
                 helper.assertTrue(profile.has(CreatureBehaviorProfile.Feature.PHASED)
                         == !sharedHookIds.get(index).equals("banshee"),

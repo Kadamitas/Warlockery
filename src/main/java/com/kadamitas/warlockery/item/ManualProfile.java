@@ -233,6 +233,12 @@ public record ManualProfile(
     }
 
     public String translatedSectionKey(final String section) {
+        if (Set.of("bloodcrucible", "coffinblock", "glassgoblet").contains(section)) {
+            return "manual.warlockery.immortal." + section;
+        }
+        if ("fetish_statue_broken_hexes".equals(section)) {
+            return "manual.warlockery.conjuration.broken_hexes_ward";
+        }
         if (section.startsWith("crafting_")) {
             return "manual.warlockery.crafting.intro";
         }
@@ -258,6 +264,12 @@ public record ManualProfile(
                 case "chalkheart_from_gypsum" -> "item.warlockery.chalkheart";
                 case "ingredient_clay_jar_from_smelting" -> "item.warlockery.ingredient_clay_jar";
                 case "ingredient_soft_clay_jar" -> "item.warlockery.ingredient_clay_jar_soft";
+                case "critter_snare" -> "item.warlockery.crittersnare";
+                case "voidbramble" -> "manual.warlockery.herbology.void_bramble_recipe.title";
+                case "leech_chest" -> "item.warlockery.leechchest";
+                case "shaded_glass" -> "item.warlockery.shadedglass";
+                case "mirror_block" -> "item.warlockery.mirrorblock";
+                case "warm_blood_from_blood_poppy" -> "item.warlockery.ingredient_warm_blood";
                 case "altar", "alchemical_oven", "distilleryidle", "cauldron", "kettle", "silvervat", "brazier", "spinningwheel" -> "block.warlockery." + recipe;
                 default -> "item.warlockery." + recipe;
             };
@@ -358,6 +370,11 @@ public record ManualProfile(
                 "arthana",
                 "spirit_locator",
                 "veil_waystones",
+                "crafting_ingredient_waystone",
+                "ingredient_waystone",
+                "ingredient_waystone_bound",
+                "ingredient_waystone_creature_bound",
+                "circletalisman",
                 "ritual_ui",
                 "power"
             )),
@@ -401,7 +418,13 @@ public record ManualProfile(
                 "circle_brewing",
                 "delivery",
                 "diagnostics"
-            )),
+            ),
+            chapter(
+                "fluid_vessels",
+                "manual.warlockery.chapter.fluid_vessels",
+                "bucketspirit", "buckethollowtears", "bucketerosionbrew", "bucketbrew"
+            ),
+            chapter("brew_storage", "manual.warlockery.chapter.brew_storage", "crafting_brewbag", "brewbag")),
             grouped.entrySet().stream().map(entry -> chapter(
                 entry.getKey(),
                 "manual.warlockery.chapter." + entry.getKey(),
@@ -416,7 +439,8 @@ public record ManualProfile(
         chapters.add(chapter(
             "biome_practice",
             "manual.warlockery.chapter.biome_practice",
-            extended ? new String[] {"overview", "biome_notes", "shifting_rite"} : new String[] {"overview", "biome_notes"}
+            extended ? new String[] {"overview", "biome_notes", "crafting_ingredient_book_biomes", "crafting_bookbiomes2", "crafting_biomenote", "biomenote", "shifting_rite"}
+                : new String[] {"overview", "biome_notes", "crafting_ingredient_book_biomes", "crafting_bookbiomes2", "crafting_biomenote", "biomenote"}
         ));
         groupSections(BIOME_SECTIONS, ManualProfile::biomeChapter).forEach((chapterId, sections) -> chapters.add(chapter(
             chapterId,
@@ -434,6 +458,7 @@ public record ManualProfile(
                 "vampire_awakening",
                 "manual.warlockery.chapter.vampire_awakening",
                 Stream.concat(
+                    // Saved torn-page progress indexes this sequence; utility guides live in Conjuration.
                     Stream.of("nami", "blood_audience"),
                     VAMPIRE_PROGRESSION_SECTIONS.subList(0, 2).stream()
                 ).toArray(String[]::new)
@@ -483,7 +508,7 @@ public record ManualProfile(
                 "manual.warlockery.chapter.summoned_spirits",
                 "rite_summon_banshee",
                 "rite_summon_lost_soul",
-                "rite_summon_parasytic_louse",
+                "rite_summon_parasytic_louse", "louse",
                 "rite_summon_poltergeist",
                 "rite_summon_spectre"
             ),
@@ -492,6 +517,8 @@ public record ManualProfile(
                 "manual.warlockery.chapter.summoned_powers",
                 "rite_blood_audience",
                 "rite_summon_demon",
+                "device_demon_heart",
+                "rite_hell_on_earth", "archfiends_urn",
                 "rite_summon_forgewarden",
                 "rite_summon_reflection",
                 "rite_summon_stonebroker",
@@ -508,6 +535,10 @@ public record ManualProfile(
                 "fetish_dream_weaver_intensity",
                 "fetish_dream_weaver_iron_arm",
                 "fetish_dream_weaver_nightmares",
+                "crafting_alluringskull", "device_alluring_skull",
+                "crafting_dreamcatcher", "crafting_dream_weaver_fasting",
+                "crafting_dream_weaver_fleet_foot", "crafting_dream_weaver_intensity",
+                "crafting_dream_weaver_iron_arm", "crafting_dream_weaver_nightmares", "device_dream_weaver",
                 "fetish_alluring_skull",
                 "fetish_statue_goddess",
                 "fetish_statue_worship",
@@ -519,7 +550,64 @@ public record ManualProfile(
                 "binding_tools",
                 "manual.warlockery.chapter.binding_tools",
                 "sympathetic_vials",
-                "beast_speech"
+                "bloodcrucible", "coffinblock", "glassgoblet",
+                "beast_speech",
+                "crafting_replication_charge", "replication_charge",
+                "crafting_ingredient_infernal_animus", "ingredient_infernal_animus",
+                "crafting_sungrenade", "sungrenade"
+            ),
+            chapter(
+                "imp_contracts",
+                "manual.warlockery.chapter.imp_contracts",
+                "ingredient_contract", "crafting_ingredient_contract",
+                "crafting_ingredient_contract_fiery_touch", "ingredient_contract_fiery_touch",
+                "crafting_ingredient_contract_evaporate", "ingredient_contract_evaporate",
+                "crafting_ingredient_contract_resist_fire", "ingredient_contract_resist_fire",
+                "crafting_ingredient_contract_smelting", "ingredient_contract_smelting",
+                "crafting_ingredient_contract_blaze", "ingredient_contract_blaze",
+                "crafting_ingredient_contract_torment", "ingredient_contract_torment"
+            ),
+            chapter(
+                "workshop_devices",
+                "manual.warlockery.chapter.workshop_devices",
+                "crafting_leech_chest", "leechchest",
+                "crafting_shaded_glass", "shadedglass", "shadedglass_active",
+                "crafting_beartrap", "device_bear_trap",
+                "crafting_wickerbundle", "device_wicker_bundle",
+                "rowanwooddoor", "ingredient_door_key", "ingredient_door_keyring"
+            ),
+            chapter(
+                "sympathetic_dolls",
+                "manual.warlockery.chapter.sympathetic_dolls",
+                "crafting_doll", "doll",
+                "crafting_earth_guard_doll", "earth_guard_doll",
+                "crafting_water_guard_doll", "water_guard_doll",
+                "crafting_hunger_guard_doll", "hunger_guard_doll",
+                "crafting_fire_guard_doll", "fire_guard_doll",
+                "crafting_tool_mending_doll", "tool_mending_doll",
+                "crafting_death_guard_doll", "death_guard_doll",
+                "crafting_hex_guard_doll", "hex_guard_doll",
+                "crafting_hexing_doll", "hexing_doll",
+                "crafting_blood_link_doll", "blood_link_doll",
+                "crafting_doll_guard", "doll_guard",
+                "crafting_armor_mending_doll", "armor_mending_doll"
+            ),
+            chapter("enchanted_reagents", "manual.warlockery.chapter.enchanted_reagents",
+                "crafting_ingredient_bone_needle", "ingredient_bone_needle",
+                "crafting_ingredient_graveyard_dust", "ingredient_graveyard_dust",
+                "ingredient_creeper_heart", "crafting_ingredient_rock", "ingredient_rock"),
+            chapter(
+                "capturing_and_calling",
+                "manual.warlockery.chapter.capturing_and_calling",
+                "crafting_ingredient_bat_ball",
+                "ingredient_bat_ball",
+                "spectralstone",
+                "ingredient_subdued_spirit",
+                "ingredient_subdued_spirit_village",
+                "hornofthehunt",
+                "ingredient_fool_skull",
+                "ingredient_necro_stone",
+                "ingredient_soul_of_torment"
             ),
             chapter(
                 "spirit_world",
@@ -551,6 +639,9 @@ public record ManualProfile(
                 "manual.warlockery.chapter.distilling_recipes",
                 DISTILLING_RECIPE_SECTIONS.toArray(String[]::new)
             ),
+            chapter("portable_altar_power", "manual.warlockery.chapter.portable_altar_power",
+                "crafting_ingredient_attuned_stone", "ingredient_attuned_stone",
+                "rite_charge_attuned_stone", "ingredient_attuned_stone_charged"),
             chapter("workshop_tools", "manual.warlockery.chapter.workshop_tools", "crafting_spinningwheel", "spinningwheel",
                 "machine_recipe_spin_wool", "machine_recipe_spin_fanciful_thread", "machine_recipe_spin_golden_thread",
                 "machine_recipe_spin_tormented_twine", "crafting_silvervat", "silvervat", "machine_recipe_silver_vat_silver_dust")
@@ -565,10 +656,12 @@ public record ManualProfile(
                 "cultivated_herbs",
                 "manual.warlockery.chapter.cultivated_herbs",
                 "plant_artichoke",
+                "ingredient_artichoke",
                 "plant_belladonna",
                 "plant_garlic",
                 "plant_mandrake",
                 "plant_dreamroot",
+                "seedsdreamroot",
                 "plant_snowbell",
                 "plant_wolfsbane",
                 "plant_wormwood"
@@ -583,19 +676,35 @@ public record ManualProfile(
                 "plant_leaping_lily",
                 "plant_blood_rose",
                 "plant_bramble",
-                "plant_void_bramble",
+                "plant_void_bramble", "crafting_voidbramble", "device_void_bramble",
+                "crafting_plantmine", "device_plant_mine",
                 "plant_grassper",
                 "plant_pitgrass",
+                "crafting_critter_snare",
                 "plant_critter_snare"
             ),
             chapter(
                 "mutations",
                 "manual.warlockery.chapter.mutations",
+                "crafting_mutator",
+                "mutator",
                 "mutations",
                 "toad_mutation",
                 "minedrake_mutation",
                 "minedrake_bulbs",
                 "safe_harvest"
+            ),
+            chapter(
+                "field_tools",
+                "manual.warlockery.chapter.field_tools",
+                "crafting_boline",
+                "boline",
+                "ingredient_icy_needle",
+                "ingredient_wolfsbane",
+                "crafting_universal_antidote", "universal_antidote",
+                "crafting_ingredient_purified_milk", "ingredient_purified_milk",
+                "crafting_warm_blood_from_blood_poppy", "ingredient_warm_blood",
+                "ingredient_verdant_catalyst", "ingredient_verdant_catalyst_prime", "ingredient_redstone_soup"
             )
         );
     }
@@ -608,7 +717,7 @@ public record ManualProfile(
                 "infusion_practice",
                 "manual.warlockery.chapter.infusion_practice",
                 "paths",
-                "focus",
+                "focus", "arcane_focus", "arcane_focus_targets",
                 "reserve"
             ),
             chapter(
@@ -624,13 +733,55 @@ public record ManualProfile(
             chapter(
                 "object_infusions",
                 "manual.warlockery.chapter.object_infusions",
-                "rite_infuse_brew_grave",
+                "rite_infuse_brew_grave", "ingredient_brew_grave",
                 "rite_infuse_brew_soaring",
                 "rite_infuse_broom",
                 "rite_infuse_crystal_ball",
                 "rite_infuse_mirror",
                 "rite_infuse_mystic_branch",
-                "rite_infuse_seer_stone"
+                "rite_infuse_seer_stone",
+                "crafting_replication_staff", "replication_staff"
+            ),
+            chapter(
+                "enchanted_clothing",
+                "manual.warlockery.chapter.enchanted_clothing",
+                "earmuffs", "seepingshoes", "barkbelt", "twisting_band", "iceslippers",
+                "bitingbelt", "emberstep_slippers"
+            ),
+            chapter(
+                "patron_equipment",
+                "manual.warlockery.chapter.patron_equipment",
+                "forgewardens_girdle", "stonebrokers_quiver"
+            ),
+            chapter(
+                "death_disguise",
+                "manual.warlockery.chapter.death_disguise",
+                "deathscowl", "deathsrobe", "deathsfeet", "deathshand"
+            ),
+            chapter(
+                "brewing_garb",
+                "manual.warlockery.chapter.brewing_garb",
+                "witchhat", "witchrobe", "hedge_crones_hat", "necromancerrobe"
+            ),
+            chapter(
+                "silver_armor",
+                "manual.warlockery.chapter.silver_armor",
+                "silverhelm", "silverchestplate", "silverleggings", "silverboots"
+            ),
+            chapter(
+                "hunter_armor",
+                "manual.warlockery.chapter.hunter_armor",
+                "werewolf_hunter_hat", "werewolf_hunter_coat", "werewolf_hunter_leggings", "werewolf_hunter_boots",
+                "werewolf_hunter_hat_silvered", "werewolf_hunter_coat_silvered",
+                "werewolf_hunter_leggings_silvered", "werewolf_hunter_boots_silvered",
+                "werewolf_hunter_hat_dawn", "werewolf_hunter_coat_dawn",
+                "werewolf_hunter_leggings_dawn", "werewolf_hunter_boots_dawn"
+            ),
+            chapter(
+                "hunter_ammunition",
+                "manual.warlockery.chapter.hunter_ammunition",
+                "crafting_ingredient_bolt_holy", "ingredient_bolt_holy",
+                "crafting_ingredient_bolt_stake", "ingredient_bolt_stake"
             )
         );
     }
@@ -647,7 +798,8 @@ public record ManualProfile(
                 "crafting_ingredient_clay_jar_from_smelting",
                 "oven",
                 "jars",
-                "funnels"
+                "funnels",
+                "crafting_daylightcollector", "crafting_ingredient_quartz_sphere", "device_sun_collector"
             ),
             chapter(
                 "common_fumes",
@@ -681,14 +833,22 @@ public record ManualProfile(
             chapter(
                 "foci_and_staves",
                 "manual.warlockery.chapter.foci_and_staves",
-                "focus",
+                "focus", "mysticbranch", "mysticbranch_signs",
                 "deflection"
             ),
             chapter(
                 "gestures_and_marks",
                 "manual.warlockery.chapter.gestures_and_marks",
-                "gestures"
-            )
+                "gestures", "rite_infuse_crystal_ball", "device_crystal_ball"
+            ),
+            chapter("divination_tools", "manual.warlockery.chapter.divination_tools",
+                "crafting_divinerwater", "divinerwater", "crafting_divinerlava", "divinerlava",
+                "machine_recipe_cauldron_playercompass", "playercompass",
+                "crafting_shelfcompass", "shelfcompass",
+                "rite_infuse_seer_stone", "ingredient_seer_stone"),
+            chapter("travel_tools", "manual.warlockery.chapter.travel_tools",
+                "crafting_mirror_block", "mirrorblock", "mirrorblock2", "mirrorwall",
+                "rite_infuse_mirror", "mirror", "crafting_ruby_slippers", "ruby_slippers")
         );
     }
 

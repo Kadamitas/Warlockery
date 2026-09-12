@@ -134,6 +134,22 @@ final class ManualProgressTest {
     }
 
     @Test
+    void bloodToolGuidesAreReadableWithoutChangingTheTornPageLessonSequence() {
+        final ManualProfile conjuration = profile("ingredient_book_burning");
+        final ManualProfile observations = profile("vampirebook");
+        final ItemStack book = bookStack();
+        for (String section : List.of("bloodcrucible", "coffinblock", "glassgoblet")) {
+            assertTrue(ManualView.from(conjuration, book).sections().contains(section), section);
+            assertEquals("binding_tools", conjuration.chapterFor(section).id(), section);
+            assertEquals("manual.warlockery.immortal." + section, conjuration.translatedSectionKey(section));
+            assertFalse(observations.sections().contains(section), section);
+        }
+        assertEquals(0, ManualProgress.requiredTornPages(conjuration, book));
+        assertEquals("vampire_level_2", insertPage(observations, book,
+            new ItemStack(Holder.direct(Items.PAPER)), false).section().orElseThrow());
+    }
+
+    @Test
     void tornPageUseIsTheOnlyProductionCallSiteThatCanRevealAChapter() throws Exception {
         final var insertionMethod = ManualProgress.class.getDeclaredMethod(
             "insertTornPage",

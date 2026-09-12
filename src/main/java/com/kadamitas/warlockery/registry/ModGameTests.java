@@ -1,6 +1,9 @@
 package com.kadamitas.warlockery.registry;
 
+import com.kadamitas.warlockery.block.ConnectedGlyphGameTests;
 import com.kadamitas.warlockery.brew.CauldronChalkCircleGameTests;
+import com.kadamitas.warlockery.brew.DepthsBreathingGameTests;
+import com.kadamitas.warlockery.brew.SinkingFluidContactGameTests;
 import com.kadamitas.warlockery.brew.SolidifyingBrewGameTests;
 import com.kadamitas.warlockery.dream.SpiritWorldGameTests;
 import com.kadamitas.warlockery.entity.TacticalCombatGameTests;
@@ -315,8 +318,16 @@ public final class ModGameTests {
             () -> WarlockeryGameTests::shelvedMendingDollsRepairOncePerSecond);
         REGISTRY.register("self_applied_doll_remains_active_on_shelf",
             () -> WarlockeryGameTests::selfAppliedDollRemainsActiveOnShelf);
+        REGISTRY.register("sinking_brew_detects_tagged_fluid_and_burdens_normal_swimming",
+            () -> SinkingFluidContactGameTests::sinkingBrewDetectsTaggedFluidAndBurdensNormalSwimming);
+        REGISTRY.register("depths_breathing_survives_vanilla_air_recovery",
+            () -> DepthsBreathingGameTests::depthsBreathingSurvivesVanillaAirRecovery);
+        REGISTRY.register("attuned_stone_transfers_through_normal_block_use",
+            () -> WarlockeryGameTests::attunedStoneTransfersThroughNormalBlockUse);
         REGISTRY.register("altar_attachments_install_render_and_shift_remove",
             () -> WarlockeryGameTests::altarAttachmentsInstallRenderAndShiftRemove);
+        REGISTRY.register("diagonal_chalk_updates_both_endpoints_and_preserves_cardinal_rules",
+            () -> ConnectedGlyphGameTests::diagonalChalkUpdatesBothEndpointsAndPreservesCardinalRules);
         REGISTRY.register("chalk_places_connected_glyphs_and_spends_durability",
             () -> WarlockeryGameTests::chalkPlacesConnectedGlyphsAndSpendsDurability);
         REGISTRY.register("unsupported_chalk_vanishes_without_dropping_glyph_items",

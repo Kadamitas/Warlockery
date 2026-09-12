@@ -623,6 +623,29 @@ public final class WarlockeryGameTests {
         helper.succeed();
     }
 
+    public static void attunedStoneTransfersThroughNormalBlockUse(final GameTestHelper helper) {
+        final BlockPos relative = new BlockPos(4, 1, 4);
+        withPoweredAltar(helper, relative, 500, altar -> {
+            final ServerPlayer player = connectedSurvivalPlayer(helper);
+            final BlockPos absolute = helper.absolutePos(relative);
+            player.setPos(Vec3.atBottomCenterOf(absolute.north(2)));
+            final ItemStack stone = new ItemStack(ModItems.ALL.get("ingredient_attuned_stone").get());
+            player.setItemInHand(InteractionHand.MAIN_HAND, stone);
+            final BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(absolute), Direction.NORTH, absolute, false);
+            player.gameMode.useItemOn(player, helper.getLevel(), stone, InteractionHand.MAIN_HAND, hit);
+            helper.assertValueEqual(com.kadamitas.warlockery.item.AttunedStoneItem.storedPower(stone), 250,
+                "normal block interaction reaches the stone's withdrawal instead of the altar status action");
+            helper.assertValueEqual(altar.getPower(), 250, "withdrawal conserves altar power");
+            player.setShiftKeyDown(true);
+            player.gameMode.useItemOn(player, helper.getLevel(), stone, InteractionHand.MAIN_HAND, hit);
+            helper.assertValueEqual(com.kadamitas.warlockery.item.AttunedStoneItem.storedPower(stone), 0,
+                "crouched block interaction returns the charge");
+            helper.assertValueEqual(altar.getPower(), 500, "deposit restores the original altar reserve");
+            helper.assertValueEqual(stone.getCount(), 1, "power transfers preserve the stone");
+            helper.assertValueEqual(altar.attachmentCount(), 0, "the portable stone never becomes an altar attachment");
+            helper.succeed();
+        });
+    }
     public static void altarAttachmentsInstallRenderAndShiftRemove(final GameTestHelper helper) {
         final BlockPos relativePosition = new BlockPos(1, 1, 1);
         final BlockPos position = helper.absolutePos(relativePosition);
@@ -1119,12 +1142,31 @@ public final class WarlockeryGameTests {
         helper.succeed();
     }
 
+    private static java.util.List<AltarBlockEntity> reachableMachineAltars(
+        final GameTestHelper helper, final BlockPos machine
+    ) {
+        return com.kadamitas.warlockery.crafting.AltarRangeIndex.within(helper.getLevel(), machine, 32, 4, 6)
+            .filter(helper.getLevel()::hasChunkAt)
+            .map(helper.getLevel()::getBlockEntity)
+            .filter(AltarBlockEntity.class::isInstance)
+            .map(AltarBlockEntity.class::cast)
+            .filter(altar -> !altar.isRemoved() && altar.isMultiblockValid())
+            .toList();
+    }
+
+    private static void removeTestAltarAtEnd(final GameTestHelper helper, final BlockPos relativeAltar) {
+        com.kadamitas.warlockery.util.GameTestCleanup.add(helper, passed -> {
+            BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
+                .forEach(position -> helper.setBlock(position, Blocks.AIR));
+        });
+    }
     private static void withPoweredAltar(
         final GameTestHelper helper,
         final BlockPos relativeAltar,
         final int power,
         final java.util.function.Consumer<AltarBlockEntity> assertions
     ) {
+        removeTestAltarAtEnd(helper, relativeAltar);
         BlockPos.betweenClosedStream(relativeAltar, relativeAltar.offset(2, 0, 1))
             .forEach(position -> helper.setBlock(position, ModBlocks.ALTAR.get()));
         helper.runAfterDelay(165L, () -> {
@@ -1173,8 +1215,19 @@ public final class WarlockeryGameTests {
             );
         }
         helper.assertTrue(machine.getItem(0).isEmpty(), "simulated pipe insertion must not mutate inventory");
+        // A second owned altar proves accounting follows the real reachable power network.
+        final BlockPos secondAltar = new BlockPos(9, 1, 9);
+        removeTestAltarAtEnd(helper, secondAltar);
+        BlockPos.betweenClosedStream(secondAltar, secondAltar.offset(2, 0, 1))
+            .forEach(position -> helper.setBlock(position, ModBlocks.ALTAR.get()));
         final BlockPos altarRelative = new BlockPos(4, 1, 4);
         withPoweredAltar(helper, altarRelative, 180, altar -> {
+            BlockPos.betweenClosedStream(secondAltar, secondAltar.offset(2, 0, 1)).forEach(position -> {
+                final AltarBlockEntity part = helper.getBlockEntity(position, AltarBlockEntity.class);
+                helper.assertTrue(part.isMultiblockValid(), "the second reachable altar becomes valid");
+                helper.assertTrue(part.consumePower(part.availablePower()), "normalize the second altar charge");
+                helper.assertValueEqual(part.receivePower(30), 30, "the second altar accepts its exact charge");
+            });
             try (Transaction transaction = Transaction.openOuter()) {
                 helper.assertValueEqual(top.insert(ItemVariant.of(Items.STRING), 8, transaction), 8L,
                     "top pipe must insert recipe inputs");
@@ -1184,7 +1237,11 @@ public final class WarlockeryGameTests {
                 helper.assertValueEqual(top.extract(ItemVariant.of(Items.STRING), 1, transaction), 0L,
                     "top pipe must not extract recipe inputs");
             }
-            final int powerBefore = totalAltarPower(helper, altarRelative);
+            // Continuous recipes may share their exact cost among any reachable altar parts.
+            final java.util.List<AltarBlockEntity> powerSources = reachableMachineAltars(helper, absolute);
+            helper.assertTrue(powerSources.size() >= 12, "both complete altars must be eligible power sources");
+            final long powerTick = helper.getLevel().getGameTime();
+            final int powerBefore = powerSources.stream().mapToInt(AltarBlockEntity::availablePower).sum();
             IntStream.range(0, 300).forEach(_ -> MagicMachineBlockEntity.serverTick(
                 helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), machine
             ));
@@ -1207,8 +1264,11 @@ public final class WarlockeryGameTests {
                 transaction.commit();
             }
             helper.assertTrue(machine.getItem(4).isEmpty(), "real extraction must remove output");
-            helper.assertValueEqual(powerBefore - totalAltarPower(helper, altarRelative), 180,
-                "automated spinning consumes exactly 180 altar power across the six-block altar");
+            helper.assertValueEqual(helper.getLevel().getGameTime(), powerTick,
+                "the power measurement cannot include natural altar recharge");
+            helper.assertValueEqual(
+                powerBefore - powerSources.stream().mapToInt(AltarBlockEntity::availablePower).sum(), 180,
+                "automated spinning consumes exactly 180 power across every reachable altar");
 
         final BlockPos ovenRelative = new BlockPos(2, 1, 1);
         helper.setBlock(ovenRelative, ModBlocks.ALL.get("alchemical_oven").get());

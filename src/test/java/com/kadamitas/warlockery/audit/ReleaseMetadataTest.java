@@ -17,7 +17,7 @@ final class ReleaseMetadataTest {
     @Test
     void stableVersionMatchesUpdateFeedAndChangelog() throws IOException {
         final String version = property("mod_version");
-        assertEquals("1.5.2", version);
+        assertEquals("1.5.3", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
@@ -94,7 +94,7 @@ final class ReleaseMetadataTest {
     @Test
     void curseForgeWorkflowKeepsNormalLoadersAndGuardsTheSupporterBuild() throws IOException {
         final String contents = read(".github/workflows/publish-curseforge.yml");
-        assertTrue(contents.contains("default: v1.5.2"));
+        assertTrue(contents.contains("default: v1.5.3"));
         assertTrue(contents.contains("- forge"));
         assertTrue(contents.contains("- neoforge"));
         assertTrue(contents.contains("- fabric"));

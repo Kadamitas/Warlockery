@@ -24,7 +24,7 @@ interface ViewerAcceptanceDriver {
         return switch (viewer) {
             case "emi" -> new EmiAcceptanceDriver();
             case "rrv" -> new RrvAcceptanceDriver();
-            case "rei" -> new ReiAcceptanceDriver();
+            case "rei" -> throw new UnsupportedOperationException("REI client acceptance driver is not implemented; no REI acceptance coverage is available.");
             default -> throw new IllegalArgumentException("Unknown viewer: " + viewer);
         };
     }

@@ -269,7 +269,7 @@ public final class ManualClientAcceptance implements FabricClientGameTest {
             "The full Rite of Summoning: Familiar navigation label wraps across multiple lines at GUI scale 3");
     }
 
-    private static void selectSection(final ClientGameTestContext context, final String section) {
+    static void selectSection(final ClientGameTestContext context, final String section) {
         String title = context.computeOnClient(client -> Component.translatable(
             ((ManualProfile) field(client.gui.screen(), "manual")).translatedSectionTitleKey(section)).getString());
         search(context, title);

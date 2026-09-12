@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery;
 
+import com.kadamitas.warlockery.block.ConnectedGlyphChunkRefresh;
 import com.kadamitas.warlockery.compat.fabric.FabricEnergyCompatibility;
 import com.kadamitas.warlockery.config.WarlockeryConfig;
 import com.kadamitas.warlockery.data.WarlockeryEntityData;
@@ -57,6 +58,9 @@ public final class Warlockery implements ModInitializer {
 
         WarlockeryWorldGeneration.initialize();
         WarlockeryFabricEvents.initialize();
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents.CHUNK_LOAD.register(
+            (level, chunk, newChunk) -> ConnectedGlyphChunkRefresh.queue(level, chunk.getPos()));
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_LEVEL_TICK.register(ConnectedGlyphChunkRefresh::tick);
         LOGGER.info("Loading Warlockery for Minecraft 26.2 on Fabric");
     }
 }

@@ -1,7 +1,9 @@
 package com.kadamitas.warlockery.dream;
 
+import com.kadamitas.warlockery.registry.ModChunkTickets;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.ritual.RitualManager;
+import com.kadamitas.warlockery.util.GameTestCleanup;
 import com.kadamitas.warlockery.util.GameTestMockPlayers;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.Set;
@@ -18,7 +20,9 @@ import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.TicketStorage;
 
 public final class SpiritWorldGameTests {
     private SpiritWorldGameTests() {
@@ -26,7 +30,9 @@ public final class SpiritWorldGameTests {
 
     public static void entryCreatesStateBodyAndDiagnostic(final GameTestHelper helper) {
         final ServerPlayer player = connectedSurvivalPlayer(helper);
+        player.setInvulnerable(true);
         final ServerLevel source = player.level();
+        final int initialTicks = player.tickCount;
         final SpiritWorldRuntime.EntryResult entry = SpiritWorldRuntime.enter(player, false);
         helper.assertTrue(entry.entered(), "ordinary dream entry must succeed");
         helper.assertTrue(SpiritWorldRuntime.isSpiritWorld(player.level(), player),
@@ -40,9 +46,65 @@ public final class SpiritWorldGameTests {
             SpiritWorldRules.EntryDiagnostic.ALREADY_DREAMING,
             "second entry diagnostic"
         );
-        helper.assertTrue(SpiritWorldRuntime.wake(player, SpiritWorldRules.WakeCause.RETURN_PORTAL),
-            "test dream must return through its portal");
-        helper.succeed();
+        final ServerPlayer second = connectedSurvivalPlayer(helper);
+        second.setInvulnerable(true);
+        second.teleportTo(session.sourceX() + 0.25, session.sourceY(), session.sourceZ());
+        final int secondInitialTicks = second.tickCount;
+        helper.assertTrue(SpiritWorldRuntime.enter(second, false).entered(), "second dreamer must enter");
+        final SpiritWorldState.Session secondSession = SpiritWorldState.read(second).orElseThrow();
+        helper.assertFalse(session.body().equals(secondSession.body()), "dreamers must have distinct sleeping bodies");
+        helper.assertValueEqual(bodyChunk(session), bodyChunk(secondSession), "sleeping bodies must share one source chunk");
+        helper.runAfterDelay(90, () -> {
+            assertDreamBodyRetained(helper, source, player, session, initialTicks);
+            assertDreamBodyRetained(helper, source, second, secondSession, secondInitialTicks);
+            helper.assertTrue(SpiritWorldRuntime.wake(player, SpiritWorldRules.WakeCause.RETURN_PORTAL),
+                "first dreamer must return through its portal");
+            helper.assertFalse(SpiritWorldRuntime.isDreaming(player), "first wake must clear its dream state");
+            helper.assertTrue(source.getEntity(session.body()) == null, "first wake must remove its sleeping body");
+            helper.assertTrue(hasBodyTicket(source, secondSession), "first wake must retain the other dreamer's body ticket");
+            final int secondTicksAfterFirstWake = second.tickCount;
+            helper.runAfterDelay(90, () -> {
+                assertDreamBodyRetained(helper, source, second, secondSession, secondTicksAfterFirstWake);
+                helper.assertTrue(SpiritWorldRuntime.wake(second, SpiritWorldRules.WakeCause.RETURN_PORTAL),
+                    "second dreamer must return through its portal");
+                helper.assertFalse(SpiritWorldRuntime.isDreaming(second), "second wake must clear its dream state");
+                helper.assertTrue(source.getEntity(secondSession.body()) == null, "second wake must remove its sleeping body");
+                helper.runAfterDelay(90, () -> {
+                    helper.assertFalse(hasBodyTicket(source, session), "body ticket must expire after both dreams end");
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
+    private static void assertDreamBodyRetained(
+        final GameTestHelper helper,
+        final ServerLevel source,
+        final ServerPlayer player,
+        final SpiritWorldState.Session session,
+        final int initialTicks
+    ) {
+        helper.assertTrue(player.tickCount - initialTicks > 80, "connected dreamer must receive more than eighty normal ticks");
+        helper.assertTrue(SpiritWorldRuntime.isDreaming(player), "normal ticks must preserve the dream session");
+        helper.assertTrue(SpiritWorldRuntime.isSpiritWorld(player.level(), player), "dreamer must remain in its dream destination");
+        helper.assertValueEqual(SpiritWorldState.read(player).orElseThrow().body(), session.body(),
+            "normal ticks must preserve the original body link");
+        final Entity body = source.getEntity(session.body());
+        helper.assertTrue(body != null && body.isAlive() && SpiritWorldRuntime.isSleepingBody(body),
+            "normal ticks must retain the living sleeping body");
+        helper.assertValueEqual(SpiritWorldRuntime.bodyDreamer(body).orElseThrow(), player.getUUID(),
+            "sleeping body must remain linked to its own dreamer");
+        helper.assertTrue(hasBodyTicket(source, session), "normal player ticks must refresh the expiring body ticket");
+    }
+
+    private static long bodyChunk(final SpiritWorldState.Session session) {
+        return ChunkPos.pack(BlockPos.containing(session.sourceX(), session.sourceY(), session.sourceZ()));
+    }
+
+    private static boolean hasBodyTicket(final ServerLevel source, final SpiritWorldState.Session session) {
+        final TicketStorage tickets = source.getDataStorage().get(TicketStorage.TYPE);
+        return tickets != null && tickets.getTickets(bodyChunk(session)).stream()
+            .anyMatch(ticket -> ticket.getType() == ModChunkTickets.SLEEPING_BODY.get() && !ticket.isTimedOut());
     }
 
     public static void carryInAndExportsRestoreWithoutDuplication(final GameTestHelper helper) {
@@ -175,9 +237,15 @@ public final class SpiritWorldGameTests {
     private static ServerPlayer connectedSurvivalPlayer(final GameTestHelper helper) {
         final ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
         final Connection connection = new Connection(PacketFlow.SERVERBOUND);
-        new EmbeddedChannel(connection);
+        final EmbeddedChannel channel = new EmbeddedChannel(connection);
+        final var server = helper.getLevel().getServer();
         final CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
-        helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
+        server.getPlayerList().placeNewPlayer(connection, player, cookie);
+        server.getConnection().getConnections().add(connection);
+        GameTestCleanup.add(helper, passed -> {
+            server.getConnection().getConnections().remove(connection);
+            channel.finishAndReleaseAll();
+        });
         player.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket());
         player.setGameMode(GameType.SURVIVAL);
         final BlockPos position = helper.absolutePos(new BlockPos(1, 2, 1));

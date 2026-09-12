@@ -10,6 +10,7 @@ import com.kadamitas.warlockery.brew.BrewMarkerKind;
 import com.kadamitas.warlockery.brew.BrewMarkerState;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.registry.ModChunkTickets;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.ritual.ManifestationRuntime;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -235,6 +237,7 @@ public final class SpiritWorldRuntime {
             player.sendOverlayMessage(Component.translatable("message.warlockery.spirit_world.entry.body_failed"));
             return new EntryResult(SpiritWorldRules.EntryDiagnostic.DESTINATION_UNAVAILABLE, nightmare);
         }
+        retainBodyChunk(source, player.blockPosition());
         final List<ItemStackWithSlot> completeInventory = SpiritWorldState.snapshot(player.getInventory());
         final List<ItemStackWithSlot> carriedIntoDream = SpiritWorldRules.exports(
             completeInventory,
@@ -447,6 +450,13 @@ public final class SpiritWorldRuntime {
         ));
     }
 
+    private static ChunkPos retainBodyChunk(final ServerLevel source, final BlockPos position) {
+        final ChunkPos chunk = new ChunkPos(position.getX() >> 4, position.getZ() >> 4);
+        source.getChunkSource().addTicketWithRadius(ModChunkTickets.SLEEPING_BODY.get(), chunk, 2);
+        source.getChunkAt(position);
+        return chunk;
+    }
+
     private static boolean bodyPresent(final ServerPlayer player) {
         return SpiritWorldState.read(player).map(session -> {
             final ServerLevel source = player.level().getServer().getLevel(ResourceKey.create(
@@ -456,7 +466,10 @@ public final class SpiritWorldRuntime {
             if (source == null) {
                 return true;
             }
-            source.getChunkAt(BlockPos.containing(session.sourceX(), session.sourceY(), session.sourceZ()));
+            final ChunkPos bodyChunk = retainBodyChunk(source, BlockPos.containing(session.sourceX(), session.sourceY(), session.sourceZ()));
+            if (!source.isPositionTickingWithEntitiesLoaded(bodyChunk.pack())) {
+                return true;
+            }
             final Entity body = source.getEntity(session.body());
             return body != null && body.isAlive() && isSleepingBody(body);
         }).orElse(false);

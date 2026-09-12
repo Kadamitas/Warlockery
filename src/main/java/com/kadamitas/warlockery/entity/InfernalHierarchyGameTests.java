@@ -1,5 +1,7 @@
 package com.kadamitas.warlockery.entity;
 
+import com.kadamitas.warlockery.brew.BrewKind;
+import com.kadamitas.warlockery.brew.BrewRuntime;
 import com.kadamitas.warlockery.data.WarlockeryEntityData;
 
 import com.kadamitas.warlockery.entity.ArcaneCreature.CreatureKind;
@@ -1717,24 +1719,38 @@ public final class InfernalHierarchyGameTests {
                 summoned.discard();
             }
 
-            final Entity brewResult = ModEntities.ALL.get("emberhorn_archfiend").get().spawn(
-                helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)), EntitySpawnReason.EVENT
+            final var brewArea = authored.getBoundingBox().inflate(4.0D);
+            final List<UUID> existingHierarchyIds = helper.getLevel().getEntitiesOfClass(
+                InfernalHierarchyEntity.class, brewArea, Entity::isAlive
+            ).stream().map(Entity::getUUID).toList();
+            final BrewRuntime.ImpactResult brewResult = BrewRuntime.handleImpact(
+                helper.getLevel(), BrewKind.require("summon_abyssal_regent"), authored.position(), null, null
             );
-            helper.assertTrue(brewResult instanceof InfernalHierarchyEntity,
-                "the summon_abyssal_regent route still constructs the hierarchy adapter");
-            final InfernalHierarchyEntity archfiend = (InfernalHierarchyEntity) brewResult;
-            fixture.track(archfiend);
-            archfiend.setNoAi(true);
-            helper.assertValueEqual(archfiend.creatureKind(), CreatureKind.EMBERHORN_ARCHFIEND,
-                "the tested brew mismatch keeps creating an Emberhorn Archfiend");
-            archfiend.setTarget(authored);
-            archfiend.setPersistenceRequired();
-            makeDue(archfiend);
-            InfernalHierarchyRuntime.tick(archfiend, helper.getLevel());
-            helper.assertTrue(archfiend.getTargetUnchecked() == authored,
-                "the hierarchy decision cadence never clears the authored acquisition target");
-            helper.assertTrue(archfiend.isPersistenceRequired(),
-                "the acquisition persistence flag survives the hierarchy runtime");
+            final List<InfernalHierarchyEntity> brewEntities = helper.getLevel().getEntitiesOfClass(
+                InfernalHierarchyEntity.class, brewArea,
+                entity -> entity.isAlive() && !existingHierarchyIds.contains(entity.getUUID())
+            );
+            brewEntities.forEach(fixture::track);
+            helper.assertValueEqual(brewResult.affectedEntities(), 1,
+                "the real brew dispatch reports one summoned creature");
+            helper.assertValueEqual(brewEntities.size(), 1,
+                "the real brew dispatch creates exactly one hierarchy entity");
+            final InfernalHierarchyEntity regent = brewEntities.getFirst();
+            regent.setNoAi(true);
+            helper.assertValueEqual(regent.getType(), ModEntities.ALL.get("abyssal_regent").get(),
+                "Summon Abyssal Regent creates its named registered type");
+            helper.assertValueEqual(regent.creatureKind(), CreatureKind.ABYSSAL_REGENT,
+                "the brew result retains the Abyssal Regent hierarchy identity");
+            helper.assertTrue(regent.getTargetUnchecked() == authored,
+                "the brew itself assigns the nearest eligible creature as its target");
+            helper.assertTrue(regent.isPersistenceRequired(),
+                "the brew itself marks its summoned Regent persistent");
+            makeDue(regent);
+            InfernalHierarchyRuntime.tick(regent, helper.getLevel());
+            helper.assertTrue(regent.getTargetUnchecked() == authored,
+                "the hierarchy decision cadence preserves the brew-assigned acquisition target");
+            helper.assertTrue(regent.isPersistenceRequired(),
+                "the brew-assigned persistence flag survives the hierarchy runtime");
 
             final InfernalHierarchyEntity pursuer = createRank(helper, "demon", EntitySpawnReason.TRIGGERED);
             fixture.track(pursuer);
