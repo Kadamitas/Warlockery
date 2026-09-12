@@ -42,6 +42,28 @@ final class ManualArticleCatalogTest {
     }
 
     @Test
+    void newlyIndexedCraftingGuidesPictureTheirSpecificReagents() {
+        final var circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        final var waystone = ManualArticleCatalog.article(circles, "crafting_ingredient_waystone");
+        assertEquals(java.util.Set.of(
+            "warlockery:ingredient_waystone", "minecraft:flint", "warlockery:ingredient_bone_needle"
+        ), waystone.pictograms().stream().map(ManualArticleCatalog.Pictogram::itemId)
+            .collect(java.util.stream.Collectors.toSet()));
+
+        final var symbology = ManualProfile.find("ingredient_book_wands").orElseThrow();
+        final var diviner = ManualArticleCatalog.article(symbology, "crafting_divinerwater");
+        assertTrue(diviner.pictograms().stream().map(ManualArticleCatalog.Pictogram::itemId).toList()
+            .containsAll(java.util.List.of("minecraft:potion", "warlockery:ingredient_tear_of_the_goddess")));
+        assertFalse(diviner.pictograms().stream().anyMatch(p -> p.itemId().equals("minecraft:paper")));
+
+        final var conjuration = ManualProfile.find("ingredient_book_burning").orElseThrow();
+        final var doll = ManualArticleCatalog.article(conjuration, "crafting_doll");
+        assertTrue(doll.pictograms().stream().map(ManualArticleCatalog.Pictogram::itemId).toList()
+            .containsAll(java.util.List.of("minecraft:white_wool", "minecraft:string")));
+        assertFalse(doll.pictograms().stream().anyMatch(p -> p.itemId().equals("minecraft:paper")));
+    }
+
+    @Test
     void circleFoundationsExplainGoldenChalkAndArthanaAndShowCraftingPatterns() {
         final ManualProfile circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
         assertTrue(circles.sections().containsAll(java.util.List.of("golden_chalk", "arthana",

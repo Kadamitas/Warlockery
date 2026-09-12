@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_contract",
+    "minecraft:blaze_powder"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_contract_fiery_touch",
+    "count": 1
+  }
+}

@@ -9,7 +9,6 @@ import java.util.Set;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.item.component.BundleContents;
 
 public final class UtilityItemFactory {
@@ -37,7 +36,7 @@ public final class UtilityItemFactory {
         final Map<String, ContentFactory<Item.Properties, Item>> factories = new LinkedHashMap<>();
         factories.put("divinerlava", properties -> new FluidDivinerItem(properties.durability(128), FluidTags.LAVA, "lava"));
         factories.put("divinerwater", properties -> new FluidDivinerItem(properties.durability(128), FluidTags.WATER, "water"));
-        factories.put("boline", ShearsItem::new);
+        factories.put("boline", BolineItem::new);
         factories.put("biomenote", BiomeNoteItem::new);
         factories.put("playercompass", PlayerCompassItem::new);
         factories.put("shelfcompass", ShelfCompassItem::new);

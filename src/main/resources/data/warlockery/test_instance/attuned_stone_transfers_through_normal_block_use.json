@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:attuned_stone_transfers_through_normal_block_use",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "attuned_stone_transfers_through_normal_block_use",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 240
+}

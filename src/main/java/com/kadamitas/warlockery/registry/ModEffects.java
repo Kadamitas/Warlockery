@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.registry;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.effect.SoaringMobEffect;
+import com.kadamitas.warlockery.effect.UndeadMendingMobEffect;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -15,6 +16,10 @@ public final class ModEffects {
     public static final DeferredHolder<MobEffect, MobEffect> SOARING = REGISTRY.register(
         "soaring",
         SoaringMobEffect::new
+    );
+    public static final DeferredHolder<MobEffect, MobEffect> UNDEAD_MENDING = REGISTRY.register(
+        "undead_mending",
+        UndeadMendingMobEffect::new
     );
 
     private ModEffects() {

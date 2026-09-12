@@ -37,23 +37,33 @@ final class HighTierReagentParityTest {
     }
 
     @Test
-    void leonardBrewCreatesTheUrnDroppingShade() throws IOException {
+    void abyssalRegentBrewCreatesTheSourceOfTormentSouls() throws IOException {
         assertEquals(
             "warlockery:brew_summon_abyssal_regent",
             json(DATA.resolve("warlockery_machine/kettle_brew_summon_abyssal_regent.json"))
                 .getAsJsonArray("outputs").get(0).getAsJsonObject().get("item").getAsString()
         );
         assertEquals(
-            "warlockery:archfiends_urn",
-            json(DATA.resolve("loot_table/entities/emberhorn_archfiend.json"))
-                .getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries").get(0)
+            "warlockery:ingredient_soul_of_torment",
+            json(DATA.resolve("loot_table/entities/abyssal_regent.json"))
+                .getAsJsonArray("pools").get(1).getAsJsonObject().getAsJsonArray("entries").get(0)
                 .getAsJsonObject().get("name").getAsString()
         );
         final String runtime = Files.readString(Path.of(
             "src/main/java/com/kadamitas/warlockery/brew/BrewRuntime.java"
         ));
-        assertTrue(runtime.contains("summonArchfiendShade"));
-        assertTrue(runtime.contains("ModEntities.ALL.get(\"emberhorn_archfiend\")"));
+        assertTrue(runtime.contains("case SUMMON_ABYSSAL_REGENT -> summonAbyssalRegent(context)"));
+        assertTrue(runtime.contains("ModEntities.ALL.get(\"abyssal_regent\")"));
+    }
+
+    @Test
+    void emberhornArchfiendKeepsTheUrnDrop() throws IOException {
+        assertEquals(
+            "warlockery:archfiends_urn",
+            json(DATA.resolve("loot_table/entities/emberhorn_archfiend.json"))
+                .getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries").get(0)
+                .getAsJsonObject().get("name").getAsString()
+        );
     }
 
     private static Set<String> ritualIngredients(final String id) throws IOException {

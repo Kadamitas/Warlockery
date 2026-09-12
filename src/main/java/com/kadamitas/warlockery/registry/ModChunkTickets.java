@@ -22,6 +22,11 @@ public final class ModChunkTickets {
         )
     );
 
+    public static final DeferredHolder<TicketType, TicketType> SLEEPING_BODY = REGISTRY.register(
+        "sleeping_body",
+        () -> new TicketType(60L, TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION | TicketType.FLAG_KEEP_DIMENSION_ACTIVE)
+    );
+
     private ModChunkTickets() {
     }
 }

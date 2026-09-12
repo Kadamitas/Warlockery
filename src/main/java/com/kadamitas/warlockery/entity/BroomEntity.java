@@ -161,6 +161,11 @@ public final class BroomEntity extends VehicleEntity {
     }
 
     @Override
+    protected boolean isLocalClientAuthoritative() {
+        return false;
+    }
+
+    @Override
     public InterpolationHandler getInterpolation() {
         return interpolation;
     }

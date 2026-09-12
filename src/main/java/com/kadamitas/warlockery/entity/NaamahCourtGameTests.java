@@ -103,7 +103,7 @@ public final class NaamahCourtGameTests {
             .rememberAttacker(savedChallenger.getUUID(), saveNow + 200L)
             .withDestination(staleVeilDestination, saveNow + 200L)
             .withSchedule(saveNow + 200L, saveNow, saveNow + 200L, saveNow + 200L, saveNow)
-            .beginAction(Action.VEIL_STEP, saveNow - NaamahCourtRules.MIN_WINDUP_TICKS + 2L,
+            .beginAction(Action.VEIL_STEP, saveNow,
                 savedChallenger.getUUID(), actionDimension));
         final TagValueOutput savedOutput = TagValueOutput.createWithContext(
             ProblemReporter.DISCARDING, helper.getLevel().registryAccess()
@@ -129,7 +129,7 @@ public final class NaamahCourtGameTests {
             "an actual entity save/load must retain the immutable action target UUID");
         helper.assertValueEqual(reloaded.courtState().actionDimension(), java.util.Optional.of(actionDimension),
             "an actual entity save/load must retain the immutable action origin dimension");
-        helper.assertValueEqual(reloaded.courtState().actionExecuteAt(), saveNow + 2L,
+        helper.assertValueEqual(reloaded.courtState().actionExecuteAt(), saveNow + NaamahCourtRules.MIN_WINDUP_TICKS,
             "an actual entity save/load must preserve the windup deadline");
         final ServerPlayer reloadReplacement = connectedPlayer(helper, new BlockPos(5, 1, 3));
         reloadReplacement.setNoGravity(true);
@@ -139,7 +139,7 @@ public final class NaamahCourtGameTests {
         NaamahCourtRuntime.tick(reloaded, helper.getLevel());
         helper.assertTrue(reloaded.getTarget() == null,
             "a due candidate scan must not replace an immutable action target during windup");
-        helper.runAfterDelay(3L, () -> {
+        helper.runAfterDelay(NaamahCourtRules.MIN_WINDUP_TICKS + 1L, () -> {
             NaamahCourtRuntime.tick(reloaded, helper.getLevel());
             helper.assertValueEqual(reloaded.courtState().action(), Action.NONE,
                 "reload without the immutable action target must cancel to recovery");

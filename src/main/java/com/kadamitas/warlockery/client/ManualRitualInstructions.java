@@ -26,7 +26,7 @@ public final class ManualRitualInstructions {
         keys.add("site");
         switch (action) {
             case "summon_entity", "call_familiar", "divorce", "earths_wrath", "climate_shift", "transform_nami",
-                "bind_waystone", "copy_waystone", "teleport_waystone", "bind_circle", "glyph_transform" -> keys.add(action);
+                "bind_waystone", "copy_waystone", "teleport_waystone", "bind_circle", "glyph_transform", "hell_on_earth" -> keys.add(action);
             case "prior_incarnation", "manifest", "cleanse", "bind_item", "teleport_entity", "hex" -> {
                 keys.add("sample");
                 keys.add(action);

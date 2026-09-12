@@ -197,15 +197,15 @@ final class VisualAssetPolishTest {
     }
 
     @Test
-    void glyphBlockstatesRenderCenterAndFourConditionalArms() {
+    void glyphBlockstatesRenderCenterAndEightConditionalArms() {
         GLYPHS.forEach(id -> {
             final JsonObject blockState = json(BLOCK_STATES.resolve(id + ".json"));
             assertFalse(blockState.has("variants"), id + " must use connected multipart rendering");
-            assertEquals(5, blockState.getAsJsonArray("multipart").size(), id);
+            assertEquals(9, blockState.getAsJsonArray("multipart").size(), id);
             assertEquals("warlockery:block/" + id,
                 blockState.getAsJsonArray("multipart").get(0).getAsJsonObject()
                     .getAsJsonObject("apply").get("model").getAsString());
-            for (int index = 1; index < 5; index++) {
+            for (int index = 1; index < 9; index++) {
                 final JsonObject part = blockState.getAsJsonArray("multipart").get(index).getAsJsonObject();
                 assertEquals(1, part.getAsJsonObject("when").size(), id);
                 assertEquals("true", part.getAsJsonObject("when").entrySet().iterator().next().getValue().getAsString());

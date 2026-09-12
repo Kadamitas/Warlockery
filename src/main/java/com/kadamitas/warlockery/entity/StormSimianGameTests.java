@@ -140,7 +140,15 @@ public final class StormSimianGameTests {
         final FixtureScope fixture = new FixtureScope(helper);
         final AtomicLong frozenAt = new AtomicLong(-1L);
         try {
-            final StormSimianEntity simian = spawnSimian(fixture, new BlockPos(0, 1, 0));
+            // Keep normal flying and hazard AI within a supported search neighborhood. In the
+            // larger empty template, wandering could leave every grip behind while the ledger
+            // waited, so a resumed empty search would never increment the path-request counter.
+            for (final BlockPos pos : BlockPos.betweenClosed(new BlockPos(0, 0, 0), new BlockPos(4, 3, 4))) {
+                final boolean shell = pos.getY() == 0 || pos.getY() == 3
+                    || pos.getX() == 0 || pos.getX() == 4 || pos.getZ() == 0 || pos.getZ() == 4;
+                fixture.placeState(pos, (shell ? Blocks.STONE : Blocks.AIR).defaultBlockState());
+            }
+            final StormSimianEntity simian = spawnSimian(fixture, new BlockPos(2, 1, 2));
 
             helper.runAfterDelay(20L, () -> {
                 try {
@@ -153,6 +161,7 @@ public final class StormSimianGameTests {
                             StormSimianRules.ROUTE_FAILURES_BEFORE_BACKOFF, 120)
                     ));
                     frozenAt.set(simian.stormSimianCounters().routeRequests());
+                    reportBackoffPhase(20, simian);
                 } catch (final RuntimeException | Error failure) {
                     fixture.close();
                     throw failure;
@@ -160,6 +169,7 @@ public final class StormSimianGameTests {
             });
             helper.runAfterDelay(40L, () -> {
                 try {
+                    reportBackoffPhase(40, simian);
                     helper.assertValueEqual(simian.stormSimianCounters().routeRequests(),
                         frozenAt.get(),
                         "an open backoff window stops the live tick requesting anything at all");
@@ -175,6 +185,7 @@ public final class StormSimianGameTests {
             });
             helper.runAfterDelay(60L, () -> {
                 try {
+                    reportBackoffPhase(60, simian);
                     helper.assertValueEqual(simian.stormSimianTransient().lastConcern(),
                         Concern.HAZARD,
                         "an escapable hazard outranks every routine concern in the live arbiter");
@@ -186,6 +197,7 @@ public final class StormSimianGameTests {
             });
             helper.runAfterDelay(90L, () -> {
                 try {
+                    reportBackoffPhase(90, simian);
                     helper.assertTrue(simian.stormSimianCounters().routineStretchResets() >= 1L,
                         "re entering the routine band resets the inherited ledger exactly once");
                     helper.assertValueEqual(
@@ -205,11 +217,12 @@ public final class StormSimianGameTests {
             });
             helper.runAfterDelay(220L, () -> {
                 try {
+                    reportBackoffPhase(220, simian);
                     helper.assertTrue(
                         simian.stormSimianCounters().routeRequests() > frozenAt.get(),
                         "requests resume once the window has genuinely run out; frozen="
                             + frozenAt.get() + ", now="
-                            + simian.stormSimianCounters().routeRequests());
+                            + simian.stormSimianCounters().routeRequests() + "; " + backoffPhaseState(simian));
                     helper.assertTrue(
                         simian.stormSimianCounters().routeRequests() - frozenAt.get() <= 6L,
                         "resumed requests are still paced at one per twenty ticks; resumed="
@@ -223,6 +236,21 @@ public final class StormSimianGameTests {
             fixture.close();
             throw failure;
         }
+    }
+
+    private static void reportBackoffPhase(final int phaseTick, final StormSimianEntity simian) {
+        System.out.println("WARLOCKERY_STORM_BACKOFF_PHASE " + phaseTick + " " + backoffPhaseState(simian));
+    }
+
+    private static String backoffPhaseState(final StormSimianEntity simian) {
+        final StormSimianRuntime.Counters counters = simian.stormSimianCounters();
+        final StormSimianState state = simian.stormSimianState();
+        return "position=" + simian.position() + ", entityTick=" + simian.tickCount
+            + ", decisions=" + counters.decisions() + ", gripSearches=" + counters.gripSearches()
+            + ", emptySearches=" + counters.emptyGripSearches() + ", routeRequests=" + counters.routeRequests()
+            + ", routeFailures=" + counters.routeFailures() + ", route=" + state.route()
+            + ", grip=" + state.grip() + ", gripHold=" + state.gripHoldTicks()
+            + ", concern=" + simian.stormSimianTransient().lastConcern();
     }
 
     // ---------------------------------------------------------------- troop alarm

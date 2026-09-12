@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery;
 
+import com.kadamitas.warlockery.block.ConnectedGlyphChunkRefresh;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModCreativeTabs;
@@ -117,8 +118,14 @@ public final class Warlockery {
             event.addListener(Identifier.fromNamespaceAndPath(MOD_ID, "machine_recipes"), MachineRecipeManager.INSTANCE);
             event.addListener(Identifier.fromNamespaceAndPath(MOD_ID, "custom_brews"), CustomBrewDefinitionManager.INSTANCE);
         });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load event) -> {
+            if (event.getLevel() instanceof ServerLevel level) {
+                ConnectedGlyphChunkRefresh.queue(level, event.getChunk().getPos());
+            }
+        });
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
+                ConnectedGlyphChunkRefresh.tick(level);
                 RitualSessionData.get(level).tick(level);
                 RitualWardData.get(level).tick(level);
                 RitualEclipseData.get(level).tick(level);
@@ -155,7 +162,7 @@ public final class Warlockery {
         NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> HexState.copyAfterClone(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> FlyingBroomItem.handleLogin(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> FlyingBroomItem.handleLogout(event));
-        LOGGER.info("Loading Warlockery 1.5.2 for Minecraft 26.2 with NeoForge 26.2.0.64");
+        LOGGER.info("Loading Warlockery 1.5.3 for Minecraft 26.2 with NeoForge 26.2.0.64");
     }
 
 }

@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -25,6 +26,55 @@ final class ManualArticleCatalog {
     private static final String BREW_PREFIX = "brew_entry_";
     private static final String BIOME_PREFIX = "biome_entry_";
     private static final String MACHINE_RECIPE_PREFIX = "machine_recipe_";
+    private static final Set<String> UTILITY_ITEM_SECTIONS = Set.of(
+        "ingredient_contract", "ingredient_contract_fiery_touch", "ingredient_contract_evaporate",
+        "ingredient_contract_resist_fire", "ingredient_contract_smelting", "ingredient_contract_blaze",
+        "ingredient_contract_torment", "ingredient_bolt_holy", "ingredient_bolt_stake",
+        "arcane_focus", "ingredient_brew_grave", "mysticbranch",
+        "louse", "archfiends_urn", "circletalisman",
+        "rowanwooddoor", "ingredient_door_key", "ingredient_door_keyring",
+        "bloodcrucible", "coffinblock", "glassgoblet",
+        "mirrorblock", "mirrorblock2", "mirrorwall",
+        "ingredient_verdant_catalyst", "ingredient_verdant_catalyst_prime", "ingredient_redstone_soup",
+        "leechchest", "shadedglass", "shadedglass_active",
+        "divinerwater", "divinerlava", "playercompass", "shelfcompass", "brewbag",
+        "mirror", "ingredient_seer_stone", "ruby_slippers",
+        "ingredient_attuned_stone", "ingredient_attuned_stone_charged", "ingredient_bone_needle",
+        "ingredient_creeper_heart", "ingredient_graveyard_dust", "ingredient_artichoke",
+        "mutator", "seedsdreamroot", "ingredient_rock",
+        "biomenote", "replication_staff", "replication_charge", "universal_antidote",
+        "ingredient_purified_milk", "ingredient_warm_blood", "ingredient_infernal_animus",
+        "sungrenade", "ingredient_soul_of_torment",
+        "doll", "earth_guard_doll", "water_guard_doll", "hunger_guard_doll", "fire_guard_doll",
+        "tool_mending_doll", "death_guard_doll", "hex_guard_doll", "hexing_doll", "blood_link_doll",
+        "doll_guard", "armor_mending_doll",
+        "ingredient_waystone", "ingredient_waystone_bound", "ingredient_waystone_creature_bound",
+        "boline", "ingredient_icy_needle", "ingredient_wolfsbane",
+        "bucketspirit", "buckethollowtears", "bucketerosionbrew", "bucketbrew",
+        "ingredient_bat_ball", "spectralstone", "ingredient_subdued_spirit",
+        "ingredient_subdued_spirit_village", "hornofthehunt", "ingredient_fool_skull", "ingredient_necro_stone",
+        "earmuffs", "seepingshoes", "barkbelt", "twisting_band", "iceslippers",
+        "forgewardens_girdle", "stonebrokers_quiver", "deathscowl", "deathsrobe", "deathsfeet", "deathshand",
+        "bitingbelt", "emberstep_slippers", "witchhat", "witchrobe", "hedge_crones_hat", "necromancerrobe",
+        "silverhelm", "silverchestplate", "silverleggings", "silverboots",
+        "werewolf_hunter_hat", "werewolf_hunter_coat", "werewolf_hunter_leggings", "werewolf_hunter_boots",
+        "werewolf_hunter_hat_silvered", "werewolf_hunter_coat_silvered",
+        "werewolf_hunter_leggings_silvered", "werewolf_hunter_boots_silvered",
+        "werewolf_hunter_hat_dawn", "werewolf_hunter_coat_dawn",
+        "werewolf_hunter_leggings_dawn", "werewolf_hunter_boots_dawn"
+    );
+
+    private static final Map<String, String> DEVICE_ITEM_SECTIONS = Map.ofEntries(
+        Map.entry("device_alluring_skull", "warlockery:alluringskull"),
+        Map.entry("device_bear_trap", "warlockery:beartrap"),
+        Map.entry("device_plant_mine", "warlockery:plantmine"),
+        Map.entry("device_wicker_bundle", "warlockery:wickerbundle"),
+        Map.entry("device_demon_heart", "warlockery:demonheart"),
+        Map.entry("device_crystal_ball", "warlockery:crystalball"),
+        Map.entry("device_sun_collector", "warlockery:daylightcollector"),
+        Map.entry("device_void_bramble", "warlockery:voidbramble"),
+        Map.entry("device_dream_weaver", "warlockery:dreamcatcher")
+    );
 
     private ManualArticleCatalog() {
     }
@@ -37,7 +87,8 @@ final class ManualArticleCatalog {
             return ritual(section.substring(RITUAL_PREFIX.length()));
         }
         if (section.startsWith(BREW_PREFIX)) {
-            return brew(section.substring(BREW_PREFIX.length()));
+            final Article article = brew(section.substring(BREW_PREFIX.length()));
+            return new Article(ManualBookLinks.append(article.body(), manual, section), article.glyphs(), article.pictograms());
         }
         if (section.startsWith(BIOME_PREFIX)) {
             return biome(section.substring(BIOME_PREFIX.length()));
@@ -72,7 +123,8 @@ final class ManualArticleCatalog {
     }
 
     private static Article crafting(final String id) {
-        final JsonObject recipe = resource("/data/warlockery/recipe/" + id + ".json");
+        final String recipeId = id.equals("ingredient_soft_clay_jar") ? "ingredient_clay_jar_soft" : id;
+        final JsonObject recipe = resource("/data/warlockery/recipe/" + recipeId + ".json");
         final MutableComponent body = Component.translatable("manual.warlockery.crafting.intro").copy();
         final String type = recipe.get("type").getAsString();
         final Map<String, Integer> amounts = new LinkedHashMap<>();
@@ -180,7 +232,7 @@ final class ManualArticleCatalog {
         }
         if (recipe.has("fluid")) {
             final JsonObject fluid = recipe.getAsJsonObject("fluid");
-            append(body, "manual.warlockery.entry.fluid", java.util.List.of(
+            append(body, "manual.warlockery.machine_recipe.fluid", java.util.List.of(
                 Component.translatable(
                     "manual.warlockery.entry.fluid_amount",
                     fluid.get("amount").getAsString(),
@@ -188,7 +240,28 @@ final class ManualArticleCatalog {
                 )
             ));
         }
+        final String setup = switch (id) {
+            case "cauldron_flowing_spirit" -> "spirit_world";
+            case "kettle_brew_bodega" -> "bodega";
+            case "kettle_brew_cursed_leaping" -> "cursed_leaping";
+            case "kettle_brew_frogs_tongue" -> "frogs_tongue";
+            case "brazier_drain_growth" -> "drain_growth";
+            default -> "";
+        };
+        if (!setup.isEmpty()) body.append("\n\n").append(Component.translatable("manual.warlockery.machine_setup." + setup));
+        if (setup.equals("spirit_world")) {
+            appendBookReference(body, "ingredient_book_burning", "spirit_world_entry");
+            appendBookReference(body, "ingredient_book_burning", "spirit_world_laws");
+        } else if (setup.equals("bodega") || setup.equals("cursed_leaping") || setup.equals("frogs_tongue")) {
+            appendBookReference(body, "ingredient_book_circle_magic", "rite_bind_familiar");
+        }
         return new Article(body, Map.of(), pictograms(inputs));
+    }
+
+    private static void appendBookReference(final MutableComponent body, final String book, final String section) {
+        final var reference = new ManualBookLinks.Reference(ManualProfile.find(book).orElseThrow(), section);
+        body.append("\n\n").append(reference.label().copy().withStyle(style -> style.withColor(0x174B9A).withUnderlined(true)
+            .withClickEvent(new net.minecraft.network.chat.ClickEvent.Custom(reference.id(), java.util.Optional.empty()))));
     }
 
     private static Article ritual(final String id) {
@@ -249,28 +322,13 @@ final class ManualArticleCatalog {
                 humanize(behavior.id())
             ))
         ).toList();
-        append(body, "manual.warlockery.entry.workings", workings);
+        append(body, "manual.warlockery.entry.workings", workings, "\n\n");
         body.append("\n");
         body.append(Component.translatable("manual.warlockery.brew.reach", decimal(kind.radius()), decimal(kind.potency())));
-        final JsonObject recipe = resource("/data/warlockery/warlockery_machine/kettle_brew_" + id + ".json");
-        final JsonArray inputs = recipe.getAsJsonArray("inputs");
-        appendIngredients(body, inputs);
-        if (recipe.has("fluid")) {
-            final JsonObject fluid = recipe.getAsJsonObject("fluid");
-            append(body, "manual.warlockery.entry.fluid", java.util.List.of(
-                Component.translatable(
-                    "manual.warlockery.entry.fluid_amount",
-                    fluid.get("amount").getAsString(),
-                    ingredientName(fluid.get("ingredient").getAsString())
-                )
-            ));
-        }
-        if (recipe.has("altar_power") && recipe.get("altar_power").getAsInt() > 0) {
-            append(body, "manual.warlockery.entry.altar_power", java.util.List.of(
-                Component.literal(recipe.get("altar_power").getAsString())
-            ));
-        }
-        return new Article(body, Map.of(), pictograms(inputs));
+        body.append("\n\n").append(Component.translatable("manual.warlockery.brew.kettle_recipe"));
+        final Article preparation = machineRecipe("kettle_brew_" + id);
+        body.append("\n\n").append(preparation.body());
+        return new Article(body, Map.of(), preparation.pictograms());
     }
 
     private static List<Pictogram> ritualPictograms(
@@ -358,6 +416,11 @@ final class ManualArticleCatalog {
     }
 
     private static List<Pictogram> manualPictograms(final ManualProfile manual, final String section) {
+        final String device = DEVICE_ITEM_SECTIONS.get(section);
+        if (device != null) return List.of(picture(device, 1));
+        if (UTILITY_ITEM_SECTIONS.contains(section)) {
+            return List.of(picture("warlockery:" + section, 1));
+        }
         if ("preamble".equals(section)) {
             return "vampirebook".equals(manual.id())
                 ? List.of(
@@ -484,16 +547,49 @@ final class ManualArticleCatalog {
         final String basic = switch (tag) {
             case "c:dyes/red" -> "minecraft:red_dye";
             case "c:dyes/yellow" -> "minecraft:yellow_dye";
+            case "c:dyes/black" -> "minecraft:black_dye";
             case "c:dusts/redstone" -> "minecraft:redstone";
+            case "c:dusts/glowstone" -> "minecraft:glowstone_dust";
             case "c:fertilizers" -> "minecraft:bone_meal";
             case "c:ender_pearls" -> "minecraft:ender_pearl";
             case "c:stones" -> "minecraft:stone";
+            case "c:cobblestones" -> "minecraft:cobblestone";
+            case "c:bones" -> "minecraft:bone";
+            case "c:strings" -> "minecraft:string";
+            case "c:ingots/copper" -> "minecraft:copper_ingot";
+            case "c:rods/blaze" -> "minecraft:blaze_rod";
+            case "c:tools/shield" -> "minecraft:shield";
+            case "c:gems/amethyst" -> "minecraft:amethyst_shard";
+            case "c:gems/diamond" -> "minecraft:diamond";
+            case "c:gems/quartz" -> "minecraft:quartz";
+            case "c:gems/lapis" -> "minecraft:lapis_lazuli";
+            case "c:buckets/milk" -> "minecraft:milk_bucket";
+            case "c:buckets/lava" -> "minecraft:lava_bucket";
+            case "c:slime_balls" -> "minecraft:slime_ball";
+            case "c:feathers" -> "minecraft:feather";
+            case "c:gunpowders" -> "minecraft:gunpowder";
             case "c:player_workstations/furnaces" -> "minecraft:furnace";
             case "c:bars/iron" -> "minecraft:iron_bars";
             case "c:glass_blocks/colorless" -> "minecraft:glass";
             case "minecraft:planks" -> "minecraft:oak_planks";
             case "minecraft:coals" -> "minecraft:coal";
+            case "minecraft:wool" -> "minecraft:white_wool";
+            case "minecraft:foot_armor" -> "minecraft:leather_boots";
             case "warlockery:crafting/flints" -> "minecraft:flint";
+            case "warlockery:crafting/bone_needles" -> "warlockery:ingredient_bone_needle";
+            case "warlockery:luck_essences" -> "warlockery:ingredient_drop_of_luck";
+            case "warlockery:manual_reagents/biome_manuals" -> "warlockery:ingredient_book_biomes";
+            case "warlockery:manual_reagents/books" -> "minecraft:book";
+            case "warlockery:utility_reagents/water_diviners" -> "warlockery:divinerwater";
+            case "warlockery:utility_reagents/water_bottles" -> "minecraft:potion";
+            case "warlockery:utility_reagents/clocks" -> "minecraft:clock";
+            case "warlockery:utility_reagents/null_catalysts" -> "warlockery:ingredient_nullcatalyst";
+            case "warlockery:brazier/tears" -> "warlockery:ingredient_tear_of_the_goddess";
+            case "warlockery:bat_binding_fibers" -> "warlockery:ingredient_bat_wool";
+            case "warlockery:torment_souls" -> "warlockery:ingredient_soul_of_torment";
+            case "warlockery:woven_cruor" -> "warlockery:ingredient_woven_cruor";
+            case "warlockery:mutation/mutandis_extremis" -> "warlockery:ingredient_verdant_catalyst_prime";
+            case "warlockery:solar_chargeables" -> "warlockery:ingredient_quartz_sphere";
             default -> null;
         };
         if (basic != null) {
@@ -612,6 +708,15 @@ final class ManualArticleCatalog {
         final String heading,
         final List<? extends Component> values
     ) {
+        append(body, heading, values, "\n");
+    }
+
+    private static void append(
+        final MutableComponent body,
+        final String heading,
+        final List<? extends Component> values,
+        final String separator
+    ) {
         if (values.isEmpty()) {
             return;
         }
@@ -620,7 +725,7 @@ final class ManualArticleCatalog {
         body.append("\n");
         for (int index = 0; index < values.size(); index++) {
             if (index > 0) {
-                body.append("\n");
+                body.append(separator);
             }
             body.append(values.get(index));
         }
