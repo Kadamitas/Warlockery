@@ -499,7 +499,7 @@ final class GameTestInstanceContractTest {
         final Set<String> ownedGenericFixtures = new LinkedHashSet<>(fixtureIds);
         ownedGenericFixtures.removeAll(bespokeFixtures);
         ownedGenericFixtures.removeAll(RELEASE_1_5_1_FIXTURES);
-        assertEquals(338, ownedGenericFixtures.size(), "owned generic fixture count");
+        assertEquals(342, ownedGenericFixtures.size(), "owned generic fixture count");
         assertTrue(ownedGenericFixtures.containsAll(GEOMETRY_SENSITIVE_THREE_CUBE_FIXTURES),
             "approved three-cube fixture missing");
         assertEquals(9, GEOMETRY_SENSITIVE_THREE_CUBE_FIXTURES.size(), "three-cube allowlist size");
@@ -514,7 +514,7 @@ final class GameTestInstanceContractTest {
         final long ownedFifteenCubeCount = ownedGenericFixtures.stream()
             .filter(fixtureId -> "forge:empty15x15x15".equals(readFixture(fixtureId).get("structure").getAsString()))
             .count();
-        assertEquals(328, ownedThirtyTwoCubeCount, "owned 32-cube generic fixture count");
+        assertEquals(332, ownedThirtyTwoCubeCount, "owned 32-cube generic fixture count");
         assertEquals(9, ownedThreeCubeCount, "owned three-cube generic fixture count");
         assertEquals(1, ownedFifteenCubeCount, "owned force-ticked 15-cube generic fixture count");
 

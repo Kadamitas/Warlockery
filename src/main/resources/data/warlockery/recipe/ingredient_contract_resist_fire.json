@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_contract",
+    "minecraft:magma_cream"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_contract_resist_fire",
+    "count": 1
+  }
+}

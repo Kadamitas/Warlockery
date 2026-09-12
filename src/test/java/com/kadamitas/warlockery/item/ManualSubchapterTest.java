@@ -75,8 +75,13 @@ final class ManualSubchapterTest {
             .findFirst()
             .orElseThrow();
 
-        assertEquals(13, chapter.sections().size());
-        assertTrue(chapter.sections().stream().allMatch(section -> section.startsWith("fetish_")));
+        assertEquals(13, chapter.sections().stream().filter(section -> section.startsWith("fetish_")).count());
+        assertEquals(List.of(
+            "crafting_alluringskull", "device_alluring_skull", "crafting_dreamcatcher",
+            "crafting_dream_weaver_fasting", "crafting_dream_weaver_fleet_foot",
+            "crafting_dream_weaver_intensity", "crafting_dream_weaver_iron_arm",
+            "crafting_dream_weaver_nightmares", "device_dream_weaver"
+        ), chapter.sections().stream().filter(section -> !section.startsWith("fetish_")).toList());
         assertEquals(5, chapter.sections().stream()
             .filter(section -> section.startsWith("fetish_dream_weaver_"))
             .count());
@@ -87,7 +92,10 @@ final class ManualSubchapterTest {
         assertFalse(chapter.sections().contains("fetish_dream_weaver_restoration"));
         assertEquals(chapter.sections(), profile.sectionsInChapter(chapter.id(), profile.sections()));
         assertEquals(
-            List.of("sympathetic_vials", "beast_speech"),
+            List.of("sympathetic_vials", "bloodcrucible", "coffinblock", "glassgoblet", "beast_speech",
+                "crafting_replication_charge", "replication_charge",
+                "crafting_ingredient_infernal_animus", "ingredient_infernal_animus",
+                "crafting_sungrenade", "sungrenade"),
             profile.chapters().stream()
                 .filter(candidate -> candidate.id().equals("binding_tools"))
                 .findFirst()
@@ -104,8 +112,11 @@ final class ManualSubchapterTest {
             .flatMap(chapter -> chapter.sections().stream())
             .toList();
 
-        assertEquals(19, plantSections.size());
-        assertTrue(plantSections.stream().allMatch(section -> section.startsWith("plant_")));
+        assertEquals(19, plantSections.stream().filter(section -> section.startsWith("plant_")).count());
+        assertEquals(List.of(
+            "ingredient_artichoke", "seedsdreamroot", "crafting_voidbramble", "device_void_bramble",
+            "crafting_plantmine", "device_plant_mine", "crafting_critter_snare"
+        ), plantSections.stream().filter(section -> !section.startsWith("plant_")).toList());
     }
 
     @Test

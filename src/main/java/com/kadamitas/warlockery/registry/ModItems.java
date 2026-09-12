@@ -302,7 +302,7 @@ public final class ModItems {
         if (id.contains("coat") || id.endsWith("robe") || id.equals("stonebrokers_quiver")) {
             return Optional.of(ArmorType.CHESTPLATE);
         }
-        if (id.contains("legs") || Set.of(
+        if (id.contains("legs") || id.contains("leggings") || Set.of(
             "barkbelt", "bitingbelt", "forgewardens_girdle"
         ).contains(id)) {
             return Optional.of(ArmorType.LEGGINGS);

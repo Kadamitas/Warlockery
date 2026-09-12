@@ -148,8 +148,12 @@ public final class ParasyticLouseItem extends Item {
 
     static Optional<CreatureBehaviorState.StoredEffect> storedEffect(final ItemStack stack) {
         final var data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        final Identifier id = Identifier.tryParse(data.getStringOr(EFFECT, ""));
-        return id == null ? Optional.empty() : Optional.of(new CreatureBehaviorState.StoredEffect(
+        final String encoded = data.getStringOr(EFFECT, "");
+        if (encoded.isBlank()) {
+            return Optional.empty();
+        }
+        final Identifier id = Identifier.tryParse(encoded);
+        return id == null || id.getPath().isEmpty() ? Optional.empty() : Optional.of(new CreatureBehaviorState.StoredEffect(
             id,
             Math.max(20, data.getIntOr(DURATION, 200)),
             Math.max(0, data.getIntOr(AMPLIFIER, 0))

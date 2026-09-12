@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "minecraft:arrow",
+    "minecraft:arrow",
+    "minecraft:arrow",
+    "minecraft:arrow",
+    "#minecraft:planks"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_bolt_stake",
+    "count": 4
+  }
+}

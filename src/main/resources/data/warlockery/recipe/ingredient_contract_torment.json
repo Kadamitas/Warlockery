@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_contract",
+    "minecraft:nether_star"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_contract_torment",
+    "count": 1
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:depths_breathing_survives_vanilla_air_recovery",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "depths_breathing_survives_vanilla_air_recovery",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 400
+}

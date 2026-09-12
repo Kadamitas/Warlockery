@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "warlockery:ingredient_contract",
+    "minecraft:sponge"
+  ],
+  "result": {
+    "id": "warlockery:ingredient_contract_evaporate",
+    "count": 1
+  }
+}

@@ -200,7 +200,7 @@ public final class BrewRuntime {
             case APPLY_REPEL_ATTACKER -> applyMarker(context, BrewMarkerKind.REPEL_ATTACKER);
             case APPLY_RESIZING -> applyMarker(context, BrewMarkerKind.RESIZING);
             case SHIFT_SEASONS -> shiftSeasons(context);
-            case SUMMON_ABYSSAL_REGENT -> summonArchfiendShade(context);
+            case SUMMON_ABYSSAL_REGENT -> summonAbyssalRegent(context);
             case APPLY_TINT_SKIN -> applyTint(context);
             case APPLY_WEREWOLF_LOCK -> applyWerewolfLock(context);
             case APPLY_DISEASE -> applyMarker(context, BrewMarkerKind.DISEASE);
@@ -272,10 +272,12 @@ public final class BrewRuntime {
     }
 
     private static ImpactResult freeze(final ImpactContext context) {
-        final int entities = (int) living(context).stream().peek(entity -> {
+        final List<LivingEntity> targets = living(context);
+        targets.forEach(entity -> {
             entity.clearFire();
             entity.setTicksFrozen(Math.max(entity.getTicksFrozen(), entity.getTicksRequiredToFreeze() + 100));
-        }).count();
+        });
+        final int entities = targets.size();
         final int blocks = mutateArea(context, MAX_AREA_BLOCKS, (pos, state) -> {
             if (!BrewRules.shouldFreeze(
                 state.canBeReplaced(),
@@ -306,9 +308,11 @@ public final class BrewRuntime {
     }
 
     private static ImpactResult ignite(final ImpactContext context) {
-        final int entities = (int) living(context).stream().peek(entity ->
+        final List<LivingEntity> targets = living(context);
+        targets.forEach(entity ->
             entity.igniteForSeconds(6.0F * context.potency())
-        ).count();
+        );
+        final int entities = targets.size();
         final int limit = Math.clamp((int) Math.ceil(context.radius() * context.radius()), 1, 64);
         final int blocks = mutateArea(context, limit, (pos, state) -> {
             if (!state.canBeReplaced()) {
@@ -448,7 +452,8 @@ public final class BrewRuntime {
 
     private static ImpactResult tillSoil(final ImpactContext context) {
         final int changed = mutateArea(context, MAX_AREA_BLOCKS, (pos, state) ->
-            BrewRules.shouldTill(state.is(BlockTags.DIRT), context.level().isEmptyBlock(pos.above()))
+            BrewRules.shouldTill(state.is(BlockTags.DIRT) || state.is(Blocks.GRASS_BLOCK),
+                context.level().isEmptyBlock(pos.above()))
                 && context.level().setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState())
         );
         return ImpactResult.blocks(changed);
@@ -710,7 +715,11 @@ public final class BrewRuntime {
             .filter(entity -> entity.typeHolder().is(tag))
             .toList();
         entities.forEach(entity -> entity.hurtServer(
-            context.level(), context.level().damageSources().magic(), damage * context.potency()
+            context.level(),
+            context.directSource() != null && context.owner() != null
+                ? context.level().damageSources().indirectMagic(context.directSource(), context.owner())
+                : context.level().damageSources().magic(),
+            damage * context.potency()
         ));
         return ImpactResult.entities(entities.size());
     }
@@ -898,7 +907,8 @@ public final class BrewRuntime {
         entities.forEach(entity -> {
             entity.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 1_200, 1));
             entity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 1_200, 0));
-            entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 600, 0));
+            entity.addEffect(new MobEffectInstance(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.wrapAsHolder(
+                com.kadamitas.warlockery.registry.ModEffects.UNDEAD_MENDING.get()), 600, 0));
         });
         return ImpactResult.entities(entities.size());
     }
@@ -1689,9 +1699,9 @@ public final class BrewRuntime {
         return biomeChanged ? landscape.plus(ImpactResult.event()) : landscape;
     }
 
-    private static ImpactResult summonArchfiendShade(final ImpactContext context) {
+    private static ImpactResult summonAbyssalRegent(final ImpactContext context) {
         final BlockPos position = BlockPos.containing(context.center()).above();
-        final Entity summoned = ModEntities.ALL.get("emberhorn_archfiend").get().spawn(
+        final Entity summoned = ModEntities.ALL.get("abyssal_regent").get().spawn(
             context.level(), position, EntitySpawnReason.EVENT
         );
         if (!(summoned instanceof Mob mob)) {

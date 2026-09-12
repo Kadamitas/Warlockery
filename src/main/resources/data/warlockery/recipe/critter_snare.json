@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "STS",
+    "S S",
+    "PPP"
+  ],
+  "key": {
+    "S": "#c:rods/wooden",
+    "T": "#c:strings",
+    "P": "#minecraft:planks"
+  },
+  "result": {
+    "id": "warlockery:crittersnare"
+  }
+}

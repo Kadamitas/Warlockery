@@ -327,10 +327,14 @@ public final class DollItem extends Item {
     }
 
     private static void transferLinkedDamage(final ServerPlayer player, final LivingDamageEvent event) {
-        findBoundDoll(
-            player,
-            item -> item.kind.definition().ability() instanceof DollAbility.DamageLink
-        ).ifPresent(stack -> {
+        final var inventory = player.getInventory();
+        IntStream.range(0, inventory.getContainerSize()).mapToObj(inventory::getItem)
+            .filter(stack -> stack.getItem() instanceof DollItem item
+                && item.kind.definition().ability() instanceof DollAbility.DamageLink)
+            .filter(stack -> {
+                final ServerPlayer target = boundPlayer(stack, (ServerLevel) player.level());
+                return target != null && target != player;
+            }).findFirst().ifPresent(stack -> {
             final ServerPlayer target = boundPlayer(stack, (ServerLevel) player.level());
             if (target == null || target == player) {
                 return;
@@ -367,6 +371,7 @@ public final class DollItem extends Item {
     ) {
         return switch (target) {
             case HELD -> Stream.of(player.getMainHandItem(), player.getOffhandItem())
+                .filter(stack -> !(stack.getItem() instanceof DollItem))
                 .filter(DollItem::needsRepair)
                 .findFirst();
             case WORN -> ARMOR_SLOTS.stream()

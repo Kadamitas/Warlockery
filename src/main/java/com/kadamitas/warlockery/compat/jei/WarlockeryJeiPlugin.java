@@ -24,9 +24,9 @@ import net.minecraft.resources.Identifier;
 @JeiPlugin
 public final class WarlockeryJeiPlugin implements IModPlugin {
     private static final Identifier UID = Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, "jei_plugin");
-    private Map<Identifier, MachineRecipeManager.Match> machineRecipes = Map.of();
-    private Map<Identifier, RitualManager.Entry> rituals = Map.of();
-    private Map<Identifier, CustomBrewJeiRecipe> customBrews = Map.of();
+    private final RecipeVisibilityTracker<MachineRecipeManager.Match> machineRecipes = new RecipeVisibilityTracker<>();
+    private final RecipeVisibilityTracker<RitualManager.Entry> rituals = new RecipeVisibilityTracker<>();
+    private final RecipeVisibilityTracker<CustomBrewJeiRecipe> customBrews = new RecipeVisibilityTracker<>();
     private IJeiRuntime runtime;
 
     public WarlockeryJeiPlugin() {
@@ -66,12 +66,12 @@ public final class WarlockeryJeiPlugin implements IModPlugin {
         });
         final List<RitualManager.Entry> availableRituals = visibleRituals();
         registration.addRecipes(WarlockeryJeiRecipeTypes.RITUALS, availableRituals);
-        machineRecipes = byMachineId(availableMachines);
-        rituals = byRitualId(availableRituals);
+        machineRecipes.reset(availableMachines);
+        rituals.reset(availableRituals);
         final List<CustomBrewJeiRecipe> components = availableCustomBrews();
         registration.addRecipes(WarlockeryJeiRecipeTypes.CUSTOM_BREWS, components);
         registration.addRecipes(WarlockeryJeiRecipeTypes.WORLD_INTERACTIONS, List.of(WorldInteractionJeiRecipe.ANOINT_CAULDRON));
-        customBrews = components.stream().collect(Collectors.toUnmodifiableMap(CustomBrewJeiRecipe::id, recipe -> recipe));
+        customBrews.reset(components);
         registerInformation(registration);
     }
 
@@ -111,9 +111,9 @@ public final class WarlockeryJeiPlugin implements IModPlugin {
     @Override
     public synchronized void onRuntimeUnavailable() {
         runtime = null;
-        machineRecipes = Map.of();
-        rituals = Map.of();
-        customBrews = Map.of();
+        machineRecipes.clear();
+        rituals.clear();
+        customBrews.clear();
     }
 
     private void scheduleRefresh() {
@@ -128,34 +128,9 @@ public final class WarlockeryJeiPlugin implements IModPlugin {
             return;
         }
         final var recipeManager = runtime.getRecipeManager();
-        final Map<Identifier, MachineRecipeManager.Match> nextMachines = byMachineId(availableMachines());
-        final List<MachineRecipeManager.Match> removedMachines = machineRecipes.values().stream()
-            .toList();
-        final List<MachineRecipeManager.Match> addedMachines = nextMachines.values().stream()
-            .toList();
-        updateMachines(recipeManager, removedMachines, true);
-        updateMachines(recipeManager, addedMachines, false);
-        machineRecipes = nextMachines;
-
-        final Map<Identifier, RitualManager.Entry> nextRituals = byRitualId(visibleRituals());
-        final List<RitualManager.Entry> removedRituals = rituals.values().stream()
-            .toList();
-        final List<RitualManager.Entry> addedRituals = nextRituals.values().stream()
-            .toList();
-        if (!removedRituals.isEmpty()) {
-            recipeManager.hideRecipes(WarlockeryJeiRecipeTypes.RITUALS, removedRituals);
-        }
-        if (!addedRituals.isEmpty()) {
-            recipeManager.addRecipes(WarlockeryJeiRecipeTypes.RITUALS, addedRituals);
-        }
-        rituals = nextRituals;
-        final Map<Identifier, CustomBrewJeiRecipe> nextCustomBrews = availableCustomBrews().stream()
-            .collect(Collectors.toUnmodifiableMap(CustomBrewJeiRecipe::id, recipe -> recipe));
-        final List<CustomBrewJeiRecipe> removedComponents = customBrews.values().stream().toList();
-        final List<CustomBrewJeiRecipe> addedComponents = nextCustomBrews.values().stream().toList();
-        if (!removedComponents.isEmpty()) recipeManager.hideRecipes(WarlockeryJeiRecipeTypes.CUSTOM_BREWS, removedComponents);
-        if (!addedComponents.isEmpty()) recipeManager.addRecipes(WarlockeryJeiRecipeTypes.CUSTOM_BREWS, addedComponents);
-        customBrews = nextCustomBrews;
+        updateMachines(recipeManager, machineRecipes.update(availableMachines()));
+        updateRecipes(recipeManager, WarlockeryJeiRecipeTypes.RITUALS, rituals.update(visibleRituals()));
+        updateRecipes(recipeManager, WarlockeryJeiRecipeTypes.CUSTOM_BREWS, customBrews.update(availableCustomBrews()));
     }
 
     private static List<CustomBrewJeiRecipe> availableCustomBrews() {
@@ -173,42 +148,25 @@ public final class WarlockeryJeiPlugin implements IModPlugin {
             .map(match -> new MachineRecipeManager.Match(match.id(), match.recipe())).toList();
     }
 
-    private static Map<Identifier, MachineRecipeManager.Match> byMachineId(
-        final List<MachineRecipeManager.Match> recipes
-    ) {
-        return recipes.stream().collect(Collectors.toUnmodifiableMap(
-            MachineRecipeManager.Match::id,
-            match -> match,
-            (_, replacement) -> replacement
-        ));
-    }
-
-    private static Map<Identifier, RitualManager.Entry> byRitualId(final List<RitualManager.Entry> entries) {
-        return entries.stream().collect(Collectors.toUnmodifiableMap(
-            RitualManager.Entry::id,
-            entry -> entry,
-            (_, replacement) -> replacement
-        ));
-    }
-
     private static void updateMachines(
         final mezz.jei.api.recipe.IRecipeManager recipeManager,
-        final List<MachineRecipeManager.Match> recipes,
-        final boolean hide
+        final RecipeVisibilityTracker.Change<MachineRecipeManager.Match> change
     ) {
-        final Map<String, List<MachineRecipeManager.Match>> byMachine = recipes.stream()
-            .collect(Collectors.groupingBy(match -> match.recipe().machine()));
-        WarlockeryJeiRecipeTypes.MACHINES.forEach((machine, type) -> {
-            final List<MachineRecipeManager.Match> matches = byMachine.getOrDefault(machine, List.of());
-            if (matches.isEmpty()) {
-                return;
-            }
-            if (hide) {
-                recipeManager.hideRecipes(type, matches);
-            } else {
-                recipeManager.addRecipes(type, matches);
-            }
-        });
+        WarlockeryJeiRecipeTypes.MACHINES.forEach((machine, type) -> updateRecipes(recipeManager, type,
+            new RecipeVisibilityTracker.Change<>(
+                change.hide().stream().filter(recipe -> recipe.recipe().machine().equals(machine)).toList(),
+                change.show().stream().filter(recipe -> recipe.recipe().machine().equals(machine)).toList(),
+                change.add().stream().filter(recipe -> recipe.recipe().machine().equals(machine)).toList())));
+    }
+
+    private static <T> void updateRecipes(
+        final mezz.jei.api.recipe.IRecipeManager recipeManager,
+        final mezz.jei.api.recipe.types.IRecipeType<T> type,
+        final RecipeVisibilityTracker.Change<T> change
+    ) {
+        if (!change.hide().isEmpty()) recipeManager.hideRecipes(type, change.hide());
+        if (!change.show().isEmpty()) recipeManager.unhideRecipes(type, change.show());
+        if (!change.add().isEmpty()) recipeManager.addRecipes(type, change.add());
     }
 
     private static void registerInformation(final IRecipeRegistration registration) {

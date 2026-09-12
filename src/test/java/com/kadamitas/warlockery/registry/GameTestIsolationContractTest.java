@@ -46,7 +46,7 @@ final class GameTestIsolationContractTest {
                 assertTrue(ids.add(environment.get("id").getAsString()), fixtureId + " isolation id is duplicated");
             }
         }
-        assertEquals(368, ids.size(), "every registered Warlockery fixture must form its own batch");
+        assertEquals(372, ids.size(), "every registered Warlockery fixture must form its own batch");
     }
 
     @Test

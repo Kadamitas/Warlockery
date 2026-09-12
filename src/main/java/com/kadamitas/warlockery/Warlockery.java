@@ -1,5 +1,6 @@
 package com.kadamitas.warlockery;
 
+import com.kadamitas.warlockery.block.ConnectedGlyphChunkRefresh;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModCreativeTabs;
@@ -113,8 +114,14 @@ public final class Warlockery {
             event.addListener(MachineRecipeManager.INSTANCE);
             event.addListener(CustomBrewDefinitionManager.INSTANCE);
         });
+        net.minecraftforge.event.level.ChunkEvent.Load.BUS.addListener(event -> {
+            if (event.getLevel() instanceof ServerLevel level) {
+                ConnectedGlyphChunkRefresh.queue(level, event.getChunk().getPos());
+            }
+        });
         TickEvent.LevelTickEvent.Post.BUS.addListener(event -> {
             if (event.level() instanceof ServerLevel level) {
+                ConnectedGlyphChunkRefresh.tick(level);
                 RitualSessionData.get(level).tick(level);
                 RitualWardData.get(level).tick(level);
                 RitualEclipseData.get(level).tick(level);

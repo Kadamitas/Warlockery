@@ -36,6 +36,38 @@
       "apply": {
         "model": "warlockery:block/circleglyphinfernal_west"
       }
+    },
+    {
+      "when": {
+        "north_east": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphinfernal_north_east"
+      }
+    },
+    {
+      "when": {
+        "south_east": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphinfernal_south_east"
+      }
+    },
+    {
+      "when": {
+        "south_west": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphinfernal_south_west"
+      }
+    },
+    {
+      "when": {
+        "north_west": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/circleglyphinfernal_north_west"
+      }
     }
   ]
 }

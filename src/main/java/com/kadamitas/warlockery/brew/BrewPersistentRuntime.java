@@ -257,7 +257,7 @@ public final class BrewPersistentRuntime {
     }
 
     private static void tickSinking(final LivingEntity target) {
-        if (!SinkingRules.shouldSink(target.getFluidHeight(WarlockeryTags.Fluids.SINKING_FLUIDS))) {
+        if (!SinkingRules.shouldSink(com.kadamitas.warlockery.ritual.hex.SinkingFluidContact.height(target))) {
             return;
         }
         target.setSwimming(false);
@@ -440,13 +440,13 @@ public final class BrewPersistentRuntime {
         if (!BrewMarkerState.isActive(target, BrewMarkerKind.DEPTHS)) {
             return;
         }
-        if (target.getFluidHeight(FluidTags.WATER) > target.getBbHeight() * 0.75) {
-            target.setAirSupply(target.getMaxAirSupply());
-            return;
-        }
-        target.setAirSupply(target.getAirSupply() - 40);
-        if (target.getAirSupply() <= -20) {
-            target.setAirSupply(0);
+        final var marker = BrewMarkerState.data(target, BrewMarkerKind.DEPTHS).orElseThrow();
+        final var breath = DepthsBreathingRules.tick(
+            target.getFluidHeight(FluidTags.WATER) > target.getBbHeight() * 0.75,
+            target.getMaxAirSupply(), target.getAirSupply(), marker.getIntOr("depths_air", target.getAirSupply()));
+        marker.putInt("depths_air", breath.air());
+        target.setAirSupply(breath.air());
+        if (breath.drowning()) {
             target.hurtServer(level, target.damageSources().drown(), 2.0F);
         }
     }

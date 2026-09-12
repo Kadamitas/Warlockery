@@ -297,7 +297,7 @@ public final class ModNetwork {
         if (player == null || !(player.level() instanceof ServerLevel level)
             || player.distanceToSqr(Vec3.atCenterOf(payload.center())) > 64.0
             || !level.isLoaded(payload.center())
-            || !RitualManager.isCircleCenter(level, payload.center())) {
+            || ((payload.activate() || payload.cancel()) && !RitualManager.isCircleCenter(level, payload.center()))) {
             return;
         }
         if (payload.cancel()

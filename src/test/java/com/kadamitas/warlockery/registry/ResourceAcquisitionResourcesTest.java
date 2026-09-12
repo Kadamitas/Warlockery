@@ -46,6 +46,14 @@ final class ResourceAcquisitionResourcesTest {
         recipe("ingredient_nullifiedleather", "warlockery:ingredient_nullifiedleather"),
         recipe("ingredient_quartz_sphere", "warlockery:ingredient_quartz_sphere"),
         recipe("ingredient_contract", "warlockery:ingredient_contract"),
+        recipe("ingredient_contract_fiery_touch", "warlockery:ingredient_contract_fiery_touch"),
+        recipe("ingredient_contract_evaporate", "warlockery:ingredient_contract_evaporate"),
+        recipe("ingredient_contract_resist_fire", "warlockery:ingredient_contract_resist_fire"),
+        recipe("ingredient_contract_smelting", "warlockery:ingredient_contract_smelting"),
+        recipe("ingredient_contract_blaze", "warlockery:ingredient_contract_blaze"),
+        recipe("ingredient_contract_torment", "warlockery:ingredient_contract_torment"),
+        recipe("ingredient_bolt_holy", "warlockery:ingredient_bolt_holy"),
+        recipe("ingredient_bolt_stake", "warlockery:ingredient_bolt_stake"),
         recipe("ingredient_impregnated_leather", "warlockery:ingredient_impregnated_leather"),
         recipe("ingredient_purified_milk", "warlockery:ingredient_purified_milk"),
         recipe("ingredient_annointing_paste", "warlockery:ingredient_annointing_paste"),
@@ -118,6 +126,57 @@ final class ResourceAcquisitionResourcesTest {
                     .getAsString()
             )
         ));
+    }
+
+    @Test
+    void impSpellsAndSpecialBoltsHaveNonCircularDiscoverableBookRoutes() {
+        final List<String> ids = Stream.concat(
+            java.util.Arrays.stream(com.kadamitas.warlockery.magic.ImpContractRules.Spell.values())
+                .map(com.kadamitas.warlockery.magic.ImpContractRules.Spell::itemId),
+            Stream.of("ingredient_bolt_holy", "ingredient_bolt_stake")
+        ).toList();
+        assertEquals(8, ids.size());
+        for (final String id : ids) {
+            final boolean contract = id.startsWith("ingredient_contract_");
+            final String recipeId = "warlockery:" + id;
+            final JsonObject recipe = read(RECIPES.resolve(id + ".json"));
+            assertEquals("minecraft:crafting_shapeless", recipe.get("type").getAsString(), id);
+            final List<String> ingredients = recipe.getAsJsonArray("ingredients").asList().stream()
+                .map(JsonElement::getAsString).toList();
+            assertFalse(ingredients.contains(recipeId), id + " cannot consume its own unavailable output");
+            assertTrue(ingredients.stream().allMatch(ingredient -> ingredient.startsWith("minecraft:")
+                || ingredient.equals("#minecraft:planks") || ingredient.equals("#c:bones")
+                || ingredient.equals("warlockery:ingredient_contract")), id);
+            if (contract) {
+                assertEquals(1, ingredients.stream().filter("warlockery:ingredient_contract"::equals).count(), id);
+                assertEquals(1, recipe.getAsJsonObject("result").get("count").getAsInt(), id);
+            } else {
+                assertEquals(ingredients.stream().filter("minecraft:arrow"::equals).count(),
+                    recipe.getAsJsonObject("result").get("count").getAsInt(), id);
+            }
+            final JsonObject advancement = read(DATA.resolve("advancement/recipes/misc/" + id + ".json"));
+            assertEquals("minecraft:recipe_unlocked", advancement.getAsJsonObject("criteria")
+                .getAsJsonObject("has_the_recipe").get("trigger").getAsString(), id);
+            assertEquals(recipeId, advancement.getAsJsonObject("criteria").getAsJsonObject("has_the_recipe")
+                .getAsJsonObject("conditions").get("recipe").getAsString(), id);
+            assertEquals(List.of(recipeId), advancement.getAsJsonObject("rewards").getAsJsonArray("recipes")
+                .asList().stream().map(JsonElement::getAsString).toList(), id);
+            final Set<String> inventoryIngredients = advancement.getAsJsonObject("criteria").entrySet().stream()
+                .map(entry -> entry.getValue().getAsJsonObject())
+                .filter(criterion -> criterion.get("trigger").getAsString().equals("minecraft:inventory_changed"))
+                .flatMap(criterion -> criterion.getAsJsonObject("conditions").getAsJsonArray("items").asList().stream())
+                .map(JsonElement::getAsJsonObject).map(item -> item.get("items").getAsString())
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+            assertEquals(Set.copyOf(ingredients), inventoryIngredients, id);
+            assertEquals(1, advancement.getAsJsonArray("requirements").size(), id);
+            assertEquals(advancement.getAsJsonObject("criteria").keySet(),
+                advancement.getAsJsonArray("requirements").get(0).getAsJsonArray().asList().stream()
+                    .map(JsonElement::getAsString).collect(java.util.stream.Collectors.toUnmodifiableSet()), id);
+            final var manual = com.kadamitas.warlockery.item.ManualProfile.find(
+                contract ? "ingredient_book_burning" : "ingredient_book_infusions").orElseThrow();
+            assertTrue(manual.sections().containsAll(List.of("crafting_" + id, id)), id);
+            assertEquals(manual.chapterFor(id), manual.chapterFor("crafting_" + id), id);
+        }
     }
 
     @TestFactory

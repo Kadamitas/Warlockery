@@ -134,7 +134,7 @@ public final class HexRuntime {
     }
 
     private static void tickSinking(final LivingEntity target) {
-        if (!SinkingRules.shouldSink(target.getFluidHeight(WarlockeryTags.Fluids.SINKING_FLUIDS))) {
+        if (!SinkingRules.shouldSink(com.kadamitas.warlockery.ritual.hex.SinkingFluidContact.height(target))) {
             return;
         }
         target.setSwimming(false);
