@@ -73,6 +73,7 @@ public final class DollBehaviorFactory {
         final ServerLevel level = (ServerLevel) player.level();
         final BlockPos origin = player.blockPosition();
         BlockPos.betweenClosedStream(origin.offset(-4, 0, -4), origin.offset(4, 10, 4))
+            .map(BlockPos::immutable)
             .filter(pos -> isSafeStandingSpot(level, pos))
             .min(Comparator.comparingDouble(pos -> pos.distSqr(origin)))
             .ifPresent(pos -> {

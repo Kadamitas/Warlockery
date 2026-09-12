@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/Kadamitas/Warlockery/releases",
   "promos": {
-    "26.2-latest": "1.5.2-LlaGuiT0-26.2.0.45",
-    "26.2-recommended": "1.5.2-LlaGuiT0-26.2.0.45"
+    "26.2-latest": "1.5.3-LlaGuiT0-26.2.0.45",
+    "26.2-recommended": "1.5.3-LlaGuiT0-26.2.0.45"
   },
   "26.2": {
     "1.0.0-alpha.1": "Initial public alpha.",
@@ -15,6 +15,7 @@
     "1.4.0": "Makes village assaults rarer, adds mob-specific combat and hazard navigation, expands ecology and settlement life, improves spouse interactions and common-tag compatibility, and aligns tested Forge, NeoForge, and Fabric releases.",
     "1.5.0": "Adds dedicated bounded creature behaviors and mimicry, reimagines machine interfaces, restores and modernizes Witchery machine functionality, expands Nami's Ocean Monument progression, reduces continuous scanning, and aligns Forge, NeoForge, Fabric, and the supporter build.",
     "1.5.1": "Isolates Forge GameTests, reworks vampire blood, Sanguine regeneration, and sunlight, adds werewolf prey drive, and refreshes Mandrake, Dreamroot, and magical plant visuals.",
-    "1.5.2-LlaGuiT0-26.2.0.45": "Supporter compatibility build with improved in-game guides, recipe discovery, and native recipe-viewer compatibility."
+    "1.5.2-LlaGuiT0-26.2.0.45": "Supporter compatibility build with improved in-game guides, recipe discovery, and native recipe-viewer compatibility.",
+    "1.5.3-LlaGuiT0-26.2.0.45": "Fixes broom flight, dolls, spirit capture, brewing effects and recipe discovery, expands practical item instructions, and restores missing crafting routes."
   }
 }

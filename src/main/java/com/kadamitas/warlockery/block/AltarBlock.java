@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
+import com.kadamitas.warlockery.item.AttunedStoneItem;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModSounds;
 import com.mojang.serialization.MapCodec;
@@ -49,6 +50,9 @@ public final class AltarBlock extends BaseEntityBlock {
         final InteractionHand hand,
         final BlockHitResult hitResult
     ) {
+        if (stack.getItem() instanceof AttunedStoneItem) {
+            return InteractionResult.PASS;
+        }
         if (!(level.getBlockEntity(pos) instanceof AltarBlockEntity altar) || !altar.supportsAttachment(stack)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }

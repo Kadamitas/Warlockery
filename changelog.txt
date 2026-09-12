@@ -1,3 +1,14 @@
+Warlockery 1.5.3-LlaGuiT0-26.2.0.45
+================
+
+- Fixed mounted broom flight, flight-enhancing brews, doll protection and linked damage, spirit capture, and enchanted equipment behavior.
+- Fixed brewing effects, undead healing, the Abyssal Regent summon, and Fabric planting compatibility.
+- Fixed Depths breathing, Sinking fluid contact, sleeping-body survival during dream travel, and Fabric arrow reflection.
+- Redstone Soup can be consumed at full hunger to activate its health reward.
+- Chalk connects diagonally to complete circles, including existing patterns after loading.
+- Expanded practical book instructions, item chapters, recipe links, and readable page navigation.
+- Restored JEI recipe visibility after refresh and added missing recipes and Minecraft recipe-book unlocks.
+
 Warlockery 1.5.2-LlaGuiT0-26.2.0.45
 ===================================
 

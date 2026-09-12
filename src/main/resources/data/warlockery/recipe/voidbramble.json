@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:sweet_berries",
+    "warlockery:ingredient_ender_dew",
+    "warlockery:ingredient_refined_evil"
+  ],
+  "result": {
+    "id": "warlockery:voidbramble"
+  }
+}

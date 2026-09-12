@@ -19,7 +19,7 @@ public final class RedstoneSoupItem extends Item {
         super(properties
             .stacksTo(16)
             .usingConvertsTo(Items.BOWL)
-            .food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.2F).build())
+            .food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.2F).alwaysEdible().build())
             .component(
                 DataComponents.CONSUMABLE,
                 Consumable.builder()

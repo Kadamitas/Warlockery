@@ -47,7 +47,7 @@ final class PersistentBrewParityTest {
         marked("repel_attacker", BrewBehavior.APPLY_REPEL_ATTACKER, BrewMarkerKind.REPEL_ATTACKER, "radialVelocity"),
         marked("resizing", BrewBehavior.APPLY_RESIZING, BrewMarkerKind.RESIZING, "Attributes.SCALE"),
         fixed("shifting_seasons", BrewBehavior.SHIFT_SEASONS, "shiftSeasons"),
-        fixed("summon_abyssal_regent", BrewBehavior.SUMMON_ABYSSAL_REGENT, "emberhorn_archfiend"),
+        fixed("summon_abyssal_regent", BrewBehavior.SUMMON_ABYSSAL_REGENT, "ModEntities.ALL.get(\"abyssal_regent\")"),
         marked("tint_skin", BrewBehavior.APPLY_TINT_SKIN, BrewMarkerKind.TINT_SKIN, "tickTint"),
         marked("werewolf_lock", BrewBehavior.APPLY_WEREWOLF_LOCK, BrewMarkerKind.WEREWOLF_LOCK, "lockedForm"),
         marked("disease", BrewBehavior.APPLY_DISEASE, BrewMarkerKind.DISEASE, "tickContagion"),

@@ -44,7 +44,8 @@ final class ManualLibraryTest {
             ? translations.get(key).getAsString()
             : key;
         assertTrue(ids(ManualProfile.search("circle magic", resolver)).contains("ingredient_book_circle_magic"));
-        assertEquals(List.of("ingredient_book_burning"), ids(ManualProfile.search("bound fetishes", resolver)));
+        assertEquals(List.of("ingredient_book_burning", "ingredient_book_wands"),
+            ids(ManualProfile.search("bound fetishes", resolver)));
         assertEquals(List.of("ingredient_book_herbology"), ids(ManualProfile.search("safe harvest", resolver)));
         assertEquals(List.of("vampirebook"), ids(ManualProfile.search("blood sense", resolver)));
         assertTrue(ManualProfile.search("no such manual text", resolver).isEmpty());
@@ -56,7 +57,9 @@ final class ManualLibraryTest {
         assertEquals("antidotes", profile.adjacentSection("custom_brews", 1));
         assertEquals("machine_recipe_cauldron_verdant_catalyst_prime", profile.adjacentSection("custom_brews", -1));
         assertEquals("crafting_kettle", profile.adjacentSection("preamble", 1));
-        assertEquals("brew_entry_heal", profile.adjacentSection("diagnostics", 1));
+        assertEquals("bucketspirit", profile.adjacentSection("diagnostics", 1));
+        assertEquals("diagnostics", profile.adjacentSection("bucketspirit", -1));
+        assertEquals("brew_entry_heal", profile.adjacentSection("brewbag", 1));
     }
 
     @Test

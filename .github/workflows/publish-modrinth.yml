@@ -9,7 +9,7 @@ on:
       tag:
         description: GitHub release tag to publish
         required: true
-        default: v1.5.2-LlaGuiT0-26.2.0.45
+        default: v1.5.3-LlaGuiT0-26.2.0.45
       loader:
         description: Mod loader versions to publish
         required: true

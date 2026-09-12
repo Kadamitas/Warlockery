@@ -36,12 +36,12 @@ public final class SpectralStoneItem extends Item {
         );
         if (!decision.success()) {
             show(player, decision);
-            return InteractionResult.FAIL;
+            return InteractionResult.CONSUME;
         }
         final var targetType = BuiltInRegistries.ENTITY_TYPE.getKey(target.getType());
         if (!state.canCapture(targetType)) {
             show(player, target.getDisplayName(), false);
-            return InteractionResult.FAIL;
+            return InteractionResult.CONSUME;
         }
         if (!player.level().isClientSide()) {
             state.with(targetType).write(stack);
