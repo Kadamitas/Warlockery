@@ -1,3 +1,11 @@
+Warlockery 1.5.4
+================
+
+- Fixed regressions across altars, rituals, brewing, dolls, manuals, Spirit World travel, recipe-viewer integration, and creature and settlement behavior.
+- Rebuilt and refined creature silhouettes, faces, textures, held equipment, and motion, including Death, Naamah, Spirit, Werewolf Hunter, Hellhound, Imp, Circle Mage, steeds, Ents, and other supernatural creatures.
+- Refreshed ritual circles, machines, portals, magical plants, item art, and HUD and manual presentation for clearer forms and better readability.
+- Moved GameTest-only fixtures and registrations out of production artifacts and expanded automated regression coverage.
+
 Warlockery 1.5.3
 ================
 

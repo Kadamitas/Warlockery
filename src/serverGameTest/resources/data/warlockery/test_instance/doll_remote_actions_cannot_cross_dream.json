@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:doll_remote_actions_cannot_cross_dream",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "doll_remote_actions_cannot_cross_dream",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 120
+}

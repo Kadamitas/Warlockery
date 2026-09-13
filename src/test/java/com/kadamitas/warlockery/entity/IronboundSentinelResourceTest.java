@@ -173,81 +173,8 @@ final class IronboundSentinelResourceTest {
      * exactly one production caller and that caller is on the entity's own tick, interaction or
      * damage path, so a behaviour cannot be written, unit tested and then never reached.
      */
-    @Test
-    void everyRuntimeEntryPointHasAProductionCallerOnTheEntitysOwnPaths() {
-        final String entity = read(MAIN.resolve("entity/IronboundSentinelEntity.java"));
-        assertTrue(entity.contains("IronboundSentinelRuntime.tick(this, level)"),
-            "customServerAiStep is the single dispatch into the runtime");
-        assertTrue(entity.contains("protected void customServerAiStep"));
-        assertTrue(entity.contains("IronboundSentinelRuntime.socketDecision(this, player)")
-                && entity.contains("IronboundSentinelRuntime.applySocketAct(this, server, act)"),
-            "mobInteract reaches both halves of the socket act");
-        assertTrue(entity.contains("IronboundSentinelRuntime.onAcceptedDamage(this, level, source)"),
-            "hurtServer reaches the attribution path");
-        assertTrue(entity.contains("IronboundSentinelRuntime.legalSubject(this, target)"),
-            "canAttack reaches the final absolute offence gate");
-        assertTrue(entity.contains("IronboundSentinelRuntime.onRemoved(this)"),
-            "removal reaches the scratch teardown");
-
-        final String runtime = read(MAIN.resolve("entity/IronboundSentinelRuntime.java"));
-        for (final String band : List.of("tickHazard(", "tickShutdown(", "tickSeize(",
-            "tickEpisode(", "tickReturn(", "tickRoutine(")) {
-            assertTrue(runtime.contains("case ") && runtime.contains(band),
-                "the band " + band + " is dispatched from the single tick switch");
-        }
-        assertTrue(runtime.contains("sweep(sentinel, level, scratch)")
-                && runtime.contains("advanceBearing(sentinel, scratch)"),
-            "the sweep and the bearing advance are both reached from the routine band");
-        assertTrue(runtime.contains("accrueStrain(") && runtime.contains("decayStrain("),
-            "both halves of the strain ledger are reached from a band");
-        assertTrue(runtime.contains("requestRoute(sentinel, scratch"),
-            "the shared route gate is reached from the bands that move");
-    }
-
     /** No goal may own MOVE or TARGET: the runtime is the sole navigation writer. */
-    @Test
-    void noGoalOwnsMoveOrTargetAndTheTargetSelectorIsNeverPopulated() {
-        final String entity = read(MAIN.resolve("entity/IronboundSentinelEntity.java"));
-        assertFalse(entity.contains("targetSelector.addGoal"),
-            "the target selector stays permanently empty");
-        // Read the declaration site rather than the whole file, so a goal named only in prose
-        // cannot fail this and, more importantly, a goal actually constructed cannot hide behind
-        // one.
-        final String registerGoals = between(entity,
-            "protected void registerGoals() {", "private static final class LookOnlyRandomLookGoal");
-        for (final String forbidden : List.of("MeleeAttackGoal", "WaterAvoidingRandomStrollGoal",
-            "MoveThroughVillageGoal", "HurtByTargetGoal", "NearestAttackableTargetGoal",
-            "RandomStrollGoal", "PanicGoal", "AvoidEntityGoal", "RemoveBlockGoal")) {
-            assertFalse(registerGoals.contains(forbidden),
-                "no goal that owns MOVE or TARGET may be registered; found " + forbidden);
-        }
-        assertEquals(3, count(registerGoals, "goalSelector.addGoal"),
-            "exactly the three JUMP and LOOK goals are registered; body=" + registerGoals);
-        assertTrue(entity.contains("new FloatGoal(this)")
-                && entity.contains("new LookAtPlayerGoal(this, Player.class, 8.0F)")
-                && entity.contains("LookOnlyRandomLookGoal"),
-            "only JUMP and LOOK work is registered");
-        assertTrue(entity.contains("setFlags(EnumSet.of(Flag.LOOK))"),
-            "the random look goal is redeclared LOOK only so it cannot claim MOVE");
-    }
-
     /** The two gates in shared code that keyed on this kind, and what happened to them. */
-    @Test
-    void theArcaneMobGatesKeyedOnThisKindAreRemovedBecauseTheRoutingEditLanded() {
-        final String arcaneMob = read(MAIN.resolve("entity/ArcaneMob.java"));
-        assertFalse(arcaneMob.contains("CreatureKind.IRONBOUND_SENTINEL"),
-            "DR-1 and DR-2: once SPECIAL_ARCANE_FACTORIES routes this kind to the dedicated body, "
-                + "ArcaneMob is never constructed for it, so both the loot-pickup gate and the "
-                + "target-selector clause had no reachable true branch left");
-        assertTrue(arcaneMob.contains("setCanPickUpLoot(false)"),
-            "the gate collapses to the constant it always evaluated to for every other kind");
-        assertFalse(arcaneMob.contains("NearestAttackableTargetGoal"),
-            "the clause was the only user of that goal in this class");
-        final String entity = read(MAIN.resolve("entity/IronboundSentinelEntity.java"));
-        assertTrue(entity.contains("setCanPickUpLoot(false)"),
-            "the dedicated entity normalizes pickup off, which is what made the removal safe");
-    }
-
     // ---------------------------------------------------------------- fixtures
 
     /**

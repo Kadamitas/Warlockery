@@ -64,7 +64,7 @@ public final class WarlockeryClient {
         ModNetwork.setClientCatalogHandler(RecipeViewerCatalogSync::accept);
         ManualScreenBridge.setOpenHandler(ManualScreen::open);
         ModNetwork.setClientScreenHandler(payload ->
-            RitualSelectionScreen.openOrUpdate(payload.center(), payload.options(), payload.mayOpen()));
+            ManualScreen.openOrUpdateRitual(payload.center(), payload.options(), payload.mayOpen()));
         ModNetwork.setClientDollHandler(DollStatusOverlay::activate);
         ModNetwork.setClientSupernaturalHandler(payload -> {
             SupernaturalStatusOverlay.update(payload);
@@ -74,6 +74,7 @@ public final class WarlockeryClient {
         event.registerBlockEntityRenderer(ModBlockEntities.MAGIC_MACHINE.get(), MachineOverlayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.WOLF_TRAP.get(), WolfTrapOverlayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ALTAR.get(), AltarOverlayRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CIRCLE_HEART.get(), CircleHeartRenderer::new);
         event.registerEntityRenderer(ModEntities.BROOM.get(), BroomEntityRenderer::new);
         TexturedCreatureRenderers.registerNami(event, ModEntities.NAMI.get());
         final CreatureVisualProfile glassVisual = CreatureVisualProfile.forKind(

@@ -9,11 +9,13 @@ import com.kadamitas.warlockery.block.FumeFunnelBlock;
 import com.kadamitas.warlockery.block.MagicMachineBlock;
 import com.kadamitas.warlockery.block.MagicalPlantBlockFactory;
 import com.kadamitas.warlockery.block.MagicalWoodBlockFactory;
+import com.kadamitas.warlockery.block.LegacyPlantBlockFactory;
 import com.kadamitas.warlockery.block.ModernBlockFactory;
 import com.kadamitas.warlockery.block.PerpetualIceBlock;
 import com.kadamitas.warlockery.block.PlantMineBlock;
 import com.kadamitas.warlockery.block.ShadedGlassBlock;
 import com.kadamitas.warlockery.block.SpiritLiquidBlock;
+import com.kadamitas.warlockery.block.SpiritPortalBlock;
 import com.kadamitas.warlockery.block.HollowTearsLiquidBlock;
 import com.kadamitas.warlockery.block.UtilityDeviceBlockFactory;
 import com.kadamitas.warlockery.block.WolfTrapBlock;
@@ -44,6 +46,9 @@ public final class ModBlocks {
         "block",
         Map.ofEntries(
             FactoryCatalog.entry("altar", AltarBlock::new),
+            FactoryCatalog.entry("circle", properties -> new com.kadamitas.warlockery.block.GoldenCircleBlock(
+                properties.noCollision().noOcclusion().instabreak().noLootTable().sound(SoundType.STONE))),
+            FactoryCatalog.entry("spiritportal", SpiritPortalBlock::new),
             FactoryCatalog.entry("fumefunnel", properties -> new FumeFunnelBlock(properties.noOcclusion())),
             FactoryCatalog.entry("filteredfumefunnel", properties -> new FumeFunnelBlock(properties.noOcclusion())),
             FactoryCatalog.entry("wolftrap", properties -> new WolfTrapBlock(properties.noOcclusion())),
@@ -86,6 +91,7 @@ public final class ModBlocks {
         new BlockFactoryRule(ContentCatalog.CROPS::contains, (_, properties) -> new WarlockeryCropBlock(
             properties.noCollision().randomTicks().instabreak().sound(SoundType.CROP)
         )),
+        new BlockFactoryRule(LegacyPlantBlockFactory::supports, LegacyPlantBlockFactory::create),
         new BlockFactoryRule(MagicalWoodBlockFactory::supports, MagicalWoodBlockFactory::create),
         new BlockFactoryRule(ModernBlockFactory::supports, ModernBlockFactory::create)
     );

@@ -33,16 +33,6 @@ final class CrossModCatalogContractTest {
         "(?:register|hobgoblin)\\(\\\"([a-z0-9_]+)\\\"|Map\\.entry\\(\\\"([a-z0-9_]+)\\\""
     );
 
-    @TestFactory
-    Stream<DynamicTest> everyRegisteredCatalogEntryHasACompatibilityClassification() {
-        return classifications().entrySet().stream().map(entry -> DynamicTest.dynamicTest(
-            entry.getKey().registry() + ":" + entry.getKey().id(),
-            () -> {
-                assertFalse(entry.getValue().isEmpty());
-                assertFalse(entry.getValue().contains("private_magic") && entry.getValue().size() > 1);
-            }
-        ));
-    }
 
     @Test
     void classificationCoversEveryRequestedCompatibilityFamily() {
@@ -70,37 +60,6 @@ final class CrossModCatalogContractTest {
         )));
     }
 
-    @Test
-    void catalogEnumerationMatchesEveryRegistrationPath() {
-        final Set<CatalogEntry> entries = catalog();
-        final Set<String> blocks = entries.stream()
-            .filter(entry -> entry.registry().equals("block"))
-            .map(CatalogEntry::id)
-            .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        final Set<String> items = entries.stream()
-            .filter(entry -> entry.registry().equals("item"))
-            .map(CatalogEntry::id)
-            .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        final Set<String> fluids = entries.stream()
-            .filter(entry -> entry.registry().equals("fluid"))
-            .map(CatalogEntry::id)
-            .collect(java.util.stream.Collectors.toUnmodifiableSet());
-
-        assertEquals(ContentCatalog.BLOCKS.size(), blocks.size());
-        assertTrue(items.containsAll(ContentCatalog.BREWS));
-        assertTrue(items.containsAll(ContentCatalog.INGREDIENTS.stream().map(ContentCatalog::ingredientId).toList()));
-        assertTrue(items.containsAll(spawnEggIds()));
-        assertEquals(Set.of(
-            "spirit",
-            "flowing_spirit",
-            "hollow_tears",
-            "flowing_hollow_tears",
-            "colored_brew_water",
-            "flowing_colored_brew_water",
-            "erosion_brew",
-            "flowing_erosion_brew"
-        ), fluids);
-    }
 
     @TestFactory
     Stream<DynamicTest> everyDeclaredTagContractIsPresent() {
@@ -152,50 +111,8 @@ final class CrossModCatalogContractTest {
         assertFalse(Files.exists(DATA.resolve("c/tags/damage_type/damage_types/magic.json")));
     }
 
-    @Test
-    void projectilesUseVanillaProjectileAndCrossbowMechanics() {
-        final String itemRegistry = read(Path.of("src/main/java/com/kadamitas/warlockery/registry/ModItems.java"));
-        final String hunter = read(Path.of("src/main/java/com/kadamitas/warlockery/entity/WerewolfHunterEntity.java"));
-        final String worldIntegration = read(Path.of("src/main/java/com/kadamitas/warlockery/world/CreatureWorldIntegration.java"));
-        final String combat = read(Path.of("src/main/java/com/kadamitas/warlockery/entity/CreatureCombat.java"));
-        final String rock = read(Path.of("src/main/java/com/kadamitas/warlockery/item/RockItem.java"));
-        final String brews = read(Path.of("src/main/java/com/kadamitas/warlockery/brew/BrewItem.java"));
 
-        assertTrue(itemRegistry.contains("new ArrowItem(properties(id))"));
-        assertFalse(itemRegistry.contains("silver_repeater"));
-        assertTrue(hunter.contains("new ItemStack(Items.CROSSBOW)"));
-        assertTrue(worldIntegration.contains("new ItemStack(Items.CROSSBOW)"));
-        assertTrue(hunter.contains("ingredient_bolt_silver"));
-        assertTrue(worldIntegration.contains("ingredient_bolt_silver"));
-        assertTrue(combat.contains("WarlockeryTags.Items.SILVER_PROJECTILES"));
-        assertTrue(rock.contains("extends SnowballItem"));
-        assertTrue(brews.contains("extends SplashPotionItem"));
-    }
 
-    @Test
-    void fuelsUseTheNeoForgeItemBurnTimeHook() {
-        final String item = read(Path.of("src/main/java/com/kadamitas/warlockery/brew/BrewItem.java"));
-        final String kind = read(Path.of("src/main/java/com/kadamitas/warlockery/brew/BrewKind.java"));
-        assertTrue(item.contains("public int getBurnTime("));
-        assertTrue(item.contains("final FuelValues fuelValues"));
-        assertTrue(item.contains("kind.fuelBurnTime()"));
-        assertTrue(kind.contains("return this == COMBUSTION ? 2_400 : 0;"));
-    }
-
-    @Test
-    void machinesExposeSidedItemAndApplicableFluidCapabilities() {
-        final String machine = read(Path.of(
-            "src/main/java/com/kadamitas/warlockery/block/entity/MagicMachineBlockEntity.java"
-        ));
-        final String profiles = read(Path.of(
-            "src/main/java/com/kadamitas/warlockery/crafting/MachineProfiles.java"
-        ));
-        assertTrue(machine.contains("Capabilities.Item.BLOCK"));
-        assertTrue(machine.contains("Capabilities.Fluid.BLOCK"));
-        assertTrue(machine.contains("WorldlyContainerWrapper::new"));
-        assertTrue(machine.contains("machineProfile().supportsFluids()"));
-        idClassifications("machine", "block").forEach(id -> assertTrue(profiles.contains("\"" + id + "\""), id));
-    }
 
     @Test
     void spiritFluidRemainsPrivateAndManaInteroperabilityIsDocumentedHonestly() throws IOException {

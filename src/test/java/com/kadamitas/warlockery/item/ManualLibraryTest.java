@@ -176,8 +176,9 @@ final class ManualLibraryTest {
             .orElseThrow();
         assertEquals(
             java.util.stream.IntStream.rangeClosed(1, 10).mapToObj(level -> "werewolf_level_" + level).toList(),
-            lycanthropy.sections()
+            lycanthropy.sections().stream().filter(section -> section.startsWith("werewolf_level_")).toList()
         );
+        assertTrue(lycanthropy.sections().contains("mooncharm"), "the earned form-changing tool has its own guidance");
     }
 
     @Test

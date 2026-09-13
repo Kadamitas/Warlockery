@@ -32,7 +32,12 @@ final class CircleMageModelTest {
         final ModelPart root = CircleMageModel.createBodyLayer().bakeRoot();
         final ModelPart head = requiredChild(root, "head");
         final ModelPart body = requiredChild(root, "body");
-        assertFalse(requiredChild(head, "study_visor").isEmpty());
+        final ModelPart hoodBrow = requiredChild(head, "study_visor");
+        assertFalse(hoodBrow.isEmpty());
+        assertTrue(hoodBrow.y < -5.0F, "the cloth brow must leave the mage's face visible");
+        final ModelPart hoodPeak = requiredChild(requiredChild(head, "temple_prism"), "hood_peak");
+        assertFalse(hoodPeak.isEmpty());
+        assertFalse(requiredChild(hoodPeak, "hood_tip").isEmpty());
         final ModelPart mantle = requiredChild(body, "layered_mantle");
         assertFalse(requiredChild(mantle, "right_broken_ring_shard").isEmpty());
         assertFalse(requiredChild(mantle, "left_broken_ring_shard").isEmpty());
@@ -70,9 +75,13 @@ final class CircleMageModelTest {
         CreatureModelTestSupport.assertUvsWithin(
             root, CircleMageModel.TEXTURE_WIDTH, CircleMageModel.TEXTURE_HEIGHT
         );
-        assertEquals(CircleMageModel.TEXTURE_WIDTH, ImageIO.read(TEXTURE.toFile()).getWidth());
-        assertEquals(CircleMageModel.TEXTURE_HEIGHT, ImageIO.read(TEXTURE.toFile()).getHeight());
-        CreatureModelTestSupport.assertOpaqueUvs(root, ImageIO.read(TEXTURE.toFile()), cube -> true);
+        final java.awt.image.BufferedImage texture = ImageIO.read(TEXTURE.toFile());
+        assertEquals(CircleMageModel.TEXTURE_WIDTH, texture.getWidth());
+        assertEquals(CircleMageModel.TEXTURE_HEIGHT, texture.getHeight());
+        assertEquals(0xFFC58F72, texture.getRGB(9, 8), "the hood opening keeps a readable skin face");
+        assertNotEquals(texture.getRGB(8, 9), texture.getRGB(9, 9),
+            "the dark pupil must contrast with the skin around it");
+        CreatureModelTestSupport.assertOpaqueUvs(root, texture, cube -> true);
     }
 
     @Test

@@ -184,7 +184,7 @@ public final class WarlockeryEmiRecipe implements EmiRecipe {
             for (var ring : rings) {
                 int color = switch (ring.glyph()) {
                     case "circleglyphinfernal" -> 0xFFFF6B6B;
-                    case "circleglyph_veil" -> 0xFF94BDFF;
+                    case "circleglyph_veil" -> 0xFF287C8E;
                     case "circleglyphgolden" -> 0xFFFFD966;
                     default -> 0xFFF8F3EF;
                 };

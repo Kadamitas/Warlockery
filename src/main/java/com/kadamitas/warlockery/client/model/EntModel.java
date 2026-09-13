@@ -15,6 +15,8 @@ import net.minecraft.util.Mth;
 public final class EntModel extends EntityModel<EntModel.State> {
     public static final int TEXTURE_WIDTH = 256;
     public static final int TEXTURE_HEIGHT = 128;
+    private static final float GROUNDING_OFFSET = 0.402752F;
+    private static final float ROOT_LEG_GROUNDING_OFFSET = 8.683424F;
 
     private final ModelPart splitTrunk;
     private final ModelPart hollowKnot;
@@ -70,7 +72,7 @@ public final class EntModel extends EntityModel<EntModel.State> {
         final PartDefinition trunkBase = root.addOrReplaceChild(
             "trunk_base",
             CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -4.0F, -5.0F, 16.0F, 11.0F, 10.0F),
-            PartPose.offsetAndRotation(0.0F, -0.87995F, 0.5F, 0.07F, -0.04F, -0.06F)
+            PartPose.offsetAndRotation(0.0F, -0.87995F + GROUNDING_OFFSET, 0.5F, 0.07F, -0.04F, -0.06F)
         );
         final PartDefinition split = trunkBase.addOrReplaceChild(
             "split_trunk",
@@ -190,7 +192,7 @@ public final class EntModel extends EntityModel<EntModel.State> {
         final PartDefinition rightLeg = root.addOrReplaceChild(
             "right_root_leg",
             CubeListBuilder.create().texOffs(38, 50).addBox(-4.0F, 0.0F, -3.5F, 7.0F, 12.0F, 7.0F),
-            PartPose.offsetAndRotation(-5.0F, -1.87995F, -3.5F, -0.1F, 0.1F, 0.12F)
+            PartPose.offsetAndRotation(-5.0F, -1.87995F + ROOT_LEG_GROUNDING_OFFSET, -3.5F, -0.1F, 0.1F, 0.12F)
         );
         final PartDefinition rightFoot = rightLeg.addOrReplaceChild(
             "right_root_foot",
@@ -202,7 +204,7 @@ public final class EntModel extends EntityModel<EntModel.State> {
         final PartDefinition leftLeg = root.addOrReplaceChild(
             "left_root_leg",
             CubeListBuilder.create().texOffs(146, 50).addBox(-3.0F, 0.0F, -4.0F, 8.0F, 12.0F, 8.0F),
-            PartPose.offsetAndRotation(4.5F, -1.87995F, 3.0F, 0.08F, -0.12F, -0.14F)
+            PartPose.offsetAndRotation(4.5F, -1.87995F + ROOT_LEG_GROUNDING_OFFSET, 3.0F, 0.08F, -0.12F, -0.14F)
         );
         final PartDefinition leftFoot = leftLeg.addOrReplaceChild(
             "left_root_foot",

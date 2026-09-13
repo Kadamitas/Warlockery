@@ -1,12 +1,17 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.ConnectedGlyphGeometry.Side;
+import com.kadamitas.warlockery.item.ArcaneFocusItem;
+import com.kadamitas.warlockery.item.ChalkItem;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -28,8 +33,9 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.BlockHitResult;
 
-public final class ConnectedGlyphBlock extends Block {
+public class ConnectedGlyphBlock extends Block {
     public static final MapCodec<ConnectedGlyphBlock> CODEC = simpleCodec(ConnectedGlyphBlock::new);
     public static final BooleanProperty NORTH = BlockStateProperties.NORTH;
     public static final BooleanProperty EAST = BlockStateProperties.EAST;
@@ -77,6 +83,50 @@ public final class ConnectedGlyphBlock extends Block {
     @Override
     public BlockState getStateForPlacement(final BlockPlaceContext context) {
         return connectedState(context.getLevel(), context.getClickedPos());
+    }
+
+    @Override
+    protected void onPlace(final BlockState state, final Level level, final BlockPos pos,
+        final BlockState previous, final boolean moved) {
+        if (level instanceof ServerLevel server && !state.is(previous.getBlock())) {
+            ConnectedGlyphLinks.get(server).remove(pos);
+            refreshNeighborhood(level, pos);
+        }
+    }
+
+    @Override
+    protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level,
+        final BlockPos pos, final boolean moved) {
+        ConnectedGlyphLinks.get(level).remove(pos);
+        refreshNeighborhood(level, pos);
+        super.affectNeighborsAfterRemoval(state, level, pos, moved);
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos,
+        final Player player, final BlockHitResult hit) {
+        if (!player.getMainHandItem().isEmpty() || player.getOffhandItem().getItem() instanceof ArcaneFocusItem
+            || player.getOffhandItem().getItem() instanceof ChalkItem
+            || !player.mayBuild() || !level.mayInteract(player, pos)) return InteractionResult.PASS;
+        final var clicked = ConnectedGlyphLinks.clickedSide(hit.getLocation().x - pos.getX(), hit.getLocation().z - pos.getZ());
+        if (clicked.isEmpty()) return InteractionResult.PASS;
+        final Side side = clicked.orElseThrow();
+        final BlockPos neighborPos = pos.offset(side.dx(), 0, side.dz());
+        final BlockState neighbor = loadedBlockState(level, neighborPos);
+        if (neighbor == null || !connectsTo(neighbor) || !level.mayInteract(player, neighborPos)) return InteractionResult.PASS;
+        if (level instanceof ServerLevel serverLevel) {
+            ConnectedGlyphLinks.get(serverLevel).toggle(pos, side);
+            refreshConnections(level, pos, Block.UPDATE_CLIENTS, 512);
+            refreshConnections(level, neighborPos, Block.UPDATE_CLIENTS, 512);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    private static void refreshNeighborhood(final LevelAccessor level, final BlockPos pos) {
+        refreshConnections(level, pos, Block.UPDATE_CLIENTS, 512);
+        for (final Side side : Side.values()) {
+            refreshConnections(level, pos.offset(side.dx(), 0, side.dz()), Block.UPDATE_CLIENTS, 512);
+        }
     }
 
     @Override
@@ -132,7 +182,12 @@ public final class ConnectedGlyphBlock extends Block {
         final BlockPos pos,
         final CollisionContext context
     ) {
-        return shapes.apply(state);
+        BlockState selectable = state;
+        for (final Side side : Side.values()) {
+            final BlockState neighbor = loadedBlockState(level, pos.offset(side.dx(), 0, side.dz()));
+            if (neighbor != null) selectable = selectable.setValue(ALL_CONNECTIONS.get(side), connectsTo(neighbor));
+        }
+        return shapes.apply(selectable);
     }
 
     @Override
@@ -189,11 +244,14 @@ public final class ConnectedGlyphBlock extends Block {
     }
 
     private static BlockState connectToNeighbors(final BlockState state, final BlockGetter level, final BlockPos pos) {
+        if (level instanceof Level world && world.isClientSide()) return state;
+        final ConnectedGlyphLinks links = level instanceof ServerLevel server ? ConnectedGlyphLinks.get(server) : null;
         BlockState connected = state;
         for (final Side side : Side.values()) {
             final BlockState neighbor = loadedBlockState(level, pos.offset(side.dx(), 0, side.dz()));
             if (neighbor != null) {
-                connected = connected.setValue(ALL_CONNECTIONS.get(side), connectsTo(neighbor));
+                connected = connected.setValue(ALL_CONNECTIONS.get(side),
+                    connectsTo(neighbor) && (links == null || !links.disabled(pos, side)));
             }
         }
         return connected;

@@ -22,7 +22,7 @@ final class ReleaseMetadataTest {
         final var matcher = GRADLE_VERSION.matcher(build);
         assertTrue(matcher.find());
         final String version = matcher.group(1);
-        assertEquals("1.5.3", version);
+        assertEquals("1.5.4", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
@@ -54,6 +54,8 @@ final class ReleaseMetadataTest {
         assertTrue(metadata.contains("javaVersion=\"[25,)\""));
         assertTrue(metadata.contains("modId=\"neoforge\""));
         assertTrue(metadata.contains("versionRange=\"[26.2.0.64,)\""));
+        assertTrue(read("src/serverGameTest/resources/META-INF/neoforge.mods.toml").contains("versionRange=\"[26.2.0.64,)\""));
+        assertTrue(read("build.gradle").contains("version = '26.2.0.87'"));
         assertTrue(metadata.contains("modId=\"jei\""));
         assertTrue(Pattern.compile("(?s)modId=\"jei\".*?type=\"optional\".*?side=\"CLIENT\"")
             .matcher(metadata)
@@ -93,7 +95,7 @@ final class ReleaseMetadataTest {
             ".github/workflows/publish-modrinth.yml"
         }) {
             final String contents = read(workflow);
-            assertTrue(contents.contains("default: v1.5.3"));
+            assertTrue(contents.contains("default: v1.5.4"));
             assertTrue(contents.contains("- forge"));
             assertTrue(contents.contains("- neoforge"));
             assertTrue(contents.contains("- fabric"));

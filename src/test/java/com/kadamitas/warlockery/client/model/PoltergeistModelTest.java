@@ -52,7 +52,7 @@ final class PoltergeistModelTest {
         model.root().yRot=.7853982F; assertEquals("4ec0c0be4518167bc65accaa8cc6000d133f72bccc1c8717af767b53a46f3ec4",imageSnapshot(softwareSnapshot(model.root(),Projection.FRONT,128,4))); model.root().yRot=0;
         final PoltergeistModel.State state=new PoltergeistModel.State(); state.walkAnimationPos=2.3F; state.walkAnimationSpeed=.7F; state.ageInTicks=36F; state.yRot=17F; state.xRot=-4F; model.setupAnim(state);
         assertEquals("a1ef4d1df87da887cc07ae3d60db1539ecf201b19c142fb9d22322899d537cde",geometrySnapshot(model.root())); state.flinging=true; model.setupAnim(state); assertEquals("d4307fa71919a454b30ef712cbdf4560a22a748d98a1e1f93f641c0c88e4ffd0",geometrySnapshot(model.root()));
-        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(128,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("5108456cb92cc9a95c556ad99213384ddedf5204c6632ea42016704a3246ed74",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
+        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(128,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("6565927d75685aca262e041d0c6f57661cd7d9ce33bf060653c4cef3aac4b351",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
     }
 
     @Test

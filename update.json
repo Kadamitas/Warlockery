@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/Kadamitas/Warlockery/releases",
   "promos": {
-    "26.2-latest": "1.5.3",
-    "26.2-recommended": "1.5.3"
+    "26.2-latest": "1.5.4",
+    "26.2-recommended": "1.5.4"
   },
   "26.2": {
     "1.0.0-alpha.1": "Initial public alpha.",
@@ -16,6 +16,7 @@
     "1.5.0": "Adds dedicated bounded creature behaviors and mimicry, reimagines machine interfaces, restores and modernizes Witchery machine functionality, expands Nami's Ocean Monument progression, reduces continuous scanning, and aligns Forge, NeoForge, Fabric, and the supporter build.",
     "1.5.1": "Isolates Forge GameTests, reworks vampire blood, Sanguine regeneration, and sunlight, adds werewolf prey drive, and refreshes Mandrake, Dreamroot, and magical plant visuals.",
     "1.5.2": "Improves in-game guides and recipe discovery, adds native REI, RRV, and EMI compatibility, and unlocks conventional recipes in Minecraft's recipe book.",
-    "1.5.3": "Fixes broom flight, dolls, spirit capture, brewing effects and recipe discovery, expands practical item instructions, and restores missing crafting routes."
+    "1.5.3": "Fixes broom flight, dolls, spirit capture, brewing effects and recipe discovery, expands practical item instructions, and restores missing crafting routes.",
+    "1.5.4": "Fixes gameplay and presentation regressions, refreshes creature, ritual, machine, plant, and item visuals, improves interface readability, and removes test-only content from production artifacts."
   }
 }

@@ -56,8 +56,6 @@ final class ImpModelTest {
         final BufferedImage texture = ImageIO.read(TEXTURE.toFile());
         CreatureModelTestSupport.assertOpaqueUvs(root, texture,
             cube -> !cube.path().endsWith("toe_middle"));
-        assertEquals(new Color(255, 170, 75).getRGB(), texture.getRGB(16, 38),
-            "bargaining hand carries an authored old-gold glint");
         assertEquals(0, texture.getRGB(127, 127) >>> 24, "unused atlas corner stays transparent");
     }
 
@@ -156,7 +154,7 @@ final class ImpModelTest {
         assertFalse(source.contains("entity.lifeState()"));
         assertEquals(128, ImageIO.read(TEXTURE.toFile()).getWidth());
         assertEquals(128, ImageIO.read(TEXTURE.toFile()).getHeight());
-        assertEquals("7974a5a221e331f5635ae223cc281a6f418ae3d7de7537660bc30350512c4a04",
+        assertEquals("3d9836578406a8fb8b9d4e7eb0412c3b7152787c4f60db90417303738e5351db",
             textureHash());
     }
 

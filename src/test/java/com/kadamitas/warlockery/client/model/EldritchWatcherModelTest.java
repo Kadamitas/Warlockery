@@ -49,7 +49,7 @@ final class EldritchWatcherModelTest {
         model.root().yRot=.7853982F; assertEquals("cc275498dde371e2afc202f9c16cd2026953c4b59496ff97f57e5be95adc5484",imageSnapshot(softwareSnapshot(model.root(),Projection.FRONT,128,4))); model.root().yRot=0;
         final EldritchWatcherModel.State state=new EldritchWatcherModel.State(); state.walkAnimationPos=1.8F; state.walkAnimationSpeed=.5F; state.ageInTicks=40F; state.yRot=31F; state.xRot=-10F; model.setupAnim(state);
         assertEquals("5ffa134d8c5cc8dd3c8388a76fd570dfcffe941ac840c32e6b812e5050e1d181",geometrySnapshot(model.root())); state.focusing=true; model.setupAnim(state); assertEquals("5694012756fe36d0edec76fef0e20143fac6fd845942a9b229a25f11c76b9232",geometrySnapshot(model.root()));
-        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(64,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("3a4b9c93d1b505eb96c4da1449d61579c2195bed4a5d95da944c6869f462e001",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
+        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(64,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("ae70c04a5d15136c8bdb0c4a1d9806e0eff6028812ab24a9e21f3dd8fbf67a3c",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
     }
 
     @Test

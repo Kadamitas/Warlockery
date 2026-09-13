@@ -64,7 +64,7 @@ final class FeralLycanModelTest {
         CreatureModelTestSupport.assertOpaqueUvs(root, texture,
             cube -> !cube.path().endsWith("toe_middle"));
         assertEquals(0, texture.getRGB(191, 159) >>> 24);
-        assertEquals("cbe889f7aa66724a13b571944a45c0991bc8dc2ab8286d25aa4bb6681add88f2",
+        assertEquals("cacf9d568d7e918007bcca9559e4a8cfaba6b639b57983e18bd83fc38e25b735",
             textureHash());
     }
 

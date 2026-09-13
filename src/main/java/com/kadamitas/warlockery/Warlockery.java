@@ -9,8 +9,6 @@ import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModMenus;
 import com.kadamitas.warlockery.registry.ModVillagers;
 import com.kadamitas.warlockery.registry.ModEntities;
-import com.kadamitas.warlockery.registry.ModGameTests;
-import com.kadamitas.warlockery.registry.ModGameTestEnvironments;
 import com.kadamitas.warlockery.registry.ModSounds;
 import com.kadamitas.warlockery.registry.ModFluids;
 import com.kadamitas.warlockery.registry.ModEffects;
@@ -97,17 +95,18 @@ public final class Warlockery {
         ModBlockEntities.REGISTRY.register(modBus);
         ModChunkTickets.REGISTRY.register(modBus);
         ModCreativeTabs.REGISTRY.register(modBus);
-        ModGameTestEnvironments.REGISTRY.register(modBus);
-        ModGameTests.REGISTRY.register(modBus);
         modBus.addListener(ModEntities::registerAttributes);
         modBus.addListener(ModEntities::registerSpawnPlacements);
         modBus.addListener(WarlockeryCapabilities::register);
         ModNetwork.init(modBus);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent event) ->
+            com.kadamitas.warlockery.command.WarlockeryTestCommands.register(event.getDispatcher()));
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.OnDatapackSyncEvent event) ->
             ModNetwork.queueRecipeViewerCatalog(event.getPlayerList().getServer(), event.getRelevantPlayers().toList()));
         BrewPersistentRuntime.registerEvents();
         SpiritWorldRuntime.registerEvents();
         MagicPathRuntime.registerEvents();
+        com.kadamitas.warlockery.item.ArcaneFocusEntityInteraction.registerEvents();
         SupernaturalProgressionRuntime.registerEvents();
         VillageGuardRuntime.registerEvents();
         VillageAssaultRuntime.registerEvents();
@@ -162,7 +161,7 @@ public final class Warlockery {
         NeoForge.EVENT_BUS.addListener((PlayerEvent.Clone event) -> HexState.copyAfterClone(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> FlyingBroomItem.handleLogin(event));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> FlyingBroomItem.handleLogout(event));
-        LOGGER.info("Loading Warlockery 1.5.3 for Minecraft 26.2 with NeoForge 26.2.0.64");
+        LOGGER.info("Loading Warlockery 1.5.4 for Minecraft 26.2 with NeoForge 26.2.0.64");
     }
 
 }

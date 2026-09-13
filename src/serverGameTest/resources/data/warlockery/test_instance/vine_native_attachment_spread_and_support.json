@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:vine_native_attachment_spread_and_support",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "vine_native_attachment_spread_and_support",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 100
+}

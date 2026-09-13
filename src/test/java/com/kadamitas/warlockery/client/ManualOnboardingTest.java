@@ -39,6 +39,23 @@ final class ManualOnboardingTest {
     }
 
     @Test
+    void cureGuidesIncludeTheirActualTargetPreparationAndBindingReference() throws Exception {
+        var circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        var english = json("/assets/warlockery/lang/en_us.json");
+        for (var entry : java.util.Map.of("cure_vampire", "remove_vampirism", "cure_wolf", "remove_werewolf").entrySet()) {
+            var article = ManualArticleCatalog.article(circles, "rite_" + entry.getKey());
+            var body = article.body().getString();
+            assertTrue(body.contains("manual.warlockery.ritual.setup.sample"), entry.getKey());
+            var key = "manual.warlockery.ritual.setup." + entry.getValue();
+            assertTrue(body.contains(key), entry.getKey());
+            assertTrue(english.has(key), key);
+            var serialized = net.minecraft.network.chat.ComponentSerialization.CODEC.encodeStart(
+                com.mojang.serialization.JsonOps.INSTANCE, article.body()).getOrThrow().toString();
+            assertTrue(serialized.contains("warlockery:manual/ingredient_book_burning/sympathetic_vials"), entry.getKey());
+        }
+    }
+
+    @Test
     void everyBrewKeepsItsRealMachinePreparationAndSetupLink() {
         var book = ManualProfile.find("cauldronbook").orElseThrow();
         for (String section : book.sections()) {
@@ -52,6 +69,40 @@ final class ManualOnboardingTest {
                 com.mojang.serialization.JsonOps.INSTANCE, article.body()).getOrThrow().toString();
             assertTrue(serialized.contains("warlockery:manual/cauldronbook/machines"), section);
         }
+    }
+
+    @Test
+    void wolfHexGuideExplainsPlayerBindingAndKeepsItsFamiliarRequirement() throws Exception {
+        var circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        var article = ManualArticleCatalog.article(circles, "rite_hex_wolf");
+        var body = article.body().getString();
+        for (String key : java.util.List.of("sample", "transform_werewolf", "owned_familiar"))
+            assertTrue(body.contains("manual.warlockery.ritual.setup." + key), key);
+        var serialized = net.minecraft.network.chat.ComponentSerialization.CODEC.encodeStart(
+            com.mojang.serialization.JsonOps.INSTANCE, article.body()).getOrThrow().toString();
+        assertTrue(serialized.contains("warlockery:manual/ingredient_book_burning/sympathetic_vials"));
+        assertTrue(json("/assets/warlockery/lang/en_us.json").has("manual.warlockery.ritual.setup.transform_werewolf"));
+    }
+
+    @Test
+    void nativeRitualGuidesDistinguishOptionalSamplesPlayerDollsAndExistingBeasts() throws Exception {
+        var book = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        var blindness = ManualArticleCatalog.article(book, "rite_blindness").body().getString();
+        assertTrue(blindness.contains("manual.warlockery.ritual.setup.blindness"));
+        assertFalse(blindness.contains("manual.warlockery.ritual.setup.sample"));
+        assertFalse(blindness.contains("manual.warlockery.ritual.setup.hex"));
+        var corruption = ManualArticleCatalog.article(book, "rite_corrupt_doll").body().getString();
+        assertTrue(corruption.contains("manual.warlockery.ritual.setup.corrupt_doll"));
+        assertTrue(corruption.contains("manual.warlockery.ritual.setup.owned_familiar"));
+        assertFalse(corruption.contains("manual.warlockery.ritual.setup.hex"));
+        var beasts = ManualArticleCatalog.article(book, "rite_call_beasts").body();
+        assertTrue(beasts.getString().contains("manual.warlockery.ritual.setup.call_beasts"));
+        var serialized = net.minecraft.network.chat.ComponentSerialization.CODEC.encodeStart(
+            com.mojang.serialization.JsonOps.INSTANCE, beasts).getOrThrow().toString();
+        assertTrue(serialized.contains("64"), "Rite's actual search reach/count are supplied to its instructions");
+        var english = json("/assets/warlockery/lang/en_us.json");
+        for (String id : java.util.List.of("blindness", "corrupt_doll", "call_beasts"))
+            assertTrue(english.has("manual.warlockery.ritual.setup." + id), id);
     }
 
     @Test

@@ -1,6 +1,8 @@
 {
   "replace": false,
   "values": [
+    "warlockery:somniancotton",
+    "warlockery:ingredient_disturbed_cotton",
     "warlockery:ingredient_icy_needle",
     "warlockery:ingredient_verdant_catalyst",
     "warlockery:ingredient_verdant_catalyst_prime"

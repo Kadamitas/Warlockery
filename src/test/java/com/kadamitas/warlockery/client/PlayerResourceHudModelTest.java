@@ -37,6 +37,7 @@ final class PlayerResourceHudModelTest {
         assertEquals(PlayerResourceHudModel.Kind.MANA, meters.getFirst().kind());
         assertEquals(73, meters.getFirst().resource());
         assertEquals(160, meters.getFirst().maximum());
+        assertEquals(List.of(), PlayerResourceHudModel.meters(snapshot, false));
     }
 
     @Test

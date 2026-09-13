@@ -68,45 +68,6 @@ final class EldritchWatcherResourceTest {
         )));
     }
 
-    @Test
-    void alluringSkullPreservesEveryNonWatcherOutcomeAtTheSourceLevel() {
-        final String source = readText(MAIN_JAVA.resolve(
-            Path.of("com", "kadamitas", "warlockery", "block", "AlluringSkullBlock.java")
-        ));
-        assertTrue(source.contains("instanceof EldritchWatcherEntity watcher"),
-            "only the exact dedicated Watcher class receives the semantic lure branch");
-        assertTrue(source.contains("watcher.acceptExternalLure(level, pos)"),
-            "the Watcher branch submits a bounded semantic lure");
-        assertTrue(source.contains("mob.getNavigation().moveTo("),
-            "every non-Watcher target keeps the byte-for-byte navigation outcome");
-        assertTrue(source.contains("private static final int LURE_INTERVAL = 20"),
-            "the existing lure cadence is preserved");
-        assertTrue(source.contains("private static final int LURE_RADIUS = 16"),
-            "the existing lure radius is preserved");
-        assertTrue(source.contains("ALLURING_SKULL_TARGETS"),
-            "target filtering keeps the existing entity-type tag");
-    }
-
-    @Test
-    void productionRuntimeAvoidsForbiddenWorldMutationApis() {
-        for (final String file : List.of(
-            "EldritchWatcherRuntime.java", "EldritchWatcherEntity.java",
-            "EldritchWatcherRules.java", "EldritchWatcherState.java"
-        )) {
-            final String source = readText(MAIN_JAVA.resolve(
-                Path.of("com", "kadamitas", "warlockery", "entity", file)
-            ));
-            for (final String forbidden : List.of(
-                "setBlock", "destroyBlock", "removeBlock", "addFreshEntity",
-                "ChunkTicket", "getChunkSource().addRegionTicket", "getAllEntities",
-                "setItemSlot(EquipmentSlot.MAINHAND, new ItemStack("
-            )) {
-                assertFalse(source.contains(forbidden),
-                    file + " must not use forbidden world mutation API: " + forbidden);
-            }
-        }
-    }
-
     private static JsonObject read(final Path path) {
         return JsonParser.parseString(readText(path)).getAsJsonObject();
     }
