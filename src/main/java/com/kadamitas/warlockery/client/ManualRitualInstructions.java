@@ -16,7 +16,8 @@ public final class ManualRitualInstructions {
         final var text = Component.empty();
         for (String key : keys(id, action, target)) {
             text.append("\n\n").append(Component.translatable("manual.warlockery.ritual.setup." + key,
-                radius, Math.clamp(radius * 2, 8, 24)));
+                radius, Math.clamp(radius * 2, 8, 24), Math.max(16, radius * 4),
+                Math.clamp(ritual.has("count") ? ritual.get("count").getAsInt() : 1, 1, 128)));
         }
         return text;
     }
@@ -25,11 +26,20 @@ public final class ManualRitualInstructions {
         final List<String> keys = new ArrayList<>();
         keys.add("site");
         switch (action) {
-            case "summon_entity", "call_familiar", "divorce", "earths_wrath", "climate_shift", "transform_nami",
+            case "summon_entity", "call_familiar", "call_beasts", "divorce", "earths_wrath", "climate_shift", "transform_nami",
                 "bind_waystone", "copy_waystone", "teleport_waystone", "bind_circle", "glyph_transform", "hell_on_earth" -> keys.add(action);
-            case "prior_incarnation", "manifest", "cleanse", "bind_item", "teleport_entity", "hex" -> {
+            case "prior_incarnation", "manifest", "cleanse", "bind_item", "teleport_entity",
+                "remove_vampirism", "remove_werewolf", "transform_werewolf" -> {
                 keys.add("sample");
                 keys.add(action);
+            }
+            case "hex" -> {
+                if (id.equals("blindness")) {
+                    keys.add("blindness");
+                } else {
+                    keys.add("sample");
+                    keys.add(target.equals("corrupt_doll") ? "corrupt_doll" : "hex");
+                }
             }
             case "marriage" -> { keys.add("sample"); keys.add("marriage"); }
             case "bind_entity" -> keys.add(target.equals("spectral") ? "bind_spectral" : "bind_familiar");

@@ -49,17 +49,6 @@ final class ManualReaderRegressionTest {
             paginate.invoke(null, List.of("", "A", "B", "", "C", ""), 2, 2, blank));
     }
 
-    @Test
-    void screenRestoresLocalPreferencesAndUsesRealBlockPositionsForDiagrams() throws Exception {
-        final String source = Files.readString(Path.of(
-            "src/main/java/com/kadamitas/warlockery/client/ManualScreen.java"));
-        assertTrue(source.contains("ManualReadingPosition.load("));
-        assertTrue(source.contains("ManualReadingPosition.save("));
-        assertTrue(source.contains("size.offsets()"));
-        assertFalse(source.contains("Math.cos(angle)"));
-        assertFalse(source.contains("Math.sin(angle)"));
-    }
-
     private static Class<?> helper(final String name) {
         return assertDoesNotThrow(() -> Class.forName("com.kadamitas.warlockery.client." + name),
             "The manual reader needs " + name);

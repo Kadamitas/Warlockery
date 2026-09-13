@@ -265,6 +265,7 @@ public record ManualProfile(
                 case "ingredient_clay_jar_from_smelting" -> "item.warlockery.ingredient_clay_jar";
                 case "ingredient_soft_clay_jar" -> "item.warlockery.ingredient_clay_jar_soft";
                 case "critter_snare" -> "item.warlockery.crittersnare";
+                case "silver_bolts" -> "item.warlockery.ingredient_bolt_silver";
                 case "voidbramble" -> "manual.warlockery.herbology.void_bramble_recipe.title";
                 case "leech_chest" -> "item.warlockery.leechchest";
                 case "shaded_glass" -> "item.warlockery.shadedglass";
@@ -390,7 +391,7 @@ public record ManualProfile(
             Stream.of(chapter(
                 "lycanthropy_trials",
                 "manual.warlockery.chapter.lycanthropy_trials",
-                WEREWOLF_PROGRESSION_SECTIONS.toArray(String[]::new)
+                Stream.concat(WEREWOLF_PROGRESSION_SECTIONS.stream(), Stream.of("mooncharm")).toArray(String[]::new)
             ))
         ).flatMap(Function.identity()).toList();
         return new ManualProfile(
@@ -672,6 +673,8 @@ public record ManualProfile(
                 "plant_ember_moss",
                 "plant_glint_weed",
                 "plant_spanish_moss",
+                "hex_sapling",
+                "vine",
                 "plant_somnian_cotton",
                 "plant_leaping_lily",
                 "plant_blood_rose",
@@ -697,6 +700,7 @@ public record ManualProfile(
             chapter(
                 "field_tools",
                 "manual.warlockery.chapter.field_tools",
+                "crafting_canesword", "canesword",
                 "crafting_boline",
                 "boline",
                 "ingredient_icy_needle",
@@ -718,6 +722,8 @@ public record ManualProfile(
                 "manual.warlockery.chapter.infusion_practice",
                 "paths",
                 "focus", "arcane_focus", "arcane_focus_targets",
+                "infusion_passives", "imp_attunement",
+                "infernal_sacrifices", "infernal_sacrifices_movement",
                 "reserve"
             ),
             chapter(
@@ -781,7 +787,10 @@ public record ManualProfile(
                 "hunter_ammunition",
                 "manual.warlockery.chapter.hunter_ammunition",
                 "crafting_ingredient_bolt_holy", "ingredient_bolt_holy",
-                "crafting_ingredient_bolt_stake", "ingredient_bolt_stake"
+                "crafting_ingredient_bolt_stake", "ingredient_bolt_stake",
+                "crafting_ingredient_bolt_splitting", "ingredient_bolt_splitting",
+                "crafting_ingredient_bolt_anti_magic", "ingredient_bolt_anti_magic",
+                "crafting_silver_bolts", "ingredient_bolt_silver"
             )
         );
     }

@@ -38,7 +38,7 @@ final class EchoShadeModelTest {
         model.root().yRot=.7853982F; assertEquals("c3c7f495432f15c54f1d43c00e0565e1206b4309480b3b8cc4d4168b886bd415",imageSnapshot(softwareSnapshot(model.root(),Projection.FRONT,128,4))); model.root().yRot=0;
         final EchoShadeModel.State state=new EchoShadeModel.State(); state.walkAnimationPos=3.3F; state.walkAnimationSpeed=.9F; state.ageInTicks=38F; state.yRot=29F; state.xRot=-7F; model.setupAnim(state);
         assertEquals("b421fda3b22c0983fe0bbf9b08763c7712d2732c606265a3e24c9f1762f1bc15",geometrySnapshot(model.root())); state.replaying=true; model.setupAnim(state); assertEquals("9b3542192620ae961a9be60e5bd5a666c1c34a2a42b8ec96058007a8bcccbfc4",geometrySnapshot(model.root()));
-        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(128,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("cfb42696e8f752fe74ea8734a4727d696e0f2fc5820ac16df6d59af89bd77920",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
+        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(128,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("dfb39cb60601a9a071cc8902feb79971a2b2f81c3a5ff578299e43de5a8077d4",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
     }
 
     @Test

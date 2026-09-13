@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:spirit_world_canceled_boundary_does_not_replay_spent_items",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "spirit_world_canceled_boundary_does_not_replay_spent_items",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 320
+}

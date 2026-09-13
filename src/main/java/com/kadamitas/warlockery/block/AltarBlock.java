@@ -6,6 +6,19 @@ import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModSounds;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import java.util.Map;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -26,8 +39,74 @@ import org.jspecify.annotations.Nullable;
 public final class AltarBlock extends BaseEntityBlock {
     public static final MapCodec<AltarBlock> CODEC = simpleCodec(AltarBlock::new);
 
+    public static final BooleanProperty NORTH = BlockStateProperties.NORTH;
+    public static final BooleanProperty EAST = BlockStateProperties.EAST;
+    public static final BooleanProperty SOUTH = BlockStateProperties.SOUTH;
+    public static final BooleanProperty WEST = BlockStateProperties.WEST;
+
+    private static final Map<Direction, BooleanProperty> CONNECTIONS = Map.of(
+        Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST);
+
     public AltarBlock(final BlockBehaviour.Properties properties) {
-        super(properties);
+        super(properties.noOcclusion());
+        registerDefaultState(stateDefinition.any().setValue(NORTH, false).setValue(EAST, false)
+            .setValue(SOUTH, false).setValue(WEST, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(NORTH, EAST, SOUTH, WEST);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(final BlockPlaceContext context) {
+        return connectedState(defaultBlockState(), context.getLevel(), context.getClickedPos());
+    }
+
+    @Override
+    protected BlockState updateShape(
+        final BlockState state, final LevelReader level, final ScheduledTickAccess ticks,
+        final BlockPos pos, final Direction directionToNeighbor, final BlockPos neighborPos,
+        final BlockState neighborState, final RandomSource random
+    ) {
+        return connectedState(state, level, pos);
+    }
+
+    public void refreshConnections(final Level level, final BlockPos pos, final BlockState state) {
+        final BlockState connected = connectedState(state, level, pos);
+        if (connected != state) {
+            level.setBlock(pos, connected, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+        }
+    }
+
+    private BlockState connectedState(final BlockState state, final LevelReader level, final BlockPos pos) {
+        BlockState connected = state;
+        for (final var entry : CONNECTIONS.entrySet()) {
+            final BlockPos neighbor = pos.relative(entry.getKey());
+            final var chunk = level.getChunk(neighbor.getX() >> 4, neighbor.getZ() >> 4, ChunkStatus.FULL, false);
+            if (chunk != null) {
+                connected = connected.setValue(entry.getValue(), chunk.getBlockState(neighbor).is(this));
+            }
+        }
+        return connected;
+    }
+
+    @Override
+    protected BlockState rotate(final BlockState state, final Rotation rotation) {
+        BlockState rotated = state;
+        for (final var entry : CONNECTIONS.entrySet()) {
+            rotated = rotated.setValue(CONNECTIONS.get(rotation.rotate(entry.getKey())), state.getValue(entry.getValue()));
+        }
+        return rotated;
+    }
+
+    @Override
+    protected BlockState mirror(final BlockState state, final Mirror mirror) {
+        BlockState mirrored = state;
+        for (final var entry : CONNECTIONS.entrySet()) {
+            mirrored = mirrored.setValue(CONNECTIONS.get(mirror.mirror(entry.getKey())), state.getValue(entry.getValue()));
+        }
+        return mirrored;
     }
 
     @Override

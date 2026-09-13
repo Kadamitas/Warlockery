@@ -28,6 +28,15 @@ final class ManualArticleCatalogTest {
     }
 
     @Test
+    void severanceShowsRingAsCompletionCostAndOnlyShearsAsKept() {
+        final var circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        final var text = ManualArticleCatalog.article(circles, "rite_divorce").body().getString();
+        assertTrue(text.contains("manual.warlockery.entry.consumed_on_success"), text);
+        assertEquals(1, text.split("manual\\.warlockery\\.entry\\.kept", -1).length - 1,
+            "only the reusable shears are kept; the ring is consumed when the marriage ends");
+    }
+
+    @Test
     void craftingGuidesPictureRealIngredientsAndEveryListedRecipeLoads() {
         final var circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
         circles.sections().stream().filter(section -> section.startsWith("crafting_")).forEach(section -> {
@@ -100,6 +109,21 @@ final class ManualArticleCatalogTest {
             assertTrue(article.hasPictograms(), section);
             assertFalse(article.body().getString().contains("manual.warlockery.entry.glyphs"), section);
         });
+    }
+
+    @Test
+    void transformationGuidesShowUsableSourceRingsAndKeepTheTargetChalkOffering() {
+        final var circles = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
+        final var ritual = ManualArticleCatalog.article(circles, "rite_glyph_to_ritual");
+        assertEquals(java.util.Map.of("circleglyph_veil", 16), ritual.glyphs(),
+            "Following the diagram must not produce the already-Ritual ring rejected by transformation");
+        assertTrue(ritual.pictograms().stream().anyMatch(picture ->
+            picture.itemId().equals("warlockery:chalkritual") && picture.count() == 1),
+            "The Veil source diagram must retain one Ritual Chalk as the target-color offering");
+        for (String id : java.util.List.of("glyph_to_infernal", "glyph_to_the_veil")) {
+            assertEquals(java.util.Map.of("circleglyphritual", 16),
+                ManualArticleCatalog.article(circles, "rite_" + id).glyphs(), id);
+        }
     }
 
     @Test

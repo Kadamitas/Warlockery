@@ -22,7 +22,7 @@ final class ReleaseMetadataTest {
         final var matcher = GRADLE_VERSION.matcher(build);
         assertTrue(matcher.find());
         final String version = matcher.group(1);
-        assertEquals("1.5.3", version);
+        assertEquals("1.5.4", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
@@ -48,7 +48,9 @@ final class ReleaseMetadataTest {
         assertTrue(metadata.contains("logoFile=\"warlockery-icon.png\""));
         assertTrue(metadata.contains("logoBlur=false"));
         assertTrue(metadata.contains("features={java_version=\"[25,)\"}"));
-        assertTrue(metadata.contains("versionRange=\"[65.1.2,)\""));
+        assertTrue(metadata.contains("versionRange=\"[65.1.0,)\""));
+        assertTrue(read("src/serverGameTest/resources/META-INF/mods.toml").contains("versionRange=\"[65.1.0,)\""));
+        assertTrue(read("build.gradle").contains("minecraft.dependency('net.minecraftforge:forge:26.2-65.1.0')"));
         assertTrue(metadata.contains("modId=\"jei\""));
         assertTrue(metadata.contains("mandatory=false"));
         assertTrue(Pattern.compile("(?s)modId=\"jei\".*?mandatory=false.*?side=\"CLIENT\"")
@@ -88,7 +90,7 @@ final class ReleaseMetadataTest {
             ".github/workflows/publish-modrinth.yml"
         }) {
             final String contents = read(workflow);
-            assertTrue(contents.contains("default: v1.5.3"));
+            assertTrue(contents.contains("default: v1.5.4"));
             assertTrue(contents.contains("- forge"));
             assertTrue(contents.contains("- neoforge"));
             assertTrue(contents.contains("- fabric"));

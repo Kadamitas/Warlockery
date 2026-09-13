@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:ritual_graveyard_mist_restores_undead_health",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "ritual_graveyard_mist_restores_undead_health",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 100
+}

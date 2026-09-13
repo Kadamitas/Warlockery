@@ -86,6 +86,7 @@ final class RequestedIconSemanticsTest {
         "vampirelegs", "vampirelegs_kilt", "witchhat", "witchrobe", "wolftoken"
     );
     private static final Set<String> SCULPTED_REQUESTS = Set.of(
+        "arcane_focus",
         "ingredient_broom",
         "ingredient_broom_enchanted"
     );
@@ -159,6 +160,36 @@ final class RequestedIconSemanticsTest {
         shared.entrySet().removeIf(entry -> Set.copyOf(entry.getValue())
             .equals(ALLOWED_SHARED_LAYER_ZERO.get(entry.getKey())));
         assertTrue(shared.isEmpty(), () -> "requested icons share generic textures: " + shared);
+    }
+
+    @Test
+    void arcaneFocusUsesSolidWandGeometryAndResolvedMaterials() {
+        assertTrue(modelReferences("arcane_focus").anyMatch("warlockery:item/arcane_focus"::equals));
+        final JsonObject model = json(MODELS.resolve("arcane_focus.json"));
+        final var elements = model.getAsJsonArray("elements");
+        assertFalse(elements.isEmpty(), "the focus must retain its sculpted wand geometry");
+        final JsonObject textures = model.getAsJsonObject("textures");
+        final Set<String> usedMaterials = new LinkedHashSet<>();
+        for (final JsonElement element : elements) {
+            final JsonObject cube = element.getAsJsonObject();
+            for (int axis = 0; axis < 3; axis++) {
+                assertTrue(cube.getAsJsonArray("to").get(axis).getAsDouble()
+                    > cube.getAsJsonArray("from").get(axis).getAsDouble(), "wand elements must have volume");
+            }
+            final JsonObject faces = cube.getAsJsonObject("faces");
+            assertEquals(Set.of("north", "south", "east", "west", "up", "down"), faces.keySet());
+            faces.entrySet().forEach(face -> {
+                final String reference = face.getValue().getAsJsonObject().get("texture").getAsString();
+                assertTrue(reference.startsWith("#") && textures.has(reference.substring(1)), reference);
+                usedMaterials.add(reference.substring(1));
+            });
+        }
+        assertTrue(usedMaterials.containsAll(Set.of("wood", "metal", "gem")));
+        usedMaterials.stream().map(key -> textures.get(key).getAsString())
+            .filter(reference -> reference.startsWith("warlockery:"))
+            .forEach(reference -> assertTrue(Files.isRegularFile(ASSETS.resolve(
+                "textures/" + reference.substring("warlockery:".length()) + ".png")), reference));
+        assertTrue(model.getAsJsonObject("display").has("gui"));
     }
 
     @Test

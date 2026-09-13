@@ -1436,7 +1436,8 @@ public final class BrewRuntime {
         final int branches = (int) path.stream()
             .filter(pos -> context.level().setBlockAndUpdate(pos, branch))
             .count();
-        final BlockState leaves = ModBlocks.ALL.get("hex_leaves").get().defaultBlockState();
+        final BlockState leaves = ModBlocks.ALL.get("hex_leaves").get().defaultBlockState()
+            .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
         final int foliage = (int) java.util.stream.IntStream.range(0, path.size())
             .filter(index -> index % 4 == 3 || index == path.size() - 1)
             .mapToObj(path::get)

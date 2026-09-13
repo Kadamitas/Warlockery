@@ -58,12 +58,40 @@ abstract class ReleaseBundleTask extends DefaultTask {
     }
 }
 
-version = '1.5.3'
+version = '1.5.4'
 group = 'com.kadamitas.warlockery'
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
     withSourcesJar()
+}
+
+// Native server fixtures form a separate development mod, never part of jar or sourcesJar.
+sourceSets {
+    serverGameTest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+configurations {
+    serverGameTestImplementation.extendsFrom implementation
+    serverGameTestRuntimeOnly.extendsFrom runtimeOnly
+    serverGameTestCompileOnly.extendsFrom compileOnly
+    serverGameTestAnnotationProcessor.extendsFrom annotationProcessor
+}
+sourceSets.test.compileClasspath += sourceSets.serverGameTest.output
+sourceSets.test.runtimeClasspath += sourceSets.serverGameTest.output
+
+tasks.register('serverGameTestJar', Jar) {
+    group = 'verification'
+    description = 'Builds the optional GameTest development artifact.'
+    archiveClassifier.set('gametests')
+    manifest { attributes('Implementation-Version': project.version) }
+    destinationDirectory.set(layout.buildDirectory.dir('gametest-libs'))
+    // FML modules cannot split package-private fixtures from production classes.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.serverGameTest.output
+    from sourceSets.main.output
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
@@ -81,6 +109,9 @@ sourceSets.test.runtimeClasspath += sourceSets.main.output
 def forgeMainClasses = layout.buildDirectory.dir('sourceSets/main')
 sourceSets.test.compileClasspath += files(forgeMainClasses)
 sourceSets.test.runtimeClasspath += files(forgeMainClasses)
+sourceSets.serverGameTest.compileClasspath += files(forgeMainClasses)
+sourceSets.serverGameTest.runtimeClasspath += files(forgeMainClasses)
+sourceSets.main.runtimeClasspath += sourceSets.serverGameTest.output
 
 minecraft {
     runs {
@@ -89,6 +120,12 @@ minecraft {
 
             systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
             systemProperty 'forge.enabledGameTestNamespaces', 'warlockery'
+            mods {
+                warlockery {
+                    source sourceSets.main
+                    source sourceSets.serverGameTest
+                }
+            }
         }
 
         register('client')
@@ -126,7 +163,7 @@ repositories {
 }
 
 dependencies {
-    implementation minecraft.dependency('net.minecraftforge:forge:26.2-65.1.2')
+    implementation minecraft.dependency('net.minecraftforge:forge:26.2-65.1.0')
     compileOnly 'mezz.jei:jei-26.2-common-api:30.15.0.104'
     if (recipeViewer == 'jei') runtimeOnly 'curse.maven:just-enough-items-for-forge-1656683:8669937'
     annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.5'
@@ -210,3 +247,47 @@ tasks.register('releaseBundle', ReleaseBundleTask) {
     changelogFile.set(layout.projectDirectory.file('changelog.txt'))
     destinationDirectory.set(releaseDirectory)
 }
+
+abstract class VerifyProductionArtifact extends DefaultTask {
+    @InputFiles
+    @PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract ConfigurableFileCollection getArtifacts()
+
+    @TaskAction
+    void verify() {
+        artifacts.files.each { artifact ->
+            new java.util.zip.ZipFile(artifact).withCloseable { archive ->
+                def leaked = archive.entries().findAll { entry ->
+                    def name = entry.name
+                    !entry.directory && ((name.endsWith('.class') || name.endsWith('.java')) &&
+                        (name.contains('GameTest') || name.contains('/gametest/')) ||
+                    name.contains('/test_instance/') || name.contains('/test_environment/') ||
+                    name == 'warlockery-gametests.mixins.json' ||
+                    name == 'data/minecraft/worldgen/world_preset/flat.json' ||
+                    (name.contains('/structure/empty') && name.endsWith('.nbt')))
+                }.collect { it.name }
+                if (!leaked.empty) throw new GradleException("Development fixtures leaked into ${artifact.name}: ${leaked}")
+            }
+        }
+    }
+}
+
+tasks.register('verifyProductionArtifact', VerifyProductionArtifact) {
+    group = 'verification'
+    description = 'Rejects development GameTest classes and fixtures in release jars and sources.'
+    artifacts.from(tasks.named('jar').flatMap { it.archiveFile })
+    artifacts.from(tasks.named('sourcesJar').flatMap { it.archiveFile })
+}
+tasks.named('check') { dependsOn tasks.named('verifyProductionArtifact') }
+
+// Forge 7 scans classpath directories individually; combine only the development launch roots.
+// Production jar/sourcesJar still consume the untouched main output above.
+def developmentGameTestMod = tasks.register('prepareDevelopmentGameTestMod', Sync) {
+    into layout.buildDirectory.dir('development-game-test-mod')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.serverGameTest.output
+    from sourceSets.main.output
+}
+sourceSets.main.runtimeClasspath = sourceSets.main.runtimeClasspath
+    .minus(sourceSets.main.output).minus(sourceSets.serverGameTest.output)
+    .plus(files(developmentGameTestMod.map { it.destinationDir }))

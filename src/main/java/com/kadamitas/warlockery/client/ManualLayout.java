@@ -56,6 +56,12 @@ record ManualLayout(
         return left + width;
     }
 
+    ManualLayout withoutNavigation() {
+        final int pageWidth = width - pageInset * 2;
+        return new ManualLayout(left, top, width, height, pageInset, 0, pageWidth, 0,
+            pageWidth < 270 ? 2 : 1, 0);
+    }
+
     int bottom() {
         return top + height;
     }

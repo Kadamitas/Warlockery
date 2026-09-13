@@ -45,6 +45,13 @@ public final class ManualItem extends Item {
 
     @Override
     public InteractionResult useOn(final UseOnContext context) {
+        if (RitualBookAccess.BOOK.equals(profile.id()) && context.getLevel().getBlockState(context.getClickedPos())
+            .is(com.kadamitas.warlockery.registry.ModBlocks.ALL.get("circle").get())) {
+            if (context.getPlayer() instanceof net.minecraft.server.level.ServerPlayer player) {
+                com.kadamitas.warlockery.network.ModNetwork.openRitualScreen(player, context.getClickedPos());
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (!recordsBiomes() || !context.isSecondaryUseActive()) {
             return super.useOn(context);
         }

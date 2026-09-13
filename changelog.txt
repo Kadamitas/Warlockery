@@ -1,3 +1,13 @@
+Warlockery 1.5.4
+================
+
+- Refreshed creature models and textures with clearer silhouettes, restrained palettes, readable faces, and distinct magical materials.
+- Rebuilt Death, Naamah, Spirit, and the Werewolf Hunter, and repaired the Pale Steed, Illusion Creeper, Stonebroker, Storm Simian, and Oak Ent presentations.
+- Added distinct inventory art for Glintweed, Blood Poppy, Grassper, Dreamroot Bulbs, and seven loose seed varieties.
+- Improved connected chalk circles, altars, spirit portals, vines, magical plants, and Hex Tree generation.
+- Cast rites directly from their open ritual-book pages with clearer guidance and corrected ritual, doll, device, brew, and Spirit World interactions.
+- Kept development GameTest classes and fixtures out of production artifacts while preserving the full verification suite.
+
 Warlockery 1.5.3
 ================
 

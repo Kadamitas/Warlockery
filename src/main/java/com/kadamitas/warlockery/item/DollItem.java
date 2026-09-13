@@ -53,6 +53,19 @@ public final class DollItem extends Item {
     }
 
     @Override
+    public void onCraftedBy(final ItemStack stack, final Player player) {
+        if (!player.level().isClientSide()) DollWorldBoundary.recordCreation(stack, DollWorldBoundary.inSpiritWorld(player));
+        super.onCraftedBy(stack, player);
+    }
+
+    @Override
+    public void onCraftedPostProcess(final ItemStack stack, final Level level) {
+        if (!level.isClientSide()) DollWorldBoundary.recordCreation(stack,
+            com.kadamitas.warlockery.dream.SpiritWorldRuntime.isSpiritWorld(level));
+        super.onCraftedPostProcess(stack, level);
+    }
+
+    @Override
     public InteractionResult interactLivingEntity(
         final ItemStack stack,
         final Player player,
@@ -60,7 +73,7 @@ public final class DollItem extends Item {
         final InteractionHand hand
     ) {
         if (!player.level().isClientSide()) {
-            bind(stack, player, target);
+            if (!bind(stack, player, target)) return InteractionResult.FAIL;
         }
         return InteractionResult.SUCCESS;
     }
@@ -71,7 +84,7 @@ public final class DollItem extends Item {
         final DollAbility ability = kind.definition().ability();
         if (DollRules.canApplyToSelf(ability)) {
             if (!level.isClientSide()) {
-                bind(stack, player, player);
+                if (!bind(stack, player, player)) return InteractionResult.FAIL;
             }
             return InteractionResult.SUCCESS;
         }
@@ -81,6 +94,7 @@ public final class DollItem extends Item {
         if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.SUCCESS;
         }
+        if (!DollWorldBoundary.allows(stack, player, player)) return wrongWorld(player);
         if (player.isSecondaryUseActive()) {
             final DollHexAction next = hexAction(stack).next();
             CustomData.update(DataComponents.CUSTOM_DATA, stack, data -> data.putString(HEX_ACTION, next.id()));
@@ -88,7 +102,7 @@ public final class DollItem extends Item {
             player.sendSystemMessage(Component.translatable("message.warlockery.doll.hex_mode", modeName(next)));
             return InteractionResult.SUCCESS;
         }
-        final LivingEntity target = boundLiving(stack, serverLevel);
+        final LivingEntity target = boundLiving(stack, player);
         if (target == null || target == player) {
             player.sendSystemMessage(Component.translatable("message.warlockery.doll.no_remote_target"));
             return InteractionResult.FAIL;
@@ -136,6 +150,7 @@ public final class DollItem extends Item {
         if (!(doll.getItem() instanceof DollItem item)
             || !(item.kind.definition().ability() instanceof DollAbility.Mending mending)
             || !isBoundTo(doll, player)
+            || !DollWorldBoundary.allows(doll, player, player)
             || EquipmentSetEffects.suppressesProtectionDolls(player)) {
             return false;
         }
@@ -147,7 +162,7 @@ public final class DollItem extends Item {
         if (!DollMendingSchedule.forServer(level.getServer()).claim(player.getUUID(), mending.target(), serverTick)) {
             return false;
         }
-        repairUsingDollCharge(player, doll, target.orElseThrow());
+        repairUsingDollCharge(player, doll, target.orElseThrow(), item.kind);
         return true;
     }
 
@@ -164,18 +179,29 @@ public final class DollItem extends Item {
         if (!TRANSFERRING_DAMAGE.get()) {
             transferLinkedDamage(player, event);
         }
-        if (event.getAmount() < player.getHealth()
-            || event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-            return;
-        }
-        findLethalGuard(player, event.getSource()).ifPresent(stack -> {
-            final DollKind kind = ((DollItem) stack.getItem()).kind;
+        if (tryLethalGuard(player, event.getSource(), event.getAmount())) {
             event.setAmount(0.0F);
-            player.setHealth(DollRules.restoredHealth(player.getMaxHealth()));
-            DeathProtection.TOTEM_OF_UNDYING.applyEffects(stack.copy(), player);
-            lethalBehavior(kind).recover(player, event.getSource());
-            activate(player, stack, kind);
-        });
+        }
+    }
+
+    /** Shared with fatal dream damage so a valid spirit guard can prevent waking. */
+    public static boolean tryLethalGuard(final ServerPlayer player, final DamageSource source, final float amount) {
+        if (amount <= 0.0F || amount < player.getHealth()
+            || source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)
+            || EquipmentSetEffects.suppressesProtectionDolls(player)) {
+            return false;
+        }
+        final Optional<ItemStack> guard = findLethalGuard(player, source);
+        if (guard.isEmpty()) {
+            return false;
+        }
+        final ItemStack stack = guard.orElseThrow();
+        final DollKind kind = ((DollItem) stack.getItem()).kind;
+        player.setHealth(DollRules.restoredHealth(player.getMaxHealth()));
+        DeathProtection.TOTEM_OF_UNDYING.applyEffects(stack.copy(), player);
+        lethalBehavior(kind).recover(player, source);
+        activate(player, stack, kind);
+        return true;
     }
 
     public static boolean tryBlockHex(final LivingEntity target) {
@@ -316,9 +342,9 @@ public final class DollItem extends Item {
             .filter(stack -> stack.getItem() instanceof DollItem);
         return java.util.stream.Stream.concat(
             carried,
-            DollShelfBlockEntity.loadedDolls(((ServerLevel) player.level()).getServer())
+            DollShelfBlockEntity.loadedDolls(player)
         )
-            .filter(stack -> isBoundTo(stack, player));
+            .filter(stack -> isBoundTo(stack, player) && DollWorldBoundary.allows(stack, player, player));
     }
 
     private boolean isCorruptibleProtection() {
@@ -332,10 +358,10 @@ public final class DollItem extends Item {
             .filter(stack -> stack.getItem() instanceof DollItem item
                 && item.kind.definition().ability() instanceof DollAbility.DamageLink)
             .filter(stack -> {
-                final ServerPlayer target = boundPlayer(stack, (ServerLevel) player.level());
+                final ServerPlayer target = boundPlayer(stack, player);
                 return target != null && target != player;
             }).findFirst().ifPresent(stack -> {
-            final ServerPlayer target = boundPlayer(stack, (ServerLevel) player.level());
+            final ServerPlayer target = boundPlayer(stack, player);
             if (target == null || target == player) {
                 return;
             }
@@ -384,11 +410,12 @@ public final class DollItem extends Item {
     private static void repairUsingDollCharge(
         final ServerPlayer player,
         final ItemStack doll,
-        final ItemStack target
+        final ItemStack target,
+        final DollKind kind
     ) {
         target.setDamageValue(DollRules.repairedDamage(target.getDamageValue()));
         wear(doll, (ServerLevel) player.level(), player, 1);
-        ModNetwork.notifyDollActivation(player, ((DollItem) doll.getItem()).kind.id(), 30);
+        ModNetwork.notifyDollActivation(player, kind.id(), 30);
     }
 
     private static void activate(final ServerPlayer player, final ItemStack activated, final DollKind kind) {
@@ -403,7 +430,8 @@ public final class DollItem extends Item {
     }
 
     private static void retaliate(final ServerPlayer protectedPlayer, final LivingEntity attacker) {
-        if (!(attacker.level() instanceof ServerLevel level) || !attacker.isAlive()) {
+        if (!(attacker.level() instanceof ServerLevel level) || !attacker.isAlive()
+            || !DollWorldBoundary.sameSide(protectedPlayer, attacker)) {
             return;
         }
         final LightningBolt lightning = EntityTypes.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
@@ -429,16 +457,18 @@ public final class DollItem extends Item {
         DollShelfBlockEntity.markContainingShelfChanged(stack, level.getServer());
     }
 
-    private static @Nullable ServerPlayer boundPlayer(final ItemStack stack, final ServerLevel level) {
+    private static @Nullable ServerPlayer boundPlayer(final ItemStack stack, final ServerPlayer source) {
         return SympatheticBinding.read(stack)
-            .flatMap(binding -> binding.resolve(level.getServer()))
+            .flatMap(binding -> binding.resolve(source.level().getServer()))
+            .filter(target -> DollWorldBoundary.allows(stack, source, target))
             .filter(ServerPlayer.class::isInstance)
             .map(ServerPlayer.class::cast)
             .orElse(null);
     }
 
-    private static @Nullable LivingEntity boundLiving(final ItemStack stack, final ServerLevel level) {
-        return SympatheticBinding.read(stack).flatMap(binding -> binding.resolve(level.getServer())).orElse(null);
+    private static @Nullable LivingEntity boundLiving(final ItemStack stack, final Player source) {
+        return SympatheticBinding.read(stack).flatMap(binding -> binding.resolve(source.level().getServer()))
+            .filter(target -> DollWorldBoundary.allows(stack, source, target)).orElse(null);
     }
 
     private void updateLore(final ItemStack stack, final Component targetName) {
@@ -452,10 +482,21 @@ public final class DollItem extends Item {
         stack.set(DataComponents.LORE, new ItemLore(lines));
     }
 
-    private void bind(final ItemStack stack, final Player player, final LivingEntity target) {
+    private boolean bind(final ItemStack stack, final Player player, final LivingEntity target) {
+        DollWorldBoundary.recordLegacyOrigin(stack);
+        if (!DollWorldBoundary.allows(stack, player, target)) {
+            wrongWorld(player);
+            return false;
+        }
         SympatheticBinding.from(target).write(stack);
         updateLore(stack, target.getName());
         player.sendSystemMessage(Component.translatable("message.warlockery.doll.bound", target.getDisplayName()));
+        return true;
+    }
+
+    private static InteractionResult wrongWorld(final Player player) {
+        player.sendSystemMessage(Component.translatable("message.warlockery.doll.realm_mismatch"));
+        return InteractionResult.FAIL;
     }
 
     private static Component modeName(final DollHexAction action) {

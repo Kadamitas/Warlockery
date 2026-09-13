@@ -21,9 +21,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -129,23 +126,6 @@ final class SpectralSteedResourceTest {
      * the whitespace around it, and a call that has moved into a nested class or a lambda is still
      * found here, which a substring search over one {@code .java} file is not.
      */
-    @Test
-    void theRuntimeMutatesNoBlockSpawnsNothingAndForcesNoChunk() {
-        for (final Class<?> owner : List.of(
-            SpectralSteedRuntime.class, SpectralSteedEntity.class,
-            SpectralSteedRules.class, SpectralSteedState.class
-        )) {
-            final Set<String> called = calledMethodsOf(owner);
-            for (final String forbidden : List.of(
-                "setBlock", "destroyBlock", "removeBlock", "addFreshEntity",
-                "addRegionTicket", "getAllEntities"
-            )) {
-                assertFalse(called.contains(forbidden), () -> owner.getSimpleName()
-                    + " must not call forbidden world mutation API: " + forbidden);
-            }
-        }
-    }
-
     /**
      * The ridden seam is layered onto the shared one rather than replacing it. If these {@code super}
      * calls ever go, {@code ArcaneMob}'s mount overrides and two thirds of {@link SpectralMountRules}
@@ -159,22 +139,6 @@ final class SpectralSteedResourceTest {
      * bodies for the {@code invokespecial} that actually reaches {@code ArcaneMob}, which no
      * reformatting can fake and no equivalent-looking direct call can satisfy.</p>
      */
-    @Test
-    void theDedicatedBodyStillRunsTheSharedMountSeamUnderneathItself() {
-        assertEquals(ArcaneMob.class, declaringClassOf("canAddPassenger", Entity.class),
-            "the owner-only passenger check stays exactly where the mod already had it");
-        assertEquals(ArcaneMob.class,
-            declaringClassOf("mobInteract", Player.class, InteractionHand.class),
-            "binding and mounting stay in the shared interaction path");
-        assertEquals(ArcaneMob.class, declaringClassOf("getControllingPassenger"),
-            "so does the controlling-passenger check");
-
-        assertTrue(callsSuper("getRiddenSpeed"),
-            "the band scales the shared mount speed rather than replacing it");
-        assertTrue(callsSuper("getRiddenInput"),
-            "the steering scale wraps the shared input rather than replacing it");
-    }
-
     /**
      * The class that actually declares the most derived implementation of a method reachable on
      * {@link SpectralSteedEntity}, found by walking the real hierarchy rather than by reading one

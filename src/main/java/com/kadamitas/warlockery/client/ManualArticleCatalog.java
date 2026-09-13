@@ -30,6 +30,7 @@ final class ManualArticleCatalog {
         "ingredient_contract", "ingredient_contract_fiery_touch", "ingredient_contract_evaporate",
         "ingredient_contract_resist_fire", "ingredient_contract_smelting", "ingredient_contract_blaze",
         "ingredient_contract_torment", "ingredient_bolt_holy", "ingredient_bolt_stake",
+        "mooncharm", "canesword", "ingredient_bolt_splitting", "ingredient_bolt_anti_magic", "ingredient_bolt_silver",
         "arcane_focus", "ingredient_brew_grave", "mysticbranch",
         "louse", "archfiends_urn", "circletalisman",
         "rowanwooddoor", "ingredient_door_key", "ingredient_door_keyring",
@@ -267,8 +268,12 @@ final class ManualArticleCatalog {
     private static Article ritual(final String id) {
         final JsonObject ritual = resource("/data/warlockery/ritual/" + id + ".json");
         final MutableComponent body = Component.translatable(ritual.get("description").getAsString()).copy();
+        final Map<String, Integer> declaredGlyphs = integers(ritual.getAsJsonObject("glyphs"));
+        // Transformation diagrams show the ring to prepare, not the resulting chalk color.
         final Map<String, Integer> glyphs = ChalkCircleLayout.canonicalGlyphs(
-            integers(ritual.getAsJsonObject("glyphs"))
+            id.equals("glyph_to_ritual")
+                ? Map.of("circleglyph_veil", declaredGlyphs.values().iterator().next())
+                : declaredGlyphs
         );
         if (ritual.has("power")) {
             append(body, "manual.warlockery.entry.altar_power", java.util.List.of(
@@ -280,7 +285,7 @@ final class ManualArticleCatalog {
             : new JsonObject();
         final JsonArray ingredients = requirements.getAsJsonArray("ingredients");
         final JsonArray entities = requirements.getAsJsonArray("entities");
-        appendIngredients(body, ingredients);
+        appendIngredients(body, ingredients, ritual.get("action").getAsString());
         appendEntities(body, entities);
         appendConditions(body, ritual, requirements);
         body.append("\n\n").append(Component.translatable("manual.warlockery.ritual.cast_time",
@@ -304,6 +309,10 @@ final class ManualArticleCatalog {
             body.append("\n").append(Component.translatable("manual.warlockery.glyph_transform.sizes"));
         }
         body.append(ManualRitualInstructions.additional(id, ritual));
+        if ("remove_vampirism".equals(action) || "remove_werewolf".equals(action)
+            || "transform_werewolf".equals(action)) {
+            appendBookReference(body, "ingredient_book_burning", "sympathetic_vials");
+        }
         return new Article(body, glyphs, ritualPictograms(ritual, requirements, ingredients, entities));
     }
 
@@ -627,6 +636,12 @@ final class ManualArticleCatalog {
     }
 
     private static void appendIngredients(final MutableComponent body, final JsonArray ingredients) {
+        appendIngredients(body, ingredients, "");
+    }
+
+    private static void appendIngredients(
+        final MutableComponent body, final JsonArray ingredients, final String action
+    ) {
         if (ingredients == null || ingredients.isEmpty()) {
             return;
         }
@@ -641,6 +656,9 @@ final class ManualArticleCatalog {
                 count,
                 ingredientName(ingredient.get("ingredient").getAsString())
             );
+            if (action.equals("divorce") && ingredient.get("ingredient").getAsString().equals("warlockery:wedding_ring")) {
+                return Component.translatable("manual.warlockery.entry.consumed_on_success", amount);
+            }
             return consumed
                 ? amount
                 : Component.translatable("manual.warlockery.entry.kept", amount);

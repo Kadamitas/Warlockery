@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:ritual_severance_consumes_one_ring_on_success",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "ritual_severance_consumes_one_ring_on_success",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 40
+}

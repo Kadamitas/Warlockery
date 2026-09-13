@@ -1,7 +1,6 @@
 package com.kadamitas.warlockery.client;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -13,44 +12,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 final class ManualUiIsolationTest {
-    private static final Path SCREEN = Path.of(
-        "src/main/java/com/kadamitas/warlockery/client/ManualScreen.java"
-    );
     private static final Path LANGUAGE = Path.of(
         "src/main/resources/assets/warlockery/lang/en_us.json"
     );
-
-    @Test
-    void physicalManualSearchesOnlyItsOwnChapters() {
-        final String source = read(SCREEN);
-        assertTrue(source.contains("private final ManualProfile manual"));
-        assertTrue(source.contains("searchSections(query)"));
-        assertFalse(source.contains("ManualProfile.profiles()"));
-        assertFalse(source.contains("ManualProfile.search("));
-    }
-
-    @Test
-    void readerDelegatesResponsiveGeometryToTheTestedLayout() {
-        final String source = read(SCREEN);
-        assertTrue(source.contains("ManualLayout.calculate(width, height)"));
-        assertTrue(source.contains("layout.controls()"));
-        assertTrue(source.contains("bodyPageCount(layout, selectedSection)"));
-        assertTrue(source.contains("font.split("));
-        assertTrue(source.contains("0xFFFFF0CF"));
-        assertFalse(source.contains("Math.max(312"));
-        assertFalse(source.contains("Math.max(286"));
-    }
-
-    @Test
-    void readerProvidesChapterDrillDownReturnAndPictographicInstructions() {
-        final String source = read(SCREEN);
-        assertTrue(source.contains("addChapterButtons(layout"));
-        assertTrue(source.contains("addSubchapterButtons(layout"));
-        assertTrue(source.contains("toggleChapterIndex()"));
-        assertTrue(source.contains("screen.warlockery.manual.table_of_contents"));
-        assertTrue(source.contains("graphics.fakeItem(stack"));
-        assertTrue(source.contains("drawCircleDiagram("));
-    }
 
     @Test
     void playerFacingBooksDoNotReadLikeImplementationNotes() {

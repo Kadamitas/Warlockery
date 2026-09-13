@@ -38,7 +38,7 @@ final class SpectralFamiliarModelTest {
         model.root().yRot=.7853982F; assertEquals("34be21dccbb5b7d81fb8287832de2274ebffa375b246c934565d6fc146411c09",imageSnapshot(softwareSnapshot(model.root(),Projection.FRONT,128,4))); model.root().yRot=0;
         final SpectralFamiliarModel.State state=new SpectralFamiliarModel.State(); state.walkAnimationPos=3F; state.walkAnimationSpeed=.8F; state.ageInTicks=25F; state.yRot=-22F; state.xRot=5F; model.setupAnim(state);
         assertEquals("08818275de6e9b6b582a0ec7066858a3d201883969ec4be5dbcfbb4175ad7050",geometrySnapshot(model.root())); state.surveying=true; model.setupAnim(state); assertEquals("9792a3c72f4b9246e02d40a0923f14a2ae862924d9ef7298e5182550767599b1",geometrySnapshot(model.root()));
-        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(64,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("cf11618d73de90d558d52f6d034334af1966e71e066779eeb76f37d87e2abc35",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
+        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(64,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("1493c051ee8d1a71c9be1bac20cf97b97b4a9e939c170bc5e87e6716b5bbdcea",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
     }
     @Test void surveyCrouchesAndPresentsTheLanternTailBesideItsBody() {
         final SpectralFamiliarModel neutral=new SpectralFamiliarModel(SpectralFamiliarModel.createBodyLayer().bakeRoot());

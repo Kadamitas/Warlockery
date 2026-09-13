@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:doll_lethal_protection_and_mending_respect_dream_boundary",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "doll_lethal_protection_and_mending_respect_dream_boundary",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 120
+}

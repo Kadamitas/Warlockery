@@ -103,7 +103,23 @@ public final class ModNetwork {
     }
 
     public static void openRitualScreen(final ServerPlayer player, final BlockPos center) {
+        if (player.distanceToSqr(Vec3.atCenterOf(center)) > 64.0 || !player.level().isLoaded(center)
+            || !RitualManager.isCircleCenter(player.level(), center)
+            || !com.kadamitas.warlockery.item.RitualBookAccess.require(player)) return;
         sendOptions(player, center, true);
+    }
+
+    public static void refreshCompletedRitual(
+        final ServerLevel level, final BlockPos center, final ServerPlayer player
+    ) {
+        if (player == null || player.connection == null || !player.connection.isAcceptingMessages()) {
+            return;
+        }
+        // Travel can move the caster out of refresh range or into another dimension. Read the original circle.
+        CHANNEL.send(
+            new OpenRitualScreenPayload(center, RitualManager.INSTANCE.options(level, center, player), false),
+            PacketDistributor.PLAYER.with(player)
+        );
     }
 
     public static void setClientCatalogHandler(
@@ -203,6 +219,10 @@ public final class ModNetwork {
         CHANNEL.send(new RitualActionPayload(center, "", false, false), PacketDistributor.SERVER.noArg());
     }
 
+    public static void requestSelection(final BlockPos center, final String ritualId) {
+        CHANNEL.send(new RitualActionPayload(center, ritualId, false, false), PacketDistributor.SERVER.noArg());
+    }
+
     public static void requestActivation(final BlockPos center, final String ritualId) {
         CHANNEL.send(new RitualActionPayload(center, ritualId, true, false), PacketDistributor.SERVER.noArg());
     }
@@ -297,8 +317,16 @@ public final class ModNetwork {
         if (player == null || !(player.level() instanceof ServerLevel level)
             || player.distanceToSqr(Vec3.atCenterOf(payload.center())) > 64.0
             || !level.isLoaded(payload.center())
-            || ((payload.activate() || payload.cancel()) && !RitualManager.isCircleCenter(level, payload.center()))) {
+            || !RitualManager.isCircleCenter(level, payload.center())) {
             return;
+        }
+        if (!com.kadamitas.warlockery.item.RitualBookAccess.require(player)) return;
+        if (!payload.ritualId().isEmpty() && !payload.cancel()) {
+            final Identifier selected = Identifier.tryParse(payload.ritualId());
+            if (selected == null || RitualManager.INSTANCE.option(level, payload.center(), player, selected).isEmpty()) return;
+            if (level.getBlockEntity(payload.center()) instanceof com.kadamitas.warlockery.block.entity.CircleHeartBlockEntity heart) {
+                heart.select(player, selected.toString());
+            }
         }
         if (payload.cancel()
             && RitualSessionData.get(level).cancel(level, payload.center(), player.getUUID())) {

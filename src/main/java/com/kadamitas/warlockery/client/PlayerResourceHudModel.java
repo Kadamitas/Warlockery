@@ -26,7 +26,7 @@ public final class PlayerResourceHudModel {
                 snapshot.powerCooldownTicks()
             ));
         }
-        if (snapshot.magicActive()) {
+        if (focusHeld && snapshot.magicActive()) {
             meters.add(new Meter(
                 Kind.MANA,
                 snapshot.magicResource(),

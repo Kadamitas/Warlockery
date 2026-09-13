@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:spirit_portal_generated_return_column_joins_vertically",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "spirit_portal_generated_return_column_joins_vertically",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 320
+}

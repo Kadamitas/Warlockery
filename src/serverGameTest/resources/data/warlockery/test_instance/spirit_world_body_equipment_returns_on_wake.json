@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:spirit_world_body_equipment_returns_on_wake",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "spirit_world_body_equipment_returns_on_wake",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 320
+}

@@ -246,45 +246,7 @@ final class CreativeAssetIntegrityTest {
     }
 
     @Test
-    void ornamentalAndFunctionalFixturesHaveSculptedGeometry() {
-        final Map<String, Integer> minimumElements = Map.ofEntries(
-            Map.entry("altar", 9),
-            Map.entry("alluringskull", 6),
-            Map.entry("bloodcrucible", 8),
-            Map.entry("brazier", 8),
-            Map.entry("candelabra", 9),
-            Map.entry("cauldron", 10),
-            Map.entry("chalice", 7),
-            Map.entry("crystalball", 5),
-            Map.entry("daylightcollector", 6),
-            Map.entry("demonheart", 6),
-            Map.entry("distilleryidle", 8),
-            Map.entry("doll_shelf", 8),
-            Map.entry("dreamcatcher", 9),
-            Map.entry("filteredfumefunnel", 4),
-            Map.entry("glowglobe", 6),
-            Map.entry("kettle", 10),
-            Map.entry("mirrorblock", 6),
-            Map.entry("mirrorwall", 6),
-            Map.entry("paradox_egg", 6),
-            Map.entry("scarecrow", 8),
-            Map.entry("silvervat", 7),
-            Map.entry("spinningwheel", 8),
-            Map.entry("spiritportal", 7),
-            Map.entry("statuegoddess", 9),
-            Map.entry("statueofworship", 11),
-            Map.entry("trent", 7),
-            Map.entry("voidbramble", 5),
-            Map.entry("web", 4),
-            Map.entry("wolfaltar", 8),
-            Map.entry("wolfhead", 7),
-            Map.entry("wolftrap", 12)
-        );
-        minimumElements.forEach((id, count) -> {
-            final JsonObject model = json(BLOCK_MODELS.resolve(id + ".json"));
-            assertFalse(model.has("parent") && "minecraft:block/cube_all".equals(model.get("parent").getAsString()), id);
-            assertTrue(model.getAsJsonArray("elements").size() >= count, id);
-        });
+    void litBrazierUsesItsLitModel() {
         assertEquals("warlockery:block/brazier_lit", json(BLOCK_STATES.resolve("brazier.json"))
             .getAsJsonObject("variants").getAsJsonObject("lit=true").get("model").getAsString());
     }

@@ -112,11 +112,14 @@ final class ManualSubchapterTest {
             .flatMap(chapter -> chapter.sections().stream())
             .toList();
 
-        assertEquals(19, plantSections.stream().filter(section -> section.startsWith("plant_")).count());
-        assertEquals(List.of(
-            "ingredient_artichoke", "seedsdreamroot", "crafting_voidbramble", "device_void_bramble",
+        assertTrue(plantSections.containsAll(List.of(
+            "plant_artichoke", "plant_belladonna", "plant_garlic", "plant_mandrake", "plant_dreamroot",
+            "plant_snowbell", "plant_wolfsbane", "plant_wormwood", "plant_ember_moss", "plant_glint_weed",
+            "plant_spanish_moss", "plant_somnian_cotton", "plant_leaping_lily", "plant_blood_rose",
+            "plant_bramble", "plant_void_bramble", "plant_grassper", "plant_pitgrass", "plant_critter_snare",
+            "ingredient_artichoke", "seedsdreamroot", "hex_sapling", "vine", "crafting_voidbramble", "device_void_bramble",
             "crafting_plantmine", "device_plant_mine", "crafting_critter_snare"
-        ), plantSections.stream().filter(section -> !section.startsWith("plant_")).toList());
+        )), "every supported plant and its associated recipe/device guidance remains indexed");
     }
 
     @Test

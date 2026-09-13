@@ -57,7 +57,7 @@ final class HellhoundModelTest {
         CreatureModelTestSupport.assertOpaqueUvs(root, texture,
             cube -> !cube.path().endsWith("long_muzzle"));
         assertEquals(0, texture.getRGB(255, 159) >>> 24);
-        assertEquals("e8a646bd00b3fa446ff8004f402a9379fbd8f6ac28ac5220abaf9fe8e4e09f69",
+        assertEquals("27c5272c5fd6d5fb2c0b68f274d8372fe87b4fcaaa89a8e5fc5dca687e39e41b",
             textureHash());
     }
 

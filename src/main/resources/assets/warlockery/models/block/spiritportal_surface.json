@@ -1,0 +1,79 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "warlockery:block/spiritportal",
+    "portal": "warlockery:block/spiritportal",
+    "frame": "warlockery:block/spiritportal_frame"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        7
+      ],
+      "to": [
+        16,
+        16,
+        9
+      ],
+      "faces": {
+        "down": {
+          "texture": "#portal",
+          "uv": [
+            7.25,
+            7.25,
+            7.75,
+            7.75
+          ]
+        },
+        "up": {
+          "texture": "#portal",
+          "uv": [
+            7.25,
+            7.25,
+            7.75,
+            7.75
+          ]
+        },
+        "north": {
+          "texture": "#portal",
+          "uv": [
+            7.25,
+            7.25,
+            7.75,
+            7.75
+          ]
+        },
+        "south": {
+          "texture": "#portal",
+          "uv": [
+            7.25,
+            7.25,
+            7.75,
+            7.75
+          ]
+        },
+        "west": {
+          "texture": "#portal",
+          "uv": [
+            7.25,
+            7.25,
+            7.75,
+            7.75
+          ]
+        },
+        "east": {
+          "texture": "#portal",
+          "uv": [
+            7.25,
+            7.25,
+            7.75,
+            7.75
+          ]
+        }
+      }
+    }
+  ]
+}

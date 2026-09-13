@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:placed_mirrors_travel_to_exact_nearest_usable_partner",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "placed_mirrors_travel_to_exact_nearest_usable_partner",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 120
+}
