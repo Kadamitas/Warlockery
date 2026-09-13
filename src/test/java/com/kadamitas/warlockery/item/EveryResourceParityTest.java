@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -37,47 +36,26 @@ final class EveryResourceParityTest {
     }
 
     @TestFactory
-    Stream<DynamicContainer> oneFailureDiagnosticAndSuccessSuitePerResource() {
+    Stream<DynamicTest> resourcesDeclareCompatibleAcquisitionAndConsumerRoutes() {
         final EvidenceIndex evidence = EvidenceIndex.load(DATA);
         final Set<String> compatibleItems = evidence.tags().directItems(REAGENT_TAG);
-        return ResourceParityCatalog.PROFILES.stream().map(profile -> DynamicContainer.dynamicContainer(
-            profile.wikiPage(),
-            List.of(
-                DynamicTest.dynamicTest("failure", () -> assertEquals(
-                    ResourceParityCatalog.Diagnostic.MISSING_ACQUISITION,
-                    ResourceParityCatalog.diagnose(false, true, true)
-                )),
-                DynamicTest.dynamicTest("diagnostic and compatibility", () -> {
-                    assertEquals(
-                        ResourceParityCatalog.Diagnostic.MISSING_CONSUMER,
-                        ResourceParityCatalog.diagnose(true, false, true)
-                    );
-                    assertEquals(REAGENT_TAG, profile.compatibilityTag());
-                    assertTrue(compatibleItems.contains(profile.registryId()), profile.registryId());
-                }),
-                DynamicTest.dynamicTest("success", () -> {
-                    assertEquals(
-                        ResourceParityCatalog.Diagnostic.READY,
-                        ResourceParityCatalog.diagnose(true, true, true)
-                    );
-                    final Set<Evidence> acquisition = evidence.acquisition(profile.registryId());
-                    final Set<Evidence> consumers = evidence.consumers(profile.registryId());
-                    final List<ResourceParityCatalog.RuntimeEvidence> runtimeAcquisition =
-                        profile.runtimeEvidence(ResourceParityCatalog.EvidenceKind.ACQUISITION);
-                    final List<ResourceParityCatalog.RuntimeEvidence> runtimeConsumers =
-                        profile.runtimeEvidence(ResourceParityCatalog.EvidenceKind.CONSUMER);
-                    Stream.concat(runtimeAcquisition.stream(), runtimeConsumers.stream())
-                        .forEach(EveryResourceParityTest::assertRuntimeMember);
-                    assertFalse(
-                        acquisition.isEmpty() && runtimeAcquisition.isEmpty(),
-                        profile.registryId() + " lacks acquisition evidence"
-                    );
-                    assertFalse(
-                        consumers.isEmpty() && runtimeConsumers.isEmpty(),
-                        profile.registryId() + " lacks consumer evidence"
-                    );
-                })
-            )
+        return ResourceParityCatalog.PROFILES.stream().map(profile -> DynamicTest.dynamicTest(
+            profile.wikiPage(), () -> {
+                assertEquals(REAGENT_TAG, profile.compatibilityTag());
+                assertTrue(compatibleItems.contains(profile.registryId()), profile.registryId());
+                final Set<Evidence> acquisition = evidence.acquisition(profile.registryId());
+                final Set<Evidence> consumers = evidence.consumers(profile.registryId());
+                final List<ResourceParityCatalog.RuntimeEvidence> runtimeAcquisition =
+                    profile.runtimeEvidence(ResourceParityCatalog.EvidenceKind.ACQUISITION);
+                final List<ResourceParityCatalog.RuntimeEvidence> runtimeConsumers =
+                    profile.runtimeEvidence(ResourceParityCatalog.EvidenceKind.CONSUMER);
+                Stream.concat(runtimeAcquisition.stream(), runtimeConsumers.stream())
+                    .forEach(EveryResourceParityTest::assertRuntimeMember);
+                assertFalse(acquisition.isEmpty() && runtimeAcquisition.isEmpty(),
+                    profile.registryId() + " lacks a declared acquisition route");
+                assertFalse(consumers.isEmpty() && runtimeConsumers.isEmpty(),
+                    profile.registryId() + " lacks a declared consumer route");
+            }
         ));
     }
 

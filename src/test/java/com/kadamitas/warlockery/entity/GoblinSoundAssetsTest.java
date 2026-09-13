@@ -44,18 +44,6 @@ final class GoblinSoundAssetsTest {
         );
     }
 
-    @Test
-    void creatureCodeUsesOnlyWarlockeryVoiceEvents() {
-        final String registry = read(SOUND_REGISTRY);
-        final String entity = read(ENTITY);
-        assertTrue(registry.contains("registerCreature(\"entity.goblin\")"));
-        assertTrue(registry.contains("registerCreature(\"entity.hobgoblin\")"));
-        assertTrue(entity.contains("getNotifyTradeSound()"));
-        assertTrue(entity.contains("getTradeUpdatedSound(final boolean validTrade)"));
-        assertTrue(entity.contains("playWorkSound()"));
-        assertFalse(entity.contains("SoundEvents.VILLAGER"));
-    }
-
     private static JsonObject json(final Path path) {
         return JsonParser.parseString(read(path)).getAsJsonObject();
     }

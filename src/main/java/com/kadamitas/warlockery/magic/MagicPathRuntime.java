@@ -233,7 +233,6 @@ public final class MagicPathRuntime {
             killer.heal(4.0F);
             killer.getFoodData().eat(4, 0.6F);
             MagicPathState.recharge(killer, MagicPath.GRAVE, 4);
-            show(killer, MagicPath.GRAVE, MagicPathRules.Diagnostic.READY);
         }
     }
 
@@ -801,6 +800,12 @@ public final class MagicPathRuntime {
         if (destination == null) {
             return false;
         }
+        if (com.kadamitas.warlockery.dream.SpiritWorldRuntime.isSpiritWorld(destination)
+            && !com.kadamitas.warlockery.dream.SpiritWorldRuntime.isDreaming(player)) {
+            return com.kadamitas.warlockery.dream.SpiritWorldRuntime.enterAt(player,
+                new Vec3(recall.position().getX() + 0.5, recall.position().getY() + 1.0,
+                    recall.position().getZ() + 0.5));
+        }
         destination.getChunkAt(recall.position());
         return player.teleportTo(
             destination,
@@ -964,11 +969,16 @@ public final class MagicPathRuntime {
     }
 
     private static void magnetizeMetal(final ServerPlayer player) {
-        ((ServerLevel) player.level()).getEntitiesOfClass(
+        final ServerLevel level = (ServerLevel) player.level();
+        final AABB pickupArea = player.getBoundingBox().inflate(6.0);
+        final List<ItemEntity> drops = level.getEntitiesOfClass(
             ItemEntity.class,
-            player.getBoundingBox().inflate(6.0),
+            pickupArea,
             item -> item.getItem().is(MagicCompatibilityTags.METAL_DROPS)
-        ).forEach(item -> {
+        );
+        if (drops.isEmpty()) return;
+        final List<AABB> offerings = RitualOfferingProtection.nearbyZones(level, pickupArea);
+        drops.stream().filter(item -> offerings.stream().noneMatch(zone -> zone.intersects(item.getBoundingBox()))).forEach(item -> {
             item.setTarget(player.getUUID());
             item.setDeltaMovement(player.position().subtract(item.position()).normalize().scale(0.3));
         });
@@ -1002,6 +1012,7 @@ public final class MagicPathRuntime {
             return fail(player, MagicPath.SKY, decision);
         }
         player.setDeltaMovement(player.getDeltaMovement().add(0.0, 1.1, 0.0));
+        player.hurtMarked = true;
         player.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 300, 0));
         return succeed(player, MagicPath.SKY, decision);
     }
@@ -1065,7 +1076,6 @@ public final class MagicPathRuntime {
         final MagicPathRules.Decision decision
     ) {
         MagicPathState.spend(player, path, decision.reserveSpent());
-        show(player, path, decision.diagnostic());
         return InteractionResult.SUCCESS;
     }
 
@@ -1089,7 +1099,7 @@ public final class MagicPathRuntime {
         final MagicPathRules.Diagnostic diagnostic
     ) {
         final ChatFormatting color = diagnostic == MagicPathRules.Diagnostic.READY
-            ? ChatFormatting.GREEN
+            ? ChatFormatting.GRAY
             : ChatFormatting.RED;
         final Component pathName = path == null
             ? Component.translatable("item.warlockery.arcane_focus")
@@ -1097,7 +1107,8 @@ public final class MagicPathRuntime {
         final Component message = switch (diagnostic) {
             case NOT_ATTUNED -> Component.translatable(diagnostic.messageKey());
             case INVALID_TARGET -> Component.translatable(diagnostic.messageKey(), pathName);
-            case INSUFFICIENT_RESERVE, READY -> Component.translatable(
+            case READY -> pathName;
+            case INSUFFICIENT_RESERVE -> Component.translatable(
                 diagnostic.messageKey(),
                 pathName,
                 path == null ? 0 : MagicPathState.reserve(player, path),

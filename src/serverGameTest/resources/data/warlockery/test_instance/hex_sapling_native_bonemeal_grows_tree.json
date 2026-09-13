@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:hex_sapling_native_bonemeal_grows_tree",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "hex_sapling_native_bonemeal_grows_tree",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 100
+}

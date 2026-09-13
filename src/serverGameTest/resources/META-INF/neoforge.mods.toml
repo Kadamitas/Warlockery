@@ -1,0 +1,77 @@
+license="MIT"
+issueTrackerURL="https://github.com/Kadamitas/Warlockery/issues"
+
+[[mods]]
+modId="warlockery"
+rrv_client="com.kadamitas.warlockery.compat.rrv.WarlockeryRrvPlugin"
+version="${mod_version}"
+displayName="Warlockery"
+displayURL="https://github.com/Kadamitas/Warlockery"
+updateJSONURL="https://raw.githubusercontent.com/Kadamitas/Warlockery/support/llaguit0-neoforge-26.2.0.45/update.json"
+iconFile="warlockery-icon.png"
+iconBlur=false
+authors="Kadamitas"
+
+description='''A standalone ritual-magic mod for NeoForge and Minecraft 26.2.
+Warlockery includes data-driven circles and machines, magical plants, sympathetic magic,
+dolls, supernatural forms, creatures and bosses, goblin raids, peaceful travelling hobgoblins,
+silver-equipped Werewolf Hunters, and modern ore progression.'''
+
+[features.warlockery]
+    javaVersion="[25,)"
+
+[[dependencies.warlockery]]
+    modId="neoforge"
+    type="required"
+    versionRange="[26.2.0.45-beta,26.2.0.46-beta)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.warlockery]]
+    modId="jei"
+    type="optional"
+    versionRange="[30.15.0,)"
+    ordering="AFTER"
+    side="CLIENT"
+
+[[dependencies.warlockery]]
+    modId="minecraft"
+    type="required"
+    versionRange="[26.2,26.3)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.warlockery]]
+    modId="roughlyenoughitems"
+    type="optional"
+    versionRange="[26.2.820,)"
+    ordering="AFTER"
+    side="CLIENT"
+
+[[dependencies.warlockery]]
+    modId="rrv"
+    type="optional"
+    versionRange="[8.10.4,)"
+    ordering="AFTER"
+    side="CLIENT"
+
+[[dependencies.warlockery]]
+    modId="emi"
+    type="optional"
+    versionRange="[1.1.24,)"
+    ordering="AFTER"
+    side="CLIENT"
+
+
+[[mods]]
+modId="warlockery_gametests"
+version="1"
+displayName="Warlockery GameTests"
+description="Development-only server regression fixtures."
+
+[[dependencies.warlockery_gametests]]
+modId="warlockery"
+type="required"
+versionRange="[1.5.4,)"
+ordering="AFTER"
+side="BOTH"

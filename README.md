@@ -2,20 +2,20 @@
 
 [Releases](https://github.com/Kadamitas/Warlockery/releases) | [Issue tracker](https://github.com/Kadamitas/Warlockery/issues) | [MIT license](LICENSE)
 
-Warlockery 1.5.3-LlaGuiT0-26.2.0.45 is a supporter compatibility build for Minecraft 26.2, Java 25, and NeoForge 26.2.0.45-beta exactly.
+Warlockery 1.5.4-LlaGuiT0-26.2.0.45 is a supporter compatibility build for Minecraft 26.2, Java 25, and NeoForge 26.2.0.45-beta exactly.
 
 It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, goblin village enclaves, silver hunting equipment, and Netherite-tier Goblinite gear.
 
 ## Installation
 
-1. Install Minecraft 26.2 with Java 25 and NeoForge 26.2.0.64 or newer.
+1. Install Minecraft 26.2 with Java 25 and NeoForge 26.2.0.45-beta exactly.
 2. Download the matching Warlockery release and copy its JAR into the instance or server `mods` folder.
 3. Install the same Warlockery version on the client and server.
 4. Start Minecraft and confirm that Warlockery appears in the Mods screen.
 
 JEI integration is optional and activates when the NeoForge build of JEI 30.15.0 or newer is installed.
 
-Normal 1.5.3 releases target Forge 65.1.2, NeoForge 26.2.0.64, and Fabric Loader 0.19.3 with Fabric API 0.158.0+26.2. This `1.5.3-LlaGuiT0-26.2.0.45` supporter build remains NeoForge-only and requires NeoForge `[26.2.0.45-beta,26.2.0.46-beta)`.
+Normal builds target Forge 65.1.0 or newer, NeoForge 26.2.0.87, and Fabric Loader 0.19.5 with Fabric API 0.158.0+26.2. Fabric Loader 0.19.3 and newer remain supported. This `1.5.4-LlaGuiT0-26.2.0.45` supporter build remains NeoForge-only and requires NeoForge `[26.2.0.45-beta,26.2.0.46-beta)`.
 
 ## Languages
 

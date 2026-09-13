@@ -20,6 +20,45 @@ import org.junit.jupiter.api.Test;
 
 final class ConnectedGlyphGeometryTest {
     @Test
+    void thinChalkLinesKeepAPronouncedFourPixelNode() {
+        assertEquals(4.0, ConnectedGlyphGeometry.CENTER.maxX() - ConnectedGlyphGeometry.CENTER.minX());
+        assertEquals(0.25, ConnectedGlyphGeometry.CENTER.maxY());
+        for (final Side side : Side.values()) {
+            for (final Bounds part : ConnectedGlyphGeometry.parts(side)) {
+                assertEquals(0.125, part.maxY());
+                assertTrue(Math.min(part.maxX() - part.minX(), part.maxZ() - part.minZ()) <= 2.0);
+            }
+        }
+    }
+
+    @Test
+    void sampledChalkPigmentHasOnlySubtleOpaqueTonalVariation() throws IOException {
+        final Path assets = Path.of("src/main/resources/assets/warlockery");
+        for (final String id : ConnectedGlyphGeometry.IDS) {
+            final String texture = json(assets.resolve("models/block/" + id + ".json"))
+                .getAsJsonObject("textures").get("glyph").getAsString();
+            final var image = ImageIO.read(assets.resolve("textures/" + texture.substring("warlockery:".length()) + ".png").toFile());
+            final Set<Integer> colors = new HashSet<>();
+            final int[] min = {255, 255, 255};
+            final int[] max = {0, 0, 0};
+            for (int x = 5; x < 11; x++) for (int z = 6; z < 10; z++) {
+                final int pixel = image.getRGB(x, z);
+                assertEquals(255, pixel >>> 24, "sampled chalk pigment must not open holes");
+                colors.add(pixel);
+                for (int channel = 0; channel < 3; channel++) {
+                    final int value = pixel >> (channel * 8) & 255;
+                    min[channel] = Math.min(min[channel], value);
+                    max[channel] = Math.max(max[channel], value);
+                }
+            }
+            assertTrue(colors.size() >= 2, "chalk retains faint lighter and darker pigment");
+            for (int channel = 0; channel < 3; channel++) {
+                assertTrue(max[channel] - min[channel] <= 18, "pigment contrast stays subtle for " + id);
+            }
+        }
+    }
+
+    @Test
     void everyChalkGlyphIdUsesTheConnectedImplementation() {
         assertEquals(Set.of(
                 "circle", "circleglyphgolden", "circleglyphritual", "circleglyphinfernal", "circleglyph_veil"
@@ -31,11 +70,11 @@ final class ConnectedGlyphGeometryTest {
     @Test
     void centerOnlyGeometryStaysInsideTheBlockCenter() {
         final ConnectedGlyphGeometry.Bounds center = ConnectedGlyphGeometry.bounds(Set.of());
-        assertEquals(5.0, center.minX());
-        assertEquals(5.0, center.minZ());
-        assertEquals(11.0, center.maxX());
-        assertEquals(11.0, center.maxZ());
-        assertEquals(1.0, center.maxY());
+        assertEquals(6.0, center.minX());
+        assertEquals(6.0, center.minZ());
+        assertEquals(10.0, center.maxX());
+        assertEquals(10.0, center.maxZ());
+        assertEquals(0.25, center.maxY());
     }
 
     @Test
@@ -46,8 +85,8 @@ final class ConnectedGlyphGeometryTest {
         ));
         assertEquals(0.0, northEast.minZ());
         assertEquals(16.0, northEast.maxX());
-        assertEquals(5.0, northEast.minX());
-        assertEquals(11.0, northEast.maxZ());
+        assertEquals(6.0, northEast.minX());
+        assertEquals(10.0, northEast.maxZ());
 
         final ConnectedGlyphGeometry.Bounds cross = ConnectedGlyphGeometry.bounds(EnumSet.allOf(ConnectedGlyphGeometry.Side.class));
         assertEquals(0.0, cross.minX());
@@ -76,10 +115,10 @@ final class ConnectedGlyphGeometryTest {
             }
             assertEquals(22.0, area, "ribbons must remain much narrower than a filled quadrant");
             final Bounds bounds = ConnectedGlyphGeometry.bounds(Set.of(side));
-            assertEquals(side.dx() < 0 ? 0.0 : 5.0, bounds.minX());
-            assertEquals(side.dx() > 0 ? 16.0 : 11.0, bounds.maxX());
-            assertEquals(side.dz() < 0 ? 0.0 : 5.0, bounds.minZ());
-            assertEquals(side.dz() > 0 ? 16.0 : 11.0, bounds.maxZ());
+            assertEquals(side.dx() < 0 ? 0.0 : 6.0, bounds.minX());
+            assertEquals(side.dx() > 0 ? 16.0 : 10.0, bounds.maxX());
+            assertEquals(side.dz() < 0 ? 0.0 : 6.0, bounds.minZ());
+            assertEquals(side.dz() > 0 ? 16.0 : 10.0, bounds.maxZ());
         }
     }
 
@@ -130,18 +169,20 @@ final class ConnectedGlyphGeometryTest {
         }
         for (final Side side : ConnectedGlyphGeometry.DIAGONALS.keySet()) {
             final var elements = json(assets.resolve("models/block/chalk_glyph_" + side.id() + ".json")).getAsJsonArray("elements");
-            final var bounds = ConnectedGlyphGeometry.parts(side);
-            assertEquals(bounds.size(), elements.size());
+            assertEquals(1, elements.size(), "diagonals render one straight strip rather than stair-step cubes");
             for (int index = 0; index < elements.size(); index++) {
                 final JsonObject element = elements.get(index).getAsJsonObject();
                 final var from = element.getAsJsonArray("from");
                 final var to = element.getAsJsonArray("to");
-                assertEquals(bounds.get(index).minX(), from.get(0).getAsDouble());
-                assertEquals(bounds.get(index).minZ(), from.get(2).getAsDouble());
-                assertEquals(bounds.get(index).maxX(), to.get(0).getAsDouble());
-                assertEquals(bounds.get(index).maxZ(), to.get(2).getAsDouble());
-                assertEquals(ConnectedGlyphGeometry.DIAGONAL_SURFACE, to.get(1).getAsDouble());
-                assertTrue(to.get(1).getAsDouble() > 0.5, "diagonal top must not fight existing center or cardinal faces");
+                assertEquals(2.0, to.get(2).getAsDouble() - from.get(2).getAsDouble());
+                assertEquals("y", element.getAsJsonObject("rotation").get("axis").getAsString());
+                final double angle = element.getAsJsonObject("rotation").get("angle").getAsDouble();
+                assertEquals(45.0, Math.abs(angle));
+                final double endX = (side.dx() > 0 ? to : from).get(0).getAsDouble() - 8.0;
+                assertEquals(8.0 * side.dx(), endX * Math.cos(Math.toRadians(angle)), 0.00001);
+                assertEquals(8.0 * side.dz(), -endX * Math.sin(Math.toRadians(angle)), 0.00001);
+                assertEquals(ConnectedGlyphGeometry.surface(side), to.get(1).getAsDouble());
+                assertTrue(to.get(1).getAsDouble() > 0.125, "diagonal top must not fight existing center or cardinal faces");
                 assertEquals(Set.of("up", "down", "north", "south", "east", "west"), element.getAsJsonObject("faces").keySet(),
                     "each shallow chalk strip is closed on all six sides");
                 assertEquals("down", element.getAsJsonObject("faces").getAsJsonObject("down").get("cullface").getAsString());
@@ -151,5 +192,33 @@ final class ConnectedGlyphGeometryTest {
 
     private static JsonObject json(final Path path) throws IOException {
         return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
+    }
+
+    @Test
+    void consecutiveStraightDiagonalsMeetExactlyAndOverlapEveryCenterNode() throws IOException {
+        final Path models = Path.of("src/main/resources/assets/warlockery/models/block");
+        for (final Side side : ConnectedGlyphGeometry.DIAGONALS.keySet()) {
+            final JsonObject strip = json(models.resolve("chalk_glyph_" + side.id() + ".json"))
+                .getAsJsonArray("elements").get(0).getAsJsonObject();
+            final double radians = Math.toRadians(strip.getAsJsonObject("rotation").get("angle").getAsDouble());
+            final double outer = strip.getAsJsonArray(side.dx() > 0 ? "to" : "from").get(0).getAsDouble() - 8;
+            final double inner = strip.getAsJsonArray(side.dx() > 0 ? "from" : "to").get(0).getAsDouble() - 8;
+            final double innerX = 8 + inner * Math.cos(radians);
+            final double innerZ = 8 - inner * Math.sin(radians);
+            assertTrue(innerX > ConnectedGlyphGeometry.CENTER.minX() && innerX < ConnectedGlyphGeometry.CENTER.maxX());
+            assertTrue(innerZ > ConnectedGlyphGeometry.CENTER.minZ() && innerZ < ConnectedGlyphGeometry.CENTER.maxZ());
+            final Side opposite = side.rotateQuarterTurns(2);
+            final JsonObject returnStrip = json(models.resolve("chalk_glyph_" + opposite.id() + ".json"))
+                .getAsJsonArray("elements").get(0).getAsJsonObject();
+            final double returnRadians = Math.toRadians(returnStrip.getAsJsonObject("rotation").get("angle").getAsDouble());
+            final double returnOuter = returnStrip.getAsJsonArray(opposite.dx() > 0 ? "to" : "from").get(0).getAsDouble() - 8;
+            for (int mark = 0; mark < 4; mark++) {
+                final double endpointX = mark * side.dx() * 16 + 8 + outer * Math.cos(radians);
+                final double endpointZ = mark * side.dz() * 16 + 8 - outer * Math.sin(radians);
+                assertEquals(endpointX, (mark + 1) * side.dx() * 16 + 8 + returnOuter * Math.cos(returnRadians), 0.00001);
+                assertEquals(endpointZ, (mark + 1) * side.dz() * 16 + 8 - returnOuter * Math.sin(returnRadians), 0.00001);
+            }
+            assertEquals(strip.getAsJsonArray("to").get(1).getAsDouble(), returnStrip.getAsJsonArray("to").get(1).getAsDouble());
+        }
     }
 }

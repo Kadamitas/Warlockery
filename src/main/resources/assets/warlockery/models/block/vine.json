@@ -1,6 +1,7 @@
 {
-    "parent":  "warlockery:block/template/plant_hanging",
-    "textures":  {
-                     "plant":  "warlockery:block/vine"
-                 }
+  "parent": "minecraft:block/vine",
+  "textures": {
+    "vine": "warlockery:block/vine",
+    "particle": "warlockery:block/vine"
+  }
 }

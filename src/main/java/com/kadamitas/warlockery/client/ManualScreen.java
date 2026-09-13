@@ -39,11 +39,14 @@ public final class ManualScreen extends Screen {
     private EditBox searchBox;
     private ManualScreen returnScreen;
     private boolean recipePreview;
+    private final ManualRitualCasting ritualCasting;
 
     private ManualScreen(final ManualView view) {
         super(Component.translatable(view.profile().translatedTitleKey()));
         this.view = view;
         manual = view.profile();
+        ritualCasting = com.kadamitas.warlockery.item.RitualBookAccess.BOOK.equals(manual.id())
+            ? new ManualRitualCasting() : null;
         availableSections = view.sections();
         readingPreferences = Minecraft.getInstance().gameDirectory.toPath()
             .resolve("config/warlockery-manual-reading.properties");
@@ -54,14 +57,47 @@ public final class ManualScreen extends Screen {
         chapterIndex = selectedSection.equals(availableSections.getFirst()) && bodyPage == 0;
         selectedChapter = manual.chapterFor(selectedSection).id();
         filteredSections = availableSections;
+        final var client = Minecraft.getInstance();
+        if (ritualCasting != null && client.level != null && client.player != null) {
+            com.kadamitas.warlockery.item.RitualBookAccess.nearbyHeart(client.level, client.player)
+                .ifPresent(center -> ritualCasting.attach(center, List.of()));
+        }
     }
 
     public static void open(final ManualView view) {
         Minecraft.getInstance().gui.setScreen(new ManualScreen(view));
     }
 
+    public static void openOrUpdateRitual(final net.minecraft.core.BlockPos center,
+        final List<com.kadamitas.warlockery.ritual.RitualManager.RitualOption> options, final boolean mayOpen) {
+        final var client = Minecraft.getInstance();
+        if (client.player == null || client.level == null) return;
+        ManualScreen current = client.gui.screen() instanceof ManualScreen book ? book : null;
+        while (current != null) {
+            if (current.ritualCasting != null && current.ritualCasting.matches(center)) {
+                current.ritualCasting.update(options);
+                if (client.gui.screen() == current) current.rebuildWidgets(false);
+                return;
+            }
+            current = current.returnScreen;
+        }
+        if (!mayOpen) return;
+        final var owned = com.kadamitas.warlockery.item.RitualBookAccess.find(client.player);
+        if (owned.isEmpty()) return;
+        final ItemStack stack = owned.orElseThrow();
+        final var profile = ((com.kadamitas.warlockery.item.ManualItem) stack.getItem()).profile();
+        final var book = new ManualScreen(ManualView.from(profile, stack));
+        book.ritualCasting.attach(center, options);
+        client.gui.setScreen(book);
+    }
+
     @Override
     public void onClose() {
+        if (ritualCasting != null && ritualCasting.performing()) {
+            ritualCasting.back();
+            rebuildWidgets(false);
+            return;
+        }
         Minecraft.getInstance().gui.setScreen(returnScreen);
     }
 
@@ -105,6 +141,7 @@ public final class ManualScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
+        if (ritualCasting != null && ritualCasting.tick()) rebuildWidgets(false);
         if (!searchDirty) {
             return;
         }
@@ -130,7 +167,14 @@ public final class ManualScreen extends Screen {
             return;
         }
         clearWidgets();
+        if (ritualCasting != null) ritualCasting.selectSection(selectedSection);
         final ManualLayout layout = layout();
+        if (ritualCasting != null && ritualCasting.performing()) {
+            searchBox = null;
+            ritualCasting.addWidgets(layout, button -> addRenderableWidget(button), () -> rebuildWidgets(false),
+                () -> Minecraft.getInstance().gui.setScreen(returnScreen));
+            return;
+        }
         final List<Component> navigationLabels = navigationLabels();
         final List<Integer> navigationHeights = navigationLabels.stream()
             .map(label -> ManualNavigationButton.heightFor(font, label,
@@ -219,6 +263,15 @@ public final class ManualScreen extends Screen {
                 controls.get(2).x(), controls.get(2).y(), controls.get(2).width(), controls.get(2).height()
             ).build());
         addReferenceButtons(layout);
+        if (ritualCasting != null && ritualCasting.hasRitual() && !recipePreview) {
+            final int inset = Math.min(14, Math.max(6, layout.contentWidth() / 12));
+            addRenderableWidget(Button.builder(ManualTypography.readable(
+                Component.translatable("screen.warlockery.manual.perform_ritual")), button -> {
+                    ritualCasting.show();
+                    rebuildWidgets(false);
+                }).bounds(layout.contentLeft() + inset, layout.bodyTextBottom() - 20,
+                    layout.contentWidth() - inset * 2, 20).build());
+        }
     }
 
     private void addReferenceButtons(final ManualLayout layout) {
@@ -352,7 +405,8 @@ public final class ManualScreen extends Screen {
     }
 
     private ManualLayout layout() {
-        return ManualLayout.calculate(width, height);
+        final ManualLayout layout = ManualLayout.calculate(width, height);
+        return ritualCasting != null && ritualCasting.performing() ? layout.withoutNavigation() : layout;
     }
 
     private List<ManualProfile.Chapter> chapterChoices() {
@@ -410,6 +464,10 @@ public final class ManualScreen extends Screen {
             }
             return true;
         }
+        if (layout.overContent(mouseX, mouseY) && ritualCasting != null && ritualCasting.scroll(scrollY)) {
+            rebuildWidgets(false);
+            return true;
+        }
         if (layout.overContent(mouseX, mouseY)) {
             final int maximumPage = bodyPageCount(layout, selectedSection) - 1;
             bodyPage = Math.clamp(bodyPage + direction, 0, maximumPage);
@@ -435,30 +493,33 @@ public final class ManualScreen extends Screen {
         final int contentTextX = layout.contentLeft() + contentInset;
         final int contentTextWidth = Math.max(1, layout.contentWidth() - contentInset * 2);
 
-        int titleY = layout.top() + 16;
-        final List<FormattedCharSequence> manualTitle = font.split(
-            ManualTypography.readable(title, 0x4A241B),
-            ManualTypography.wrappingWidth(navigationTextWidth, ManualTypography.TITLE_SCALE)
-        );
-        for (int index = 0; index < Math.min(2, manualTitle.size()); index++) {
-            drawScaledText(graphics, navigationTextX, titleY, manualTitle.get(index), ManualTypography.TITLE_SCALE);
-            titleY += ManualTypography.TITLE_LINE_HEIGHT;
-        }
-        drawText(graphics, navigationTextX, layout.top() + 40,
-            ManualTypography.readable(Component.translatable("screen.warlockery.manual.chapters"), 0x6B3D27));
+        if (layout.navigationWidth() > 0) {
+            int titleY = layout.top() + 16;
+            final List<FormattedCharSequence> manualTitle = font.split(
+                ManualTypography.readable(title, 0x4A241B),
+                ManualTypography.wrappingWidth(navigationTextWidth, ManualTypography.TITLE_SCALE)
+            );
+            for (int index = 0; index < Math.min(2, manualTitle.size()); index++) {
+                drawScaledText(graphics, navigationTextX, titleY, manualTitle.get(index), ManualTypography.TITLE_SCALE);
+                titleY += ManualTypography.TITLE_LINE_HEIGHT;
+            }
+            drawText(graphics, navigationTextX, layout.top() + 40,
+                ManualTypography.readable(Component.translatable("screen.warlockery.manual.chapters"), 0x6B3D27));
 
-        if (filteredSections.isEmpty()) {
-            drawText(graphics, navigationTextX, layout.sectionListTop(),
-                ManualTypography.readable(Component.translatable("screen.warlockery.manual.no_results"), 0x9C302F));
-        } else {
-            if (sectionOffset > 0) {
-                drawText(graphics, layout.navigationRight() - navigationInset - 6, layout.top() + 81,
-                    ManualTypography.readable(Component.literal("↑"), 0x795A44));
+            if (filteredSections.isEmpty()) {
+                drawText(graphics, navigationTextX, layout.sectionListTop(),
+                    ManualTypography.readable(Component.translatable("screen.warlockery.manual.no_results"), 0x9C302F));
+            } else {
+                if (sectionOffset > 0) {
+                    drawText(graphics, layout.navigationRight() - navigationInset - 6, layout.top() + 81,
+                        ManualTypography.readable(Component.literal("↑"), 0x795A44));
+                }
+                if (navigationEnd < navigationEntryCount()) {
+                    drawText(graphics, layout.navigationRight() - navigationInset - 6, layout.bottom() - 22,
+                        ManualTypography.readable(Component.literal("↓"), 0x795A44));
+                }
             }
-            if (navigationEnd < navigationEntryCount()) {
-                drawText(graphics, layout.navigationRight() - navigationInset - 6, layout.bottom() - 22,
-                    ManualTypography.readable(Component.literal("↓"), 0x795A44));
-            }
+
         }
 
         final List<FormattedCharSequence> sectionTitle = font.split(
@@ -475,6 +536,11 @@ public final class ManualScreen extends Screen {
             sectionTitleY += ManualTypography.TITLE_LINE_HEIGHT;
         }
 
+        if (ritualCasting != null && ritualCasting.performing()) {
+            ritualCasting.render(graphics, layout);
+            super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+            return;
+        }
         final List<List<FormattedCharSequence>> pages = bodyPages(layout, selectedSection);
         final int pageCount = pages.size();
         bodyPage = Math.clamp(bodyPage, 0, pageCount - 1);
@@ -527,7 +593,8 @@ public final class ManualScreen extends Screen {
     private ManualArticleCatalog.Article article(final String section) {
         final var article = ManualArticleCatalog.article(manual, section);
         final Component body = recipePreview
-            ? Component.translatable("screen.warlockery.manual.book_missing").append("\n\n").append(article.body())
+            ? Component.translatable("screen.warlockery.manual.book_required",
+                Component.translatable(manual.translatedTitleKey())).append("\n\n").append(article.body())
             : section.startsWith("rite_") || section.startsWith("crafting_") || section.startsWith("brew_entry_")
                 ? ManualBookLinks.append(article.body(), manual, section) : article.body();
         return new ManualArticleCatalog.Article(body, article.glyphs(), article.pictograms());
@@ -641,7 +708,7 @@ public final class ManualScreen extends Screen {
         return switch (id) {
             case "circleglyphgolden" -> 0xFFFFD866;
             case "circleglyphinfernal" -> 0xFFFF7A22;
-            case "circleglyph_veil" -> 0xFF8B58C8;
+            case "circleglyph_veil" -> 0xFF287C8E;
             default -> 0xFFE7EEF5;
         };
     }
@@ -709,9 +776,11 @@ public final class ManualScreen extends Screen {
         final int inset = Math.min(14, Math.max(6, layout.contentWidth() / 12));
         final int textWidth = Math.max(1, layout.contentWidth() - inset * 2);
         final ManualArticleCatalog.Article article = article(section);
+        final int extraControls = ritualCasting != null && section.startsWith("rite_") && !recipePreview ? 26 : 0;
         final int firstCapacity = Math.max(0,
-            (layout.bodyTextBottom() - layout.bodyTextTop() - visualHeight(article)) / ManualTypography.BODY_LINE_HEIGHT);
-        return ManualPagination.pages(bodyLines(section, textWidth), firstCapacity, layout.bodyLineCapacity(),
+            (layout.bodyTextBottom() - extraControls - layout.bodyTextTop() - visualHeight(article)) / ManualTypography.BODY_LINE_HEIGHT);
+        final int capacity = Math.max(1, layout.bodyLineCapacity() - (extraControls + ManualTypography.BODY_LINE_HEIGHT - 1) / ManualTypography.BODY_LINE_HEIGHT);
+        return ManualPagination.pages(bodyLines(section, textWidth), firstCapacity, capacity,
             ManualScreen::blankLine);
     }
 
@@ -731,18 +800,20 @@ public final class ManualScreen extends Screen {
     private static void drawBook(final GuiGraphicsExtractor graphics, final ManualLayout layout) {
         graphics.fill(layout.left(), layout.top(), layout.right(), layout.bottom(), 0xFF4A2118);
         graphics.fill(layout.left() + 4, layout.top() + 4, layout.right() - 4, layout.bottom() - 4, 0xFF7A3E2B);
-        graphics.fill(layout.navigationLeft(), layout.top() + 8,
-            layout.navigationRight(), layout.bottom() - 8, 0xFFF1DFB6);
         graphics.fill(layout.contentLeft(), layout.top() + 8,
             layout.contentRight(), layout.bottom() - 8, 0xFFF1DFB6);
-        graphics.fill(layout.navigationLeft() + 5, layout.top() + 13,
-            layout.navigationRight() - 5, layout.bottom() - 13, 0xFFFFF0CF);
         graphics.fill(layout.contentLeft() + 5, layout.top() + 13,
             layout.contentRight() - 5, layout.bottom() - 13, 0xFFFFF0CF);
-        graphics.fill(layout.spine() - 5, layout.top() + 7,
-            layout.spine() + 5, layout.bottom() - 7, 0xFF5B2A20);
-        graphics.fill(layout.spine() - 1, layout.top() + 10,
-            layout.spine() + 1, layout.bottom() - 10, 0xFFB7754F);
+        if (layout.navigationWidth() > 0) {
+            graphics.fill(layout.navigationLeft(), layout.top() + 8,
+                layout.navigationRight(), layout.bottom() - 8, 0xFFF1DFB6);
+            graphics.fill(layout.navigationLeft() + 5, layout.top() + 13,
+                layout.navigationRight() - 5, layout.bottom() - 13, 0xFFFFF0CF);
+            graphics.fill(layout.spine() - 5, layout.top() + 7,
+                layout.spine() + 5, layout.bottom() - 7, 0xFF5B2A20);
+            graphics.fill(layout.spine() - 1, layout.top() + 10,
+                layout.spine() + 1, layout.bottom() - 10, 0xFFB7754F);
+        }
         graphics.fill(layout.navigationLeft() + 3, layout.top() + 12,
             layout.navigationLeft() + 5, layout.bottom() - 12, 0xFFC99A67);
         graphics.fill(layout.contentRight() - 5, layout.top() + 12,

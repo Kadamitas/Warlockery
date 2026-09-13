@@ -63,7 +63,7 @@ final class NightmareModelTest {
             cube -> !cube.path().contains("_front_pillar")
                 && !cube.path().contains("ember_barb"));
         assertEquals(0, texture.getRGB(255, 223) >>> 24);
-        assertEquals("66873f8ab52ab77afe17006d18d6ecd9022c66559ee87621e785a9e1603e8302",
+        assertEquals("1315c9f550e9794225afc6f8a560429ef969621c208227af8f5534e7032b4b37",
             textureHash());
     }
 

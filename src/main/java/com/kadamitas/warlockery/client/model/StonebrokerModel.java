@@ -246,12 +246,13 @@ public final class StonebrokerModel extends EntityModel<StonebrokerModel.State>
             ledger.yRot -= commit * 0.7F;
             ledger.xRot -= commit * 0.35F;
             ledgerCover.yRot += commit * 0.95F;
-            rightFlipper.xRot = -1.22F * commit;
-            rightFlipper.yRot = -0.4F * commit;
-            rightFlipper.zRot += 0.38F * commit;
-            rightFeatherFan.zRot += 0.3F * commit;
-            leftFlipper.xRot = -0.58F * commit;
-            leftFlipper.yRot = 0.25F * commit;
+            rightFlipper.xRot = -1.42F * commit;
+            rightFlipper.yRot = -0.12F * commit;
+            rightFlipper.zRot += 0.18F * commit;
+            rightFeatherFan.zRot += 0.12F * commit;
+            leftFlipper.xRot = -1.3F * commit;
+            leftFlipper.yRot = 0.58F * commit;
+            leftFlipper.zRot -= 0.16F * commit;
             geodeMantle.zRot += Mth.sin(state.ageInTicks * 0.24F) * 0.025F * commit;
         } else if (state.action == Action.QUIET_LEDGER || state.action == Action.APPRAISE_CONTEXT) {
             ledger.yRot -= 0.35F;
@@ -266,7 +267,7 @@ public final class StonebrokerModel extends EntityModel<StonebrokerModel.State>
         final ModelPart fan = arm == HumanoidArm.LEFT ? leftFeatherFan : rightFeatherFan;
         flipper.translateAndRotate(poseStack);
         fan.translateAndRotate(poseStack);
-        poseStack.translate(arm == HumanoidArm.LEFT ? 0.075F : -0.075F, 0.16F, -0.055F);
+        poseStack.translate(arm == HumanoidArm.LEFT ? 0.05F : -0.05F, 0.1F, -0.02F);
     }
 
     public static void extractRenderState(

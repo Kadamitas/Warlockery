@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:overworld_magnet_respects_ritual_offerings",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "overworld_magnet_respects_ritual_offerings",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 160
+}

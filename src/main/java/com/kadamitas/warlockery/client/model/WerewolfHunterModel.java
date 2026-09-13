@@ -1,13 +1,12 @@
 package com.kadamitas.warlockery.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.kadamitas.warlockery.entity.WerewolfHunterEntity;
 import com.kadamitas.warlockery.entity.WerewolfHunterRules;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
@@ -27,6 +26,8 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
     private final ModelPart leftArm;
     private final ModelPart rightLeg;
     private final ModelPart leftLeg;
+    private final ModelPart rightCoatTail;
+    private final ModelPart leftCoatTail;
     private final ModelPart crossbowSling;
     private final ModelPart silverBoltCase;
 
@@ -38,6 +39,9 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
         leftArm = root.getChild("left_arm");
         rightLeg = root.getChild("right_leg");
         leftLeg = root.getChild("left_leg");
+        final ModelPart coat = body.getChild("long_coat");
+        rightCoatTail = coat.getChild("right_coat_tail");
+        leftCoatTail = coat.getChild("left_coat_tail");
         crossbowSling = body.getChild("crossbow_sling");
         silverBoltCase = body.getChild("silver_bolt_case");
     }
@@ -51,74 +55,102 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
             PartPose.offset(0.0F, 7.0F, 0.0F)
         );
         head.addOrReplaceChild(
-            "half_brim_hood",
-            CubeListBuilder.create().texOffs(30, 0)
-                .addBox(-4.25F, -6.75F, -4.0F, 8.5F, 7.0F, 8.0F, new CubeDeformation(0.15F))
-                .texOffs(64, 0).addBox(-5.5F, -1.0F, -5.5F, 11.0F, 1.0F, 7.0F),
-            PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -0.09F)
+            "right_eye",
+            CubeListBuilder.create().texOffs(30, 74).addBox(-0.5F, -0.5F, -0.25F, 1.0F, 1.0F, 0.5F),
+            PartPose.offset(-1.35F, -2.9F, -3.65F)
         );
+        head.addOrReplaceChild(
+            "left_eye",
+            CubeListBuilder.create().texOffs(30, 74).mirror().addBox(-0.5F, -0.5F, -0.25F, 1.0F, 1.0F, 0.5F),
+            PartPose.offset(1.35F, -2.9F, -3.65F)
+        );
+        head.addOrReplaceChild(
+            "nose",
+            CubeListBuilder.create().texOffs(36, 74).addBox(-0.5F, -1.0F, -0.25F, 1.0F, 2.0F, 0.5F),
+            PartPose.offset(0.0F, -1.7F, -3.65F)
+        );
+        head.addOrReplaceChild(
+            "mouth",
+            CubeListBuilder.create().texOffs(42, 74).addBox(-1.0F, -0.5F, -0.25F, 2.0F, 1.0F, 0.5F),
+            PartPose.offset(0.0F, -0.25F, -3.65F)
+        );
+        head.addOrReplaceChild(
+            "right_sideburn",
+            CubeListBuilder.create().texOffs(50, 74).addBox(-0.5F, -2.0F, -0.25F, 1.0F, 4.0F, 0.5F),
+            PartPose.offset(-3.15F, -2.0F, -3.62F)
+        );
+        head.addOrReplaceChild(
+            "left_sideburn",
+            CubeListBuilder.create().texOffs(50, 74).mirror().addBox(-0.5F, -2.0F, -0.25F, 1.0F, 4.0F, 0.5F),
+            PartPose.offset(3.15F, -2.0F, -3.62F)
+        );
+        final PartDefinition hat = head.addOrReplaceChild(
+            "broad_brimmed_hat",
+            CubeListBuilder.create()
+                .texOffs(30, 0).addBox(-6.0F, -1.0F, -6.0F, 12.0F, 1.0F, 12.0F)
+                .texOffs(80, 0).addBox(-4.0F, -5.0F, -4.0F, 8.0F, 4.0F, 8.0F),
+            PartPose.offsetAndRotation(0.0F, -5.8F, 0.0F, 0.0F, 0.0F, -0.06F)
+        );
+        hat.addOrReplaceChild(
+            "hat_band",
+            CubeListBuilder.create().texOffs(0, 94).addBox(-4.25F, -1.0F, -4.25F, 8.5F, 1.0F, 8.5F),
+            PartPose.offset(0.0F, -0.8F, 0.0F)
+        );
+
         final PartDefinition body = root.addOrReplaceChild(
             "body",
-            CubeListBuilder.create().texOffs(0, 20).addBox(-4.0F, 0.0F, -2.5F, 8.0F, 11.0F, 5.0F),
+            CubeListBuilder.create().texOffs(0, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 10.0F, 4.0F),
             PartPose.offset(0.0F, 7.0F, 0.0F)
         );
         final PartDefinition coat = body.addOrReplaceChild(
-            "split_field_coat",
-            CubeListBuilder.create().texOffs(30, 20)
-                .addBox(-5.0F, -1.0F, -3.0F, 10.0F, 13.0F, 6.0F, new CubeDeformation(0.12F))
-                .texOffs(64, 20).addBox(-4.5F, 10.0F, -2.75F, 4.0F, 8.0F, 5.5F)
-                .texOffs(84, 20).addBox(0.5F, 10.0F, -2.75F, 4.0F, 8.0F, 5.5F),
-            PartPose.offset(0.0F, 0.0F, 0.0F)
+            "long_coat",
+            CubeListBuilder.create()
+                .texOffs(26, 16).addBox(-4.5F, -0.5F, -2.5F, 9.0F, 11.0F, 5.0F)
+                .texOffs(56, 16).addBox(-1.0F, 0.0F, -2.9F, 2.0F, 10.0F, 1.0F),
+            PartPose.ZERO
         );
         coat.addOrReplaceChild(
-            "right_rear_coat_panel",
-            CubeListBuilder.create().texOffs(64, 20)
-                .addBox(-2.0F, 0.0F, -2.75F, 4.0F, 8.0F, 5.5F),
-            PartPose.offsetAndRotation(-3.0F, 10.0F, 1.0F, 0.10F, 0.0F, 0.08F)
+            "right_lapel",
+            CubeListBuilder.create().texOffs(64, 16).addBox(-2.0F, 0.0F, -0.5F, 2.0F, 7.0F, 1.0F),
+            PartPose.offsetAndRotation(-0.3F, 0.0F, -2.8F, 0.0F, 0.0F, -0.26F)
         );
         coat.addOrReplaceChild(
-            "center_rear_coat_panel",
-            CubeListBuilder.create().texOffs(64, 20)
-                .addBox(-2.0F, 0.0F, -2.75F, 4.0F, 8.0F, 5.5F),
-            PartPose.offsetAndRotation(0.0F, 10.0F, 3.0F, 0.16F, 0.0F, 0.0F)
+            "left_lapel",
+            CubeListBuilder.create().texOffs(64, 16).mirror().addBox(0.0F, 0.0F, -0.5F, 2.0F, 7.0F, 1.0F),
+            PartPose.offsetAndRotation(0.3F, 0.0F, -2.8F, 0.0F, 0.0F, 0.26F)
         );
         coat.addOrReplaceChild(
-            "left_rear_coat_panel",
-            CubeListBuilder.create().texOffs(84, 20)
-                .addBox(-2.0F, 0.0F, -2.75F, 4.0F, 8.0F, 5.5F),
-            PartPose.offsetAndRotation(3.0F, 10.0F, 5.0F, 0.22F, 0.0F, -0.08F)
+            "right_coat_tail",
+            CubeListBuilder.create().texOffs(0, 34).addBox(-4.0F, 0.0F, -2.5F, 4.0F, 10.0F, 5.0F),
+            PartPose.offsetAndRotation(-0.15F, 9.5F, 0.25F, 0.08F, 0.0F, 0.04F)
         );
+        coat.addOrReplaceChild(
+            "left_coat_tail",
+            CubeListBuilder.create().texOffs(0, 34).mirror().addBox(0.0F, 0.0F, -2.5F, 4.0F, 10.0F, 5.0F),
+            PartPose.offsetAndRotation(0.15F, 9.5F, 0.25F, -0.08F, 0.0F, -0.04F)
+        );
+
         final PartDefinition boltCase = body.addOrReplaceChild(
             "silver_bolt_case",
-            CubeListBuilder.create().texOffs(0, 42)
-                .addBox(-1.5F, -5.0F, -1.5F, 3.0F, 10.0F, 3.0F)
-                .texOffs(14, 42).addBox(-2.0F, -5.5F, -2.0F, 4.0F, 1.0F, 4.0F),
-            PartPose.offsetAndRotation(4.6F, 6.0F, 1.5F, 0.0F, 0.0F, -0.2F)
+            CubeListBuilder.create().texOffs(30, 34).addBox(-1.5F, -4.0F, -1.5F, 3.0F, 8.0F, 3.0F),
+            PartPose.offsetAndRotation(4.1F, 5.0F, 1.3F, 0.0F, 0.0F, -0.16F)
         );
         boltCase.addOrReplaceChild(
             "silver_bolt_fan",
-            CubeListBuilder.create().texOffs(14, 42)
-                .addBox(-2.0F, -5.5F, -2.0F, 4.0F, 1.0F, 4.0F),
-            PartPose.offsetAndRotation(0.0F, -0.5F, 0.0F, -0.12F, 0.0F, 0.28F)
+            CubeListBuilder.create().texOffs(44, 34).addBox(-2.0F, -1.0F, -1.5F, 4.0F, 2.0F, 3.0F),
+            PartPose.offsetAndRotation(0.0F, -4.4F, 0.0F, -0.12F, 0.0F, 0.20F)
         );
         body.addOrReplaceChild(
             "crossbow_sling",
-            CubeListBuilder.create().texOffs(32, 42)
-                .addBox(-0.75F, -7.0F, -0.5F, 1.5F, 14.0F, 1.0F),
-            PartPose.offsetAndRotation(-0.5F, 5.0F, 2.8F, 0.0F, 0.0F, -0.62F)
+            CubeListBuilder.create().texOffs(60, 34).addBox(-0.5F, -6.0F, -0.5F, 1.0F, 12.0F, 1.0F),
+            PartPose.offsetAndRotation(-0.5F, 5.0F, 2.3F, 0.0F, 0.0F, -0.62F)
         );
         body.addOrReplaceChild(
             "field_satchel",
-            CubeListBuilder.create().texOffs(68, 42)
-                .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 7.0F, 4.0F),
-            PartPose.offsetAndRotation(-4.4F, 7.0F, 3.8F, 0.10F, 0.0F, 0.16F)
+            CubeListBuilder.create().texOffs(66, 34).addBox(-2.0F, -2.5F, -1.5F, 4.0F, 5.0F, 3.0F),
+            PartPose.offsetAndRotation(-4.2F, 6.7F, 1.7F, 0.0F, 0.0F, 0.12F)
         );
-        body.addOrReplaceChild(
-            "raised_shoulder_guard",
-            CubeListBuilder.create().texOffs(48, 42)
-                .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 4.0F),
-            PartPose.offsetAndRotation(4.3F, -1.8F, 0.0F, -0.12F, 0.0F, -0.18F)
-        );
+
         addArm(root, "right_arm", -5.0F, false);
         addArm(root, "left_arm", 5.0F, true);
         addLeg(root, "right_leg", -2.1F, false);
@@ -134,9 +166,9 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
     ) {
         root.addOrReplaceChild(
             name,
-            CubeListBuilder.create().texOffs(48, 42).mirror(mirror)
-                .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 4.0F),
-            PartPose.offset(x, 8.0F, 0.0F)
+            CubeListBuilder.create().texOffs(0, 52).mirror(mirror)
+                .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 11.0F, 4.0F),
+            PartPose.offset(x, 7.5F, 0.0F)
         );
     }
 
@@ -148,16 +180,16 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
     ) {
         final PartDefinition leg = root.addOrReplaceChild(
             name,
-            CubeListBuilder.create().texOffs(68, 42).mirror(mirror)
+            CubeListBuilder.create().texOffs(18, 52).mirror(mirror)
                 .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 7.0F, 4.0F),
             PartPose.offset(x, 17.0F, 0.0F)
         );
         final String side = name.startsWith("right") ? "right" : "left";
         leg.addOrReplaceChild(
             side + "_hunter_boot",
-            CubeListBuilder.create().texOffs(68, 42).mirror(mirror)
-                .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 7.0F, 4.0F, new CubeDeformation(0.5F)),
-            PartPose.offsetAndRotation(0.0F, 3.0F, 0.0F, -0.08F, 0.0F, 0.0F)
+            CubeListBuilder.create().texOffs(36, 52).mirror(mirror)
+                .addBox(-2.0F, 0.0F, -2.5F, 4.0F, 7.0F, 5.0F),
+            PartPose.offset(0.0F, 3.0F, -0.2F)
         );
     }
 
@@ -167,6 +199,7 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
         final float partialTicks
     ) {
         state.activity = activityFor(entity.presentationIntent());
+        state.chargingCrossbow = entity.isChargingCrossbow();
     }
 
     private static Activity activityFor(final WerewolfHunterRules.Intent intent) {
@@ -194,21 +227,27 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
         leftLeg.xRot = Mth.cos(pace + Mth.PI) * 0.9F * stride;
         rightArm.xRot = Mth.cos(pace + Mth.PI) * 0.55F * stride;
         leftArm.xRot = Mth.cos(pace) * 0.55F * stride;
-        crossbowSling.zRot = -0.62F + Mth.sin(state.ageInTicks * 0.05F) * 0.02F;
+        rightCoatTail.xRot += Mth.cos(pace + Mth.PI) * stride * 0.24F;
+        leftCoatTail.xRot += Mth.cos(pace) * stride * 0.24F;
+        crossbowSling.zRot = -0.62F + Mth.sin(state.ageInTicks * 0.05F) * 0.025F;
+
         if (state.activity == Activity.WARNING) {
             body.yRot = -0.22F;
-            rightLeg.zRot = 0.2F;
-            leftLeg.zRot = -0.08F;
-            rightArm.xRot = -0.95F;
+            rightArm.xRot = -1.0F;
             rightArm.yRot = -0.45F;
-            leftArm.xRot = -0.35F;
+            leftArm.xRot = -0.38F;
+            head.xRot -= 0.10F;
         } else if (state.activity == Activity.ENGAGING) {
-            final float draw = 0.8F + state.attackTime * 0.5F;
+            final float draw = Math.max(
+                state.chargingCrossbow ? 1.0F : 0.0F,
+                Mth.clamp(state.attackTime, 0.0F, 1.0F)
+            );
             rightArm.xRot = -1.35F;
-            rightArm.yRot = -0.48F;
-            leftArm.xRot = -draw;
-            leftArm.yRot = 0.72F;
-            head.xRot -= 0.12F;
+            rightArm.yRot = -0.52F;
+            leftArm.xRot = -0.85F - draw * 0.60F;
+            leftArm.yRot = 0.78F;
+            head.xRot -= 0.14F;
+            body.xRot = -0.05F - draw * 0.08F;
         } else if (state.activity == Activity.REPOSITIONING) {
             body.yRot = 0.28F;
             rightArm.zRot = 0.18F;
@@ -216,6 +255,8 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
         } else if (state.activity == Activity.RETREATING) {
             body.xRot = 0.18F;
             silverBoltCase.zRot = -0.28F;
+            rightCoatTail.xRot += 0.16F;
+            leftCoatTail.xRot += 0.16F;
         }
     }
 
@@ -238,5 +279,6 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
 
     public static final class State extends ArmedEntityRenderState {
         public Activity activity = Activity.IDLE;
+        public boolean chargingCrossbow;
     }
 }

@@ -54,7 +54,7 @@ final class WerewolfModelTest {
         CreatureModelTestSupport.assertUvsWithin(root, 192, 192);
         CreatureModelTestSupport.assertOpaqueUvs(root, texture, cube -> true);
         assertEquals(0, texture.getRGB(191, 191) >>> 24);
-        assertEquals("a9249754e3eb2f00d1fe97bef703546fa802ef1f4e3c105f92561fc8dbd8727e",
+        assertEquals("6dbfaf0abe08b17d20208600fc082d0e3ce4e70ed96bb2a497ed6000a4855c34",
             textureHash());
     }
 

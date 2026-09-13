@@ -1,7 +1,181 @@
 {
-    "variants":  {
-                     "":  {
-                              "model":  "warlockery:block/spiritportal"
-                          }
-                 }
+  "multipart": [
+    {
+      "when": {
+        "axis": "x"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_surface"
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "up": "false"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_up"
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "down": "false"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_down"
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "left": "false"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_left"
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "right": "false"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_right"
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_left_up"
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_left_down"
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_right_up"
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_right_down"
+      }
+    },
+    {
+      "when": {
+        "axis": "z"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_surface",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "up": "false"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "down": "false"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "left": "false"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_left",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "right": "false"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_right",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "left": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_left_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "left": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_left_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "right": "false",
+        "up": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_right_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "right": "false",
+        "down": "true"
+      },
+      "apply": {
+        "model": "warlockery:block/spiritportal_right_down",
+        "y": 90
+      }
+    }
+  ]
 }

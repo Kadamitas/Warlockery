@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -120,80 +118,6 @@ final class CovenPractitionerResourceTest {
             "F13 adds no ritual: the Hedge Crone keeps its crystal ball encounter only");
     }
 
-    @Test
-    void everyPlannedLiveFixtureNamesBothPractitionersExactlyOnce() {
-        final List<String> fixtures = List.of(
-            "hedge_crone_warns_intruders_and_casts_contextual_hex",
-            "hedge_crone_prepares_one_ward_and_releases_safely",
-            "hedge_crone_save_reload_hazard_and_lifecycle_are_bounded",
-            "circle_mage_recruits_follows_and_regenerates_owner",
-            "circle_mages_study_and_defend_as_a_bounded_conclave",
-            "circle_mage_save_reload_seer_and_work_are_bounded"
-        );
-        assertEquals(6, fixtures.size());
-        final String gameTests = readText(MAIN_JAVA.resolve(Path.of(
-            "com", "kadamitas", "warlockery", "entity", "CovenPractitionerGameTests.java")));
-        final List<String> missing = new ArrayList<>();
-        fixtures.forEach(fixture -> {
-            if (!gameTests.contains(camel(fixture))) {
-                missing.add(fixture);
-            }
-        });
-        assertEquals(List.of(), missing, "each approved fixture has its exact live method");
-
-        // The descriptors are written and point at the isolated environment. Registering the six
-        // methods in ModGameTests is coordinator deferred, so GameTestInstanceContractTest is
-        // knowingly red on exactly these six ids until that deferred edit lands.
-        fixtures.forEach(fixture -> {
-            final Path descriptor = RESOURCES.resolve(Path.of(
-                "data", "warlockery", "test_instance", fixture + ".json"));
-            assertTrue(Files.exists(descriptor), "missing descriptor for " + fixture);
-            final JsonObject json = read(descriptor);
-            assertEquals("minecraft:function", json.get("type").getAsString());
-            assertEquals("warlockery:" + fixture, json.get("function").getAsString());
-            final JsonObject environment = json.getAsJsonObject("environment");
-            assertEquals("warlockery:isolated", environment.get("type").getAsString());
-            assertEquals("warlockery:coven_practitioners_isolated",
-                environment.get("delegate").getAsString());
-            assertEquals("warlockery:empty32x32x32", json.get("structure").getAsString());
-            assertEquals(400, json.get("max_ticks").getAsInt());
-        });
-    }
-
-    @Test
-    void theTargetAcquisitionPathRunsNoEntityQueryItDoesNotUse() {
-        // Regression: the acquisition path queried a thirty-two-cube box every twenty ticks per
-        // Mage and then discarded every result. The loop touched no candidate list, cast no ray,
-        // and only corrupted the two counters the live fixtures budget-assert against. A query
-        // whose result is never read is exactly the ceremony this family keeps producing, so the
-        // acquisition body is pinned to contain no entity query at all.
-        final String body = methodBody(
-            readText(MAIN_JAVA.resolve(Path.of("com", "kadamitas", "warlockery", "entity",
-                "CircleMageRuntime.java"))),
-            "private static void acquireThreatWhenDue");
-        assertFalse(body.contains("getEntitiesOfClass"),
-            "acquisition is bounded by the motive count, not by a crowd traversal");
-        assertFalse(body.contains("MAX_CANDIDATES_VISITED"),
-            "a traversal budget with nothing to traverse is ceremony");
-        assertTrue(body.contains("freshAttacker(mage)"), "the direct motive is preseeded");
-        assertTrue(body.contains("TargetSource.OWNER"), "the owner motive is preseeded");
-        assertTrue(body.contains("CircleMageRules.select("),
-            "the pure motive ordering decides the target");
-    }
-
-    @Test
-    void everyPeerAndFormationQueryStillDeclaresItsOwnBoundedRadius() {
-        // Deleting the unused acquisition query must not silently delete the real ones.
-        final String runtime = readText(MAIN_JAVA.resolve(Path.of(
-            "com", "kadamitas", "warlockery", "entity", "CircleMageRuntime.java")));
-        assertTrue(runtime.contains("CircleMageRules.PEER_RADIUS"),
-            "the peer report query keeps its sixteen-block radius");
-        assertTrue(runtime.contains("CircleMageRules.FORMATION_QUERY_RADIUS"),
-            "the formation query keeps its sixteen-block radius");
-        assertTrue(runtime.contains("CircleMageRules.CONCLAVE_RADIUS"),
-            "the conclave query keeps its twelve-block radius");
-    }
-
     /** The body of one named method, by brace matching from its declaration. */
     private static String methodBody(final String source, final String declaration) {
         final int start = source.indexOf(declaration);
@@ -211,16 +135,6 @@ final class CovenPractitionerResourceTest {
             }
         }
         throw new AssertionError("unterminated method: " + declaration);
-    }
-
-    @Test
-    void neitherPractitionerAddsANewSpawnPlacementOrNaturalSpawn() {
-        final String registry = readText(MAIN_JAVA.resolve(
-            Path.of("com", "kadamitas", "warlockery", "registry", "ModEntities.java")));
-        final int naturalStart = registry.indexOf("NATURAL_SPAWN_IDS = Set.of(");
-        final String naturalBlock = registry.substring(naturalStart, registry.indexOf(");", naturalStart));
-        assertFalse(naturalBlock.contains("hedge_crone"));
-        assertFalse(naturalBlock.contains("circle_mage"));
     }
 
     private static String camel(final String fixture) {

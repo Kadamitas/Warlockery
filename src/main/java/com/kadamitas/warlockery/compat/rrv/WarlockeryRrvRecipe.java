@@ -100,7 +100,7 @@ final class WarlockeryRrvRecipe implements ReliableClientRecipe {
             for (var ring : rings) {
                 int color = switch (ring.glyph()) {
                     case "circleglyphinfernal" -> 0xFFE36A64;
-                    case "circleglyph_veil" -> 0xFFC48BEF;
+                    case "circleglyph_veil" -> 0xFF287C8E;
                     case "circleglyphgolden" -> 0xFFFFCF48;
                     default -> 0xFFFFFFFF;
                 };

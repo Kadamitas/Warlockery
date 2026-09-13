@@ -48,7 +48,8 @@ public final class SpiritWorldState {
         root.putDouble(SOURCE_Z, session.sourceZ());
         root.putFloat(SOURCE_YAW, session.sourceYaw());
         root.putFloat(SOURCE_PITCH, session.sourcePitch());
-        root.putString(BODY, session.body().toString());
+        root.putBoolean("body_required", session.body() != null);
+        if (session.body() != null) root.putString(BODY, session.body().toString());
         root.putLong(PORTAL, session.portal().asLong());
         root.putInt(SELECTED_SLOT, session.selectedSlot());
         root.store(
@@ -66,6 +67,36 @@ public final class SpiritWorldState {
 
     public static void clear(final net.minecraft.world.entity.player.Player player) {
         player.getPersistentData().remove(ROOT);
+    }
+
+    /** Settle cursor and crafting inputs while their source dimension still owns any overflow drops. */
+    public static void settleMenus(final ServerPlayer player) {
+        final boolean inventoryWasOpen = player.containerMenu == player.inventoryMenu;
+        player.closeContainer();
+        if (!inventoryWasOpen) player.inventoryMenu.removed(player);
+    }
+
+    public static List<ItemStackWithSlot> settledSnapshot(final ServerPlayer player) {
+        settleMenus(player);
+        return snapshot(player.getInventory());
+    }
+
+    /** Restore only withheld stacks; current allowed stacks may already have been consumed or dropped. */
+    public static void rollbackBoundary(final ServerPlayer player, final List<ItemStackWithSlot> original,
+        final java.util.function.Predicate<ItemStack> carried, final int selectedSlot) {
+        final List<ItemStackWithSlot> current = settledSnapshot(player);
+        restore(player.getInventory(), original.stream().filter(entry -> !carried.test(entry.stack())).toList(), selectedSlot);
+        for (ItemStackWithSlot entry : current) {
+            final ItemStack stack = entry.stack().copy();
+            if (entry.isValidInContainer(player.getInventory().getContainerSize())
+                && player.getInventory().getItem(entry.slot()).isEmpty()) {
+                player.getInventory().setItem(entry.slot(), stack);
+            } else if (!player.getInventory().add(stack)) {
+                player.drop(stack, false);
+            }
+        }
+        player.getInventory().setChanged();
+        player.containerMenu.broadcastChanges();
     }
 
     public static List<ItemStackWithSlot> snapshot(final Inventory inventory) {
@@ -97,7 +128,8 @@ public final class SpiritWorldState {
             INVENTORY_CODEC,
             player.registryAccess().createSerializationContext(NbtOps.INSTANCE)
         );
-        if (sourceDimension == null || body == null || originalInventory.isEmpty() || !root.contains(PORTAL)) {
+        if (sourceDimension == null || (body == null && root.getBooleanOr("body_required", true))
+            || originalInventory.isEmpty() || !root.contains(PORTAL)) {
             return Optional.empty();
         }
         return Optional.of(new Session(
@@ -125,7 +157,7 @@ public final class SpiritWorldState {
         double sourceZ,
         float sourceYaw,
         float sourcePitch,
-        UUID body,
+        @org.jspecify.annotations.Nullable UUID body,
         BlockPos portal,
         List<ItemStackWithSlot> originalInventory,
         int selectedSlot

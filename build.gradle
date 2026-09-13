@@ -119,7 +119,7 @@ abstract class GenerateEmptyGameTestStructure extends DefaultTask {
     }
 }
 
-version = '1.5.3-LlaGuiT0-26.2.0.45'
+version = '1.5.4-LlaGuiT0-26.2.0.45'
 group = 'com.kadamitas.warlockery'
 
 base {
@@ -144,14 +144,47 @@ def generateLargeGameTestStructure = tasks.register('generateLargeGameTestStruct
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty15x15x15.nbt') })
 }
 
+// Native server fixtures form a separate development mod, never part of jar or sourcesJar.
+sourceSets {
+    serverGameTest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+configurations {
+    serverGameTestImplementation.extendsFrom implementation
+    serverGameTestRuntimeOnly.extendsFrom runtimeOnly
+    serverGameTestCompileOnly.extendsFrom compileOnly
+    serverGameTestAnnotationProcessor.extendsFrom annotationProcessor
+}
+sourceSets.test.compileClasspath += sourceSets.serverGameTest.output
+sourceSets.test.runtimeClasspath += sourceSets.serverGameTest.output
+
+tasks.register('serverGameTestJar', Jar) {
+    group = 'verification'
+    description = 'Builds the optional GameTest development artifact.'
+    archiveClassifier.set('gametests')
+    destinationDirectory.set(layout.buildDirectory.dir('gametest-libs'))
+    // FML modules cannot split package-private fixtures from production classes.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.serverGameTest.output
+    from sourceSets.main.output
+}
+
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
-    srcDir generatedGameTestResources
+}
+
+sourceSets.serverGameTest.resources { srcDir generatedGameTestResources }
+
+tasks.named('processServerGameTestResources', ProcessResources) {
+    inputs.property 'modVersion', project.version
+    filesMatching('META-INF/neoforge.mods.toml') { expand mod_version: project.version }
+    dependsOn generateEmptyGameTestStructure
+    dependsOn generateLargeGameTestStructure
 }
 
 tasks.named('processResources', ProcessResources) {
-    dependsOn generateEmptyGameTestStructure
-    dependsOn generateLargeGameTestStructure
     inputs.property 'modVersion', project.version
     filesMatching('META-INF/neoforge.mods.toml') {
         expand mod_version: project.version
@@ -163,10 +196,6 @@ tasks.named('processResources', ProcessResources) {
     }
 }
 
-tasks.named('sourcesJar', Jar) {
-    dependsOn generateEmptyGameTestStructure
-    dependsOn generateLargeGameTestStructure
-}
 
 sourceSets.test.compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
@@ -203,6 +232,7 @@ neoForge {
     mods {
         warlockery {
             sourceSet sourceSets.main
+            sourceSet sourceSets.serverGameTest
         }
     }
 
@@ -332,3 +362,35 @@ tasks.register('releaseBundle', ReleaseBundleTask) {
     changelogFile.set(layout.projectDirectory.file('changelog.txt'))
     destinationDirectory.set(releaseDirectory)
 }
+
+abstract class VerifyProductionArtifact extends DefaultTask {
+    @InputFiles
+    @PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract ConfigurableFileCollection getArtifacts()
+
+    @TaskAction
+    void verify() {
+        artifacts.files.each { artifact ->
+            new java.util.zip.ZipFile(artifact).withCloseable { archive ->
+                def leaked = archive.entries().findAll { entry ->
+                    def name = entry.name
+                    !entry.directory && ((name.endsWith('.class') || name.endsWith('.java')) &&
+                        (name.contains('GameTest') || name.contains('/gametest/')) ||
+                    name.contains('/test_instance/') || name.contains('/test_environment/') ||
+                    name == 'warlockery-gametests.mixins.json' ||
+                    name == 'data/minecraft/worldgen/world_preset/flat.json' ||
+                    (name.contains('/structure/empty') && name.endsWith('.nbt')))
+                }.collect { it.name }
+                if (!leaked.empty) throw new GradleException("Development fixtures leaked into ${artifact.name}: ${leaked}")
+            }
+        }
+    }
+}
+
+tasks.register('verifyProductionArtifact', VerifyProductionArtifact) {
+    group = 'verification'
+    description = 'Rejects development GameTest classes and fixtures in release jars and sources.'
+    artifacts.from(tasks.named('jar').flatMap { it.archiveFile })
+    artifacts.from(tasks.named('sourcesJar').flatMap { it.archiveFile })
+}
+tasks.named('check') { dependsOn tasks.named('verifyProductionArtifact') }

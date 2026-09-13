@@ -1,3 +1,12 @@
+Warlockery 1.5.4-LlaGuiT0-26.2.0.45
+===================================
+
+- Refreshed creature textures and rebuilt Death, Naamah, Spirit, and the Werewolf Hunter.
+- Fixed creature poses, wings, equipment rendering, and grounded the Oak Ent with added foliage.
+- Added clear plant and seed icons, refined chalk connections, and improved connected machine models.
+- Improved ritual book controls, spell feedback, plant behavior, and Spirit World travel boundaries.
+- Preserved the exact NeoForge 26.2.0.45-beta supporter target while matching the 1.5.4 gameplay and visual fixes.
+
 Warlockery 1.5.3-LlaGuiT0-26.2.0.45
 ================
 

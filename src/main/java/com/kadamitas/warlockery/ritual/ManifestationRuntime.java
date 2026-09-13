@@ -5,7 +5,6 @@ import com.kadamitas.warlockery.dream.SpiritManifestationState;
 import com.kadamitas.warlockery.dream.SpiritWorldRuntime;
 import com.kadamitas.warlockery.dream.SpiritWorldState;
 import com.kadamitas.warlockery.registry.ModItems;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -26,6 +25,19 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public final class ManifestationRuntime {
+    private static final Set<ServerPlayer> MANAGED_TRANSFERS = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+    private static final java.util.Map<ServerPlayer, ReturnTransaction> PENDING_RETURNS = new java.util.WeakHashMap<>();
+
+    public static boolean isManagedTransfer(final ServerPlayer player) {
+        return MANAGED_TRANSFERS.contains(player);
+    }
+
+    private static boolean managedTeleport(final ServerPlayer player, final java.util.function.BooleanSupplier transfer) {
+        final boolean first = MANAGED_TRANSFERS.add(player);
+        try { return transfer.getAsBoolean(); }
+        finally { if (first) MANAGED_TRANSFERS.remove(player); }
+    }
+
     private ManifestationRuntime() {
     }
 
@@ -103,12 +115,12 @@ public final class ManifestationRuntime {
             ));
             return false;
         }
-        final List<ItemStackWithSlot> completeInventory = SpiritWorldState.snapshot(player.getInventory());
+        final List<ItemStackWithSlot> completeInventory = SpiritWorldState.settledSnapshot(player);
         final List<ItemStackWithSlot> storedInventory = completeInventory.stream()
-            .filter(entry -> !isIcyNeedle(entry.stack()))
+            .filter(entry -> !canCrossSpiritBoundary(entry.stack()))
             .toList();
-        final List<ItemStackWithSlot> carriedNeedles = completeInventory.stream()
-            .filter(entry -> isIcyNeedle(entry.stack()))
+        final List<ItemStackWithSlot> carriedItems = completeInventory.stream()
+            .filter(entry -> canCrossSpiritBoundary(entry.stack()))
             .toList();
         final int selectedSlot = player.getInventory().getSelectedSlot();
         SpiritManifestationState.begin(
@@ -123,10 +135,10 @@ public final class ManifestationRuntime {
             selectedSlot
         );
         player.getInventory().clearContent();
-        carriedNeedles.forEach(entry -> player.getInventory().setItem(entry.slot(), entry.stack().copy()));
+        carriedItems.forEach(entry -> player.getInventory().setItem(entry.slot(), entry.stack().copy()));
         player.getInventory().setChanged();
         final Vec3 target = arrival.orElseThrow();
-        final boolean teleported = player.teleportTo(
+        final boolean teleported = managedTeleport(player, () -> player.teleportTo(
             destination,
             target.x(),
             target.y(),
@@ -135,9 +147,9 @@ public final class ManifestationRuntime {
             player.getYRot(),
             player.getXRot(),
             true
-        );
+        ));
         if (!teleported) {
-            SpiritWorldState.restore(player.getInventory(), completeInventory, selectedSlot);
+            SpiritWorldState.rollbackBoundary(player, completeInventory, ManifestationRuntime::canCrossSpiritBoundary, selectedSlot);
             SpiritManifestationState.finish(player);
             return false;
         }
@@ -165,45 +177,61 @@ public final class ManifestationRuntime {
             manifestation.returnY(),
             manifestation.returnZ()
         ));
-        final List<ItemStack> needles = new ArrayList<>();
-        final List<ItemStack> discarded = new ArrayList<>();
-        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-            final ItemStack stack = player.getInventory().getItem(slot);
-            if (stack.isEmpty()) {
-                continue;
-            }
-            (isIcyNeedle(stack) ? needles : discarded).add(stack.copy());
+        prepareExternalReturn(player);
+        final boolean teleported = managedTeleport(player, () -> player.teleportTo(
+            destination, manifestation.returnX(), manifestation.returnY(), manifestation.returnZ(),
+            Set.of(), manifestation.returnYaw(), manifestation.returnPitch(), true));
+        finishReturn(player, teleported, cause);
+        return teleported;
+    }
+
+    /** Prepare while still outside, before a command or another mod transfers the manifested player. */
+    public static void prepareExternalReturn(final ServerPlayer player) {
+        if (PENDING_RETURNS.containsKey(player)) return;
+        final var manifestation = SpiritManifestationState.read(player).orElseThrow();
+        final List<ItemStackWithSlot> complete = SpiritWorldState.settledSnapshot(player);
+        final int selected = player.getInventory().getSelectedSlot();
+        PENDING_RETURNS.put(player, new ReturnTransaction(manifestation, player.level(), player.position(), complete, selected));
+        SpiritWorldState.restore(player.getInventory(), complete.stream()
+            .filter(entry -> entry.stack().is(com.kadamitas.warlockery.registry.WarlockeryTags.Items.SPIRIT_WORLD_CARRY_IN))
+            .toList(), selected);
+    }
+
+    public static boolean finishExternalReturn(final ServerPlayer player, final boolean succeeded) {
+        if (isManagedTransfer(player)) return false;
+        return finishReturn(player, succeeded, ReturnCause.PORTAL);
+    }
+
+    private static boolean finishReturn(final ServerPlayer player, final boolean succeeded, final ReturnCause cause) {
+        final ReturnTransaction transaction = PENDING_RETURNS.remove(player);
+        if (transaction == null) return false;
+        final var manifestation = transaction.manifestation();
+        if (!succeeded || !player.level().dimension().identifier().equals(manifestation.returnDimension())) {
+            SpiritWorldState.rollbackBoundary(player, transaction.inventory(),
+                stack -> stack.is(com.kadamitas.warlockery.registry.WarlockeryTags.Items.SPIRIT_WORLD_CARRY_IN), transaction.selectedSlot());
+            player.containerMenu.broadcastChanges();
+            return true;
         }
-        final boolean teleported = player.teleportTo(
-            destination,
-            manifestation.returnX(),
-            manifestation.returnY(),
-            manifestation.returnZ(),
-            Set.of(),
-            manifestation.returnYaw(),
-            manifestation.returnPitch(),
-            true
-        );
-        if (!teleported) {
-            return false;
-        }
-        discarded.forEach(stack -> player.drop(stack, false));
-        SpiritWorldState.restore(
-            player.getInventory(),
-            manifestation.storedInventory(),
-            manifestation.selectedSlot()
-        );
-        needles.forEach(stack -> addOrDrop(player, stack));
+        // Physical acquisitions stay at the exact departure location, never at the newly arrived Spirit position.
+        transaction.inventory().stream().map(ItemStackWithSlot::stack)
+            .filter(stack -> !stack.is(com.kadamitas.warlockery.registry.WarlockeryTags.Items.SPIRIT_WORLD_CARRY_IN))
+            .forEach(stack -> transaction.source().addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(
+                transaction.source(), transaction.position().x, transaction.position().y, transaction.position().z, stack.copy())));
+        final List<ItemStackWithSlot> carried = SpiritWorldState.snapshot(player.getInventory());
+        SpiritWorldState.restore(player.getInventory(), manifestation.storedInventory(), manifestation.selectedSlot());
+        carried.forEach(entry -> addOrDrop(player, entry.stack().copy()));
         SpiritManifestationState.finish(player);
         player.removeEffect(MobEffects.GLOWING);
         player.setHealth(Math.max(1.0F, player.getHealth()));
         player.setDeltaMovement(Vec3.ZERO);
         player.setPortalCooldown(60);
-        player.sendSystemMessage(Component.translatable(
-            "message.warlockery.manifestation.returned." + cause.id()
-        ));
+        player.containerMenu.broadcastChanges();
+        player.sendSystemMessage(Component.translatable("message.warlockery.manifestation.returned." + cause.id()));
         return true;
     }
+
+    private record ReturnTransaction(SpiritManifestationState.ActiveManifestation manifestation,
+        ServerLevel source, Vec3 position, List<ItemStackWithSlot> inventory, int selectedSlot) { }
 
     public static boolean isActive(final ServerPlayer player) {
         return SpiritManifestationState.active(player);
@@ -275,8 +303,8 @@ public final class ManifestationRuntime {
         )).map(candidate -> Vec3.atBottomCenterOf(candidate)).findFirst();
     }
 
-    private static boolean isIcyNeedle(final ItemStack stack) {
-        return stack.is(ModItems.ALL.get("ingredient_icy_needle").get());
+    private static boolean canCrossSpiritBoundary(final ItemStack stack) {
+        return stack.is(com.kadamitas.warlockery.registry.WarlockeryTags.Items.SPIRIT_WORLD_EXPORTS);
     }
 
     private static void addOrDrop(final ServerPlayer player, final ItemStack stack) {

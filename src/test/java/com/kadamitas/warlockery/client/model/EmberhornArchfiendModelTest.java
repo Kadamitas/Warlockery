@@ -96,7 +96,7 @@ final class EmberhornArchfiendModelTest {
         assertEquals(192, texture.getWidth());
         assertEquals(128, texture.getHeight());
         assertTrue(hasTransparentPixel(texture));
-        assertEquals("4247860382f5fb001386510540f76a9e451dba693d11df23deb3daa3ed7bd8cd", hash(TEXTURE));
+        assertEquals("99d5a46db7a12dc39cf4856c514533dca8db40d5d91d08dcf564daccdb4c6306", hash(TEXTURE));
     }
 
     private static EmberhornArchfiendModel.State motionState() {

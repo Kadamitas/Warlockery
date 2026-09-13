@@ -37,7 +37,7 @@ final class SpectreModelTest {
         model.root().yRot=.7853982F; assertEquals("ee317cbb4f966e8b0c83203624d3293c785c37bc63c76f9e63a4279e5218c60c",imageSnapshot(softwareSnapshot(model.root(),Projection.FRONT,128,4))); model.root().yRot=0;
         final SpectreModel.State state=new SpectreModel.State(); state.walkAnimationPos=2.6F; state.walkAnimationSpeed=.75F; state.ageInTicks=33F; state.yRot=-27F; state.xRot=11F; model.setupAnim(state);
         assertEquals("c2039fdd3065e5b311c9fa45305e445b61a436e3533c14e0df75140b67eb4104",geometrySnapshot(model.root())); SpectreModel.State.class.getField("manifesting").setBoolean(state,true); model.setupAnim(state); assertEquals("123ff9511159901c72055990885a1c9b15418fcf0b8ef263def900b02401fc2c",geometrySnapshot(model.root()));
-        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(128,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("1b568d9b7534bb3b2b1eeebe690a73242aca2285ff3c5fc1b5a1de1f7ea372aa",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
+        assertEquals(128,ImageIO.read(TEXTURE.toFile()).getWidth()); assertEquals(128,ImageIO.read(TEXTURE.toFile()).getHeight()); assertEquals("2083aea2f283ff602e414439d8ce7d773b13547001eba9cb0fa724c88700ce9c",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(TEXTURE))));
     }
 
     @Test

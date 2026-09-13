@@ -111,7 +111,7 @@ final class DreamrootModelTest {
         assertFalse(source.contains("ModelHelper"));
         assertEquals(128, ImageIO.read(TEXTURE.toFile()).getWidth());
         assertEquals(64, ImageIO.read(TEXTURE.toFile()).getHeight());
-        assertEquals("9fe9c3a32a2eaf77962a9105625692ff4f5138a0dc6e07714278d98b32563bde", textureHash());
+        assertEquals("43f56dd886eb17f7b9e36171ef0406786c0c51a78c8ee79fd528300a035457cb", textureHash());
     }
 
     private static void setMotion(final LivingEntityRenderState state) {

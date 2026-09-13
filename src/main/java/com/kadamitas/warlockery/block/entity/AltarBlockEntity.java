@@ -1,6 +1,7 @@
 package com.kadamitas.warlockery.block.entity;
 
 import com.kadamitas.warlockery.block.AltarAttachmentRules;
+import com.kadamitas.warlockery.block.AltarBlock;
 import com.kadamitas.warlockery.block.AltarNatureRules;
 import com.kadamitas.warlockery.block.AltarNatureRules.Source;
 import com.kadamitas.warlockery.crafting.AltarUpgradeResolver;
@@ -66,6 +67,9 @@ public final class AltarBlockEntity extends BlockEntity {
         altar.registerRangeIndex();
         if (level.getGameTime() % SCAN_INTERVAL != 0) {
             return;
+        }
+        if (state.getBlock() instanceof AltarBlock altarBlock) {
+            altarBlock.refreshConnections(level, pos, state);
         }
         final AltarDisplay previous = altar.getDisplay();
         final AltarMultiblockLayout.Result layout = AltarMultiblockLayout.inspect(

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:spirit_portal_crafted_frames_connect_in_both_axes",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "spirit_portal_crafted_frames_connect_in_both_axes",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 320
+}

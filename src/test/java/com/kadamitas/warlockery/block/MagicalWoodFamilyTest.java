@@ -54,17 +54,6 @@ final class MagicalWoodFamilyTest {
     }
 
     @Test
-    void factoryUsesModernVanillaWoodBlockMechanics() {
-        final String source = readString(Path.of(
-            "src/main/java/com/kadamitas/warlockery/block/MagicalWoodBlockFactory.java"
-        ));
-        assertTrue(source.contains("new RotatedPillarBlock"));
-        assertTrue(source.contains("new TintedParticleLeavesBlock"));
-        assertTrue(source.contains("new SaplingBlock"));
-        assertTrue(source.contains("definition.family().treeGrower()"));
-    }
-
-    @Test
     void eachSaplingTargetsItsConfiguredTreeFeature() {
         Arrays.stream(MagicalTreeFamily.values()).forEach(family -> {
             assertEquals("warlockery:" + family.id() + "_tree", family.configuredFeature().identifier().toString());

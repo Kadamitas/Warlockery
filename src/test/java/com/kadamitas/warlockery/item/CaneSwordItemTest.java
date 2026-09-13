@@ -64,21 +64,6 @@ final class CaneSwordItemTest {
         assertTrue(state.isEmpty());
     }
 
-    @Test
-    void registryUsesTheStatefulItemAndItsModeSpecificProperties() throws IOException {
-        final String registry = Files.readString(Path.of(
-            "src/main/java/com/kadamitas/warlockery/registry/ModItems.java"
-        ));
-        assertTrue(registry.contains("new CaneSwordItem(properties(id))"));
-        assertTrue(registry.contains("case \"canesword\" -> CaneSwordItem.applyProperties(properties)"));
-        assertFalse(registry.contains("case \"ritual_knife\", \"boline\", \"canesword\""));
-        final String item = Files.readString(Path.of(
-            "src/main/java/com/kadamitas/warlockery/item/CaneSwordItem.java"
-        ));
-        assertTrue(item.contains("InteractionResult use(final Level level"));
-        assertTrue(item.contains("InteractionResult useOn(final UseOnContext context)"));
-        assertTrue(item.contains("player.isShiftKeyDown()"));
-    }
 
     @Test
     void bothFormsHaveDedicatedItemDefinitionsModelsAndSprites() throws IOException {

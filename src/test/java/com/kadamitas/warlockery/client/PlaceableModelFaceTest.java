@@ -43,7 +43,17 @@ final class PlaceableModelFaceTest {
                     return;
                 }
                 model.getAsJsonArray("elements").forEach(value -> {
-                    final JsonObject faces = value.getAsJsonObject().getAsJsonObject("faces");
+                    final JsonObject element = value.getAsJsonObject();
+                    final JsonObject faces = element.getAsJsonObject("faces");
+                    for (int axis = 0; axis < 3; axis++) {
+                        final double from = element.getAsJsonArray("from").get(axis).getAsDouble();
+                        final double to = element.getAsJsonArray("to").get(axis).getAsDouble();
+                        assertTrue(from >= -16 && to <= 32 && from <= to, path + " invalid volume bounds");
+                    }
+                    // The pedestal's horizontal shell closes against separately applied apron panels.
+                    // Its assembled blockstate and inventory model are checked as whole surfaces below.
+                    if (Set.of("altar.json", "altar_top.json").contains(path.getFileName().toString())
+                        && faces.keySet().equals(Set.of("down", "up"))) return;
                     List.of("down", "up", "north", "south", "west", "east")
                         .forEach(face -> assertTrue(faces.has(face), path.getFileName() + " missing " + face));
                 });
@@ -51,6 +61,7 @@ final class PlaceableModelFaceTest {
         } catch (IOException exception) {
             throw new UncheckedIOException(exception);
         }
+        assertClosedSurface(resolvedElements("altar"), "altar inventory model");
     }
 
     @Test
@@ -76,6 +87,50 @@ final class PlaceableModelFaceTest {
                 assertTexture(modelId, "#particle", model.textures());
             }
         });
+    }
+
+    static JsonArray resolvedElements(final String modelId) {
+        final JsonArray elements = resolveModel(modelId).elements();
+        assertTrue(elements != null && !elements.isEmpty(), modelId + " must resolve geometry");
+        return elements;
+    }
+
+    /** Sample every face-coordinate interval: each occupied ray must enter and leave rendered surfaces. */
+    static void assertClosedSurface(final JsonArray elements, final String context) {
+        final String[] negative = {"west", "down", "north"};
+        final String[] positive = {"east", "up", "south"};
+        for (int axis = 0; axis < 3; axis++) {
+            final int u = (axis + 1) % 3, v = (axis + 2) % 3;
+            final var us = new java.util.TreeSet<Double>();
+            final var vs = new java.util.TreeSet<Double>();
+            for (final var raw : elements) {
+                final JsonObject element = raw.getAsJsonObject();
+                assertTrue(!element.has("rotation"), context + " needs transformed geometry before closure checking");
+                for (String end : List.of("from", "to")) {
+                    us.add(element.getAsJsonArray(end).get(u).getAsDouble());
+                    vs.add(element.getAsJsonArray(end).get(v).getAsDouble());
+                }
+            }
+            final var uu = List.copyOf(us); final var vv = List.copyOf(vs);
+            for (int i = 1; i < uu.size(); i++) for (int j = 1; j < vv.size(); j++) {
+                final double a = (uu.get(i - 1) + uu.get(i)) / 2;
+                final double b = (vv.get(j - 1) + vv.get(j)) / 2;
+                double entry = Double.POSITIVE_INFINITY, exit = Double.NEGATIVE_INFINITY;
+                boolean occupied = false;
+                for (final var raw : elements) {
+                    final JsonObject e = raw.getAsJsonObject();
+                    final JsonArray from = e.getAsJsonArray("from"), to = e.getAsJsonArray("to");
+                    if (a <= from.get(u).getAsDouble() || a >= to.get(u).getAsDouble()
+                        || b <= from.get(v).getAsDouble() || b >= to.get(v).getAsDouble()) continue;
+                    occupied = true;
+                    final JsonObject faces = e.getAsJsonObject("faces");
+                    if (faces.has(negative[axis])) entry = Math.min(entry, from.get(axis).getAsDouble());
+                    if (faces.has(positive[axis])) exit = Math.max(exit, to.get(axis).getAsDouble());
+                }
+                assertTrue(!occupied || entry < exit,
+                    context + " open surface along " + negative[axis] + " at " + a + "," + b);
+            }
+        }
     }
 
     private static Set<String> sculptedBlockIds() {
