@@ -1,0 +1,150 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "warlockery:block/altar_wood",
+    "wood": "warlockery:block/altar_wood",
+    "cloth": "minecraft:block/red_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        3,
+        0
+      ],
+      "to": [
+        3,
+        10,
+        3
+      ],
+      "faces": {
+        "down": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ]
+        },
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ]
+        },
+        "north": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ]
+        },
+        "west": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        3,
+        0
+      ],
+      "to": [
+        4,
+        4,
+        4
+      ],
+      "faces": {
+        "down": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ]
+        },
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ]
+        },
+        "north": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ]
+        },
+        "west": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#wood",
+          "uv": [
+            0.25,
+            0.25,
+            0.75,
+            0.75
+          ]
+        }
+      }
+    }
+  ]
+}

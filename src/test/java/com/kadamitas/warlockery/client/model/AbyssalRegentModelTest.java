@@ -107,7 +107,7 @@ final class AbyssalRegentModelTest {
         assertFalse(source.toLowerCase(java.util.Locale.ROOT).contains("held_weapon"));
         for (final String forbidden : java.util.List.of("ArcaneCreatureModel", "CreatureModelProfile", "GeometryHelper", "AnimationHelper", "ModelHelper", "RigCatalog", "extends Warlockery")) assertFalse(source.contains(forbidden), forbidden);
         final BufferedImage texture = ImageIO.read(TEXTURE.toFile()); assertEquals(256, texture.getWidth()); assertEquals(128, texture.getHeight()); assertTrue(hasTransparentPixel(texture));
-        assertEquals("7e05add5e2fc870948ea354f8316584fb28c3bfc1d7409cbe20a786ce18775af", hash(TEXTURE));
+        assertEquals("4c07a97b3144f2377e23445ca0c4097d9878681ef68207e322061061d58791c4", hash(TEXTURE));
     }
 
     private static AbyssalRegentModel.State motionState() { final AbyssalRegentModel.State state = new AbyssalRegentModel.State(); state.yRot = 18; state.xRot = -6; state.walkAnimationPos = 4.2F; state.walkAnimationSpeed = 0.55F; state.ageInTicks = 71; return state; }

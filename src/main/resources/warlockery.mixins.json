@@ -4,11 +4,11 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "BroomDeathMixin",
-    "GameTestHelperAccessor",
     "ItemEntityMixin",
     "LivingEntityMixin",
     "PlayerMixin",
     "ProjectileMixin",
+    "SpiritWorldTransferMixin",
     "ThrownEnderpearlMixin"
   ],
   "client": [

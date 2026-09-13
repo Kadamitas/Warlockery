@@ -37,6 +37,7 @@ public final class WarlockeryClient implements ClientModInitializer {
         BlockEntityRenderers.register(ModBlockEntities.MAGIC_MACHINE.get(), MachineOverlayRenderer::new);
         BlockEntityRenderers.register(ModBlockEntities.WOLF_TRAP.get(), WolfTrapOverlayRenderer::new);
         BlockEntityRenderers.register(ModBlockEntities.ALTAR.get(), AltarOverlayRenderer::new);
+        BlockEntityRenderers.register(ModBlockEntities.CIRCLE_HEART.get(), CircleHeartRenderer::new);
         EntityRenderers.register(ModEntities.BROOM.get(), BroomEntityRenderer::new);
         TexturedCreatureRenderers.registerNami(ModEntities.NAMI.get());
         final CreatureVisualProfile glassVisual = CreatureVisualProfile.forKind(

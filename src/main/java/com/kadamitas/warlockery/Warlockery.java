@@ -14,8 +14,6 @@ import com.kadamitas.warlockery.registry.ModCreativeTabs;
 import com.kadamitas.warlockery.registry.ModEffects;
 import com.kadamitas.warlockery.registry.ModEntities;
 import com.kadamitas.warlockery.registry.ModFluids;
-import com.kadamitas.warlockery.registry.ModGameTestEnvironments;
-import com.kadamitas.warlockery.registry.ModGameTests;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.ModMenus;
 import com.kadamitas.warlockery.registry.ModSounds;
@@ -31,6 +29,8 @@ public final class Warlockery implements ModInitializer {
     @Override
     public void onInitialize() {
         WarlockeryConfig.initialize();
+        net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+            com.kadamitas.warlockery.command.WarlockeryTestCommands.register(dispatcher));
         WarlockeryEntityData.initialize();
         ModNetwork.init();
         net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
@@ -53,8 +53,6 @@ public final class Warlockery implements ModInitializer {
         ModBlockEntities.register();
         ModChunkTickets.register();
         ModCreativeTabs.register();
-        ModGameTestEnvironments.register();
-        ModGameTests.register();
 
         WarlockeryWorldGeneration.initialize();
         WarlockeryFabricEvents.initialize();

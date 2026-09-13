@@ -8,13 +8,21 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.client.renderer.entity.EntityRenderers;
 
 /** Explicit species-to-model routing. Geometry and animation remain owned by each model class. */
 public final class DedicatedCreatureRenderers {
@@ -257,20 +265,8 @@ public final class DedicatedCreatureRenderers {
             "spectre",
             SpectreModel::extractRenderState
         ));
-        register("spirit", context -> standard(
-            context,
-            ignored -> new SpiritModel(SpiritModel.createBodyLayer().bakeRoot()),
-            SpiritModel.State::new,
-            "spirit",
-            SpiritModel::extractRenderState
-        ));
-        register("stonebroker", context -> armed(
-            context,
-            ignored -> new StonebrokerModel(StonebrokerModel.createBodyLayer().bakeRoot()),
-            StonebrokerModel.State::new,
-            "stonebroker",
-            StonebrokerModel::extractRenderState
-        ));
+        register("spirit", TranslucentSpiritRenderer::new);
+        register("stonebroker", StonebrokerRenderer::new);
         register("storm_simian", context -> standard(
             context,
             ignored -> new StormSimianModel(StormSimianModel.createBodyLayer().bakeRoot()),
@@ -326,6 +322,119 @@ public final class DedicatedCreatureRenderers {
             (state, poseStack) -> scale(poseStack, displayScale),
             (state, baseRadius) -> baseRadius
         );
+    }
+
+    private static final class StonebrokerRenderer
+        extends MobRenderer<StonebrokerEntity, StonebrokerModel.State, StonebrokerModel> {
+        private final float displayScale;
+
+        private StonebrokerRenderer(final EntityRendererProvider.Context context) {
+            super(
+                context,
+                new StonebrokerModel(StonebrokerModel.createBodyLayer().bakeRoot()),
+                shadowRadius("stonebroker")
+            );
+            displayScale = CreatureDisplayScale.factor("stonebroker", model.root());
+            addLayer(new ItemInHandLayer<>(this));
+        }
+
+        @Override
+        public Identifier getTextureLocation(final StonebrokerModel.State state) {
+            return texture("stonebroker");
+        }
+
+        @Override
+        public StonebrokerModel.State createRenderState() {
+            return new StonebrokerModel.State();
+        }
+
+        @Override
+        public void extractRenderState(
+            final StonebrokerEntity entity,
+            final StonebrokerModel.State state,
+            final float partialTicks
+        ) {
+            super.extractRenderState(entity, state, partialTicks);
+            ArmedEntityRenderState.extractArmedEntityRenderState(entity, state, itemModelResolver, partialTicks);
+            StonebrokerModel.extractRenderState(entity, state, partialTicks);
+            if (state.action == GoblinPatronRules.Action.LEDGER_VOLLEY) {
+                final ItemStack bow = new ItemStack(Items.BOW);
+                final HumanoidArm arm = state.mainArm;
+                if (arm == HumanoidArm.RIGHT) {
+                    itemModelResolver.updateForLiving(
+                        state.rightHandItemState,
+                        bow,
+                        ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
+                        entity
+                    );
+                    state.rightHandItemStack = bow;
+                } else {
+                    itemModelResolver.updateForLiving(
+                        state.leftHandItemState,
+                        bow,
+                        ItemDisplayContext.THIRD_PERSON_LEFT_HAND,
+                        entity
+                    );
+                    state.leftHandItemStack = bow;
+                }
+            }
+        }
+
+        @Override
+        protected void scale(final StonebrokerModel.State state, final PoseStack poseStack) {
+            DedicatedCreatureRenderers.scale(poseStack, displayScale);
+        }
+    }
+
+    private static final class TranslucentSpiritRenderer
+        extends MobRenderer<SpiritEntity, SpiritModel.State, SpiritModel> {
+        private final float displayScale;
+
+        private TranslucentSpiritRenderer(final EntityRendererProvider.Context context) {
+            super(
+                context,
+                new SpiritModel(SpiritModel.createBodyLayer().bakeRoot()),
+                shadowRadius("spirit")
+            );
+            displayScale = CreatureDisplayScale.factor("spirit", model.root());
+        }
+
+        @Override
+        public Identifier getTextureLocation(final SpiritModel.State state) {
+            return texture("spirit");
+        }
+
+        @Override
+        public SpiritModel.State createRenderState() {
+            return new SpiritModel.State();
+        }
+
+        @Override
+        public void extractRenderState(
+            final SpiritEntity entity,
+            final SpiritModel.State state,
+            final float partialTicks
+        ) {
+            super.extractRenderState(entity, state, partialTicks);
+            SpiritModel.extractRenderState(entity, state, partialTicks);
+        }
+
+        @Override
+        protected RenderType getRenderType(
+            final SpiritModel.State state,
+            final boolean isBodyVisible,
+            final boolean forceTransparent,
+            final boolean appearsGlowing
+        ) {
+            return isBodyVisible
+                ? RenderTypes.entityTranslucent(getTextureLocation(state))
+                : super.getRenderType(state, false, forceTransparent, appearsGlowing);
+        }
+
+        @Override
+        protected void scale(final SpiritModel.State state, final PoseStack poseStack) {
+            DedicatedCreatureRenderers.scale(poseStack, displayScale);
+        }
     }
 
     private static DedicatedCreatureRenderer<GoblinEntity, GoblinModel.State, GoblinModel> goblin(

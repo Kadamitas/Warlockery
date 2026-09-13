@@ -30,6 +30,10 @@ public final class StormSimianModel extends EntityModel<StormSimianModel.State> 
     private final ModelPart leftShin;
     private final ModelPart rightLeg;
     private final ModelPart rightShin;
+    private final ModelPart leftWing;
+    private final ModelPart leftWingTip;
+    private final ModelPart rightWing;
+    private final ModelPart rightWingTip;
     private final ModelPart tailBase;
     private final ModelPart tailMid;
     private final ModelPart tailTip;
@@ -50,6 +54,10 @@ public final class StormSimianModel extends EntityModel<StormSimianModel.State> 
         leftShin = leftLeg.getChild("left_shin");
         rightLeg = root.getChild("right_leg");
         rightShin = rightLeg.getChild("right_shin");
+        leftWing = root.getChild("left_wing");
+        leftWingTip = leftWing.getChild("left_wing_tip");
+        rightWing = root.getChild("right_wing");
+        rightWingTip = rightWing.getChild("right_wing_tip");
         tailBase = root.getChild("tail_base");
         tailMid = tailBase.getChild("tail_mid");
         tailTip = tailMid.getChild("tail_tip");
@@ -92,6 +100,44 @@ public final class StormSimianModel extends EntityModel<StormSimianModel.State> 
             "storm_band",
             CubeListBuilder.create().texOffs(26, 18).addBox(-3.5F, -1.0F, -2.5F, 7.0F, 2.0F, 5.0F),
             PartPose.offset(0.0F, 15.5F, 0.0F)
+        );
+        final PartDefinition leftWing = root.addOrReplaceChild(
+            "left_wing",
+            CubeListBuilder.create()
+                .texOffs(0, 80).addBox(0.0F, -1.0F, -0.5F, 7.0F, 2.0F, 1.0F)
+                .texOffs(0, 80).addBox(1.0F, 1.0F, -0.5F, 6.0F, 2.0F, 1.0F)
+                .texOffs(0, 80).addBox(2.0F, 3.0F, -0.5F, 5.0F, 2.0F, 1.0F)
+                .texOffs(0, 80).addBox(3.0F, 5.0F, -0.5F, 3.5F, 2.0F, 1.0F),
+            PartPose.offsetAndRotation(2.5F, 13.5F, 2.1F, 0.15F, 0.05F, -0.42F)
+        );
+        leftWing.addOrReplaceChild(
+            "left_wing_tip",
+            CubeListBuilder.create()
+                .texOffs(28, 80).addBox(0.0F, -1.0F, -0.5F, 5.5F, 2.0F, 1.0F)
+                .texOffs(28, 80).addBox(0.5F, 1.0F, -0.5F, 5.0F, 2.0F, 1.0F)
+                .texOffs(28, 80).addBox(0.5F, 3.0F, -0.5F, 1.25F, 3.5F, 1.0F)
+                .texOffs(28, 80).addBox(2.25F, 3.0F, -0.5F, 1.25F, 4.5F, 1.0F)
+                .texOffs(28, 80).addBox(4.0F, 3.0F, -0.5F, 1.25F, 3.5F, 1.0F),
+            PartPose.offsetAndRotation(6.2F, 2.8F, 0.0F, 0.0F, 0.0F, -0.34F)
+        );
+        final PartDefinition rightWing = root.addOrReplaceChild(
+            "right_wing",
+            CubeListBuilder.create().mirror()
+                .texOffs(0, 80).addBox(-7.0F, -1.0F, -0.5F, 7.0F, 2.0F, 1.0F)
+                .texOffs(0, 80).addBox(-7.0F, 1.0F, -0.5F, 6.0F, 2.0F, 1.0F)
+                .texOffs(0, 80).addBox(-7.0F, 3.0F, -0.5F, 5.0F, 2.0F, 1.0F)
+                .texOffs(0, 80).addBox(-6.5F, 5.0F, -0.5F, 3.5F, 2.0F, 1.0F),
+            PartPose.offsetAndRotation(-2.5F, 13.5F, 2.1F, 0.15F, -0.05F, 0.42F)
+        );
+        rightWing.addOrReplaceChild(
+            "right_wing_tip",
+            CubeListBuilder.create().mirror()
+                .texOffs(28, 80).addBox(-5.5F, -1.0F, -0.5F, 5.5F, 2.0F, 1.0F)
+                .texOffs(28, 80).addBox(-5.5F, 1.0F, -0.5F, 5.0F, 2.0F, 1.0F)
+                .texOffs(28, 80).addBox(-1.75F, 3.0F, -0.5F, 1.25F, 3.5F, 1.0F)
+                .texOffs(28, 80).addBox(-3.5F, 3.0F, -0.5F, 1.25F, 4.5F, 1.0F)
+                .texOffs(28, 80).addBox(-5.25F, 3.0F, -0.5F, 1.25F, 3.5F, 1.0F),
+            PartPose.offsetAndRotation(-6.2F, 2.8F, 0.0F, 0.0F, 0.0F, 0.34F)
         );
         final PartDefinition leftArm = root.addOrReplaceChild(
             "left_arm",
@@ -189,6 +235,13 @@ public final class StormSimianModel extends EntityModel<StormSimianModel.State> 
         tailBase.zRot += Mth.sin(state.ageInTicks * 0.09F) * 0.18F;
         tailMid.zRot += Mth.sin(state.ageInTicks * 0.09F + 0.8F) * 0.25F;
         tailTip.zRot += Mth.sin(state.ageInTicks * 0.09F + 1.4F) * 0.32F;
+        final float wingBeat = Mth.sin(state.ageInTicks * 0.52F) * 0.24F;
+        if (state.airborne) {
+            leftWing.zRot -= 0.38F + wingBeat;
+            rightWing.zRot += 0.38F + wingBeat;
+            leftWingTip.zRot -= 0.2F + wingBeat * 0.6F;
+            rightWingTip.zRot += 0.2F + wingBeat * 0.6F;
+        }
         final float charge = Mth.clamp(state.charge / (float) StormSimianRules.MAX_CHARGE, 0.0F, 1.0F);
         stormCrown.y -= charge * 0.5F;
         stormBand.yRot += Mth.sin(state.ageInTicks * 0.08F) * charge * 0.08F;
@@ -205,6 +258,10 @@ public final class StormSimianModel extends EntityModel<StormSimianModel.State> 
             rightShin.xRot += 0.36F;
         }
         if (state.chargedGustReady) {
+            leftWing.zRot = -1.18F;
+            rightWing.zRot = 1.18F;
+            leftWingTip.zRot = -0.62F;
+            rightWingTip.zRot = 0.62F;
             leftArm.xRot = -1.18F;
             leftArm.yRot = -0.55F;
             rightArm.xRot = -1.18F;

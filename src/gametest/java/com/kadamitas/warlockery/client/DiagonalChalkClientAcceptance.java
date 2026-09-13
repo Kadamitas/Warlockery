@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.client;
 
 import com.google.gson.GsonBuilder;
 import com.kadamitas.warlockery.block.ConnectedGlyphBlock;
+import com.kadamitas.warlockery.block.ConnectedGlyphGeometry.Side;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.ritual.ChalkCircleLayout;
@@ -92,6 +93,8 @@ public final class DiagonalChalkClientAcceptance implements FabricClientGameTest
                     assertConnections(context);
                     overview(context, "erased-center-clears-all-four-corners");
                     checks.add("All five glyph IDs connect across mixed colors; native corner and center erasure remove reciprocal arms; recoloring preserves connections");
+                    verifyConsecutiveDiagonalSeams(context);
+                    verifyEditableLines(context);
                     report.put("passed", true);
                 } catch (Throwable failure) {
                     report.put("passed", false);
@@ -127,6 +130,120 @@ public final class DiagonalChalkClientAcceptance implements FabricClientGameTest
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
+    }
+
+    private void verifyEditableLines(final ClientGameTestContext context) throws Exception {
+        resetArena();
+        draw(context, CENTER, "circleglyphritual");
+        for (final Side side : Side.values()) {
+            draw(context, CENTER.offset(side.dx(), 0, side.dz()), "circleglyphritual");
+        }
+        assertConnections(context);
+        emptyMainHand(context);
+        overview(context, "thin-all-eight-pronounced-node-straight-diagonals");
+        clickLine(context, CENTER, 0.5, 0.5);
+        assertConnections(context);
+        overview(context, "center-node-click-preserves-all-eight");
+        for (final Side side : Side.values()) {
+            final BlockPos neighbor = CENTER.offset(side.dx(), 0, side.dz());
+            final Side opposite = side.rotateQuarterTurns(2);
+            for (final double distance : new double[]{0.15, 0.3, 0.48}) {
+                clickLine(context, CENTER, 0.5 + side.dx() * distance, 0.5 + side.dz() * distance);
+                assertEdge(context, CENTER, side, false);
+                assertEdge(context, neighbor, opposite, false);
+                for (final Side other : Side.values()) {
+                    if (other != side) assertEdge(context, CENTER, other, true);
+                }
+                if (distance == 0.3 && (side == Side.EAST || side == Side.SOUTH_EAST)) {
+                    overview(context, side.id() + "-one-line-hidden-other-branches-intact");
+                }
+                clickLine(context, neighbor, 0.5 + opposite.dx() * distance, 0.5 + opposite.dz() * distance);
+                assertEdge(context, CENTER, side, true);
+                assertEdge(context, neighbor, opposite, true);
+            }
+        }
+        checks.add("Native empty-hand clicks edit one reciprocal edge at three points on all eight arms; either endpoint reconnects its hidden half; node click and unrelated branches remain unchanged");
+        overview(context, "all-eight-restored-from-opposite-halves");
+        resetArena();
+        draw(context, CENTER, "circleglyphritual");
+        draw(context, CENTER.south().east(), "circleglyphritual");
+        draw(context, CENTER.east(), "circleglyphgolden");
+        draw(context, CENTER.south(), "circleglyphgolden");
+        emptyMainHand(context);
+        clickLine(context, CENTER, 0.8, 0.5);
+        clickLine(context, CENTER, 0.5, 0.8);
+        clickLine(context, CENTER.south().east(), 0.2, 0.5);
+        clickLine(context, CENTER.south().east(), 0.5, 0.2);
+        assertEdge(context, CENTER, Side.SOUTH_EAST, true);
+        assertEdge(context, CENTER.east(), Side.SOUTH_WEST, true);
+        overview(context, "different-colors-cross-as-independent-straight-lines");
+        closeup(context, new Vec3(1, 100.03, 1), "mixed-crossing-closeup-both-lines");
+        clickLine(context, CENTER, 0.98, 0.98);
+        assertEdge(context, CENTER, Side.SOUTH_EAST, false);
+        assertEdge(context, CENTER.south().east(), Side.NORTH_WEST, false);
+        assertEdge(context, CENTER.east(), Side.SOUTH_WEST, true);
+        assertEdge(context, CENTER.south(), Side.NORTH_EAST, true);
+        overview(context, "white-crossing-hidden-golden-crossing-intact");
+        clickLine(context, CENTER.south().east(), 0.02, 0.02);
+        assertEdge(context, CENTER, Side.SOUTH_EAST, true);
+        clickLine(context, CENTER.east(), 0.02, 0.98);
+        assertEdge(context, CENTER.east(), Side.SOUTH_WEST, false);
+        assertEdge(context, CENTER.south(), Side.NORTH_EAST, false);
+        assertEdge(context, CENTER, Side.SOUTH_EAST, true);
+        overview(context, "golden-crossing-hidden-white-crossing-intact");
+        clickLine(context, CENTER.south(), 0.98, 0.02);
+        assertEdge(context, CENTER.east(), Side.SOUTH_WEST, true);
+        overview(context, "both-colored-crossings-restored");
+        checks.add("Native clicks independently hide and restore both different-colored diagonal crossing edges from either half without changing the other crossing");
+    }
+
+    private void verifyConsecutiveDiagonalSeams(final ClientGameTestContext context) throws Exception {
+        resetArena();
+        for (int step = -2; step <= 2; step++) draw(context, CENTER.offset(step, 0, step), "circleglyphritual");
+        assertConnections(context);
+        emptyMainHand(context);
+        closeup(context, new Vec3(1, 100.03, 1), "consecutive-diagonal-shared-corner-closeup");
+        closeup(context, new Vec3(0.5, 100.03, 0.5), "consecutive-diagonal-center-node-closeup");
+        overview(context, "five-consecutive-native-diagonal-marks");
+        checks.add("Five consecutive diagonal marks drawn natively; shared-corner and center-node closeups captured for continuity review");
+    }
+
+    private void closeup(final ClientGameTestContext context, final Vec3 target, final String name) throws Exception {
+        position(context, new Vec3(target.x, 101.25, target.z - 1.25));
+        context.runOnClient(client -> {
+            final Vec3 delta = target.subtract(client.player.getEyePosition());
+            client.player.setYRot((float) Math.toDegrees(Math.atan2(-delta.x, delta.z)));
+            client.player.setXRot((float) -Math.toDegrees(Math.atan2(delta.y, Math.hypot(delta.x, delta.z))));
+        });
+        world.getConnection().waitForChunksRender();
+        context.waitTicks(5);
+        screenshot(context, name);
+    }
+
+    private void emptyMainHand(final ClientGameTestContext context) {
+        server(player -> {
+            player.getInventory().setItem(0, ItemStack.EMPTY);
+            player.getInventory().setSelectedSlot(0);
+            player.inventoryMenu.broadcastChanges();
+        });
+        world.getConnection().waitForClientboundPackets();
+        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+    }
+
+    private void clickLine(final ClientGameTestContext context, final BlockPos pos, final double x, final double z) {
+        position(context, new Vec3(pos.getX() + x, pos.getY(), pos.getZ() + z));
+        aimDown(context, pos);
+        check(context.computeOnClient(client -> client.player.getMainHandItem().isEmpty()), "Connection editing uses a genuinely empty main hand");
+        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.waitTicks(5);
+        world.getConnection().waitForClientboundPackets();
+    }
+
+    private void assertEdge(final ClientGameTestContext context, final BlockPos pos, final Side side, final boolean connected) {
+        final BooleanProperty property = ConnectedGlyphBlock.ALL_CONNECTIONS.get(side);
+        check(serverValue(player -> player.level().getBlockState(pos).getValue(property)) == connected,
+            "Native click sets server " + side.id() + " to " + connected + " at " + pos);
+        context.waitFor(client -> client.level.getBlockState(pos).getValue(property) == connected, 30);
     }
 
     private void draw(final ClientGameTestContext context, final BlockPos pos, final String glyph) {
@@ -232,7 +349,7 @@ public final class DiagonalChalkClientAcceptance implements FabricClientGameTest
     }
 
     private void writeReport() throws Exception {
-        report.put("execution", "Rendered Fabric client; native Survival right-clicks draw and recolor every glyph, native left-clicks erase. Terrain, camera positions and chalk supplies are staged; glyph placement and connection outcomes are never injected.");
+        report.put("execution", "Rendered Fabric client; native Survival right-clicks draw, recolor and toggle individual connections; native left-clicks erase. Both halves of eight directions and different-colored diagonal crossings are exercised. Terrain, camera positions and chalk supplies are staged; glyph placement and connection outcomes are never injected.");
         report.put("checks", checks);
         report.put("screenshots", screenshots);
         report.put("visual_review", "Screenshots require separate inspection for gaps, color readability and texture defects.");

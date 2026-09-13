@@ -110,6 +110,8 @@ public final class WarlockeryFabricEvents {
         });
         PlayerBlockBreakEvents.BEFORE.register(WarlockeryFabricEvents::beforeBlockBreak);
         UseEntityCallback.EVENT.register((player, level, hand, target, hit) -> {
+            final var focusResult = com.kadamitas.warlockery.item.ArcaneFocusEntityInteraction.dispatch(player, target, hand);
+            if (focusResult != InteractionResult.PASS) return focusResult;
             if (!(player instanceof ServerPlayer serverPlayer)) {
                 return InteractionResult.PASS;
             }
@@ -175,6 +177,7 @@ public final class WarlockeryFabricEvents {
     }
 
     private static void afterDeath(final LivingEntity entity, final DamageSource source) {
+        SpiritWorldRuntime.releaseBodyEquipment(entity);
         if (entity instanceof ServerPlayer player) {
             WerewolfPreyDriveRuntime.release(player);
         }

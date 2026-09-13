@@ -17,7 +17,7 @@ final class ReleaseMetadataTest {
     @Test
     void stableVersionMatchesUpdateFeedAndChangelog() throws IOException {
         final String version = property("mod_version");
-        assertEquals("1.5.3", version);
+        assertEquals("1.5.4", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
@@ -49,7 +49,7 @@ final class ReleaseMetadataTest {
         assertEquals("com.kadamitas.warlockery.client.WarlockeryClient", metadata
             .getAsJsonObject("entrypoints").getAsJsonArray("client").get(0).getAsString());
         final JsonObject dependencies = metadata.getAsJsonObject("depends");
-        assertEquals(">=" + property("loader_version"), dependencies.get("fabricloader").getAsString());
+        assertEquals(">=0.19.3", dependencies.get("fabricloader").getAsString());
         assertEquals(">=" + property("fabric_api_version"), dependencies.get("fabric-api").getAsString());
         assertEquals("~" + property("minecraft_version"), dependencies.get("minecraft").getAsString());
         assertEquals(">=25", dependencies.get("java").getAsString());
@@ -83,7 +83,7 @@ final class ReleaseMetadataTest {
         assertTrue(gradleProperties.contains("org.gradle.configuration-cache=false"));
         assertEquals("warlockery-fabric", property("archives_base_name"));
         assertEquals("1.17.19", property("loom_version"));
-        assertEquals("0.19.3", property("loader_version"));
+        assertEquals("0.19.5", property("loader_version"));
         assertEquals("0.158.0+26.2", property("fabric_api_version"));
 
         final String wrapper = read("gradle/wrapper/gradle-wrapper.properties");
@@ -94,7 +94,7 @@ final class ReleaseMetadataTest {
     @Test
     void curseForgeWorkflowKeepsNormalLoadersAndGuardsTheSupporterBuild() throws IOException {
         final String contents = read(".github/workflows/publish-curseforge.yml");
-        assertTrue(contents.contains("default: v1.5.3"));
+        assertTrue(contents.contains("default: v1.5.4"));
         assertTrue(contents.contains("- forge"));
         assertTrue(contents.contains("- neoforge"));
         assertTrue(contents.contains("- fabric"));

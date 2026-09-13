@@ -32,15 +32,17 @@ final class SpiritWorldResourceTest {
     }
 
     @Test
-    void carryInIsAnExportSubsetAndDreamHarvestsStayBehindUntilEarned() throws IOException {
+    void entryToolsAndCottonAreDistinctFromCuratedSpiritCreatureExports() throws IOException {
         final Set<String> carryIn = values("tags/item/spirit_world_carry_in.json");
         final Set<String> exports = values("tags/item/spirit_world_exports.json");
-        assertTrue(exports.containsAll(carryIn));
-        assertTrue(carryIn.contains("warlockery:ingredient_icy_needle"));
-        assertTrue(carryIn.contains("warlockery:ingredient_verdant_catalyst"));
-        assertFalse(carryIn.contains("warlockery:somniancotton"));
-        assertFalse(carryIn.contains("warlockery:ingredient_disturbed_cotton"));
-        assertFalse(carryIn.contains("warlockery:bucketspirit"));
+        assertEquals(Set.of("warlockery:ingredient_icy_needle", "warlockery:ingredient_verdant_catalyst",
+            "warlockery:ingredient_verdant_catalyst_prime", "warlockery:somniancotton",
+            "warlockery:ingredient_disturbed_cotton"), carryIn);
+        final Set<String> expectedExports = new java.util.HashSet<>(carryIn);
+        expectedExports.addAll(Set.of("warlockery:ingredient_subdued_spirit",
+            "warlockery:ingredient_mellifluous_hunger", "minecraft:gunpowder",
+            "minecraft:magma_cream", "warlockery:demonheart"));
+        assertEquals(expectedExports, exports);
     }
 
     private static JsonObject json(final String relative) throws IOException {

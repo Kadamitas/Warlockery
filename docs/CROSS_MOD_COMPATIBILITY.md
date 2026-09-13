@@ -1,6 +1,6 @@
 # Cross-mod compatibility
 
-Warlockery 1.5.1 targets Minecraft 26.2 and Java 25. The Fabric build targets Fabric Loader 0.19.3 with Fabric API 0.158.0+26.2; matching cross-loader releases target Forge 65.1.2 and NeoForge 26.2.0.64. Codecs serialize data. They do not replace shared material contracts. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, Fabric Transfer API storage, and Fabric API lookups.
+Warlockery targets Minecraft 26.2 and Java 25. The Fabric build targets Fabric Loader 0.19.5 with Fabric API 0.158.0+26.2 and accepts Fabric Loader 0.19.3 or newer. Matching cross-loader builds target Forge 65.1.0 and NeoForge 26.2.0.87, with NeoForge 26.2.0.64 or newer supported. Codecs serialize data. They do not replace shared material contracts. Cross-mod substitution uses canonical `c:` tags, vanilla behavior tags, data-driven recipes, Fabric Transfer API storage, and Fabric API lookups.
 
 The `1.5.0-LlaGuiT0-26.2.0.45` supporter build is NeoForge-only for LlaGuiT0's modpack. Its NeoForge dependency is intentionally exact: `[26.2.0.45-beta,26.2.0.46-beta)`. It does not imply Forge or Fabric artifacts.
 

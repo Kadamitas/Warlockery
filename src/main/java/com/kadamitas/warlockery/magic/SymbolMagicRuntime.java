@@ -323,7 +323,6 @@ public final class SymbolMagicRuntime {
             0.5F,
             0.8F + spell.ordinal() % 7 * 0.05F
         );
-        player.sendOverlayMessage(Component.translatable(spell.translationKey()).withStyle(ChatFormatting.AQUA));
     }
 
     private static void fail(final ServerPlayer player, final String message) {

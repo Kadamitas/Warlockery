@@ -41,7 +41,10 @@ public final class SupernaturalStatusOverlay {
         final net.minecraft.client.DeltaTracker deltaTracker
     ) {
         final Minecraft minecraft = Minecraft.getInstance();
-        final List<Meter> meters = meters(minecraft);
+        final List<Meter> visible = meters(minecraft);
+        visible.stream().filter(SupernaturalStatusOverlay::isMana)
+            .forEach(meter -> drawMana(graphics, minecraft.font, meter));
+        final List<Meter> meters = visible.stream().filter(meter -> !isMana(meter)).toList();
         final PlayerResourceHudLayout layout = PlayerResourceHudLayout.leftLane(
             meters.size(),
             8,
@@ -56,7 +59,7 @@ public final class SupernaturalStatusOverlay {
 
     static int resourceStackBottom(final Minecraft minecraft) {
         return PlayerResourceHudLayout.leftLane(
-            meters(minecraft).size(),
+            (int) meters(minecraft).stream().filter(meter -> !isMana(meter)).count(),
             8,
             8,
             ROW_HEIGHT,
@@ -102,6 +105,24 @@ public final class SupernaturalStatusOverlay {
         final int titleWidth = Math.max(12, valueX - barX - 4);
         graphics.text(font, clipped(font, title(meter), titleWidth), barX, y + 3, palette.text(), false);
         graphics.text(font, value, valueX, y + 3, 0xFFF5F6FA, false);
+    }
+
+    private static boolean isMana(final Meter meter) {
+        return meter.kind() == Kind.MANA || meter.kind() == Kind.UNATTUNED;
+    }
+
+    private static void drawMana(final GuiGraphicsExtractor graphics, final Font font, final Meter meter) {
+        final int width = 82;
+        final int x = graphics.guiWidth() / 2 - width / 2;
+        final int y = graphics.guiHeight() - 80;
+        final Palette colors = palette(meter.kind());
+        graphics.fill(x - 1, y - 1, x + width + 1, y + 5, 0xB0000000);
+        graphics.fill(x, y, x + width, y + 4, 0xFF252A35);
+        final int filled = meter.filledWidth(width);
+        if (filled > 0) {
+            graphics.fill(x, y, x + filled, y + 4, colors.fill());
+            graphics.fill(x, y, x + filled, y + 1, colors.highlight());
+        }
     }
 
     private static Component title(final Meter meter) {

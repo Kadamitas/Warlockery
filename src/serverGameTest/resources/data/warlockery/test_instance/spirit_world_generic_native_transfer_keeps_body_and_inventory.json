@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:function",
+  "function": "warlockery:spirit_world_generic_native_transfer_keeps_body_and_inventory",
+  "environment": {
+    "type": "warlockery:isolated",
+    "id": "spirit_world_generic_native_transfer_keeps_body_and_inventory",
+    "delegate": "minecraft:default"
+  },
+  "structure": "warlockery:empty32x32x32",
+  "max_ticks": 320
+}

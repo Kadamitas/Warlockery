@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.kadamitas.warlockery.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "GameTestHelperAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

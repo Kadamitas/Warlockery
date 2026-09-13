@@ -18,7 +18,7 @@ body:
     id: environment
     attributes:
       label: Minecraft, mod loader, and Java versions
-      placeholder: Minecraft 26.2, Fabric Loader 0.19.3, Java 25
+      placeholder: Minecraft 26.2, Fabric Loader 0.19.5, Java 25
     validations:
       required: true
   - type: dropdown

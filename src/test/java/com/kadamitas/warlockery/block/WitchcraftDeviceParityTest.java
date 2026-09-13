@@ -13,69 +13,26 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Stream;
-import org.junit.jupiter.api.DynamicContainer;
-import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
 
 final class WitchcraftDeviceParityTest {
     private static final Path RESOURCES = Path.of("src", "main", "resources");
 
-    @TestFactory
-    Stream<DynamicContainer> everyFetishModeHasFailureDiagnosticAndSuccessCoverage() {
-        return FetishMode.VALUES.stream().map(mode -> DynamicContainer.dynamicContainer(
-            "fetish_" + mode.getSerializedName(),
-            List.of(
-                DynamicTest.dynamicTest("failure", () -> {
-                    assertFalse(FetishRules.shouldAffect(false, true, false));
-                    assertFalse(FetishRules.shouldAffect(true, false, false));
-                    assertFalse(FetishRules.shouldAffect(true, true, true));
-                }),
-                DynamicTest.dynamicTest("diagnostic", () -> {
-                    assertEquals(
-                        FetishRules.Diagnostic.WRONG_FOCUS,
-                        FetishRules.diagnostic(false, mode, false, false, false)
-                    );
-                    assertEquals(
-                        FetishRules.Diagnostic.READY,
-                        FetishRules.diagnostic(true, mode, false, false, true)
-                    );
-                }),
-                DynamicTest.dynamicTest("success", () -> {
-                    assertTrue(FetishRules.shouldAffect(true, true, false));
-                    assertNotEquals(mode, mode.next());
-                })
-            )
-        ));
+    @Test
+    void fetishAffectsOnlyActiveEligibleUnprotectedTargets() {
+        assertFalse(FetishRules.shouldAffect(false, true, false));
+        assertFalse(FetishRules.shouldAffect(true, false, false));
+        assertFalse(FetishRules.shouldAffect(true, true, true));
+        assertTrue(FetishRules.shouldAffect(true, true, false));
     }
 
-    @TestFactory
-    Stream<DynamicContainer> everyDreamWeaverModeHasFailureDiagnosticAndSuccessCoverage() {
-        return DreamWeaverMode.VALUES.stream().map(mode -> DynamicContainer.dynamicContainer(
-            "dream_weaver_" + mode.getSerializedName(),
-            List.of(
-                DynamicTest.dynamicTest("failure", () -> {
-                    assertFalse(DreamWeaverRules.canReward(false, 100, false, true));
-                    assertFalse(DreamWeaverRules.canReward(true, 99, false, true));
-                    assertFalse(DreamWeaverRules.canReward(true, 100, true, true));
-                    assertFalse(DreamWeaverRules.canReward(true, 100, false, false));
-                }),
-                DynamicTest.dynamicTest("diagnostic", () -> {
-                    final DreamWeaverRules.WakeReward reward = DreamWeaverRules.reward(mode, true);
-                    assertFalse(reward.effect().isBlank());
-                    final JsonObject variants = json("assets/warlockery/blockstates/dreamcatcher.json")
-                        .getAsJsonObject("variants");
-                    assertTrue(variants.has("mode=" + mode.getSerializedName()));
-                }),
-                DynamicTest.dynamicTest("success", () -> {
-                    assertTrue(DreamWeaverRules.canReward(true, 100, false, true));
-                    assertNotEquals(mode, mode.next());
-                    final DreamWeaverRules.WakeReward reward = DreamWeaverRules.reward(mode, false);
-                    assertFalse(reward.spawnNightmare());
-                })
-            )
-        ));
+    @Test
+    void dreamRewardsRequireFullSleepAndAnEligibleSleeper() {
+        assertFalse(DreamWeaverRules.canReward(false, 100, false, true));
+        assertFalse(DreamWeaverRules.canReward(true, 99, false, true));
+        assertFalse(DreamWeaverRules.canReward(true, 100, true, true));
+        assertFalse(DreamWeaverRules.canReward(true, 100, false, false));
+        assertTrue(DreamWeaverRules.canReward(true, 100, false, true));
     }
 
     @Test

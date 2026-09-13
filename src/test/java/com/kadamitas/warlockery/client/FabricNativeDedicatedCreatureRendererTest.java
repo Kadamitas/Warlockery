@@ -20,6 +20,11 @@ final class FabricNativeDedicatedCreatureRendererTest {
         assertTrue(renderer.contains("addPresentationLayer(final RenderLayer<S, M> layer)"));
         assertTrue(renderer.contains("addLayer(layer)"));
         assertEqualsTwo(registrations, ".addPresentationLayer(new NativeVillagerClothingLayer<>(");
+        assertTrue(registrations.contains("register(\"stonebroker\", StonebrokerRenderer::new)"));
+        assertTrue(registrations.contains("register(\"spirit\", TranslucentSpiritRenderer::new)"));
+        assertTrue(registrations.contains("EntityRenderers.register(type(id), provider)"));
+        assertTrue(registrations.contains("RenderTypes.entityTranslucent(getTextureLocation(state))"));
+        assertFalse(registrations.contains("EntityRenderersEvent"));
         assertFalse(renderer.toLowerCase(java.util.Locale.ROOT).contains("mixin"));
         assertFalse(registrations.toLowerCase(java.util.Locale.ROOT).contains("mixin"));
     }

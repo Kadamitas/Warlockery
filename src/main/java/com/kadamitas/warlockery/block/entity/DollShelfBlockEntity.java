@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.block.entity;
 
 import com.kadamitas.warlockery.block.DollShelfRules;
 import com.kadamitas.warlockery.item.DollItem;
+import com.kadamitas.warlockery.item.DollWorldBoundary;
 import com.kadamitas.warlockery.menu.DollShelfMenu;
 import com.kadamitas.warlockery.item.DollMendingSchedule;
 import com.kadamitas.warlockery.item.SympatheticBinding;
@@ -59,6 +60,14 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
         return loadedShelves(server)
             .flatMap(shelf -> shelf.items.stream())
             .filter(stack -> stack.getItem() instanceof DollItem);
+    }
+
+    public static Stream<ItemStack> loadedDolls(final net.minecraft.server.level.ServerPlayer target) {
+        return loadedShelves(target.level().getServer())
+            .filter(shelf -> DollWorldBoundary.sameSide(shelf.level, target))
+            .flatMap(shelf -> shelf.items.stream())
+            .filter(stack -> stack.getItem() instanceof DollItem
+                && DollWorldBoundary.allows(stack, target, target));
     }
 
     public static void markContainingShelfChanged(final ItemStack stack, final MinecraftServer server) {
@@ -181,18 +190,19 @@ public final class DollShelfBlockEntity extends BaseContainerBlockEntity {
 
     private static void processShelvedMending(final MinecraftServer server) {
         loadedShelves(server)
-            .flatMap(shelf -> shelf.items.stream())
+            .forEach(shelf -> shelf.items.stream()
             .filter(stack -> stack.getItem() instanceof DollItem)
             .forEach(stack -> SympatheticBinding.read(stack)
                 .flatMap(binding -> binding.resolve(server))
                 .filter(net.minecraft.server.level.ServerPlayer.class::isInstance)
                 .map(net.minecraft.server.level.ServerPlayer.class::cast)
                 .filter(net.minecraft.server.level.ServerPlayer::isAlive)
+                .filter(player -> DollWorldBoundary.allows(stack, shelf.level, player))
                 .ifPresent(player -> DollItem.tryMendBoundEquipment(
                     stack,
                     (ServerLevel) player.level(),
                     player
-                )));
+                ))));
     }
 
     private static Stream<DollShelfBlockEntity> loadedShelves(final MinecraftServer server) {

@@ -46,7 +46,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.stats.Stats;
 import org.jspecify.annotations.Nullable;
 
-public final class InteractiveUtilityBlock extends Block {
+public class InteractiveUtilityBlock extends Block {
     private static final int WARD_INTERVAL = 20;
     private final UtilityDeviceProfile profile;
 
@@ -69,6 +69,11 @@ public final class InteractiveUtilityBlock extends Block {
         final InteractionHand hand,
         final BlockHitResult hit
     ) {
+        if (profile == UtilityDeviceProfile.SPIRIT_PORTAL
+            && stack.getItem() instanceof com.kadamitas.warlockery.item.IcyNeedleItem
+            && SpiritWorldRuntime.isDreaming(player)) {
+            return stack.getItem().use(level, player, hand);
+        }
         return switch (profile) {
             case BLOOD_CRUCIBLE -> feedCrucible(level, player, stack);
             case COFFIN -> useCoffin(level, pos, player, stack);
@@ -165,8 +170,11 @@ public final class InteractiveUtilityBlock extends Block {
         if (profile == UtilityDeviceProfile.SPIRIT_PORTAL
             && entity instanceof ServerPlayer player
             && !player.isOnPortalCooldown()
-            && ManifestationRuntime.canEnterPortal(player)) {
-            ManifestationRuntime.enterPortal(player, pos);
+            && SpiritWorldRuntime.isDreaming(player)
+            && (ManifestationRuntime.canEnterPortal(player) || ManifestationRuntime.isActive(player)
+                || ManifestationRuntime.portalDecision(player)
+                    == com.kadamitas.warlockery.dream.SpiritManifestationRules.Decision.MISSING_RITE)) {
+            useSpiritPortal(pos, player);
         }
     }
 
@@ -349,6 +357,9 @@ public final class InteractiveUtilityBlock extends Block {
         final Player player,
         final ItemStack stack
     ) {
+        if (stack.isEmpty()) {
+            return useMirror(level, pos, player);
+        }
         if (stack.is(ModItems.ALL.get("ingredient_quartz_sphere").get())) {
             if (!(level instanceof ServerLevel serverLevel)) {
                 return InteractionResult.SUCCESS;
@@ -456,8 +467,9 @@ public final class InteractiveUtilityBlock extends Block {
                 level.getBlockState(pos.above()).getCollisionShape(level, pos.above()).isEmpty()
                     && level.getBlockState(pos.above(2)).getCollisionShape(level, pos.above(2)).isEmpty()
             ))
-            .min(Comparator.comparingDouble(pos -> pos.distSqr(origin)))
-            .map(BlockPos::immutable);
+            // The native iterator reuses its cursor; retain candidates before the reduction.
+            .map(BlockPos::immutable)
+            .min(Comparator.comparingDouble(pos -> pos.distSqr(origin)));
     }
 
     private static InteractionResult summonReflection(
@@ -510,7 +522,11 @@ public final class InteractiveUtilityBlock extends Block {
         if (player instanceof ServerPlayer serverPlayer && SpiritWorldRuntime.isDreaming(serverPlayer)) {
             final boolean success = ManifestationRuntime.isActive(serverPlayer)
                 ? ManifestationRuntime.returnToSpiritWorld(serverPlayer, ManifestationRuntime.ReturnCause.PORTAL)
-                : ManifestationRuntime.enterPortal(serverPlayer, pos);
+                : ManifestationRuntime.portalDecision(serverPlayer)
+                    == com.kadamitas.warlockery.dream.SpiritManifestationRules.Decision.MISSING_RITE
+                    ? SpiritWorldRuntime.wake(serverPlayer,
+                        com.kadamitas.warlockery.dream.SpiritWorldRules.WakeCause.RETURN_PORTAL)
+                    : ManifestationRuntime.enterPortal(serverPlayer, pos);
             return success ? InteractionResult.SUCCESS : InteractionResult.FAIL;
         }
         return show(player, "spirit_portal", UtilityDeviceRules.spiritPortal(false));

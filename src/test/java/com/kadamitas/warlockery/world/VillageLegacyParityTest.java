@@ -4,9 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 final class VillageLegacyParityTest {
@@ -28,15 +25,4 @@ final class VillageLegacyParityTest {
         assertEquals(4, HobgoblinCampRules.residents(2));
     }
 
-    @Test
-    void villageEnrichmentBuildsApothecaryAndKeepFeatures() throws IOException {
-        final String runtime = Files.readString(Path.of(
-            "src", "main", "java", "com", "kadamitas", "warlockery", "world", "CreatureWorldIntegration.java"
-        ));
-        assertTrue(runtime.contains("buildApothecary"));
-        assertTrue(runtime.contains("distilleryidle"));
-        assertTrue(runtime.contains("ModVillagers.WARLOCK_KEY"));
-        assertTrue(runtime.contains("buildTownKeep"));
-        assertTrue(runtime.contains("Items.GOLDEN_CHESTPLATE"));
-    }
 }

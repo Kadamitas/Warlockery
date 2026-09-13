@@ -32,6 +32,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -67,6 +68,7 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
     private TestSingleplayerContext world;
     private Path evidence;
     private volatile ReflectionObservation observation;
+    private volatile TravelObservation travelObservation;
 
     @Override
     public void runTest(final ClientGameTestContext context) {
@@ -77,6 +79,10 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
             ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
                 final var current = observation;
                 if (current != null && current.player.level() == level) current.loaded(entity);
+            });
+            ServerTickEvents.END_SERVER_TICK.register(server -> {
+                final var current=travelObservation;
+                if(current!=null && current.player.level().getServer()==server) current.sample("server_end_tick");
             });
             final String configured = System.getProperty("warlockery.placedMirrorIds", "");
             final Set<String> requested = configured.isBlank() ? Set.copyOf(MIRRORS) : Arrays.stream(configured.split(","))
@@ -116,12 +122,14 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
                         try { screenshot(context, id + "-failure-in-world"); } catch (Throwable ignored) { }
                     } finally {
                         context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                        if (travelObservation != null) row.put("paired_travel_observation",serverValue(player -> travelObservation.report()));
+                        travelObservation = null;
                         if (observation != null) row.put("reflection_observation", serverValue(player -> observation.report()));
                         observation = null;
                         write(false);
                     }
                 } catch (Throwable failure) { fail(id, row, failure); }
-                finally { observation = null; world = null; }
+                finally { observation = null; travelObservation = null; world = null; }
                 write(false);
             }
             write(true);
@@ -159,7 +167,10 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
                 .create(player.level(), EntitySpawnReason.COMMAND);
             check(cow != null, "Cow prerequisite exists");
             cow.setPos(3.5, 100, -.5); cow.setNoAi(true); cow.setPersistenceRequired();
-            cow.setCustomName(Component.literal("Mirror Witness")); cow.setHealth(cow.getMaxHealth()); cow.setAbsorptionAmount(40);
+            cow.setCustomName(Component.literal("Mirror Witness")); cow.setHealth(cow.getMaxHealth());
+            cow.getAttribute(Attributes.MAX_ABSORPTION).setBaseValue(40);
+            cow.setAbsorptionAmount(40);
+            check(cow.getAbsorptionAmount() == 40, "Named witness has actual absorption for the mirror reading prerequisite");
             player.level().addFreshEntity(cow); return cow.getUUID();
         });
     }
@@ -171,6 +182,10 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
             Component.translatable("message.warlockery.spirit_locator.direction.east"));
         for (int visit = 0; visit < 2; visit++) {
             clearChat(context); use(context, Vec3.atCenterOf(MIRROR), MIRROR);
+            row.put("reading_observed_overlay", overlay(context));
+            row.put("reading_observed_memory", serverValue(PlacedMirrorAbilitiesClientAcceptance::memory));
+            await(context, player -> memory(player).equals(List.of(player.getName().getString())), 30,
+                "Native empty-hand mirror use records the visitor; overlay=" + overlay(context));
             awaitChat(context, expected);
             check(serverValue(player -> memory(player).equals(List.of(player.getName().getString()))),
                 "Actual empty-hand use records one visitor and repeat use deduplicates that visitor");
@@ -263,9 +278,34 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
         position(context, new Vec3(8.5, 100, -2.5)); place(context, partner, PARTNER, 3);
         position(context, START); emptyHand(context);
         check(serverValue(player -> player.level().getBlockState(PARTNER.above()).isAir() && player.level().getBlockState(PARTNER.above(2)).isAir()), "Different mirror design has two clear arrival blocks");
+        final double supportedY=serverValue(player -> {
+            final var state=player.level().getBlockState(PARTNER);
+            final var shape=state.getCollisionShape(player.level(),PARTNER);
+            row.put("partner_collision_boxes",shape.toAabbs().stream().map(box -> box.move(PARTNER).toString()).toList());
+            row.put("partner_block_state",state.toString());
+            row.put("native_requested_arrival",new Vec3(PARTNER.getX()+.5,PARTNER.getY()+1,PARTNER.getZ()+.5).toString());
+            return shape.toAabbs().stream().filter(box -> box.minX<.8 && box.maxX>.2 && box.minZ<.8 && box.maxZ>.2)
+                .mapToDouble(box -> PARTNER.getY()+box.maxY).max().orElseThrow(() -> new AssertionError("Actual partner has collision support under the arrival footprint"));
+        });
+        check(supportedY==PARTNER.getY()+1,"Actual mirror collision supports the documented exact arrival at y101");
+        server(player -> { travelObservation=new TravelObservation(player); travelObservation.sample("before_native_use"); });
+        row.put("paired_travel_client_before",clientPosition(context));
         crouchUse(context);
-        final Vec3 destination = new Vec3(8.5, 101, .5);
-        await(context, player -> player.position().distanceTo(destination) < .15, 20, "Native crouch use travels eight blocks to the different mirror design");
+        server(player -> travelObservation.sample("after_native_use"));
+        row.put("paired_travel_client_after_use",clientPosition(context));
+        final Vec3 destination = new Vec3(PARTNER.getX()+.5,supportedY,PARTNER.getZ()+.5);
+        int stableTicks=0;
+        for(int tick=0;tick<30 && stableTicks<4;tick++) {
+            final boolean settled=serverValue(player -> stableArrival(player,destination))
+                && context.computeOnClient(client -> client.player!=null && client.player.position().distanceTo(destination)<.1);
+            stableTicks=settled?stableTicks+1:0;
+            context.waitTicks(1);
+        }
+        row.put("paired_travel_observation",serverValue(player -> travelObservation.report()));
+        row.put("paired_travel_client_settled",clientPosition(context));
+        row.put("supported_arrival",destination.toString());
+        check(stableTicks==4,"Native crouch use reaches the actual partner center, acknowledges the teleport, and remains collision-supported for four ticks; observed="+serverValue(player -> player.position().toString()));
+        travelObservation=null;
         awaitOverlay(context, translated(context, "message.warlockery.mirror.paired_travel"));
         row.put("cross_design_pairing_status", "PASSED");
         row.put("paired_travel", Map.of("source", id, "destination", partner, "mirror_distance", 8,
@@ -299,6 +339,41 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
         context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3);
         try { use(context, Vec3.atCenterOf(MIRROR), MIRROR); }
         finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2); }
+    }
+    private static boolean stableArrival(final ServerPlayer player,final Vec3 destination) {
+        return Math.abs(player.getX()-destination.x)<.02 && Math.abs(player.getZ()-destination.z)<.02
+            && Math.abs(player.getY()-destination.y)<.02 && field(player.connection,"awaitingPositionFromClient")==null
+            && player.level().noCollision(player)
+            && player.level().getBlockCollisions(player,player.getBoundingBox().move(0,-.02,0)).iterator().hasNext();
+    }
+    private static Map<String,Object> clientPosition(final ClientGameTestContext context) {
+        return context.computeOnClient(client -> {
+            if(client.player==null) return Map.of("player_present",false);
+            return Map.of("player_present",true,"position",client.player.position().toString(),"velocity",client.player.getDeltaMovement().toString(),
+                "dimension",client.player.level().dimension().identifier().toString(),"on_ground",client.player.onGround(),
+                "yaw",client.player.getYRot(),"pitch",client.player.getXRot(),"screen",String.valueOf(client.gui.screen()));
+        });
+    }
+    private static final class TravelObservation {
+        final ServerPlayer player;
+        final List<Map<String,Object>> samples=new ArrayList<>();
+        TravelObservation(final ServerPlayer player) { this.player=player; }
+        void sample(final String phase) {
+            if(samples.size()>=80) return;
+            final Map<String,Object> row=new LinkedHashMap<>();
+            row.put("phase",phase); row.put("game_tick",player.level().getGameTime());
+            row.put("position",player.position().toString()); row.put("velocity",player.getDeltaMovement().toString());
+            row.put("dimension",player.level().dimension().identifier().toString()); row.put("on_ground",player.onGround());
+            row.put("fall_distance",player.fallDistance); row.put("no_collision",player.level().noCollision(player));
+            row.put("bounding_box",player.getBoundingBox().toString()); row.put("feet_block",player.level().getBlockState(player.blockPosition()).toString());
+            row.put("support_block",player.level().getBlockState(player.blockPosition().below()).toString());
+            row.put("awaiting_position_from_client",String.valueOf(field(player.connection,"awaitingPositionFromClient")));
+            row.put("teleport_id",field(player.connection,"awaitingTeleport")); row.put("teleport_tick",field(player.connection,"awaitingTeleportTime"));
+            row.put("display_name",player.getDisplayName().getString()); row.put("custom_name",String.valueOf(player.getCustomName()));
+            row.put("masquerade",WarlockeryEntityData.get(player).getStringOr("WarlockeryMirrorMasquerade",""));
+            samples.add(row);
+        }
+        Map<String,Object> report() { return Map.of("observer","Passive server end-tick and boundary snapshots; no player, terrain, velocity or teleport state changed","samples",List.copyOf(samples)); }
     }
     private static final class ReflectionObservation {
         final ServerPlayer player;

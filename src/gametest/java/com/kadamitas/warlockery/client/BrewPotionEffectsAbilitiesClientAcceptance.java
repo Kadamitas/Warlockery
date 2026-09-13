@@ -196,6 +196,11 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
             player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
+        if (family.equals("invisible")) {
+            check(serverValue(player -> !player.isInvisible() && !observation.target.isInvisible() && !observation.control.isInvisible()),
+                "Untreated player and both cows must be visible before the matched visual trial");
+            invisibilityFrame(context, id, "before", row);
+        }
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(90); }); context.waitTicks(2);
         screenshot(context, id.getPath() + "-before-native-throw");
         context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
@@ -350,8 +355,8 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
                     final Entity control = client.level.getEntity(observation.control.getId());
                     return target != null && target.isInvisible() && control != null && !control.isInvisible();
                 }), "The real client receives the treated invisible and independent visible entities");
-                look(context, serverValue(player -> observation.target.getBoundingBox().getCenter()));
-                row.put("render_review", "Native world screenshot records treated invisible entity; visual disappearance still requires screenshot review.");
+                invisibilityFrame(context, id, "after", row);
+                row.put("render_review", "Matched first-person target and third-person player frames before and after the native throw. Review visible cow/player geometry disappearing while arena stays aligned; cow particles are not evidence of visible body. Human screenshot review remains pending.");
                 row.put("behavior_observed", false);
             }
             case "fortune" -> {
@@ -551,6 +556,31 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         row.put("book", profile.id()); row.put("book_status", "ALL_PAGES_REACHED"); row.put("book_pages_read", pages); row.put("book_text", text);
         row.put("guide_mapping", "Exact registry item maps to BrewKind " + kind.id() + " and its canonical guide. Shared alias behavior does not establish alias acquisition.");
         context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+    }
+
+    private void invisibilityFrame(final ClientGameTestContext context, final Identifier id, final String phase,
+        final Map<String, Object> row) throws Exception {
+        world.getConnection().waitForClientboundPackets();
+        final Vec3 targetPoint = new Vec3(2.5, 100.7, .5);
+        check(context.computeOnClient(client -> client.options.getCameraType().isFirstPerson()),
+            "Matched target capture begins in first person");
+        look(context, targetPoint);
+        screenshot(context, id.getPath() + "-invisibility-target-" + phase);
+        // Native perspective toggle: first-person -> rear third-person -> front third-person -> first-person.
+        context.getInput().pressKey(GLFW.GLFW_KEY_F5); context.waitTicks(3);
+        try {
+            check(!context.computeOnClient(client -> client.options.getCameraType().isFirstPerson()),
+                "Native perspective key reaches third person");
+            screenshot(context, id.getPath() + "-invisibility-player-thirdperson-" + phase);
+            row.put("invisibility_" + phase + "_view", context.computeOnClient(client -> Map.of(
+                "player_position", client.player.position().toString(), "yaw", client.player.getYRot(),
+                "pitch", client.player.getXRot(), "player_invisible", client.player.isInvisible())));
+        } finally {
+            context.getInput().pressKey(GLFW.GLFW_KEY_F5); context.waitTicks(2);
+            context.getInput().pressKey(GLFW.GLFW_KEY_F5); context.waitTicks(2);
+        }
+        check(context.computeOnClient(client -> client.options.getCameraType().isFirstPerson()),
+            "Restore first person before the native throw or next trial");
     }
 
     private static Mob cow(final ServerPlayer player, final Vec3 point) {

@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.client;
 
 import com.google.gson.GsonBuilder;
 import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
+import com.kadamitas.warlockery.block.entity.CircleHeartBlockEntity;
 import com.kadamitas.warlockery.item.ManualProfile;
 import com.kadamitas.warlockery.registry.ModBlocks;
 import com.kadamitas.warlockery.registry.ModEntities;
@@ -52,6 +53,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     private final Map<String, List<EntityEvidence>> entityOfferings = new LinkedHashMap<>();
     private final Map<String, UUID> actionTargets = new LinkedHashMap<>();
     private final Map<String, Double> actionMeasurements = new LinkedHashMap<>();
+    private final Map<String, net.minecraft.core.Direction> castingDirections = new LinkedHashMap<>();
     private final List<ServerPlayer> syntheticPlayers = new ArrayList<>();
     private final List<Map<String, Object>> chalkRayTrace = new ArrayList<>();
     private final Map<String, Map<String, Object>> fixtureIsolation = new LinkedHashMap<>();
@@ -93,7 +95,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 report.put("missing_checklist", checklist(context));
                 readAllDetails(context, "broiling-missing");
                 screenshot(context, "broiling-missing-offering");
-                checks.add("Golden-center focus interaction opens the real ritual selection screen; native paging selects Broiling and exposes the missing offering.");
+                checks.add("Using the Circle Magic book on the golden center opens its saved entry; native article navigation and Perform Ritual expose the missing offering.");
                 checkDelayedRefresh(context);
                 closeScreen(context);
                 dropOfferings(context);
@@ -165,12 +167,24 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             isolation.put("before", playerTrace(player));
             isolation.put("previous_cast_active", previousCastActive);
             isolation.put("previous_wards", wardTrace(player));
+            isolation.put("previous_infusions", com.kadamitas.warlockery.magic.MagicPathState.active(player)
+                .stream().map(com.kadamitas.warlockery.magic.MagicPath::id).toList());
             fixtureIsolation.put(activeRitual, isolation);
             check(!previousCastActive, "Previous ritual cast completes before isolating " + activeRitual);
             // This world is reused only to avoid client startup per rite. Outcomes have already been
             // asserted; a prior portable ward must not push the next rite's staged chalk camera.
             player.level().getDataStorage().set(RitualWardData.TYPE, new RitualWardData());
+            player.level().getDataStorage().set(
+                com.kadamitas.warlockery.ritual.RitualEclipseData.TYPE,
+                new com.kadamitas.warlockery.ritual.RitualEclipseData());
             player.removeAllEffects();
+            player.clearFire();
+            player.setHealth(player.getMaxHealth());
+            player.getFoodData().setFoodLevel(20);
+            com.kadamitas.warlockery.transformation.SupernaturalProgression.cure(player);
+            if (!Boolean.getBoolean("warlockery.ritualPreserveInfusions")) {
+                com.kadamitas.warlockery.data.WarlockeryEntityData.get(player).remove("WarlockeryMagicPaths");
+            }
             player.setDeltaMovement(Vec3.ZERO);
             player.hurtMarked = true;
             isolation.put("after", playerTrace(player));
@@ -257,10 +271,17 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         for (var glyph : glyphs.entrySet()) {
             context.getInput().pressKey(chalkKey(glyph.getKey()));
             final var size = ChalkCircleLayout.Size.forMarkCount(glyph.getValue());
-            for (BlockPos offset : size.offsets()) {
-                final BlockPos target = CENTER.offset(offset);
-                drawMark(context, target, glyph.getKey());
-                positions.add(List.of(offset.getX(), offset.getZ()));
+            final boolean goldenRing = glyph.getKey().equals("circleglyphgolden");
+            if (goldenRing) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            try {
+                context.waitTicks(2);
+                for (BlockPos offset : size.offsets()) {
+                    final BlockPos target = CENTER.offset(offset);
+                    drawMark(context, target, glyph.getKey());
+                    positions.add(List.of(offset.getX(), offset.getZ()));
+                }
+            } finally {
+                if (goldenRing) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
             }
         }
         check(serverValue(player -> glyphs.entrySet().stream().allMatch(glyph ->
@@ -400,12 +421,18 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     }
 
     private void openRitual(final ClientGameTestContext context) {
-        context.getInput().pressKey(GLFW.GLFW_KEY_4);
+        check(serverValue(player -> player.getInventory().getNonEquipmentItems().stream()
+            .anyMatch(stack -> stack.is(ModItems.ALL.get("ingredient_book_circle_magic").get()))),
+            "The caster carries the actual Circle Magic book required by the ritual heart");
+        final int bookSlot = serverValue(player -> java.util.stream.IntStream.range(0, 9)
+            .filter(slot -> player.getInventory().getItem(slot).is(ModItems.ALL.get("ingredient_book_circle_magic").get()))
+            .findFirst().orElseThrow(() -> new AssertionError("Circle Magic book must be accessible in the hotbar")));
+        context.getInput().pressKey(GLFW.GLFW_KEY_1 + bookSlot);
         look(context, new Vec3(0.5, CENTER.getY() + 0.01, 0.5));
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(CENTER)),
-            "Arcane Focus ray targets the Golden Chalk heart");
+            "Circle Magic book ray targets the Golden Chalk heart");
         context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-        context.waitForScreen(RitualSelectionScreen.class);
+        context.waitForScreen(ManualScreen.class);
     }
 
     private void selectBroiling(final ClientGameTestContext context) {
@@ -413,21 +440,12 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     }
 
     private void selectRite(final ClientGameTestContext context, final String id) {
-        final String label = Component.translatable("ritual.warlockery." + id + ".title").getString();
-        for (int page = 0; page < 100; page++) {
-            final double[] button = context.computeOnClient(client -> client.gui.screen().children().stream()
-                .filter(Button.class::isInstance).map(Button.class::cast)
-                .filter(candidate -> candidate.visible && candidate.active && candidate.getMessage().getString().endsWith(label))
-                .map(candidate -> new double[] {candidate.getX() + candidate.getWidth() / 2.0,
-                    candidate.getY() + candidate.getHeight() / 2.0}).findFirst().orElse(null));
-            if (button != null) {
-                ManualClientAcceptance.click(context, button[0], button[1]);
-                check(selected(context).id().equals("warlockery:" + id), "Native ritual button selects " + id);
-                return;
-            }
-            ManualClientAcceptance.clickButton(context, "›");
-        }
-        throw new AssertionError(id + " is not reachable through native ritual pagination");
+        ManualClientAcceptance.selectSection(context, "rite_" + id);
+        check(context.computeOnClient(client -> field(client.gui.screen(), "selectedSection").equals("rite_" + id)),
+            "Native book navigation selects the intended ritual article");
+        ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.perform_ritual").getString());
+        context.waitFor(client -> casting(client.gui.screen()).performing() && selectedOnScreen(client.gui.screen()) != null
+            && selectedOnScreen(client.gui.screen()).id().equals("warlockery:" + id));
     }
 
     private void extraRite(final ClientGameTestContext context, final String id) throws Exception {
@@ -445,7 +463,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             prepareDeclaredConditions(player, id, definition);
             for (int x = 0; x < 3; x++) for (int z = 0; z < 2; z++) {
                 player.level().setBlockAndUpdate(ALTAR.offset(x, 0, z), ModBlocks.ALTAR.get().defaultBlockState());
-                player.level().setBlockAndUpdate(ALTAR.offset(x, -1, z), ModBlocks.ALL.get("demonheart").get().defaultBlockState());
+                player.level().setBlockAndUpdate(ALTAR.offset(x, -2, z), ModBlocks.ALL.get("demonheart").get().defaultBlockState());
             }
             player.getInventory().setItem(4, new ItemStack(ModItems.ALL.get("chalkinfernal").get()));
             player.getInventory().setItem(5, new ItemStack(ModItems.ALL.get("chalk_veil").get()));
@@ -472,10 +490,14 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         final Set<UUID> existingTargets = serverValue(player -> targetEntities(player, definition.target()).stream()
             .map(net.minecraft.world.entity.Entity::getUUID).collect(java.util.stream.Collectors.toSet()));
         final int existingItems = serverValue(player -> definition.action().equals("summon_item")
-            ? dropped(player, targetItem(definition.target())).stream().mapToInt(entity -> entity.getItem().getCount()).sum() : 0);
+            ? outputItemCount(player, targetItem(definition.target())) : 0);
         position(context, 0.5, CENTER.getY(), -2.5);
         look(context, new Vec3(0.5, CENTER.getY() + 0.1, 0.5));
-        position(context, 3.0, CENTER.getY(), 0.5);
+        if (definition.action().equals("summon_huntsman")) {
+            position(context, 2.5, CENTER.getY(), -1.5);
+        } else {
+            position(context, definition.action().equals("raise_column") ? 4.5 : 3.0, CENTER.getY(), 0.5);
+        }
         openRitual(context);
         selectRite(context, id);
         final RitualManager.RitualOption option = selected(context);
@@ -494,16 +516,29 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             context.waitTicks(3);
         }
         screenshot(context, id + "-ready-checklist");
+        castingDirections.put(id, serverValue(ServerPlayer::getDirection));
+        report.put(id + "_caster_before_cast", casterSnapshot());
         ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.ritual.begin").getString());
         context.waitTicks(3);
         check(serverValue(player -> RitualSessionData.get(player.level()).isActive(CENTER)), "Native Begin starts " + id);
         final Object castingScreen = checkCastingUi(context, id);
         context.waitTicks(option.castingTime() + 12);
         check(!serverValue(player -> RitualSessionData.get(player.level()).isActive(CENTER)), "Real cast completes for " + id);
+        report.put(id + "_caster_after_cast", casterSnapshot());
+        if (id.equals("teleport_waystone")) {
+            check(serverValue(player -> player.distanceToSqr(Vec3.atBottomCenterOf(CENTER.offset(12, 1, 0))) < 0.01),
+                "Waystone reaches its exact bound destination before awaiting the out-of-range book terminal update");
+        }
         checkAutomaticCompletion(context, castingScreen, id);
+        report.put(id + "_caster_after_cast", casterSnapshot());
         if (definition.action().equals("summon_item")) {
             final var target = targetItem(definition.target());
-            check(serverValue(player -> dropped(player, target).stream().mapToInt(entity -> entity.getItem().getCount()).sum())
+            report.put(id + "_output_observation", serverValue(player -> Map.of(
+                "before", existingItems, "after", outputItemCount(player, target),
+                "dropped", dropped(player, target).stream().mapToInt(entity -> entity.getItem().getCount()).sum(),
+                "inventory", player.getInventory().getNonEquipmentItems().stream()
+                    .filter(stack -> stack.is(target)).mapToInt(ItemStack::getCount).sum())));
+            check(serverValue(player -> outputItemCount(player, target))
                     >= existingItems + definition.count(),
                 "Actual item output count appears for " + id + ": " + definition.target() + " x" + definition.count());
         } else if (definition.action().equals("summon_entity")) {
@@ -511,15 +546,42 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     .filter(entity -> !existingTargets.contains(entity.getUUID())).count()) >= definition.count(),
                 "Actual summoned entity count appears for " + id + ": " + definition.target() + " x" + definition.count());
         } else {
+            if (definition.action().equals("graveyard_mist")) context.waitTicks(30);
+            if (definition.action().equals("prior_incarnation")) {
+                report.put(id + "_recovery_observation", serverValue(player -> Map.of(
+                    "original", String.valueOf(player.level().getEntity(actionTargets.get(id))),
+                    "death_record", String.valueOf(com.kadamitas.warlockery.ritual.PriorIncarnationData.get(player.level())
+                        .find(player.getUUID())),
+                    "inventory_diamonds", player.getInventory().getNonEquipmentItems().stream()
+                        .filter(stack -> stack.is(Items.DIAMOND)).mapToInt(ItemStack::getCount).sum(),
+                    "dropped_diamonds", dropped(player, Items.DIAMOND).stream()
+                        .map(drop -> Map.of("id", drop.getUUID().toString(), "count", drop.getItem().getCount(),
+                            "position", drop.position().toString(), "distance", drop.distanceToSqr(Vec3.atCenterOf(CENTER.above()))))
+                        .toList())));
+            }
             assertActionOutcome(id, definition);
         }
         assertOfferingSettlement(id, definition, offerings);
         assertEntityRequirementSettlement(id);
+        if (definition.action().equals("recharge_path")) {
+            server(player -> {
+                check(com.kadamitas.warlockery.magic.MagicPathState.spend(player,
+                    com.kadamitas.warlockery.magic.MagicPath.OVERWORLD, 80),
+                    "Sustained recharge starts with a newly depleted reserve");
+                player.removeEffect(net.minecraft.world.effect.MobEffects.REGENERATION);
+            });
+            context.waitTicks(22);
+            check(serverValue(player -> com.kadamitas.warlockery.magic.MagicPathState.reserve(player,
+                    com.kadamitas.warlockery.magic.MagicPath.OVERWORLD) >= 80
+                    && player.hasEffect(net.minecraft.world.effect.MobEffects.REGENERATION)),
+                "The live recharge ward restores another 40 reserve and applies regeneration on ordinary ticks");
+        }
         closeScreen(context);
         final Vec3 resultPosition = serverValue(player -> {
             if (definition.action().equals("summon_item")) {
                 final var target = targetItem(definition.target());
-                return dropped(player, target).getFirst().position().add(0, 0.15, 0);
+                return dropped(player, target).stream().findFirst()
+                    .map(entity -> entity.position().add(0, 0.15, 0)).orElse(Vec3.atCenterOf(CENTER));
             }
             if (definition.action().equals("summon_entity")) {
                 final var result = targetEntities(player, definition.target()).stream()
@@ -532,10 +594,31 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             }
             return Vec3.atCenterOf(CENTER);
         });
-        look(context, resultPosition);
+        if (definition.action().equals("raise_column") || definition.action().equals("earths_wrath")) {
+            position(context, 11.5, CENTER.getY(), -10.5);
+            look(context, new Vec3(CENTER.getX() + 0.5,
+                CENTER.getY() + (definition.action().equals("raise_column") ? definition.count() / 2.0 : 3.0),
+                CENTER.getZ() + 0.5));
+            world.getConnection().waitForChunksRender();
+        } else {
+            look(context, resultPosition);
+        }
         screenshot(context, id + "-actual-result");
+        if (definition.action().equals("summon_item") && serverValue(player ->
+                dropped(player, targetItem(definition.target())).isEmpty())) {
+            context.getInput().pressKey(GLFW.GLFW_KEY_E);
+            context.waitForScreen(net.minecraft.client.gui.screens.inventory.InventoryScreen.class);
+            screenshot(context, id + "-output-picked-up-inventory");
+            closeScreen(context);
+        }
+        if (Set.of("hex_heat_metal", "hex_insanity", "hex_misfortune", "hex_nightmare",
+                "hex_overheating", "hex_sinking").contains(id)) {
+            report.put(id + "_actual_consequences",
+                RitualHexConsequenceAcceptance.verify(context, world, actionTargets.get(id), id));
+            screenshot(context, id + "-actual-consequences");
+        }
         checks.add("Actual " + id + " cast: book pages, every chalk mark including infernal/veil rings, natively dropped offerings, "
-            + "native focus/selection/Begin, live cast, exact offering settlement, and verified " + definition.target()
+            + "native focus/book article/Perform Ritual/Begin, live cast, exact offering settlement, and verified " + definition.target()
             + " x" + definition.count() + ". Declared time/weather/entity prerequisites are staged before activation.");
         passRitual(id, definition.action().equals("summon_item") || definition.action().equals("summon_entity")
             ? "Normal activation completed and produced " + definition.target() + " x" + definition.count()
@@ -639,9 +722,9 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         final com.kadamitas.warlockery.ritual.RitualDefinition definition
     ) {
         final var requirements = definition.requirements();
-        check(requirements.dimension().isBlank(), id + " requires a separate dimension fixture: " + requirements.dimension());
-        check(requirements.minimumPlayers() <= 1 || id.equals("hex_wolf"),
-            id + " requires an unsupported participant fixture: " + requirements.minimumPlayers());
+        check(requirements.dimension().isBlank()
+                || requirements.dimension().equals(player.level().dimension().identifier().toString()),
+            id + " requires a separate dimension fixture: " + requirements.dimension());
         final var server = player.level().getServer();
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "weather clear");
         if (requirements.thundering()) {
@@ -649,7 +732,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         } else if (requirements.raining()) {
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "weather rain");
         }
-        if (definition.nightOnly() || requirements.fullMoon()) {
+        if (definition.nightOnly() || requirements.fullMoon() || id.equals("cure_vampire")) {
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "time set 18000");
         } else if (requirements.dayOnly()) {
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "time set 6000");
@@ -719,11 +802,13 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         final com.kadamitas.warlockery.ritual.RitualDefinition definition,
         final Map<String, Integer> guideGlyphs
     ) {
-        if (!definition.action().equals("glyph_transform")) return guideGlyphs;
-        final int marks = guideGlyphs.values().stream().findFirst().orElseThrow();
-        final String source = definition.target().equals("warlockery:circleglyphritual")
-            ? "circleglyph_veil" : "circleglyphritual";
-        return Map.of(source, marks);
+        if (definition.action().equals("glyph_transform")) {
+            check(guideGlyphs.size() == 1 && guideGlyphs.keySet().stream()
+                    .noneMatch(source -> definition.target().equals("warlockery:" + source)),
+                "The book's chalk conversion diagram must show an accepted source distinct from its output: "
+                    + guideGlyphs + " -> " + definition.target());
+        }
+        return guideGlyphs;
     }
 
     private void stageActionPrerequisites(
@@ -732,6 +817,19 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         final com.kadamitas.warlockery.ritual.RitualDefinition definition
     ) {
         final var level = player.level();
+        if (!id.equals("hex_wolf")) {
+            final int companions = Math.max(0, definition.requirements().minimumPlayers() - 1);
+            for (int index = 0; index < companions; index++) {
+                final var mage = ModEntities.ALL.get("circle_mage").get().create(
+                    level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+                check(mage instanceof net.minecraft.world.entity.Mob, id + " recruited coven mage can be created");
+                mage.setPos(CENTER.getX() - 3.5 + index * 0.7, CENTER.getY(), CENTER.getZ() - 3.5);
+                ((net.minecraft.world.entity.Mob) mage).setNoAi(true);
+                level.addFreshEntity(mage);
+                com.kadamitas.warlockery.entity.CreatureBehaviorState.bind(mage, player.getUUID());
+            }
+            if (companions > 0) report.put(id + "_coven_fixture", companions + " living recruited Circle Mages accompany the native caster.");
+        }
         switch (definition.action()) {
             case "fertility" -> {
                 level.setBlockAndUpdate(ACTION_BLOCK.below(), Blocks.FARMLAND.defaultBlockState());
@@ -770,6 +868,10 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 check(target != null, id + " effect target can be created");
                 target.setPos(Vec3.atBottomCenterOf(ACTION_BLOCK));
                 target.setNoAi(true);
+                if (definition.action().equals("graveyard_mist")) {
+                    target.setHealth(8.0F);
+                    actionMeasurements.put(id, (double) target.getHealth());
+                }
                 level.addFreshEntity(target);
                 actionTargets.put(id, target.getUUID());
             }
@@ -817,9 +919,14 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     level.addFreshEntity(familiar);
                     com.kadamitas.warlockery.entity.CreatureBehaviorState.bind(familiar, player.getUUID());
                     final ItemStack protection = new ItemStack(ModItems.ALL.get("earth_guard_doll").get());
-                    new com.kadamitas.warlockery.item.SympatheticBinding(
-                        player.getUUID(), player.getName().getString(), "player").write(protection);
+                    com.kadamitas.warlockery.item.SympatheticBinding.from(player).write(protection);
                     player.getInventory().setItem(9, protection);
+                    if (Boolean.getBoolean("warlockery.ritualDollGuard")) {
+                        final ItemStack guard = new ItemStack(ModItems.ALL.get("doll_guard").get());
+                        com.kadamitas.warlockery.item.SympatheticBinding.from(player).write(guard);
+                        player.getInventory().setItem(10, guard);
+                        report.put(id + "_doll_guard_fixture", "A bound Doll Guard accompanies the bound Earth Guard; native Corrupted Doll must wear only the Doll Guard.");
+                    }
                     actionMeasurements.put(id, (double) protection.getDamageValue());
                     actionTargets.put(id, player.getUUID());
                     break;
@@ -839,8 +946,10 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 }
             }
             case "broken_earth" -> {
-                for (int distance = 1; distance <= definition.radius(); distance++) {
-                    level.setBlockAndUpdate(CENTER.north(distance).below(), Blocks.STONE.defaultBlockState());
+                for (var direction : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                    for (int distance = 1; distance <= definition.radius(); distance++) {
+                        level.setBlockAndUpdate(CENTER.relative(direction, distance).below(), Blocks.STONE.defaultBlockState());
+                    }
                 }
             }
             case "earths_wrath" -> {
@@ -951,7 +1060,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 }
             }
             case "manifest" -> {
-                final BlockPos foot = CENTER.offset(0, 0, 5);
+                final BlockPos foot = CENTER.offset(0, 0, 1);
                 final BlockPos head = foot.east();
                 level.setBlockAndUpdate(foot, net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.Identifier.parse("minecraft:red_bed")).defaultBlockState()
                     .setValue(net.minecraft.world.level.block.BedBlock.FACING, net.minecraft.core.Direction.EAST)
@@ -1011,7 +1120,8 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                             && living.getHealth() < living.getMaxHealth();
                 }), "Sky's Wrath damages or kills its staged nearest target");
             }
-            case "eclipse" -> check(serverValue(player -> player.hasEffect(net.minecraft.world.effect.MobEffects.DARKNESS)),
+            case "eclipse" -> check(serverValue(player -> player.level().isDarkOutside()
+                    && player.hasEffect(net.minecraft.world.effect.MobEffects.DARKNESS)),
                 id + " applies supernatural darkness to a participant");
             case "glyph_transform" -> check(serverValue(player -> {
                 final var target = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(
@@ -1064,9 +1174,27 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 "Anguish applies Strength to the staged nearby creature");
             case "fortify_undead" -> check(targetHasEffect(id, net.minecraft.world.effect.MobEffects.RESISTANCE),
                 "Fortification applies Resistance to the staged undead");
-            case "graveyard_mist" -> check(targetHasEffect(id, net.minecraft.world.effect.MobEffects.REGENERATION)
-                    && serverValue(player -> player.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS)),
-                "Graveyard Mist regenerates undead and blinds the living caster");
+            case "graveyard_mist" -> {
+                final var outcome = serverValue(player -> {
+                    final var target = (net.minecraft.world.entity.LivingEntity)
+                        player.level().getEntity(actionTargets.get(id));
+                    check(target != null && target.isAlive(), "Graveyard Mist undead target survives");
+                    return Map.of("initial_health", actionMeasurements.get(id),
+                        "health", (double) target.getHealth(),
+                        "undead_mending", target.hasEffect(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT
+                            .wrapAsHolder(com.kadamitas.warlockery.registry.ModEffects.UNDEAD_MENDING.get())),
+                        "undead_invisibility", target.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY),
+                        "living_blindness", player.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS),
+                        "living_slowness", player.hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS));
+                });
+                report.put(id + "_actual_effects", outcome);
+                check((double) outcome.get("health") > (double) outcome.get("initial_health")
+                        && Boolean.TRUE.equals(outcome.get("undead_mending"))
+                        && Boolean.TRUE.equals(outcome.get("undead_invisibility"))
+                        && Boolean.TRUE.equals(outcome.get("living_blindness"))
+                        && Boolean.TRUE.equals(outcome.get("living_slowness")),
+                    "Graveyard Mist restores injured undead health, conceals it, and blinds/slows the living: " + outcome);
+            }
             case "banish" -> check(serverValue(player -> {
                 final var target = player.level().getEntity(actionTargets.get(id));
                 return target == null || !target.isAlive();
@@ -1083,9 +1211,20 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             case "blight" -> check(serverValue(player -> !player.level().getBlockState(ACTION_BLOCK).is(Blocks.WHEAT)
                     && !player.level().getBlockState(ACTION_BLOCK_TWO).is(Blocks.DANDELION)),
                 "Blight destroys the staged mature crop and flower");
-            case "toad_rain" -> check(serverValue(player -> player.level().isRaining()
-                    && targetEntities(player, definition.target()).size() >= definition.count()),
-                "Rain of Toads starts rain and creates the declared frog count");
+            case "toad_rain" -> {
+                final var toads = serverValue(player -> player.level().getEntities((net.minecraft.world.entity.Entity) null,
+                    new AABB(CENTER).inflate(12), entity -> entity.getType().builtInRegistryHolder().is(
+                        com.kadamitas.warlockery.registry.WarlockeryTags.EntityTypes.HEX_TOADS)
+                        && com.kadamitas.warlockery.ritual.hex.HexEntityMarkers.toad(entity).isPresent()).stream()
+                    .map(entity -> Map.of("type", entity.getType().toString(), "position", entity.position().toString(),
+                        "role", com.kadamitas.warlockery.ritual.hex.HexEntityMarkers.toad(entity).orElseThrow().role().name()))
+                    .toList());
+                report.put(id + "_toads", toads);
+                check(serverValue(player -> player.level().isRaining()) && toads.size() == definition.count()
+                        && toads.stream().anyMatch(toad -> toad.get("role").equals("POISONOUS"))
+                        && toads.stream().anyMatch(toad -> toad.get("role").equals("EXPLOSIVE")),
+                    "Rain of Toads starts rain and creates all eight tagged frogs/toads with both hazard roles: " + toads);
+            }
             case "hell_on_earth" -> check(serverValue(player -> BlockPos.betweenClosedStream(
                     CENTER.offset(-definition.radius(), -2, -definition.radius()),
                     CENTER.offset(definition.radius(), 3, definition.radius()))
@@ -1095,11 +1234,22 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(
                         net.minecraft.resources.Identifier.parse(definition.target())))),
                 id + " raises the declared terrain column");
-            case "broken_earth" -> check(serverValue(player -> player.level().isEmptyBlock(CENTER.north().below())),
+            case "broken_earth" -> check(serverValue(player -> player.level().isEmptyBlock(CENTER.relative(castingDirections.get(id)).below())),
                 "Broken Earth tears open the staged northward stone line");
-            case "earths_wrath" -> check(serverValue(player -> BlockPos.betweenClosedStream(
-                    CENTER.above(), CENTER.above(12)).anyMatch(pos -> !player.level().getFluidState(pos).isEmpty())),
-                "Earth's Wrath raises staged lava above the circle");
+            case "earths_wrath" -> check(serverValue(player -> {
+                final var basin = BlockPos.betweenClosedStream(CENTER.above(), CENTER.above(12))
+                    .filter(pos -> player.level().getFluidState(pos).is(net.minecraft.tags.FluidTags.LAVA))
+                    .map(BlockPos::immutable).findFirst();
+                return basin.isPresent()
+                    && player.level().getBlockState(basin.orElseThrow().below()).is(Blocks.MAGMA_BLOCK)
+                    && BlockPos.betweenClosedStream(basin.orElseThrow().offset(-1, 0, -1),
+                        basin.orElseThrow().offset(1, 0, 1))
+                        .filter(pos -> !pos.equals(basin.orElseThrow()))
+                        .allMatch(pos -> player.level().getBlockState(pos).is(Blocks.BASALT))
+                    && List.of(CENTER.offset(1, -2, 0), CENTER.offset(-1, -2, 0),
+                        CENTER.offset(0, -2, 1), CENTER.offset(0, -2, -1)).stream()
+                        .anyMatch(pos -> !player.level().getFluidState(pos).isSource());
+            }), "Earth's Wrath moves an underground lava source into a contained basalt vent with a magma floor");
             case "ice_sphere" -> check(serverValue(player -> BlockPos.betweenClosedStream(
                     CENTER.offset(-8, -8, -8), CENTER.offset(8, 8, 8))
                 .anyMatch(pos -> player.level().getBlockState(pos).is(Blocks.PACKED_ICE))),
@@ -1111,13 +1261,22 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 if (id.equals("corrupt_doll")) {
                     check(serverValue(player -> {
                         final ItemStack doll = player.getInventory().getItem(9);
+                        if (Boolean.getBoolean("warlockery.ritualDollGuard")) {
+                            final ItemStack guard = player.getInventory().getItem(10);
+                            return !doll.isEmpty() && doll.getDamageValue() == actionMeasurements.get(id)
+                                && !guard.isEmpty() && guard.getDamageValue() == 1;
+                        }
                         return doll.isEmpty() || doll.getDamageValue() > actionMeasurements.get(id);
-                    }), "Corrupted Doll damages or destroys the caster's bound protection doll");
+                    }), Boolean.getBoolean("warlockery.ritualDollGuard")
+                        ? "Doll Guard spends one use to preserve the caster's Earth Guard against native Corrupted Doll"
+                        : "Corrupted Doll damages or destroys the caster's bound protection doll");
                 } else {
                     check(serverValue(player -> player.level().getEntity(actionTargets.get(id))
                             instanceof net.minecraft.world.entity.LivingEntity living
-                                && com.kadamitas.warlockery.ritual.HexBehaviors.isActive(living, definition.target())),
-                        id + " applies its exact persistent hex behavior to the bound victim");
+                                && (definition.target().equals("blindness")
+                                    ? living.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS)
+                                    : com.kadamitas.warlockery.ritual.HexBehaviors.isActive(living, definition.target()))),
+                        id + " applies its exact hex or status effect to the intended victim");
                 }
             }
             case "cleanse" -> check(serverValue(player -> player.level().getEntity(actionTargets.get(id))
@@ -1168,7 +1327,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     .filter(location -> location.position().equals(CENTER.offset(12, 0, 0))).count() >= 2),
                 id + " copies the source location into the blank waystone");
             case "teleport_waystone" -> check(serverValue(player ->
-                    player.distanceToSqr(Vec3.atCenterOf(CENTER.offset(12, 1, 0))) < 2.0),
+                    player.distanceToSqr(Vec3.atBottomCenterOf(CENTER.offset(12, 1, 0))) < 0.01),
                 "Waystone teleport moves the real caster to the recorded destination");
             case "teleport_entity" -> check(serverValue(player -> {
                     final var target = player.level().getEntity(actionTargets.get(id));
@@ -1183,10 +1342,15 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                         .bond(player.getUUID());
                     return bond.isPresent() && bond.orElseThrow().isNami()
                         && bond.orElseThrow().partnerUuid().equals(actionTargets.get(id))
+                        && player.level().getEntity(actionTargets.get(id)) instanceof com.kadamitas.warlockery.entity.NamiEntity nami
+                        && com.kadamitas.warlockery.entity.CreatureBehaviorState.isOwnedBy(nami, player.getUUID())
+                        && nami.getName().getString().equals(bond.orElseThrow().spouseName())
                         && dropped(player, ModItems.ALL.get("wedding_ring").get()).stream()
-                            .map(ItemEntity::getItem).anyMatch(stack -> !stack.getOrDefault(
+                            .map(ItemEntity::getItem).anyMatch(stack -> stack.getOrDefault(
                                 net.minecraft.core.component.DataComponents.LORE,
-                                net.minecraft.world.item.component.ItemLore.EMPTY).lines().isEmpty());
+                                net.minecraft.world.item.component.ItemLore.EMPTY).lines().stream()
+                                .map(Component::getString).anyMatch(line -> line.contains(player.getDisplayName().getString())
+                                    && line.contains(bond.orElseThrow().spouseName())));
                 }), "Marriage creates a persistent Nami bond and writes the couple onto a preserved wedding ring");
             case "divorce" -> check(serverValue(player ->
                     !com.kadamitas.warlockery.ritual.marriage.MarriageData.get(player.level())
@@ -1195,8 +1359,10 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             case "prior_incarnation" -> check(serverValue(player -> {
                     final var lost = player.level().getEntity(actionTargets.get(id));
                     return (lost == null || !lost.isAlive())
+                        && com.kadamitas.warlockery.ritual.PriorIncarnationData.get(player.level())
+                            .find(player.getUUID()).isEmpty()
                         && dropped(player, Items.DIAMOND).stream().anyMatch(drop ->
-                            drop.distanceToSqr(Vec3.atCenterOf(CENTER.above())) < 4.0
+                            drop.distanceToSqr(Vec3.atBottomCenterOf(CENTER)) < 36.0
                                 && drop.getItem().getCount() == 2);
                 }), "Prior Incarnation relocates the exact recorded death drop to the circle");
             case "summon_huntsman" -> check(serverValue(player ->
@@ -1205,7 +1371,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                             .allMatch(position -> player.level().isEmptyBlock(position))),
                 "Thorned Pursuer summoning creates the entity and consumes all four bloodied bundles");
             case "climate_shift" -> check(serverValue(player ->
-                    player.level().getBiome(CENTER).is(net.minecraft.world.level.biome.Biomes.DESERT)),
+                    player.level().getBiome(CENTER.offset(8, 0, 8)).is(net.minecraft.world.level.biome.Biomes.DESERT)),
                 "Climate Change changes the circle chunk to the recorded Desert biome");
             case "transform_nami" -> check(serverValue(player -> {
                     final var original = player.level().getEntity(actionTargets.get(id));
@@ -1235,6 +1401,22 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             instanceof net.minecraft.world.entity.LivingEntity living && living.hasEffect(effect));
     }
 
+    private Map<String, Object> casterSnapshot() {
+        return serverValue(player -> Map.of(
+            "health", player.getHealth(), "alive", player.isAlive(),
+            "dead_or_dying", player.isDeadOrDying(), "position", coordinates(player.position()),
+            "form", com.kadamitas.warlockery.transformation.SupernaturalState.getForm(player).name(),
+            "game_time", player.level().getGameTime(),
+            "dropped_vials", dropped(player, ModItems.ALL.get("sympathetic_vial").get()).stream()
+                .map(entity -> Map.of("uuid", entity.getUUID().toString(), "position", coordinates(entity.position()),
+                    "count", entity.getItem().getCount(), "binding",
+                    com.kadamitas.warlockery.item.SympatheticBinding.read(entity.getItem()).toString())).toList(),
+            "inventory_vials", java.util.stream.IntStream.range(0, player.getInventory().getContainerSize())
+                .mapToObj(player.getInventory()::getItem)
+                .filter(stack -> stack.is(ModItems.ALL.get("sympathetic_vial").get()))
+                .mapToInt(ItemStack::getCount).sum()));
+    }
+
     private void configureBoundOfferings(
         final String id,
         final com.kadamitas.warlockery.ritual.RitualDefinition definition
@@ -1250,14 +1432,20 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     ? player.level().getEntity(actionTargets.get(id)) : player;
                 check(target != null, id + " has a live sympathetic target");
                 final var vialItem = ModItems.ALL.get("sympathetic_vial").get();
+                if (dropped(player, vialItem).isEmpty()
+                    && (definition.action().equals("hex") || definition.action().equals("cleanse"))) {
+                    report.put(id + "_targeting", "No sympathetic sample is required or supplied; the native area effect must reach the staged nearby target as described by the book.");
+                    return;
+                }
                 final var vial = dropped(player, vialItem).stream().findFirst().orElseThrow(
                     () -> new AssertionError(id + " must stage its native sympathetic vial offering"));
-                new com.kadamitas.warlockery.item.SympatheticBinding(
-                    target.getUUID(), target.getName().getString(), target instanceof ServerPlayer ? "player" : "entity")
-                    .write(vial.getItem());
+                check(target instanceof net.minecraft.world.entity.LivingEntity, "The sympathetic target is alive");
+                com.kadamitas.warlockery.item.SympatheticBinding.from(
+                    (net.minecraft.world.entity.LivingEntity) target).write(vial.getItem());
             }
             if (definition.action().equals("copy_waystone") || definition.action().equals("teleport_waystone")) {
                 final BlockPos destination = CENTER.offset(12, 0, 0);
+                player.level().setBlockAndUpdate(destination, Blocks.STONE.defaultBlockState());
                 final ItemStack bound = dropped(player, ModItems.ALL.get("ingredient_waystone_bound").get()).stream()
                     .findFirst().orElseThrow(() -> new AssertionError(id + " requires its natively dropped bound waystone"))
                     .getItem();
@@ -1268,6 +1456,21 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     }
 
     private void dropSpecialPrerequisite(final ClientGameTestContext context, final String id) {
+        if (id.equals("manifestation")) {
+            server(player -> {
+                player.getInventory().setItem(8, new ItemStack(ModItems.ALL.get("sympathetic_vial").get()));
+                player.inventoryMenu.broadcastChanges();
+            });
+            world.getConnection().waitForClientboundPackets();
+            position(context, 0.5, CENTER.getY(), -2.5);
+            look(context, new Vec3(0.5, CENTER.getY() + 0.1, 0.5));
+            context.getInput().pressKey(GLFW.GLFW_KEY_9);
+            context.getInput().pressKey(GLFW.GLFW_KEY_Q);
+            context.waitTicks(3);
+            check(serverValue(player -> !dropped(player, ModItems.ALL.get("sympathetic_vial").get()).isEmpty()),
+                "Native Q supplies the sympathetic vial required by the Manifestation guide");
+            return;
+        }
         if (!id.equals("climate_change")) return;
         server(player -> {
             final ItemStack book = new ItemStack(ModItems.ALL.get("bookbiomes2").get());
@@ -1302,8 +1505,8 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 final net.minecraft.world.entity.Entity entity = type.create(
                     player.level(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
                 check(entity != null, "Entity offering can be created for " + id + ": " + requirement.entity());
-                entity.setPos(CENTER.getX() + 0.5 + ((offset % 5) - 2) * 0.7,
-                    CENTER.getY() + 1.0, CENTER.getZ() + 0.5 + ((offset / 5) - 1) * 0.7);
+                entity.setPos(CENTER.getX() - 3.5 + (offset % 3) * 0.8,
+                    CENTER.getY() + 1.0, CENTER.getZ() - 2.0 + (offset / 3) * 0.9);
                 if (entity instanceof net.minecraft.world.entity.Mob mob) mob.setNoAi(true);
                 player.level().addFreshEntity(entity);
                 staged.add(new EntityEvidence(entity.getUUID(), requirement.entity(), requirement.consume()));
@@ -1364,6 +1567,11 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
 
     private static net.minecraft.world.item.Item matchingItem(final String declared) {
         final var ingredient = com.kadamitas.warlockery.util.ItemIngredient.parse(declared).orElseThrow();
+        if (declared.equals("#warlockery:sympathetic_containers")) {
+            final var vial = ModItems.ALL.get("sympathetic_vial").get();
+            check(ingredient.matches(new ItemStack(vial)), "The chosen sympathetic vial matches the declared container tag");
+            return vial;
+        }
         return net.minecraft.core.registries.BuiltInRegistries.ITEM.stream()
             .filter(candidate -> ingredient.matches(new ItemStack(candidate))).findFirst()
             .orElseThrow(() -> new AssertionError("No item matches " + declared));
@@ -1384,9 +1592,12 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 && offering.item() == ModItems.ALL.get("ingredient_waystone").get();
             final boolean copiedIntoBoundWaystone = !offering.consume() && definition.action().equals("copy_waystone")
                 && offering.item() == ModItems.ALL.get("ingredient_waystone").get();
-            final boolean severedWeddingRing = id.equals("divorce") && !offering.consume()
-                && offering.item() == ModItems.ALL.get("wedding_ring").get() && remaining == 0;
-            check(transformedOutput || preservedAsBoundWaystone || copiedIntoBoundWaystone || severedWeddingRing
+            if (id.equals("divorce") && offering.item() == ModItems.ALL.get("wedding_ring").get()) {
+                check(remaining == offering.count() - 1,
+                    "Successful Severance consumes exactly one Wedding Ring after the cast");
+                return;
+            }
+            check(transformedOutput || preservedAsBoundWaystone || copiedIntoBoundWaystone
                 || (offering.consume()
                     ? remaining == 0 : remaining >= offering.count()),
                 (offering.consume() ? "Consumed" : "Preserved") + " offering settles correctly: " + offering.declared());
@@ -1468,6 +1679,21 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             check(context.computeOnClient(client -> (int) field(client.gui.screen(), "bodyPage")) == 0,
                 "A referenced chapter opens at its first page");
             check(inventorySnapshot().equals(inventory), "Cross-book navigation grants or consumes no inventory items");
+            if (missing) {
+                check(context.computeOnClient(client -> {
+                    try {
+                        final var article = ManualScreen.class.getDeclaredMethod("article", String.class);
+                        article.setAccessible(true);
+                        final var content = (ManualArticleCatalog.Article) article.invoke(client.gui.screen(),
+                            (String) field(client.gui.screen(), "selectedSection"));
+                        return content.body().getString().startsWith(Component.translatable(
+                            "screen.warlockery.manual.book_required",
+                            Component.translatable(distilling.translatedTitleKey())).getString());
+                    } catch (ReflectiveOperationException failure) {
+                        throw new AssertionError(failure);
+                    }
+                }), "Missing-book preview visibly names the exact required book before its crafting recipe");
+            }
             screenshot(context, "book-reference-" + placement);
             if (placement.equals("offhand")) context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
             else ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.back").getString());
@@ -1508,86 +1734,92 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         return context.computeOnClient(client -> selectedOnScreen(client.gui.screen()));
     }
 
+    private static ManualRitualCasting casting(final Object screen) {
+        return (ManualRitualCasting) field(screen, "ritualCasting");
+    }
+
     private static RitualManager.RitualOption selectedOnScreen(final Object screen) {
-            @SuppressWarnings("unchecked") final List<RitualManager.RitualOption> options =
-                (List<RitualManager.RitualOption>) field(screen, "options");
-            final String selected = (String) field(screen, "selectedId");
-            return options.stream().filter(option -> option.id().equals(selected)).findFirst().orElseThrow();
+        return casting(screen).selected();
+    }
+
+    private static ManualLayout observedBookLayout(final Object screen) {
+        try {
+            final var method = ManualScreen.class.getDeclaredMethod("layout");
+            method.setAccessible(true);
+            return (ManualLayout) method.invoke(screen);
+        } catch (ReflectiveOperationException failure) {
+            throw new AssertionError("Cannot observe the actual displayed book layout", failure);
+        }
     }
 
     private Object checkCastingUi(final ClientGameTestContext context, final String id) throws Exception {
-        context.waitFor(client -> client.gui.screen() instanceof RitualSelectionScreen
+        context.waitFor(client -> client.gui.screen() instanceof ManualScreen
+            && selectedOnScreen(client.gui.screen()) != null
             && com.kadamitas.warlockery.ritual.RitualUiState.castInProgress(selectedOnScreen(client.gui.screen())), 40);
         final Object screen = context.computeOnClient(client -> client.gui.screen());
-        check(context.computeOnClient(client -> !client.gui.screen().isPauseScreen()), "Ritual screen lets the real server cast continue");
-        context.runOnClient(client -> {
+        check(context.computeOnClient(client -> !client.gui.screen().isPauseScreen()), "Book casting lets the real server cast continue");
+        check(context.computeOnClient(client -> casting(screen).performing()), "Book remains in its actual Perform Ritual view");
+        check(context.computeOnClient(client -> {
+            final var layout = observedBookLayout(client.gui.screen());
+            final StringBuilder text = new StringBuilder();
+            casting(screen).pages(layout).forEach(page -> page.forEach(line ->
+                line.accept((index, style, codePoint) -> { text.appendCodePoint(codePoint); return true; })));
+            final String visible = text.toString().replaceAll("\\s+", "");
             final var option = selectedOnScreen(screen);
-            final List<String> body = RitualSelectionScreen.detailContents(option).stream().map(Component::getString).toList();
-            final String casting = Component.translatable("screen.warlockery.ritual.casting").getString();
-            check(body.contains(casting), "Active cast body says Rite in Progress");
-            check(!body.contains(Component.translatable("screen.warlockery.ritual.power", option.altarPower(), option.power()).getString()),
-                "Escrowed power is not presented as a new missing-resource blocker during casting");
-            option.requirements().stream().filter(requirement -> requirement.category().equals("ingredient"))
-                .map(RitualRequirementText::line).map(Component::getString).forEach(line ->
-                    check(!body.contains(line), "Consumed ingredient is not presented as a casting blocker"));
-            check(client.gui.screen().children().stream().filter(Button.class::isInstance).map(Button.class::cast)
-                .anyMatch(button -> button.visible && !button.active && button.getMessage().getString().equals(casting)),
-                "Actual Begin button reports the active cast and cannot start it twice");
+            return visible.contains(Component.translatable("screen.warlockery.ritual.casting").getString().replaceAll("\\s+", ""))
+                && option.requirements().stream().filter(requirement -> requirement.category().equals("ingredient"))
+                    .map(RitualRequirementText::line).map(Component::getString)
+                    .noneMatch(line -> visible.contains(line.replaceAll("\\s+", "")));
+        }), "Rendered book casting pages show progress without presenting consumed offerings as new blockers");
+        check(context.computeOnClient(client -> client.gui.screen().children().stream().filter(Button.class::isInstance).map(Button.class::cast)
+            .anyMatch(button -> button.visible && button.active && button.getMessage().getString().equals(
+                Component.translatable("screen.warlockery.ritual.stop").getString()))),
+            "Active book cast exposes its real cancellation control instead of another Begin action");
+        check(context.computeOnClient(client -> client.gui.screen().children().stream().filter(Button.class::isInstance).map(Button.class::cast)
+            .noneMatch(button -> button.visible && button.active && button.getMessage().getString().equals(
+                Component.translatable("screen.warlockery.ritual.begin").getString()))),
+            "The live book cannot start the same cast twice");
+        context.waitFor(client -> client.level != null
+            && client.level.getBlockEntity(CENTER) instanceof CircleHeartBlockEntity heart
+            && heart.total() > 0 && heart.elapsed() > 0 && heart.elapsed() < heart.total(), 40);
+        final Map<String, Object> progress = context.computeOnClient(client -> {
+            final var heart = (CircleHeartBlockEntity) client.level.getBlockEntity(CENTER);
+            final double percent = 100.0 * heart.elapsed() / heart.total();
+            check(Double.isFinite(percent) && percent > 0.0 && percent < 100.0,
+                "The rendered heart supplies finite, nonzero progress during the actual live cast");
+            return Map.<String, Object>of("elapsed", heart.elapsed(), "total", heart.total(), "percent", percent);
         });
+        report.put(id + "_observed_active_progress", progress);
         screenshot(context, id + "-active-cast-status");
         return screen;
     }
 
     private void checkDelayedRefresh(final ClientGameTestContext context) throws Exception {
-        final RitualManager.RitualOption option = selected(context);
-        final Object original = context.computeOnClient(client -> client.gui.screen());
-        @SuppressWarnings("unchecked") final List<RitualManager.RitualOption> originalOptions =
-            context.computeOnClient(client -> List.copyOf((List<RitualManager.RitualOption>) field(original, "options")));
-        final List<RitualManager.RitualOption> updated = List.of(option);
-        context.runOnClient(client -> {
-            RitualSelectionScreen.openOrUpdate(CENTER, updated, false);
-            check(client.gui.screen() == original, "Matching refresh preserves the exact open ritual screen");
-            check(field(original, "options").equals(updated), "Matching refresh applies its new option snapshot");
-            RitualSelectionScreen.openOrUpdate(CENTER.offset(1, 0, 0), List.of(), false);
-            check(client.gui.screen() == original && field(original, "options").equals(updated),
-                "Refresh for a different ritual center cannot replace or change the current screen");
-        });
-        screenshot(context, "delayed-refresh-matching-screen");
-        closeScreen(context);
-        context.waitTicks(3);
-        context.runOnClient(client -> RitualSelectionScreen.openOrUpdate(CENTER, originalOptions, false));
-        context.waitTicks(3);
-        check(context.computeOnClient(client -> client.gui.screen() == null),
-            "A delayed update after native Escape cannot reopen the ritual screen");
-        screenshot(context, "delayed-refresh-after-escape");
-
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
-        context.runOnClient(client -> client.player.setXRot(-60));
-        context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-        context.waitForScreen(ManualScreen.class);
         final Object book = context.computeOnClient(client -> client.gui.screen());
         final Object section = context.computeOnClient(client -> field(book, "selectedSection"));
         final Object page = context.computeOnClient(client -> field(book, "bodyPage"));
-        context.runOnClient(client -> RitualSelectionScreen.openOrUpdate(CENTER, originalOptions, false));
-        context.waitTicks(3);
-        check(context.computeOnClient(client -> client.gui.screen() == book
+        final String id = selected(context).id();
+        ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.ritual.refresh").getString());
+        context.waitTicks(25);
+        check(context.computeOnClient(client -> client.gui.screen() == book && casting(book).performing()
+            && selectedOnScreen(book).id().equals(id)), "Live server checklist refresh preserves the selected book ritual");
+        screenshot(context, "book-live-checklist-refresh");
+        ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.back_to_ritual").getString());
+        check(context.computeOnClient(client -> client.gui.screen() == book && !casting(book).performing()
             && field(book, "selectedSection").equals(section) && field(book, "bodyPage").equals(page)),
-            "A delayed ritual update preserves the natively opened manual and its reading position");
-        screenshot(context, "delayed-refresh-preserves-manual");
+            "Native Back restores the exact article and reading page");
+        screenshot(context, "book-back-to-ritual");
         closeScreen(context);
-        context.runOnClient(client -> RitualSelectionScreen.openOrUpdate(CENTER, originalOptions, true));
-        context.waitForScreen(RitualSelectionScreen.class);
-        check(context.computeOnClient(client -> ((RitualSelectionScreen) client.gui.screen()).center().equals(CENTER)
-            && field(client.gui.screen(), "options").equals(originalOptions)),
-            "An explicitly authorized initial response can still open the ritual screen");
-        screenshot(context, "delayed-refresh-explicit-initial-open");
-        report.put("delayed_refresh_fixture", "Recorded real server option snapshots are delivered through the production client response API with mayOpen=false/true. Escape, book use, and screen closing are native input; response timing is a controlled client fixture, not a claimed network roundtrip.");
-        checks.add("Matching refresh applies in place; a different center is ignored; delayed refresh cannot reopen after Escape or replace a manual; an explicit initial response still opens.");
+        context.waitTicks(25);
+        check(context.computeOnClient(client -> client.gui.screen() == null), "Periodic checklist updates do not reopen a closed book");
+        openRitual(context);
+        selectRite(context, id.substring(id.indexOf(':') + 1));
+        checks.add("Native Refresh preserves the live book selection; Back restores its article page; closing stays closed; heart use reopens the real book.");
     }
 
     private void checkAutomaticCompletion(final ClientGameTestContext context, final Object screen, final String id) throws Exception {
         context.waitFor(client -> client.gui.screen() == screen
+            && selectedOnScreen(screen) != null
             && !com.kadamitas.warlockery.ritual.RitualUiState.castInProgress(selectedOnScreen(screen)), 40);
         check(context.computeOnClient(client -> !client.gui.screen().isPauseScreen()), "Screen remains non-pausing after completion");
         screenshot(context, id + "-automatic-completed-status");
@@ -1595,8 +1827,8 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     }
 
     private void readAllDetails(final ClientGameTestContext context, final String id) throws Exception {
-        while (context.computeOnClient(client -> (int) field(client.gui.screen(), "detailPage")) > 0) {
-            ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.ritual.previous_details").getString());
+        while (context.computeOnClient(client -> (int) field(casting(client.gui.screen()), "detailPage")) > 0) {
+            ManualClientAcceptance.clickButton(context, "\u2039");
         }
         final var option = selected(context);
         final List<String> required = context.computeOnClient(client -> com.kadamitas.warlockery.ritual.RitualUiState
@@ -1607,22 +1839,18 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             final int page = count++;
             final boolean more = context.computeOnClient(client -> {
                 final var screen = client.gui.screen();
-                check((int) field(screen, "detailPage") == page, "Native detail button advances exactly one page");
-                final var layout = RitualSelectionLayout.calculate(screen.width, screen.height);
-                try {
-                    final var method = RitualSelectionScreen.class.getDeclaredMethod("detailPages", RitualSelectionLayout.class);
-                    method.setAccessible(true);
-                    @SuppressWarnings("unchecked") final List<List<net.minecraft.util.FormattedCharSequence>> pages =
-                        (List<List<net.minecraft.util.FormattedCharSequence>>) method.invoke(screen, layout);
-                    final var lines = pages.get(page);
-                    check(lines.size() <= layout.detailCapacity(), "Every displayed requirement stays above the detail controls");
-                    lines.forEach(line -> line.accept((index, style, codePoint) -> { seen.appendCodePoint(codePoint); return true; }));
-                    return page + 1 < pages.size();
-                } catch (ReflectiveOperationException failure) { throw new AssertionError("Cannot observe rendered detail page", failure); }
+                check((int) field(casting(screen), "detailPage") == page, "Native detail button advances exactly one page");
+                final var layout = observedBookLayout(screen);
+                final var pages = casting(screen).pages(layout);
+                final var lines = pages.get(page);
+                final int capacity = Math.max(1, (layout.controlTop() - 105 - layout.bodyTextTop()) / ManualTypography.BODY_LINE_HEIGHT);
+                check(lines.size() <= capacity, "Every displayed requirement stays above the book casting controls");
+                lines.forEach(line -> line.accept((index, style, codePoint) -> { seen.appendCodePoint(codePoint); return true; }));
+                return page + 1 < pages.size();
             });
             screenshot(context, id + "-details-" + count);
             if (!more) break;
-            ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.ritual.next_details").getString());
+            ManualClientAcceptance.clickButton(context, "\u203a");
         }
         final String visible = seen.toString().replaceAll("\\s+", "");
         if (id.endsWith("-compact")) check(count > 1, "Compact Familiar actually exercises the native Next Details button");
@@ -1640,6 +1868,12 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         final var option = selected(context);
         return context.computeOnClient(client -> option.requirements().stream()
             .map(RitualRequirementText::line).map(Component::getString).toList());
+    }
+
+    private static int outputItemCount(final ServerPlayer player, final net.minecraft.world.item.Item item) {
+        return dropped(player, item).stream().mapToInt(entity -> entity.getItem().getCount()).sum()
+            + player.getInventory().getNonEquipmentItems().stream().filter(stack -> stack.is(item))
+                .mapToInt(ItemStack::getCount).sum();
     }
 
     private static List<ItemEntity> dropped(final ServerPlayer player, final net.minecraft.world.item.Item item) {
@@ -1668,10 +1902,11 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     }
 
     private static void closeScreen(final ClientGameTestContext context) {
-        if (context.computeOnClient(client -> client.gui.screen() != null)) {
+        for (int step = 0; step < 2 && context.computeOnClient(client -> client.gui.screen() != null); step++) {
             context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
-            context.waitFor(client -> client.gui.screen() == null);
+            context.waitTicks(2);
         }
+        context.waitFor(client -> client.gui.screen() == null);
     }
 
     private void screenshot(final ClientGameTestContext context, final String name) throws Exception {

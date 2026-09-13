@@ -40,7 +40,14 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.decoration.Mannequin;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -72,6 +79,9 @@ public final class SpiritWorldRuntime {
     private static final int SPIRIT_CAP = 4;
     private static final Set<MinecraftServer> CONFIGURED_CLOCKS = Collections.newSetFromMap(new WeakHashMap<>());
     private static final Map<ServerPlayer, ServerLevel> GAME_TEST_DESTINATIONS = new WeakHashMap<>();
+    private static final Map<ServerPlayer, EntryTransaction> PENDING_ENTRIES = new WeakHashMap<>();
+    private static final Map<ServerPlayer, ExitTransaction> PENDING_EXITS = new WeakHashMap<>();
+    private static final Set<ServerPlayer> INTERNAL_WAKES = Collections.newSetFromMap(new WeakHashMap<>());
 
     private SpiritWorldRuntime() {
     }
@@ -93,7 +103,100 @@ public final class SpiritWorldRuntime {
         return enterInternal(player, forcedNightmare, false);
     }
 
+    public static boolean enterAt(final ServerPlayer player, final Vec3 arrival) {
+        return enterInternal(player, false, false, Optional.of(arrival)).entered();
+    }
+
+    /** Called before an external native dimension transfer, while the source pose is still authoritative. */
+    public static boolean prepareExternalTransfer(final ServerPlayer player, final ServerLevel target) {
+        if (INTERNAL_WAKES.contains(player) || ManifestationRuntime.isManagedTransfer(player)) return true;
+        if (ManifestationRuntime.isActive(player) && !isSpiritWorld(player.level()) && isSpiritWorld(target)) {
+            ManifestationRuntime.prepareExternalReturn(player);
+            return true;
+        }
+        if (isSpiritWorld(player.level()) && !isSpiritWorld(target) && isDreaming(player)
+            && !ManifestationRuntime.isActive(player)) {
+            beginExternalExit(player);
+            return true;
+        }
+        if (!isSpiritWorld(target) || isSpiritWorld(player.level()) || isDreaming(player) || player.isRemoved()) {
+            return true;
+        }
+        return beginExternalTransfer(player).entered();
+    }
+
+    static EntryResult beginExternalTransfer(final ServerPlayer player) {
+        return enterInternal(player, false, false, Optional.empty(), true);
+    }
+
+    static void beginExternalExit(final ServerPlayer player) {
+        if (PENDING_EXITS.containsKey(player)) return;
+        final List<ItemStackWithSlot> inventory = SpiritWorldState.settledSnapshot(player);
+        final int selectedSlot = player.getInventory().getSelectedSlot();
+        PENDING_EXITS.put(player, new ExitTransaction(inventory, selectedSlot));
+        // Filter before native teleport: another command must never see mined resources in the waking world.
+        SpiritWorldState.restore(player.getInventory(), SpiritWorldRules.exports(inventory,
+            stack -> stack.is(WarlockeryTags.Items.SPIRIT_WORLD_EXPORTS)), selectedSlot);
+    }
+
+    public static void finishExternalTransfer(final ServerPlayer player, final boolean succeeded) {
+        if (ManifestationRuntime.finishExternalReturn(player, succeeded)) return;
+        final ExitTransaction exit = PENDING_EXITS.remove(player);
+        if (exit != null) {
+            if (!succeeded || isSpiritWorld(player.level(), player)) {
+                SpiritWorldState.rollbackBoundary(player, exit.inventory(), stack -> stack.is(WarlockeryTags.Items.SPIRIT_WORLD_EXPORTS), exit.selectedSlot());
+                player.containerMenu.broadcastChanges();
+            } else if (!wake(player, SpiritWorldRules.WakeCause.SESSION_RECOVERY)) {
+                // Keep the filtered inventory while a temporarily unavailable source prevents final restoration.
+                PENDING_EXITS.put(player, exit);
+            }
+            return;
+        }
+        final EntryTransaction transaction = PENDING_ENTRIES.remove(player);
+        if (transaction == null) return;
+        if (!succeeded || !isSpiritWorld(player.level())) {
+            SpiritWorldState.read(player).ifPresent(session -> removeBody(transaction.source(), session));
+            transaction.destination().setBlockAndUpdate(transaction.portal(), transaction.replacedPortal());
+            SpiritWorldState.rollbackBoundary(player, transaction.inventory(), stack -> stack.is(WarlockeryTags.Items.SPIRIT_WORLD_CARRY_IN), transaction.selectedSlot());
+            SpiritWorldState.clear(player);
+            player.containerMenu.broadcastChanges();
+            return;
+        }
+        SpiritWorldState.Session session = SpiritWorldState.read(player).orElseThrow();
+        // Native PRE events need not expose the destination pose. Put the return portal beside the actual arrival.
+        if (session.portal().distSqr(player.blockPosition()) > 64.0) {
+            transaction.destination().setBlockAndUpdate(transaction.portal(), transaction.replacedPortal());
+            final BlockPos portal = portalPosition(player.level(), player.blockPosition());
+            player.level().setBlockAndUpdate(portal, ModBlocks.ALL.get("spiritportal").get().defaultBlockState());
+            session = new SpiritWorldState.Session(session.nightmare(), session.demonicNightmare(),
+                session.sourceDimension(), session.sourceX(), session.sourceY(), session.sourceZ(),
+                session.sourceYaw(), session.sourcePitch(), session.body(), portal,
+                session.originalInventory(), session.selectedSlot());
+            SpiritWorldState.begin(player, session);
+        }
+        finishEntry(player, session.nightmare(), session.demonicNightmare());
+    }
+
+    /** Native loaders without a teleport RETURN event recover a canceled pending transfer on the next player tick. */
+    public static void recoverPendingTransfer(final ServerPlayer player) {
+        if (ManifestationRuntime.finishExternalReturn(player, isSpiritWorld(player.level()))) return;
+        if (PENDING_EXITS.containsKey(player)) {
+            finishExternalTransfer(player, !isSpiritWorld(player.level(), player));
+            return;
+        }
+        if (PENDING_ENTRIES.containsKey(player)) finishExternalTransfer(player, isSpiritWorld(player.level()));
+    }
+
     public static boolean wake(final ServerPlayer player, final SpiritWorldRules.WakeCause cause) {
+        final boolean first = INTERNAL_WAKES.add(player);
+        try {
+            return wakeInternal(player, cause);
+        } finally {
+            if (first) INTERNAL_WAKES.remove(player);
+        }
+    }
+
+    private static boolean wakeInternal(final ServerPlayer player, final SpiritWorldRules.WakeCause cause) {
         if (ManifestationRuntime.isActive(player)
             && !ManifestationRuntime.returnToSpiritWorld(player, ManifestationRuntime.ReturnCause.PORTAL)) {
             return false;
@@ -112,10 +215,13 @@ public final class SpiritWorldRuntime {
             return false;
         }
         final ServerLevel dreamLevel = destination(player);
+        final List<ItemStackWithSlot> completeInventory = SpiritWorldState.settledSnapshot(player);
+        final int selectedSlot = player.getInventory().getSelectedSlot();
         final List<ItemStackWithSlot> exports = SpiritWorldRules.exports(
-            SpiritWorldState.snapshot(player.getInventory()),
+            completeInventory,
             stack -> stack.is(WarlockeryTags.Items.SPIRIT_WORLD_EXPORTS)
         );
+        SpiritWorldState.restore(player.getInventory(), exports, selectedSlot);
         final boolean teleported = player.teleportTo(
             source,
             session.sourceX(),
@@ -127,6 +233,7 @@ public final class SpiritWorldRuntime {
             true
         );
         if (!teleported) {
+            SpiritWorldState.rollbackBoundary(player, completeInventory, stack -> stack.is(WarlockeryTags.Items.SPIRIT_WORLD_EXPORTS), selectedSlot);
             player.sendOverlayMessage(Component.translatable("message.warlockery.spirit_world.wake.blocked"));
             return false;
         }
@@ -180,8 +287,8 @@ public final class SpiritWorldRuntime {
     }
 
     private static ServerLevel destination(final ServerPlayer player) {
-        final ServerLevel spiritWorld = player.level().getServer().getLevel(SPIRIT_WORLD);
-        return spiritWorld != null ? spiritWorld : GAME_TEST_DESTINATIONS.get(player);
+        final ServerLevel testDestination = GAME_TEST_DESTINATIONS.get(player);
+        return testDestination != null ? testDestination : player.level().getServer().getLevel(SPIRIT_WORLD);
     }
 
     public static boolean wakeIfBodyMissing(final ServerPlayer player) {
@@ -202,6 +309,25 @@ public final class SpiritWorldRuntime {
         final ServerPlayer player,
         final boolean forcedNightmare,
         final boolean sleepingBrew
+    ) {
+        return enterInternal(player, forcedNightmare, sleepingBrew, Optional.empty());
+    }
+
+    private static EntryResult enterInternal(
+        final ServerPlayer player,
+        final boolean forcedNightmare,
+        final boolean sleepingBrew,
+        final Optional<Vec3> requestedArrival
+    ) {
+        return enterInternal(player, forcedNightmare, sleepingBrew, requestedArrival, false);
+    }
+
+    private static EntryResult enterInternal(
+        final ServerPlayer player,
+        final boolean forcedNightmare,
+        final boolean sleepingBrew,
+        final Optional<Vec3> requestedArrival,
+        final boolean prepareOnly
     ) {
         final ServerLevel source = player.level();
         final ServerLevel destination = destination(player);
@@ -230,15 +356,18 @@ public final class SpiritWorldRuntime {
         );
         final boolean nightmare = demonicNightmare
             || SpiritWorldRules.entersNightmare(chance, player.getRandom().nextDouble());
-        final BlockPos arrival = safeSurface(destination, player.blockPosition());
+        final Vec3 arrivalPosition = requestedArrival.orElseGet(() ->
+            Vec3.atBottomCenterOf(safeSurface(destination, player.blockPosition())));
+        final BlockPos arrival = BlockPos.containing(arrivalPosition);
         final BlockPos portal = portalPosition(destination, arrival);
-        final Optional<ArmorStand> body = spawnBody(source, player);
-        if (body.isEmpty()) {
+        final boolean bodyRequired = !player.isCreative();
+        final Optional<Mannequin> body = bodyRequired ? spawnBody(source, player) : Optional.empty();
+        if (bodyRequired && body.isEmpty()) {
             player.sendOverlayMessage(Component.translatable("message.warlockery.spirit_world.entry.body_failed"));
             return new EntryResult(SpiritWorldRules.EntryDiagnostic.DESTINATION_UNAVAILABLE, nightmare);
         }
-        retainBodyChunk(source, player.blockPosition());
-        final List<ItemStackWithSlot> completeInventory = SpiritWorldState.snapshot(player.getInventory());
+        if (bodyRequired) retainBodyChunk(source, player.blockPosition());
+        final List<ItemStackWithSlot> completeInventory = SpiritWorldState.settledSnapshot(player);
         final List<ItemStackWithSlot> carriedIntoDream = SpiritWorldRules.exports(
             completeInventory,
             stack -> stack.is(WarlockeryTags.Items.SPIRIT_WORLD_CARRY_IN)
@@ -258,41 +387,50 @@ public final class SpiritWorldRuntime {
             player.getZ(),
             player.getYRot(),
             player.getXRot(),
-            body.orElseThrow().getUUID(),
+            body.map(Entity::getUUID).orElse(null),
             portal,
             originalInventory,
             selectedSlot
         );
-        player.closeContainer();
         SpiritWorldState.begin(player, session);
         player.getInventory().clearContent();
         carriedIntoDream.stream()
             .filter(entry -> entry.isValidInContainer(player.getInventory().getContainerSize()))
             .forEach(entry -> player.getInventory().setItem(entry.slot(), entry.stack().copy()));
         player.getInventory().setChanged();
+        if (prepareOnly) {
+            PENDING_ENTRIES.put(player, new EntryTransaction(source, destination, completeInventory,
+                selectedSlot, portal, replacedPortalState));
+            return new EntryResult(SpiritWorldRules.EntryDiagnostic.READY, nightmare);
+        }
         final boolean teleported = player.teleportTo(
             destination,
-            arrival.getX() + 0.5,
-            arrival.getY(),
-            arrival.getZ() + 0.5,
+            arrivalPosition.x,
+            arrivalPosition.y,
+            arrivalPosition.z,
             Set.of(),
             player.getYRot(),
             player.getXRot(),
             true
         );
         if (!teleported) {
-            SpiritWorldState.restore(player.getInventory(), completeInventory, selectedSlot);
+            SpiritWorldState.rollbackBoundary(player, completeInventory, stack -> stack.is(WarlockeryTags.Items.SPIRIT_WORLD_CARRY_IN), selectedSlot);
             SpiritWorldState.clear(player);
-            body.orElseThrow().discard();
+            body.ifPresent(Entity::discard);
             destination.setBlockAndUpdate(portal, replacedPortalState);
             player.sendOverlayMessage(Component.translatable("message.warlockery.spirit_world.entry.teleport_failed"));
             return new EntryResult(SpiritWorldRules.EntryDiagnostic.DESTINATION_UNAVAILABLE, nightmare);
         }
+        finishEntry(player, nightmare, demonicNightmare);
+        return new EntryResult(SpiritWorldRules.EntryDiagnostic.READY, nightmare);
+    }
+
+    private static void finishEntry(final ServerPlayer player, final boolean nightmare, final boolean demonicNightmare) {
         player.setDeltaMovement(Vec3.ZERO);
         BrewMarkerState.remove(player, BrewMarkerKind.SLEEPING);
         if (nightmare) {
             player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 100, 0, true, false, true));
-            spawnNightmare(destination, player);
+            spawnNightmare(player.level(), player);
         } else {
             player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 400, 0, true, false, true));
         }
@@ -304,8 +442,11 @@ public final class SpiritWorldRuntime {
                 ? "message.warlockery.spirit_world.entry.nightmare"
                 : "message.warlockery.spirit_world.entry.dream"
         ));
-        return new EntryResult(SpiritWorldRules.EntryDiagnostic.READY, nightmare);
     }
+
+    private record EntryTransaction(ServerLevel source, ServerLevel destination,
+        List<ItemStackWithSlot> inventory, int selectedSlot, BlockPos portal, BlockState replacedPortal) { }
+    private record ExitTransaction(List<ItemStackWithSlot> inventory, int selectedSlot) { }
 
     public static void tickLevel(final ServerLevel level) {
         if (isSpiritWorld(level)) {
@@ -314,6 +455,7 @@ public final class SpiritWorldRuntime {
     }
 
     public static void tickPlayer(final ServerPlayer player) {
+        recoverPendingTransfer(player);
         if (!SpiritWorldState.active(player)) {
             return;
         }
@@ -358,6 +500,12 @@ public final class SpiritWorldRuntime {
             || !SpiritWorldRules.fatalDreamDamage(player.getHealth(), event.getAmount())) {
             return;
         }
+        if (!com.kadamitas.warlockery.entity.CreatureCombat.isNullifyingHunterShot(event)
+            && com.kadamitas.warlockery.item.DollItem.tryLethalGuard(
+                player, event.getSource(), event.getAmount())) {
+            event.setAmount(0.0F);
+            return;
+        }
         event.setAmount(0.0F);
         player.setHealth(Math.max(1.0F, player.getHealth()));
         player.level().getServer().execute(() -> {
@@ -375,10 +523,20 @@ public final class SpiritWorldRuntime {
             .orElse(0L);
     }
 
-    private static Optional<ArmorStand> spawnBody(final ServerLevel level, final ServerPlayer player) {
-        final ArmorStand body = new ArmorStand(level, player.getX(), player.getY(), player.getZ());
-        body.setNoBasePlate(true);
-        body.setShowArms(true);
+    private static Optional<Mannequin> spawnBody(final ServerLevel level, final ServerPlayer player) {
+        final Mannequin body = EntityTypes.MANNEQUIN.create(level, EntitySpawnReason.EVENT);
+        if (body == null) return Optional.empty();
+        final CompoundTag appearance = new CompoundTag();
+        appearance.putBoolean("immovable", true);
+        appearance.putBoolean("hide_description", true);
+        appearance.putString("pose", "sleeping");
+        body.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), appearance));
+        body.setPos(player.getX(), player.getY(), player.getZ());
+        body.setYRot(player.getYRot());
+        body.setYBodyRot(player.getYRot());
+        body.setYHeadRot(player.getYRot());
+        body.setComponent(DataComponents.PROFILE, ResolvableProfile.createResolved(player.getGameProfile()));
+        body.setPose(Pose.SLEEPING);
         body.setNoGravity(true);
         body.setCustomName(Component.translatable("entity.warlockery.sleeping_body", player.getDisplayName()));
         body.setCustomNameVisible(true);
@@ -459,6 +617,7 @@ public final class SpiritWorldRuntime {
 
     private static boolean bodyPresent(final ServerPlayer player) {
         return SpiritWorldState.read(player).map(session -> {
+            if (session.body() == null) return true;
             final ServerLevel source = player.level().getServer().getLevel(ResourceKey.create(
                 Registries.DIMENSION,
                 session.sourceDimension()
@@ -475,10 +634,31 @@ public final class SpiritWorldRuntime {
         }).orElse(false);
     }
 
+    /** Return only equipment actually offered to the body; the player's inventory escrow is never read here. */
+    public static void releaseBodyEquipment(final Entity body) {
+        takeBodyEquipment(body).forEach(item -> body.level().addFreshEntity(item));
+    }
+
+    private static List<net.minecraft.world.entity.item.ItemEntity> takeBodyEquipment(final Entity entity) {
+        if (!(entity instanceof Mannequin body) || !isSleepingBody(body)
+            || !(body.level() instanceof ServerLevel level)) return List.of();
+        final List<net.minecraft.world.entity.item.ItemEntity> drops = new java.util.ArrayList<>();
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            final ItemStack stack = body.getItemBySlot(slot);
+            if (stack.isEmpty()) continue;
+            final ItemStack offered = stack.copy();
+            body.setItemSlot(slot, ItemStack.EMPTY);
+            drops.add(new net.minecraft.world.entity.item.ItemEntity(level, body.getX(), body.getY(), body.getZ(), offered));
+        }
+        return drops;
+    }
+
     private static void removeBody(final ServerLevel source, final SpiritWorldState.Session session) {
+        if (session.body() == null) return;
         source.getChunkAt(BlockPos.containing(session.sourceX(), session.sourceY(), session.sourceZ()));
         final Entity body = source.getEntity(session.body());
         if (body != null && isSleepingBody(body)) {
+            releaseBodyEquipment(body);
             body.discard();
         }
     }

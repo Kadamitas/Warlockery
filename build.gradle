@@ -116,9 +116,40 @@ def generateIsolationGameTestStructure = tasks.register('generateIsolationGameTe
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty32x32x32.nbt') })
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources'; srcDir generatedGameTestResources }
+// Native server fixtures form a separate development mod, never part of jar or sourcesJar.
+sourceSets {
+    serverGameTest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+configurations {
+    serverGameTestImplementation.extendsFrom implementation
+    serverGameTestRuntimeOnly.extendsFrom runtimeOnly
+    serverGameTestCompileOnly.extendsFrom compileOnly
+    serverGameTestAnnotationProcessor.extendsFrom annotationProcessor
+}
+sourceSets.test.compileClasspath += sourceSets.serverGameTest.output
+sourceSets.test.runtimeClasspath += sourceSets.serverGameTest.output
+// Loom's mod groups describe identity; run classpaths must also include the companion output.
+sourceSets.main.runtimeClasspath += sourceSets.serverGameTest.output
+
+tasks.register('serverGameTestJar', Jar) {
+    group = 'verification'
+    description = 'Builds the optional GameTest development artifact.'
+    archiveClassifier.set('gametests')
+    destinationDirectory.set(layout.buildDirectory.dir('gametest-libs'))
+    from sourceSets.serverGameTest.output
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.serverGameTest.resources { srcDir generatedGameTestResources }
 
 loom {
+    mods {
+        warlockery { sourceSet sourceSets.main }
+        warlockery_gametests { sourceSet sourceSets.serverGameTest }
+    }
     runs {
         gametest {
             server()
@@ -192,6 +223,9 @@ tasks.named('runClientGameTest') {
     systemProperty 'warlockery.recipeViewer', recipeViewer
     systemProperty 'warlockery.itemIds', providers.gradleProperty('warlockeryItemIds').orElse('').get()
     systemProperty 'warlockery.ritualIds', providers.gradleProperty('warlockeryRitualIds').orElse('').get()
+    systemProperty 'warlockery.focusCases', providers.gradleProperty('warlockeryFocusCases').orElse('').get()
+    systemProperty 'warlockery.ritualDollGuard', providers.gradleProperty('warlockeryRitualDollGuard').orElse('false').get()
+    systemProperty 'warlockery.ritualPreserveInfusions', providers.gradleProperty('warlockeryRitualPreserveInfusions').orElse('false').get()
     systemProperty 'warlockery.dollIds', providers.gradleProperty('warlockeryDollIds').orElse('').get()
     systemProperty 'warlockery.brewWorldIds', providers.gradleProperty('warlockeryBrewWorldIds').orElse('').get()
     systemProperty 'warlockery.equipmentCases', providers.gradleProperty('warlockeryEquipmentCases').orElse('').get()
@@ -215,25 +249,26 @@ tasks.named('runClientGameTest') {
     systemProperty 'warlockery.machineRepresentativeTypes', providers.gradleProperty('warlockeryMachineRepresentativeTypes').orElse('').get()
     systemProperty 'warlockery.machineRecipeIds', providers.gradleProperty('warlockeryMachineRecipeIds').orElse('').get()
     systemProperty 'warlockery.placedMirrorIds', providers.gradleProperty('warlockeryPlacedMirrorIds').orElse('').get()
+    systemProperty 'warlockery.plantIds', providers.gradleProperty('warlockeryPlantIds').orElse('').get()
+    systemProperty 'warlockery.visualIds', providers.gradleProperty('warlockeryVisualIds').orElse('').get()
+    systemProperty 'warlockery.visualRemakeMotionIds', providers.gradleProperty('warlockeryVisualRemakeMotionIds').orElse('').get()
     systemProperty 'warlockery.jeiAuditMachineOnly', providers.gradleProperty('warlockeryJeiMachineOnly').orElse('false').get()
     systemProperty 'warlockery.clientEvidence', layout.projectDirectory.dir('.codex-local/client-acceptance').asFile.absolutePath
 }
 
-tasks.named('processResources', ProcessResources) {
+tasks.named('processServerGameTestResources', ProcessResources) {
     dependsOn generateEmptyGameTestStructure
     dependsOn generateLargeGameTestStructure
     dependsOn generateIsolationGameTestStructure
+}
+
+tasks.named('processResources', ProcessResources) {
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
     }
 }
 
-tasks.named('sourcesJar') {
-    dependsOn generateEmptyGameTestStructure
-    dependsOn generateLargeGameTestStructure
-    dependsOn generateIsolationGameTestStructure
-}
 
 tasks.named('test', Test) {
     useJUnitPlatform()
@@ -347,6 +382,24 @@ tasks.named('processGametestResources') {
                 operational: ['JeiCatalogAcceptance', 'MachineWalkthroughAcceptance', 'RitualWalkthroughAcceptance'],
                 walkthroughs: ['RitualWalkthroughAcceptance', 'MachineWalkthroughAcceptance'],
                 rituals: ['RitualWalkthroughAcceptance'],
+                machine_models: ['MachineModelClientAcceptance'],
+                imp_texture: ['ImpTextureClientAcceptance'],
+                visual_update: ['VisualUpdateClientAcceptance'],
+        visual_rig_motion: ['VisualRigMotionClientAcceptance'],
+        visual_remake_motion: ['VisualRemakeMotionClientAcceptance'],
+                plants: ['PlantGrowthClientAcceptance'],
+                brazier_death: ['BrazierAndDeathProtectionAcceptance'],
+                mystic_branch: ['MysticBranchAbilitiesClientAcceptance'],
+                focus_abilities: ['ArcaneFocusAbilitiesClientAcceptance'],
+                infusion_passives: ['InfusionPassiveClientAcceptance'],
+                spirit_travel: ['SpiritTravelClientAcceptance'],
+                spirit_landscape: ['SpiritLandscapeClientAcceptance'],
+                spirit_boundary: ['SpiritBoundaryClientAcceptance'],
+                ritual_book: ['RitualBookClientAcceptance'],
+                cheat_commands: ['CheatCommandsClientAcceptance'],
+                demonic_spells: ['DemonicSpellAbilitiesClientAcceptance'],
+                guard_dolls: ['GuardDollAbilitiesClientAcceptance'],
+                chalk_and_models: ['DiagonalChalkClientAcceptance', 'MachineModelClientAcceptance'],
                 machines: ['MachineWalkthroughAcceptance'],
                 catalogue: ['JeiCatalogAcceptance']
             ][clientAcceptanceSuite.get()]
@@ -357,3 +410,35 @@ tasks.named('processGametestResources') {
         }
     }
 }
+
+abstract class VerifyProductionArtifact extends DefaultTask {
+    @InputFiles
+    @PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract ConfigurableFileCollection getArtifacts()
+
+    @TaskAction
+    void verify() {
+        artifacts.files.each { artifact ->
+            new java.util.zip.ZipFile(artifact).withCloseable { archive ->
+                def leaked = archive.entries().findAll { entry ->
+                    def name = entry.name
+                    !entry.directory && ((name.endsWith('.class') || name.endsWith('.java')) &&
+                        (name.contains('GameTest') || name.contains('/gametest/')) ||
+                    name.contains('/test_instance/') || name.contains('/test_environment/') ||
+                    name == 'warlockery-gametests.mixins.json' ||
+                    name == 'data/minecraft/worldgen/world_preset/flat.json' ||
+                    (name.contains('/structure/empty') && name.endsWith('.nbt')))
+                }.collect { it.name }
+                if (!leaked.empty) throw new GradleException("Development fixtures leaked into ${artifact.name}: ${leaked}")
+            }
+        }
+    }
+}
+
+tasks.register('verifyProductionArtifact', VerifyProductionArtifact) {
+    group = 'verification'
+    description = 'Rejects development GameTest classes and fixtures in release jars and sources.'
+    artifacts.from(tasks.named('jar').flatMap { it.archiveFile })
+    artifacts.from(tasks.named('sourcesJar').flatMap { it.archiveFile })
+}
+tasks.named('check') { dependsOn tasks.named('verifyProductionArtifact') }

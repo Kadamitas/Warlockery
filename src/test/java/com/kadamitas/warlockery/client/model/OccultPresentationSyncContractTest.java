@@ -61,7 +61,8 @@ final class OccultPresentationSyncContractTest {
         assertTrue(model.contains("case INVESTIGATE -> Activity.INVESTIGATING"));
         assertTrue(model.contains("case ENGAGE -> Activity.ENGAGING"));
         assertTrue(model.contains("case RETREAT -> Activity.RETREATING"));
-        assertFalse(model.contains("entity.isChargingCrossbow()"));
+        // The actual crossbow charge supplements, rather than replaces, the synced intent.
+        assertTrue(model.contains("state.chargingCrossbow = entity.isChargingCrossbow()"));
     }
 
     private static void assertSyncedIntent(

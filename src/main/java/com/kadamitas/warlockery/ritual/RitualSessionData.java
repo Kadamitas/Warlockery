@@ -2,6 +2,7 @@ package com.kadamitas.warlockery.ritual;
 
 import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
+import com.kadamitas.warlockery.network.ModNetwork;
 import com.kadamitas.warlockery.registry.ModSounds;
 import com.kadamitas.warlockery.util.DataParsing;
 import com.mojang.serialization.Codec;
@@ -81,6 +82,14 @@ public final class RitualSessionData extends SavedData {
         ));
         setDirty();
         return true;
+    }
+
+    public record Progress(String ritual, int elapsed, int total) { }
+
+    public Progress progressAt(final BlockPos center) {
+        return sessions.stream().filter(session -> session.center() == center.asLong())
+            .findFirst().map(session -> new Progress(session.ritual(), session.elapsed(), session.castingTime()))
+            .orElse(new Progress("", 0, 0));
     }
 
     public boolean isActive(final BlockPos center) {
@@ -191,6 +200,14 @@ public final class RitualSessionData extends SavedData {
                     completion.casterId(),
                     failure
                 );
+            }
+            if (completion.caster() instanceof ServerPlayer player) {
+                try {
+                    ModNetwork.refreshCompletedRitual(level, completion.center(), player);
+                } catch (RuntimeException failure) {
+                    Warlockery.LOGGER.error("Unable to refresh completed ritual {} at {} for {}",
+                        completion.ritual(), completion.center(), completion.casterId(), failure);
+                }
             }
         }
     }

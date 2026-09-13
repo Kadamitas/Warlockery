@@ -15,6 +15,11 @@ public final class ModBlockEntities {
         () -> new BlockEntityType<>(AltarBlockEntity::new, Set.of(ModBlocks.ALTAR.get()))
     );
 
+    public static final RegistrationHandle<BlockEntityType<com.kadamitas.warlockery.block.entity.CircleHeartBlockEntity>> CIRCLE_HEART = RegistrationHandle.create(
+        "circle_heart",
+        () -> new BlockEntityType<>(com.kadamitas.warlockery.block.entity.CircleHeartBlockEntity::new, Set.of(ModBlocks.ALL.get("circle").get()))
+    );
+
     public static final RegistrationHandle<BlockEntityType<MagicMachineBlockEntity>> MAGIC_MACHINE = RegistrationHandle.create(
         "magic_machine",
         () -> new BlockEntityType<>(
@@ -40,6 +45,7 @@ public final class ModBlockEntities {
 
     public static void register() {
         ALTAR.register(BuiltInRegistries.BLOCK_ENTITY_TYPE);
+        CIRCLE_HEART.register(BuiltInRegistries.BLOCK_ENTITY_TYPE);
         MAGIC_MACHINE.register(BuiltInRegistries.BLOCK_ENTITY_TYPE);
         WOLF_TRAP.register(BuiltInRegistries.BLOCK_ENTITY_TYPE);
         DOLL_SHELF.register(BuiltInRegistries.BLOCK_ENTITY_TYPE);

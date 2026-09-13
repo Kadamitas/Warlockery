@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test;
 class GameTestRegistrationIntegrityTest {
     private static final Pattern REGISTRATION = Pattern.compile("REGISTRY\\.register\\(\"([^\"]+)\"");
     private static final Path REGISTRY_SOURCE = Path.of(
-        "src/main/java/com/kadamitas/warlockery/registry/ModGameTests.java"
+        "src/serverGameTest/java/com/kadamitas/warlockery/registry/ModGameTests.java"
     );
-    private static final Path INSTANCES = Path.of("src/main/resources/data/warlockery/test_instance");
+    private static final Path INSTANCES = Path.of("src/serverGameTest/resources/data/warlockery/test_instance");
 
     @Test
     void everyRegisteredFunctionHasExactlyOneRunnableInstance() throws IOException {

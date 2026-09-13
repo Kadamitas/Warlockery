@@ -34,7 +34,7 @@ public final class ModClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(
             ModNetwork.OpenRitualScreenPayload.TYPE,
             (payload, context) -> context.client().execute(() ->
-                RitualSelectionScreen.openOrUpdate(payload.center(), payload.options(), payload.mayOpen()))
+                ManualScreen.openOrUpdateRitual(payload.center(), payload.options(), payload.mayOpen()))
         );
         ClientPlayNetworking.registerGlobalReceiver(
             ModNetwork.DollActivationPayload.TYPE,
@@ -74,6 +74,10 @@ public final class ModClientNetwork {
 
     public static void requestRefresh(final BlockPos center) {
         send(new ModNetwork.RitualActionPayload(center, "", false, false));
+    }
+
+    public static void requestSelection(final BlockPos center, final String ritualId) {
+        send(new ModNetwork.RitualActionPayload(center, ritualId, false, false));
     }
 
     public static void requestActivation(final BlockPos center, final String ritualId) {

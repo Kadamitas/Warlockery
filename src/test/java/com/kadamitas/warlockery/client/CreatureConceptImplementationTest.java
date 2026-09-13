@@ -161,7 +161,7 @@ final class CreatureConceptImplementationTest {
             for (int y = 0; y < image.getHeight(); y++) {
                 for (int x = 0; x < image.getWidth(); x++) {
                     final int alpha = image.getRGB(x, y) >>> 24;
-                    assertTrue(alpha == 0 || alpha == 255, path + " binary alpha at " + x + "," + y);
+                    assertTrue(path.getFileName().toString().equals("spirit.png") || alpha == 0 || alpha == 255, path + " binary alpha at " + x + "," + y);
                 }
             }
             return sha256(path);

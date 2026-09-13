@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "warlockery_gametests",
+  "version": "1",
+  "name": "Warlockery GameTests",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.kadamitas.warlockery.gametest.WarlockeryGameTestMod"
+    ]
+  },
+  "depends": {
+    "warlockery": "*",
+    "fabricloader": ">=0.18.0"
+  },
+  "mixins": [
+    "warlockery-gametests.mixins.json"
+  ]
+}

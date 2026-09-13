@@ -203,6 +203,13 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
         return List.of();
     }
 
+    public Optional<RitualOption> option(final ServerLevel level, final BlockPos center,
+        final @Nullable Player caster, final Identifier id) {
+        final RitualDefinition definition = rituals.get(id);
+        return definition == null || !definition.visible() ? Optional.empty()
+            : Optional.of(diagnose(id, definition, level, center, caster));
+    }
+
     public List<RitualOption> options(final ServerLevel level, final BlockPos center, final Player caster) {
         return rituals.entrySet().stream()
             .filter(entry -> entry.getValue().visible())
@@ -1405,7 +1412,9 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             level.getEntitiesOfClass(LivingEntity.class, new AABB(center).inflate(definition.radius()));
         affected.forEach(entity -> {
             if (entity.typeHolder().is(EntityTypeTags.UNDEAD)) {
-                entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, definition.duration(), definition.amplifier()));
+                entity.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(
+                    com.kadamitas.warlockery.registry.ModEffects.UNDEAD_MENDING.get()),
+                    definition.duration(), definition.amplifier()));
                 entity.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, definition.duration(), 0));
             } else {
                 entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, definition.duration(), 0));

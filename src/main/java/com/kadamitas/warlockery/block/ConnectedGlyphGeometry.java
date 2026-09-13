@@ -14,13 +14,13 @@ public final class ConnectedGlyphGeometry {
         "circleglyphinfernal",
         "circleglyph_veil"
     );
-    public static final Bounds CENTER = new Bounds(5.0, 0.0, 5.0, 11.0, 1.0, 11.0);
-    public static final double DIAGONAL_SURFACE = 0.625;
+    public static final Bounds CENTER = new Bounds(6.0, 0.0, 6.0, 10.0, 0.25, 10.0);
+    public static final double DIAGONAL_SURFACE = 0.15625;
     public static final Map<Side, Bounds> ARMS = Map.of(
-        Side.NORTH, new Bounds(6.0, 0.0, 0.0, 10.0, 1.0, 8.0),
-        Side.EAST, new Bounds(8.0, 0.0, 6.0, 16.0, 1.0, 10.0),
-        Side.SOUTH, new Bounds(6.0, 0.0, 8.0, 10.0, 1.0, 16.0),
-        Side.WEST, new Bounds(0.0, 0.0, 6.0, 8.0, 1.0, 10.0)
+        Side.NORTH, new Bounds(7.0, 0.0, 0.0, 9.0, 0.125, 6.0),
+        Side.EAST, new Bounds(10.0, 0.0, 7.0, 16.0, 0.125, 9.0),
+        Side.SOUTH, new Bounds(7.0, 0.0, 10.0, 9.0, 0.125, 16.0),
+        Side.WEST, new Bounds(0.0, 0.0, 7.0, 6.0, 0.125, 9.0)
     );
 
     public static final Map<Side, List<Bounds>> DIAGONALS = Map.of(
@@ -41,6 +41,11 @@ public final class ConnectedGlyphGeometry {
         return side.diagonal() ? DIAGONALS.get(side) : List.of(ARMS.get(side));
     }
 
+    public static double surface(final Side side) {
+        return !side.diagonal() ? 0.125
+            : side.dx() == side.dz() ? DIAGONAL_SURFACE : DIAGONAL_SURFACE + 0.03125;
+    }
+
     private static List<Bounds> diagonal(final Side side) {
         return IntStream.range(0, 8).mapToObj(step -> {
             final double x0 = step;
@@ -50,7 +55,7 @@ public final class ConnectedGlyphGeometry {
             return new Bounds(
                 side.dx() < 0 ? x0 : 16.0 - x1, 0.0,
                 side.dz() < 0 ? z0 : 16.0 - z1,
-                side.dx() < 0 ? x1 : 16.0 - x0, 1.0,
+                side.dx() < 0 ? x1 : 16.0 - x0, 0.125,
                 side.dz() < 0 ? z1 : 16.0 - z0
             );
         }).toList();

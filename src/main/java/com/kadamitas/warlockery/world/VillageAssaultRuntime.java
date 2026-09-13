@@ -131,6 +131,35 @@ public final class VillageAssaultRuntime {
             || objectiveResident && withinObjectiveArea;
     }
 
+    public static Optional<String> requestAssault(final ServerPlayer player, final AssaultKind kind) {
+        final ServerLevel level = player.level();
+        if (player.isSpectator()) return Optional.of("Leave spectator mode before starting a settlement assault.");
+        if (!WarlockeryConfig.villageAssaults()) return Optional.of("Village assaults are disabled in the server configuration.");
+        if (level.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) {
+            return Optional.of("Settlement assaults require a difficulty above Peaceful.");
+        }
+        final VillageAssaultData data = VillageAssaultData.get(level);
+        if (data.active().isPresent()) return Optional.of("A settlement assault is already active in this dimension.");
+        final Optional<SettlementTarget> target = humanVillageCenter(level, player.blockPosition())
+            .map(center -> new SettlementTarget(center, SettlementKind.HUMAN))
+            .or(() -> hobgoblinSettlementCenter(level, player.blockPosition())
+                .map(center -> new SettlementTarget(center, SettlementKind.HOBGOBLIN)));
+        if (target.isEmpty()) return Optional.of("Stand in an inhabited village or near an inhabited registered settlement first.");
+        final SettlementTarget settlement = target.orElseThrow();
+        if (!level.hasChunkAt(settlement.center()) || !level.getWorldBorder().isWithinBounds(settlement.center())) {
+            return Optional.of("The settlement center must be loaded and inside the world border.");
+        }
+        if (!VillageAssaultRules.allowedAt(kind, settlement.kind(), isNight(level), isFullMoon(level, settlement.center()))) {
+            return Optional.of(switch (kind) {
+                case GOBLIN -> "Goblin raids target inhabited human villages, not hobgoblin settlements.";
+                case VAMPIRE -> "Vampire attacks require night (time 13000 through 23000).";
+                case WEREWOLF -> "Werewolf attacks require night (time 13000 through 23000) and a full moon.";
+            });
+        }
+        return data.begin(settlement.center(), kind, settlement.kind(), level.getGameTime())
+            ? Optional.empty() : Optional.of("A settlement assault is already active in this dimension.");
+    }
+
     public static void tick(final ServerLevel level) {
         WerewolfVillagerInfectionRuntime.tick(level);
         final long gameTime = level.getGameTime();

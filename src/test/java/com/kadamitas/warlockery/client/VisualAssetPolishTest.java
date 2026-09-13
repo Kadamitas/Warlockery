@@ -248,7 +248,8 @@ final class VisualAssetPolishTest {
         final String direction,
         final String id
     ) {
-        if (boundary) {
+        if (boundary && faces.has(direction)) {
+            assertTrue(faces.getAsJsonObject(direction).has("cullface"), id + " " + direction + " missing cullface");
             assertEquals(direction, faces.getAsJsonObject(direction).get("cullface").getAsString(), id + " " + direction);
         }
     }
