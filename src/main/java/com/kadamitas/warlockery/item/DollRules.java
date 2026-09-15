@@ -2,7 +2,6 @@ package com.kadamitas.warlockery.item;
 
 public final class DollRules {
     public static final int DURABILITY_REPAIRED_PER_CHARGE = 2;
-    public static final float PROTECTION_RECOVERY_HEALTH = 10.0F;
 
     private DollRules() {
     }
@@ -11,8 +10,9 @@ public final class DollRules {
         return finalDamage >= health;
     }
 
+    /** A lethal guard restores the full existing maximum; it never adds temporary or extra hearts. */
     public static float restoredHealth(final float maximumHealth) {
-        return Math.min(PROTECTION_RECOVERY_HEALTH, Math.max(1.0F, maximumHealth));
+        return Math.max(1.0F, maximumHealth);
     }
 
     public static boolean needsRepair(final int damage, final int maxDamage) {

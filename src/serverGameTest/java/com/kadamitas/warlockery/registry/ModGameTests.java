@@ -324,8 +324,8 @@ public final class ModGameTests {
             () -> WarlockeryGameTests::werewolfHunterCarriesSilverAmmunition);
         REGISTRY.register("wolf_altar_final_trial_completes_once",
             () -> WarlockeryGameTests::wolfAltarFinalTrialCompletesOnce);
-        REGISTRY.register("death_guard_uses_totem_recovery_without_vanilla_trigger",
-            () -> WarlockeryGameTests::deathGuardUsesTotemRecoveryWithoutVanillaTrigger);
+        REGISTRY.register("death_guard_restores_full_health_without_totem_effects",
+            () -> WarlockeryGameTests::deathGuardRestoresFullHealthWithoutTotemEffects);
         REGISTRY.register("hunger_guard_restores_hunger_and_saturation",
             () -> WarlockeryGameTests::hungerGuardRestoresHungerAndSaturation);
         REGISTRY.register("mending_doll_trades_its_durability",

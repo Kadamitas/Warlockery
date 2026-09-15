@@ -605,6 +605,20 @@ public final class GoblinPatronRules {
         };
     }
 
+    /**
+     * The action a client presents for a combat state. A completed volley holds its presentation
+     * through recovery: the arrows are released on the completion tick, so dropping the volley
+     * pose there would remove the drawn bow from the shooter's hand on the same frame the arrow
+     * appears.
+     */
+    public static Action presentedAction(final GoblinPatronState.Combat combat) {
+        return combat.action() == Action.IDLE
+            && combat.lastCompleted() == Action.LEDGER_VOLLEY
+            && combat.recovering()
+            ? Action.LEDGER_VOLLEY
+            : combat.action();
+    }
+
     /** True only for the actions that must show a tell before any effect can commit. */
     public static boolean isTelegraphed(final Action action) {
         return tellTicks(action) > 0;

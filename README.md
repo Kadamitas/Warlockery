@@ -2,7 +2,7 @@
 
 [Releases](https://github.com/Kadamitas/Warlockery/releases) | [Issue tracker](https://github.com/Kadamitas/Warlockery/issues) | [MIT license](LICENSE)
 
-Warlockery 1.5.4 is a standalone ritual magic mod by Kadamitas for Minecraft 26.2, Java 25, and NeoForge 26.2.0.64 or newer.
+Warlockery 1.5.5 is a standalone ritual magic mod by Kadamitas for Minecraft 26.2, Java 25, and NeoForge 26.2.0.64 or newer.
 
 It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, goblin village enclaves, silver hunting equipment, and Netherite-tier Goblinite gear.
 
@@ -15,7 +15,7 @@ It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls a
 
 JEI integration is optional and activates when the NeoForge build of JEI 30.15.0 or newer is installed.
 
-The normal NeoForge build targets 26.2.0.87 and retains 26.2.0.64 as its minimum compatible version. Other normal 1.5.4 releases target Forge 65.1.0 or newer and Fabric Loader 0.19.5 with Fabric API 0.158.0+26.2. The `1.5.3-LlaGuiT0-26.2.0.45` supporter build remains NeoForge-only and requires NeoForge `[26.2.0.45-beta,26.2.0.46-beta)`.
+The normal NeoForge build targets 26.2.0.87 and retains 26.2.0.64 as its minimum compatible version. Other normal 1.5.5 releases target Forge 65.1.0 or newer and Fabric Loader 0.19.5 with Fabric API 0.158.0+26.2. The `1.5.5-LlaGuiT0-26.2.0.45` supporter build remains NeoForge-only and requires NeoForge `[26.2.0.45-beta,26.2.0.46-beta)`.
 
 ## Languages
 

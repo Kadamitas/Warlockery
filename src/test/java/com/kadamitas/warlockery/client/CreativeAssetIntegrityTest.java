@@ -254,7 +254,7 @@ final class CreativeAssetIntegrityTest {
     @Test
     void lycansAndGoblinsHaveDistinctClothedSkins() {
         final Map<String, int[]> clothed = Map.of(
-            "lycan_villager", new int[]{64, 64},
+            "lycan_villager", new int[]{128, 64},
             "goblin", new int[]{128, 128},
             "hobgoblin", new int[]{192, 128},
             "stonebroker", new int[]{192, 160},

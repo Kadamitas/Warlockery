@@ -260,6 +260,7 @@ public final class EntModel extends EntityModel<EntModel.State> {
         final float partialTicks
     ) {
         state.tint = entity.variant().tint();
+        state.variant = entity.variant();
         state.attackProgress = entity.getAttackAnim(partialTicks);
         final EntRules.Phase phase = entity.presentationPhase();
         state.roused = phase == EntRules.Phase.ROUSED
@@ -270,6 +271,7 @@ public final class EntModel extends EntityModel<EntModel.State> {
 
     public static final class State extends LivingEntityRenderState {
         public int tint = 0xFFFFFFFF;
+        public EntEntity.EntVariant variant = EntEntity.EntVariant.OAK;
         public float attackProgress;
         public boolean roused;
     }

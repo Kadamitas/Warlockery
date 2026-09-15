@@ -1,6 +1,8 @@
 package com.kadamitas.warlockery.client.model;
 
 import com.kadamitas.warlockery.entity.CircleMageEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -9,17 +11,29 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 
-public final class CircleMageModel extends EntityModel<CircleMageModel.State> {
+/**
+ * A player-proportioned robed scholar. The left 64x64 of the atlas is the standard player skin
+ * layout (head, hat overlay, body, arms, legs and all their outer layers); the right half holds the
+ * islands of the modeled wide-brim wizard hat. The Circle Magic book is rendered in the left hand
+ * by the renderer's item layer.
+ */
+public final class CircleMageModel extends EntityModel<CircleMageModel.State>
+    implements ArmedModel<CircleMageModel.State> {
     public static final int TEXTURE_WIDTH = 128;
-    public static final int TEXTURE_HEIGHT = 128;
+    public static final int TEXTURE_HEIGHT = 64;
 
     private final ModelPart head;
+    private final ModelPart hood;
+    private final ModelPart hatBrim;
+    private final ModelPart hatCone1;
+    private final ModelPart hatCone2;
+    private final ModelPart hatCone3;
+    private final ModelPart hatTip;
     private final ModelPart body;
-    private final ModelPart circleFocus;
-    private final ModelPart scriptPanel;
     private final ModelPart rightArm;
     private final ModelPart leftArm;
     private final ModelPart rightLeg;
@@ -28,9 +42,13 @@ public final class CircleMageModel extends EntityModel<CircleMageModel.State> {
     public CircleMageModel(final ModelPart root) {
         super(root);
         head = root.getChild("head");
+        hood = head.getChild("hood");
+        hatBrim = head.getChild("hat_brim");
+        hatCone1 = hatBrim.getChild("hat_cone_1");
+        hatCone2 = hatCone1.getChild("hat_cone_2");
+        hatCone3 = hatCone2.getChild("hat_cone_3");
+        hatTip = hatCone3.getChild("hat_tip");
         body = root.getChild("body");
-        circleFocus = body.getChild("circle_focus");
-        scriptPanel = body.getChild("script_panel");
         rightArm = root.getChild("right_arm");
         leftArm = root.getChild("left_arm");
         rightLeg = root.getChild("right_leg");
@@ -40,181 +58,101 @@ public final class CircleMageModel extends EntityModel<CircleMageModel.State> {
     public static LayerDefinition createBodyLayer() {
         final MeshDefinition mesh = new MeshDefinition();
         final PartDefinition root = mesh.getRoot();
+
+        // Vanilla player-skin islands so the atlas can be authored like a 64x64 skin.
         final PartDefinition head = root.addOrReplaceChild(
             "head",
-            CubeListBuilder.create().texOffs(0, 0).addBox(-3.5F, -6.0F, -3.0F, 7.0F, 6.0F, 6.0F),
-            PartPose.offset(0.0F, 7.0F, -0.4F)
+            CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F),
+            PartPose.ZERO
         );
         head.addOrReplaceChild(
-            "study_visor",
-            CubeListBuilder.create().texOffs(28, 0).addBox(-3.5F, -0.5F, -0.75F, 7.0F, 1.0F, 1.0F),
-            PartPose.offsetAndRotation(0.0F, -5.45F, -3.0F, -0.08F, 0.0F, 0.0F)
-        );
-        final PartDefinition hoodCrown = head.addOrReplaceChild(
-            "temple_prism",
-            CubeListBuilder.create().texOffs(48, 0).addBox(-1.5F, -2.0F, -1.5F, 3.0F, 2.0F, 3.0F),
-            PartPose.offsetAndRotation(0.0F, -6.15F, 0.25F, 0.12F, 0.22F, -0.28F)
-        );
-        final PartDefinition hoodPeak = hoodCrown.addOrReplaceChild(
-            "hood_peak",
-            CubeListBuilder.create().texOffs(49, 1).addBox(-1.0F, -2.0F, -1.0F, 2.0F, 2.0F, 2.0F),
-            PartPose.offsetAndRotation(-0.35F, -1.6F, 0.1F, 0.08F, 0.18F, -0.34F)
-        );
-        hoodPeak.addOrReplaceChild(
-            "hood_tip",
-            CubeListBuilder.create().texOffs(51, 1).addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F),
-            PartPose.offsetAndRotation(-0.35F, -1.55F, 0.0F, 0.0F, 0.12F, -0.38F)
+            "hood",
+            CubeListBuilder.create().texOffs(32, 0)
+                .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.5F)),
+            PartPose.ZERO
         );
 
+        // Modeled wizard hat: a wide brim and a tapered cone of shrinking boxes. Its islands sit in
+        // the right half of the atlas (x >= 64), outside the standard skin layout.
+        final PartDefinition hatBrim = head.addOrReplaceChild(
+            "hat_brim",
+            CubeListBuilder.create().texOffs(64, 0).addBox(-5.5F, -1.0F, -5.5F, 11.0F, 1.0F, 11.0F),
+            PartPose.offsetAndRotation(0.0F, -8.5F, 0.0F, -0.06F, 0.0F, 0.04F)
+        );
+        final PartDefinition hatCone1 = hatBrim.addOrReplaceChild(
+            "hat_cone_1",
+            CubeListBuilder.create().texOffs(108, 0).addBox(-2.5F, -4.0F, -2.5F, 5.0F, 4.0F, 5.0F),
+            PartPose.offset(0.0F, -1.0F, 0.0F)
+        );
+        final PartDefinition hatCone2 = hatCone1.addOrReplaceChild(
+            "hat_cone_2",
+            CubeListBuilder.create().texOffs(64, 16).addBox(-1.5F, -4.0F, -1.5F, 3.0F, 4.0F, 3.0F),
+            PartPose.offsetAndRotation(0.0F, -4.0F, 0.0F, 0.05F, 0.0F, 0.12F)
+        );
+        final PartDefinition hatCone3 = hatCone2.addOrReplaceChild(
+            "hat_cone_3",
+            CubeListBuilder.create().texOffs(76, 16).addBox(-1.0F, -4.0F, -1.0F, 2.0F, 4.0F, 2.0F),
+            PartPose.offsetAndRotation(0.0F, -4.0F, 0.0F, 0.08F, 0.0F, 0.22F)
+        );
+        hatCone3.addOrReplaceChild(
+            "hat_tip",
+            CubeListBuilder.create().texOffs(84, 16).addBox(-0.5F, -3.0F, -0.5F, 1.0F, 3.0F, 1.0F),
+            PartPose.offsetAndRotation(0.0F, -4.0F, 0.0F, 0.12F, 0.0F, 0.42F)
+        );
+
+        // Base limbs plus the skin's outer layers, so the atlas renders as a skin editor shows it.
+        final CubeDeformation outer = new CubeDeformation(0.25F);
         final PartDefinition body = root.addOrReplaceChild(
             "body",
-            CubeListBuilder.create().texOffs(0, 16).addBox(-3.0F, 0.0F, -2.25F, 6.0F, 10.0F, 4.5F),
-            PartPose.offset(0.0F, 7.0F, 0.0F)
-        );
-        final PartDefinition mantle = body.addOrReplaceChild(
-            "layered_mantle",
-            CubeListBuilder.create().texOffs(24, 16)
-                .addBox(-5.0F, -0.5F, -2.75F, 10.0F, 4.0F, 5.5F, new CubeDeformation(0.15F)),
-            PartPose.offsetAndRotation(0.0F, 0.5F, 0.0F, 0.0F, 0.0F, -0.03F)
-        );
-        mantle.addOrReplaceChild(
-            "right_broken_ring_shard",
-            CubeListBuilder.create().texOffs(48, 0)
-                .addBox(-1.5F, -1.0F, -1.5F, 3.0F, 2.0F, 3.0F),
-            PartPose.offsetAndRotation(-5.2F, -0.8F, 1.6F, 0.18F, 0.42F, -0.34F)
-        );
-        mantle.addOrReplaceChild(
-            "left_broken_ring_shard",
-            CubeListBuilder.create().texOffs(48, 0).mirror()
-                .addBox(-1.5F, -1.0F, -1.5F, 3.0F, 2.0F, 3.0F),
-            PartPose.offsetAndRotation(5.2F, -0.8F, 1.6F, 0.18F, -0.42F, 0.34F)
-        );
-        mantle.addOrReplaceChild(
-            "rear_broken_ring_shard",
-            CubeListBuilder.create().texOffs(48, 0)
-                .addBox(-1.5F, -1.0F, -1.5F, 3.0F, 2.0F, 3.0F),
-            PartPose.offsetAndRotation(0.0F, -1.2F, 3.2F, 0.48F, 0.0F, 0.22F)
-        );
-        final PartDefinition focus = body.addOrReplaceChild(
-            "circle_focus",
-            CubeListBuilder.create().texOffs(56, 16)
-                .addBox(-2.5F, -2.5F, -0.5F, 5.0F, 5.0F, 1.0F)
-                .texOffs(56, 23).addBox(-0.75F, -0.75F, -1.0F, 1.5F, 1.5F, 2.0F),
-            PartPose.offsetAndRotation(-1.8F, 5.0F, -3.2F, -0.12F, 0.28F, 0.16F)
-        );
-        focus.addOrReplaceChild(
-            "separate_focus_ring",
-            CubeListBuilder.create().texOffs(56, 16)
-                .addBox(-2.5F, -2.5F, -0.5F, 5.0F, 5.0F, 1.0F),
-            PartPose.offsetAndRotation(1.0F, 0.0F, -0.4F, 0.0F, 0.52F, 0.0F)
-        );
-        focus.addOrReplaceChild(
-            "focus_core",
-            CubeListBuilder.create().texOffs(56, 23)
-                .addBox(-0.75F, -0.75F, -1.0F, 1.5F, 1.5F, 2.0F),
-            PartPose.offset(0.0F, 0.0F, -1.0F)
-        );
-        final PartDefinition slate = body.addOrReplaceChild(
-            "script_panel",
-            CubeListBuilder.create().texOffs(72, 16).addBox(-2.5F, -3.5F, -0.4F, 5.0F, 7.0F, 1.0F),
-            PartPose.offsetAndRotation(2.0F, 5.2F, -3.0F, -0.08F, -0.24F, -0.12F)
-        );
-        slate.addOrReplaceChild(
-            "right_folding_slate_leaf",
-            CubeListBuilder.create().texOffs(72, 16)
-                .addBox(-2.5F, -3.5F, -0.4F, 5.0F, 7.0F, 1.0F),
-            PartPose.offsetAndRotation(-2.2F, 0.0F, 0.0F, 0.0F, 0.48F, -0.08F)
-        );
-        slate.addOrReplaceChild(
-            "left_folding_slate_leaf",
-            CubeListBuilder.create().texOffs(72, 16).mirror()
-                .addBox(-2.5F, -3.5F, -0.4F, 5.0F, 7.0F, 1.0F),
-            PartPose.offsetAndRotation(2.2F, 0.0F, 0.0F, 0.0F, -0.48F, 0.08F)
+            CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F),
+            PartPose.ZERO
         );
         body.addOrReplaceChild(
-            "study_sash",
-            CubeListBuilder.create().texOffs(88, 16).addBox(-3.5F, -1.0F, -2.5F, 7.0F, 2.0F, 5.0F),
-            PartPose.offsetAndRotation(0.0F, 8.0F, 0.0F, 0.0F, 0.0F, -0.14F)
+            "jacket",
+            CubeListBuilder.create().texOffs(16, 32).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, outer),
+            PartPose.ZERO
         );
-        final PartDefinition tunic = body.addOrReplaceChild(
-            "split_knee_tunic",
-            CubeListBuilder.create().texOffs(88, 16)
-                .addBox(-3.5F, -1.0F, -2.5F, 7.0F, 2.0F, 5.0F),
-            PartPose.offsetAndRotation(0.0F, 8.2F, 0.4F, 0.08F, 0.0F, 0.0F)
+        final PartDefinition rightArm = root.addOrReplaceChild(
+            "right_arm",
+            CubeListBuilder.create().texOffs(40, 16).addBox(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F),
+            PartPose.offset(-5.0F, 2.0F, 0.0F)
         );
-        tunic.addOrReplaceChild(
-            "right_tunic_panel",
-            CubeListBuilder.create().texOffs(32, 36)
-                .addBox(-1.75F, 0.0F, -2.0F, 3.5F, 8.0F, 4.0F),
-            PartPose.offsetAndRotation(-1.8F, 0.4F, 0.4F, 0.12F, 0.0F, 0.08F)
+        rightArm.addOrReplaceChild(
+            "right_sleeve",
+            CubeListBuilder.create().texOffs(40, 32).addBox(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, outer),
+            PartPose.ZERO
         );
-        tunic.addOrReplaceChild(
-            "left_tunic_panel",
-            CubeListBuilder.create().texOffs(32, 36).mirror()
-                .addBox(-1.75F, 0.0F, -2.0F, 3.5F, 8.0F, 4.0F),
-            PartPose.offsetAndRotation(1.8F, 0.4F, 0.8F, 0.12F, 0.0F, -0.08F)
+        final PartDefinition leftArm = root.addOrReplaceChild(
+            "left_arm",
+            CubeListBuilder.create().texOffs(32, 48).addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F),
+            PartPose.offset(5.0F, 2.0F, 0.0F)
         );
-
-        addArm(root, "right_arm", "right_cuff", -4.8F, false);
-        addArm(root, "left_arm", "left_cuff", 4.8F, true);
-        addLeg(root, "right_leg", -1.75F, false);
-        addLeg(root, "left_leg", 1.75F, true);
+        leftArm.addOrReplaceChild(
+            "left_sleeve",
+            CubeListBuilder.create().texOffs(48, 48).addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, outer),
+            PartPose.ZERO
+        );
+        final PartDefinition rightLeg = root.addOrReplaceChild(
+            "right_leg",
+            CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F),
+            PartPose.offset(-1.9F, 12.0F, 0.0F)
+        );
+        rightLeg.addOrReplaceChild(
+            "right_pants",
+            CubeListBuilder.create().texOffs(0, 32).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, outer),
+            PartPose.ZERO
+        );
+        final PartDefinition leftLeg = root.addOrReplaceChild(
+            "left_leg",
+            CubeListBuilder.create().texOffs(16, 48).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F),
+            PartPose.offset(1.9F, 12.0F, 0.0F)
+        );
+        leftLeg.addOrReplaceChild(
+            "left_pants",
+            CubeListBuilder.create().texOffs(0, 48).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, outer),
+            PartPose.ZERO
+        );
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
-    }
-
-    private static void addArm(
-        final PartDefinition root,
-        final String name,
-        final String cuffName,
-        final float x,
-        final boolean mirror
-    ) {
-        final PartDefinition arm = root.addOrReplaceChild(
-            name,
-            CubeListBuilder.create().texOffs(0, 36).mirror(mirror)
-                .addBox(-1.5F, 0.0F, -1.5F, 3.0F, 9.0F, 3.0F),
-            PartPose.offsetAndRotation(x, 8.0F, mirror ? -0.6F : -1.2F,
-                -0.18F, mirror ? -0.14F : 0.14F, mirror ? -0.14F : 0.14F)
-        );
-        arm.addOrReplaceChild(
-            cuffName,
-            CubeListBuilder.create().texOffs(16, 36).mirror(mirror)
-                .addBox(-2.0F, -1.5F, -2.0F, 4.0F, 3.0F, 4.0F),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
-        );
-        final String side = mirror ? "left" : "right";
-        arm.addOrReplaceChild(
-            side + "_forearm",
-            CubeListBuilder.create().texOffs(0, 36).mirror(mirror)
-                .addBox(-1.5F, 0.0F, -1.5F, 3.0F, 9.0F, 3.0F),
-            PartPose.offsetAndRotation(0.0F, 6.0F, -0.8F, -0.55F, 0.0F, mirror ? -0.18F : 0.18F)
-        );
-        arm.addOrReplaceChild(
-            side + "_hand",
-            CubeListBuilder.create().texOffs(16, 36).mirror(mirror)
-                .addBox(-2.0F, -1.5F, -2.0F, 4.0F, 3.0F, 4.0F),
-            PartPose.offsetAndRotation(0.0F, 10.0F, -1.2F, -0.42F, 0.0F, 0.0F)
-        );
-    }
-
-    private static void addLeg(
-        final PartDefinition root,
-        final String name,
-        final float x,
-        final boolean mirror
-    ) {
-        final PartDefinition leg = root.addOrReplaceChild(
-            name,
-            CubeListBuilder.create().texOffs(32, 36).mirror(mirror)
-                .addBox(-1.75F, 0.0F, -2.0F, 3.5F, 8.0F, 4.0F),
-            PartPose.offset(x, 16.0F, 0.0F)
-        );
-        leg.addOrReplaceChild(
-            (mirror ? "left" : "right") + "_study_boot",
-            CubeListBuilder.create().texOffs(16, 36).mirror(mirror)
-                .addBox(-2.0F, -1.5F, -2.0F, 4.0F, 3.0F, 4.0F),
-            PartPose.offsetAndRotation(0.0F, 6.5F, -0.8F, 0.08F, 0.0F, 0.0F)
-        );
     }
 
     public static void extractRenderState(
@@ -233,31 +171,58 @@ public final class CircleMageModel extends EntityModel<CircleMageModel.State> {
         head.xRot = state.xRot * Mth.DEG_TO_RAD;
         final float pace = state.walkAnimationPos * 0.6662F;
         final float stride = Math.min(state.walkAnimationSpeed, 1.0F);
-        rightLeg.xRot = Mth.cos(pace) * 0.9F * stride;
-        leftLeg.xRot = Mth.cos(pace + Mth.PI) * 0.9F * stride;
-        rightArm.xRot = Mth.cos(pace + Mth.PI) * 0.45F * stride;
-        leftArm.xRot = Mth.cos(pace) * 0.45F * stride;
-        circleFocus.visible = state.focusPrepared;
-        scriptPanel.yRot = Mth.sin(state.ageInTicks * 0.06F) * 0.08F;
-        if (state.activity == Activity.STUDYING) {
-            head.xRot += 0.38F;
-            rightArm.xRot = -0.75F;
-            rightArm.yRot = -0.28F;
-            leftArm.xRot = -0.85F;
-            leftArm.yRot = 0.34F;
-            circleFocus.yRot = state.ageInTicks * 0.035F;
-        } else if (state.activity == Activity.DEFENDING) {
-            head.xRot -= 0.12F;
-            rightArm.xRot = -1.25F;
-            rightArm.yRot = -0.35F;
-            leftArm.xRot = -0.9F;
-            leftArm.yRot = 0.65F;
-            circleFocus.zRot = Mth.sin(state.ageInTicks * 0.25F) * 0.18F;
-        } else if (state.activity == Activity.WITHDRAWING) {
-            body.xRot = 0.18F;
-            rightArm.zRot = 0.3F;
-            leftArm.zRot = -0.3F;
+        rightLeg.xRot = Mth.cos(pace) * 1.2F * stride;
+        leftLeg.xRot = Mth.cos(pace + Mth.PI) * 1.2F * stride;
+        rightArm.xRot = Mth.cos(pace + Mth.PI) * 1.0F * stride;
+        leftArm.xRot = Mth.cos(pace) * 1.0F * stride;
+        // A quiet idle sway so the arms never read as a stiff T-pose.
+        final float breath = Mth.sin(state.ageInTicks * 0.067F) * 0.05F;
+        rightArm.zRot = 0.06F + breath;
+        leftArm.zRot = -0.06F - breath;
+        hatTip.zRot += Mth.sin(state.ageInTicks * 0.09F) * 0.06F;
+
+        if (state.focusPrepared && state.activity != Activity.WITHDRAWING) {
+            // The book is out: keep it held up at the chest.
+            leftArm.xRot = -0.75F;
+            leftArm.yRot = 0.25F;
         }
+        if (state.activity == Activity.STUDYING) {
+            // Both hands raised to the open book, chin dropped to read it.
+            head.xRot += 0.45F;
+            leftArm.xRot = -1.15F;
+            leftArm.yRot = 0.42F;
+            leftArm.zRot = -0.12F;
+            rightArm.xRot = -1.0F;
+            rightArm.yRot = -0.48F;
+            rightArm.zRot = 0.1F;
+            rightArm.xRot += Mth.sin(state.ageInTicks * 0.11F) * 0.04F;
+        } else if (state.activity == Activity.DEFENDING) {
+            // Casting hand thrust forward, book braced against the chest.
+            head.xRot -= 0.1F;
+            rightArm.xRot = -1.55F;
+            rightArm.yRot = -0.15F;
+            rightArm.zRot = 0.02F;
+            leftArm.xRot = -0.85F;
+            leftArm.yRot = 0.55F;
+            leftArm.zRot = -0.05F;
+            body.yRot = -0.12F;
+        } else if (state.activity == Activity.WITHDRAWING) {
+            // Turning away, arms swept back and hat tucked low.
+            body.xRot = 0.14F;
+            head.xRot -= 0.18F;
+            rightArm.xRot = 0.55F;
+            rightArm.zRot = 0.32F;
+            leftArm.xRot = 0.55F;
+            leftArm.zRot = -0.32F;
+            hatBrim.xRot -= 0.1F;
+        }
+    }
+
+    @Override
+    public void translateToHand(final State state, final HumanoidArm arm, final PoseStack poseStack) {
+        final ModelPart part = arm == HumanoidArm.LEFT ? leftArm : rightArm;
+        part.translateAndRotate(poseStack);
+        poseStack.translate(arm == HumanoidArm.LEFT ? 0.03F : -0.03F, 0.05F, 0.0F);
     }
 
     public enum Activity {
@@ -268,7 +233,8 @@ public final class CircleMageModel extends EntityModel<CircleMageModel.State> {
         WITHDRAWING
     }
 
-    public static final class State extends LivingEntityRenderState {
+    /** Armed so the renderer's item layer can put the Circle Magic book in the left hand. */
+    public static final class State extends ArmedEntityRenderState {
         public Activity activity = Activity.IDLE;
         public boolean focusPrepared;
     }

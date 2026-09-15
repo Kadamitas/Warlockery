@@ -479,21 +479,21 @@ public final class WarlockeryGameTests {
         helper.succeed();
     }
 
-    public static void deathGuardUsesTotemRecoveryWithoutVanillaTrigger(final GameTestHelper helper) {
+    public static void deathGuardRestoresFullHealthWithoutTotemEffects(final GameTestHelper helper) {
         final var player = connectedSurvivalPlayer(helper);
         final ItemStack doll = boundDoll(player, "death_guard_doll");
         player.getInventory().setItem(0, doll);
         player.setHealth(4.0F);
+        final float maximum = player.getMaxHealth();
         final LivingDamageEvent.Pre event = damageEvent(player, helper.getLevel().damageSources().generic(), 20.0F);
         DollItem.handleDamage(event);
         helper.assertValueEqual(event.getNewDamage(), 0.0F, "lethal damage after death guard");
-        helper.assertValueEqual(
-            player.getHealth(),
-            DollRules.restoredHealth(player.getMaxHealth()),
-            "death guard recovery health"
-        );
-        helper.assertTrue(player.hasEffect(MobEffects.REGENERATION), "death guard must use vanilla Totem regeneration");
-        helper.assertTrue(player.hasEffect(MobEffects.ABSORPTION), "death guard must use vanilla Totem absorption");
+        helper.assertValueEqual(player.getHealth(), maximum, "death guard restores exactly the full existing maximum");
+        helper.assertValueEqual(player.getMaxHealth(), maximum, "death guard must not change maximum health");
+        helper.assertValueEqual(player.getAbsorptionAmount(), 0.0F, "death guard must not add absorption hearts");
+        helper.assertFalse(player.hasEffect(MobEffects.REGENERATION), "death guard must not apply Totem regeneration");
+        helper.assertFalse(player.hasEffect(MobEffects.ABSORPTION), "death guard must not apply Totem absorption");
+        helper.assertFalse(player.hasEffect(MobEffects.FIRE_RESISTANCE), "death guard must not apply Totem fire resistance");
         helper.assertFalse(doll.isEmpty(), "death guard must remain reusable after activation");
         helper.assertValueEqual(doll.getDamageValue(), 1, "death guard durability spent");
         helper.succeed();

@@ -23,6 +23,7 @@ public final class BloodGobletItem extends Item {
     }
 
     @Override
+    // Every refusal must consume the action: FAIL would let vanilla fall through to use() and drink the goblet.
     public InteractionResult interactLivingEntity(
         final ItemStack stack,
         final Player player,
@@ -40,19 +41,19 @@ public final class BloodGobletItem extends Item {
         }
         if (SupernaturalState.getForm(player) != SupernaturalForm.VAMPIRE) {
             show(player, UtilityDecision.failure("vampire_required"));
-            return InteractionResult.FAIL;
+            return InteractionResult.CONSUME;
         }
         if (!player.level().isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             final int level = SupernaturalProgression.level(player, SupernaturalProgression.Path.VAMPIRE);
             if (level < 9) {
                 show(player, UtilityDecision.failure("creation_locked"));
-                return InteractionResult.FAIL;
+                return InteractionResult.CONSUME;
             }
             if (SupernaturalProgression.resource(player, SupernaturalProgression.Path.VAMPIRE) < 125
                 || !com.kadamitas.warlockery.transformation.SupernaturalProgressionRuntime
                     .tryCreateVampire(serverPlayer, target, stack)) {
                 show(player, UtilityDecision.failure("creation_conditions"));
-                return InteractionResult.FAIL;
+                return InteractionResult.CONSUME;
             }
             SupernaturalProgression.spend(player, SupernaturalProgression.Path.VAMPIRE, 125);
             show(player, UtilityDecision.success("converted"));
