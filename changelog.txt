@@ -1,3 +1,14 @@
+Warlockery 1.5.5
+================
+
+- Bolts are crossbow-only ammunition: bows no longer accept them, crossbows draw them from the inventory, and the Werewolf Hunter loads silver bolts from its off hand.
+- Death Guard and other lethal-guard dolls restore the wearer to full health without granting Totem effects or extra hearts.
+- Blood Goblet and Archfiend's Urn refusals no longer fall through to drinking the goblet or throwing the held brew; crouch-using a brew beside a cooled urn is ignored.
+- Infernal web climbing now responds to actual wall contact, and Dream Weaver and Scarecrow readings work with an empty hand.
+- The Stonebroker keeps its bow through volley recovery.
+- Rebuilt the brazier as a standing iron fire bowl with real flames, gave every Ent wood variant its own bark and canopy, and stood magical plants upright.
+- Vampires and the Circle Mage now use player-skin rigs with owner-authored skins; the Circle Mage wears a modelled hat and carries the Circle Magic book, the Lycan Villager keeps the villager body under a werewolf head, and the Wolf Head uses the vanilla wolf head.
+
 Warlockery 1.5.4
 ================
 

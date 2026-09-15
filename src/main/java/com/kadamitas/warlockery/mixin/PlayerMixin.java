@@ -17,7 +17,7 @@ abstract class PlayerMixin {
         final CallbackInfoReturnable<ItemStack> callback
     ) {
         callback.setReturnValue(WarlockeryFabricEvents.dispatchProjectileSelection(
-            (Player) (Object) this, callback.getReturnValue()
+            (Player) (Object) this, weapon, callback.getReturnValue()
         ));
     }
 

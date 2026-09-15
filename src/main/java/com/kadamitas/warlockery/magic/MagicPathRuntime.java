@@ -438,13 +438,27 @@ public final class MagicPathRuntime {
     private static void applyInfernalMotionPassive(final ServerPlayer player) {
         if (!MagicPathState.has(player, MagicPath.INFERNAL)
             || MagicPathState.lastPower(player) != InfernalPower.WEB
-            || !player.horizontalCollision) {
+            || !pressingAgainstWall(player)) {
             return;
         }
         final Vec3 movement = player.getDeltaMovement();
         player.setDeltaMovement(movement.x, Math.max(0.2, movement.y), movement.z);
         player.resetFallDistance();
         player.hurtMarked = true;
+    }
+
+    /**
+     * A real client clips its own movement before reporting a position, so the server never sees
+     * {@code horizontalCollision}; wall contact is read from the bounding box instead, gated on the
+     * client actually pushing in some direction.
+     */
+    private static boolean pressingAgainstWall(final ServerPlayer player) {
+        final var input = player.getLastClientInput();
+        if (!(input.forward() || input.backward() || input.left() || input.right())) {
+            return false;
+        }
+        final var box = player.getBoundingBox().inflate(0.08, 0.0, 0.08).deflate(0.0, 0.1, 0.0);
+        return !player.level().noCollision(player, box);
     }
 
     private static void applyInfernalPassive(final ServerPlayer player) {

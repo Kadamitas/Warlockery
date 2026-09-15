@@ -92,8 +92,12 @@ final class CommonTagResourcesTest {
     }
 
     @Test
-    void silverBoltsUseTheVanillaArrowFamilyWithoutAParallelCrossbow() {
-        assertTag(tag("minecraft/tags/item/arrows.json", "warlockery:ingredient_bolt_silver"));
+    void silverBoltsAreCrossbowOnlyAmmunitionWithoutAParallelCrossbow() {
+        // Bolts are crossbow ammunition only: they must never join the vanilla arrows tag that bows draw from.
+        assertFalse(Files.exists(DATA.resolve("minecraft/tags/item/arrows.json")));
+        assertTag(tag("warlockery/tags/item/crossbow_bolts.json", "warlockery:ingredient_bolt_silver",
+            "warlockery:ingredient_bolt_holy", "warlockery:ingredient_bolt_stake",
+            "warlockery:ingredient_bolt_splitting", "warlockery:ingredient_bolt_anti_magic"));
         assertTag(tag("warlockery/tags/item/silver_projectiles.json", "warlockery:ingredient_bolt_silver"));
         assertFalse(Files.exists(DATA.resolve("warlockery/tags/item/silver_repeater_bases.json")));
         assertFalse(Files.exists(DATA.resolve("warlockery/recipe/silver_repeater.json")));

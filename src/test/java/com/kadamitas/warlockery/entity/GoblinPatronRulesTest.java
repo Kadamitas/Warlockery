@@ -647,4 +647,25 @@ final class GoblinPatronRulesTest {
         assertEquals(256, GoblinPatronRules.scanReadCap());
         assertEquals(8, GoblinPatronRules.retentionCap());
     }
+
+    @Test
+    void aCompletedVolleyPresentsItsBowThroughRecoveryAndNotBeyond() {
+        GoblinPatronState.Combat combat = GoblinPatronState.Combat.none()
+            .completed(Action.LEDGER_VOLLEY, GoblinPatronRules.VOLLEY_RECOVERY_TICKS, 0);
+        assertEquals(Action.IDLE, combat.action());
+        assertEquals(Action.LEDGER_VOLLEY, GoblinPatronRules.presentedAction(combat));
+        for (int tick = 0; tick < GoblinPatronRules.VOLLEY_RECOVERY_TICKS; tick++) {
+            combat = combat.tick();
+        }
+        assertEquals(Action.IDLE, GoblinPatronRules.presentedAction(combat));
+    }
+
+    @Test
+    void onlyTheVolleyHoldsItsPresentationDuringRecovery() {
+        final GoblinPatronState.Combat hammered = GoblinPatronState.Combat.none()
+            .completed(Action.HAMMER_COMMIT, GoblinPatronRules.HAMMER_RECOVERY_TICKS, 0);
+        assertEquals(Action.IDLE, GoblinPatronRules.presentedAction(hammered));
+        final GoblinPatronState.Combat running = GoblinPatronState.Combat.none();
+        assertEquals(Action.IDLE, GoblinPatronRules.presentedAction(running));
+    }
 }

@@ -4,6 +4,7 @@ import com.kadamitas.warlockery.Warlockery;
 import com.kadamitas.warlockery.client.model.*;
 import com.kadamitas.warlockery.entity.*;
 import com.kadamitas.warlockery.registry.ModEntities;
+import com.kadamitas.warlockery.registry.ModItems;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
@@ -58,13 +59,7 @@ public final class DedicatedCreatureRenderers {
             "bramble_colossus",
             BrambleColossusModel::extractRenderState
         ));
-        register("circle_mage", context -> standard(
-            context,
-            ignored -> new CircleMageModel(CircleMageModel.createBodyLayer().bakeRoot()),
-            CircleMageModel.State::new,
-            "circle_mage",
-            CircleMageModel::extractRenderState
-        ));
+        register("circle_mage", CircleMageRenderer::new);
         register("corpse", context -> standard(
             context,
             ignored -> new CorpseModel(CorpseModel.createBodyLayer().bakeRoot()),
@@ -316,13 +311,70 @@ public final class DedicatedCreatureRenderers {
             ignored -> model,
             EntModel.State::new,
             shadowRadius("ent"),
-            state -> texture("ent"),
+            state -> state.variant == EntEntity.EntVariant.OAK ? texture("ent") : texture("ent_" + state.variant.serializedName()),
             EntModel::extractRenderState,
             state -> state.tint,
             (state, poseStack) -> scale(poseStack, displayScale),
             (state, baseRadius) -> baseRadius
         );
     }
+
+    /** Robed scholar that holds the Circle Magic book whenever its focus is out or it is reading/casting. */
+    private static final class CircleMageRenderer
+        extends MobRenderer<CircleMageEntity, CircleMageModel.State, CircleMageModel> {
+        private static final String BOOK_ITEM_ID = "ingredient_book_circle_magic";
+        private final float displayScale;
+
+        private CircleMageRenderer(final EntityRendererProvider.Context context) {
+            super(
+                context,
+                new CircleMageModel(CircleMageModel.createBodyLayer().bakeRoot()),
+                shadowRadius("circle_mage")
+            );
+            displayScale = CreatureDisplayScale.factor("circle_mage", model.root());
+            addLayer(new ItemInHandLayer<>(this));
+        }
+
+        @Override
+        public Identifier getTextureLocation(final CircleMageModel.State state) {
+            return texture("circle_mage");
+        }
+
+        @Override
+        public CircleMageModel.State createRenderState() {
+            return new CircleMageModel.State();
+        }
+
+        @Override
+        public void extractRenderState(
+            final CircleMageEntity entity,
+            final CircleMageModel.State state,
+            final float partialTicks
+        ) {
+            super.extractRenderState(entity, state, partialTicks);
+            ArmedEntityRenderState.extractArmedEntityRenderState(entity, state, itemModelResolver, partialTicks);
+            CircleMageModel.extractRenderState(entity, state, partialTicks);
+            final boolean showsBook = state.focusPrepared
+                || state.activity == CircleMageModel.Activity.STUDYING
+                || state.activity == CircleMageModel.Activity.DEFENDING;
+            if (showsBook) {
+                final ItemStack book = new ItemStack(ModItems.ALL.get(BOOK_ITEM_ID).get());
+                itemModelResolver.updateForLiving(
+                    state.leftHandItemState,
+                    book,
+                    ItemDisplayContext.THIRD_PERSON_LEFT_HAND,
+                    entity
+                );
+                state.leftHandItemStack = book;
+            }
+        }
+
+        @Override
+        protected void scale(final CircleMageModel.State state, final PoseStack poseStack) {
+            DedicatedCreatureRenderers.scale(poseStack, displayScale);
+        }
+    }
+
 
     private static final class StonebrokerRenderer
         extends MobRenderer<StonebrokerEntity, StonebrokerModel.State, StonebrokerModel> {
@@ -492,8 +544,8 @@ public final class DedicatedCreatureRenderers {
         renderer.addPresentationLayer(new NativeVillagerClothingLayer<>(
             renderer,
             context.getResourceManager(),
-            new LycanVillagerModel(LycanVillagerModel.createBodyLayer().bakeRoot()),
-            new LycanVillagerModel(LycanVillagerModel.createBodyLayerNoHat().bakeRoot())
+            new LycanVillagerModel(LycanVillagerModel.createClothingLayer().bakeRoot()),
+            new LycanVillagerModel(LycanVillagerModel.createClothingLayerNoHat().bakeRoot())
         ));
         return renderer;
     }

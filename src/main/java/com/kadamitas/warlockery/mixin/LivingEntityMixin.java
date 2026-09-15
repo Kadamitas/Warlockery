@@ -117,6 +117,7 @@ abstract class LivingEntityMixin {
     ) {
         callback.setReturnValue(WarlockeryFabricEvents.dispatchProjectileSelection(
             (LivingEntity) (Object) this,
+            weapon,
             callback.getReturnValue()
         ));
     }

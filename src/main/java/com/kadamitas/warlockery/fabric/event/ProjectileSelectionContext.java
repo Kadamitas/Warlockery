@@ -5,11 +5,17 @@ import net.minecraft.world.item.ItemStack;
 
 public final class ProjectileSelectionContext {
     private final LivingEntity entity;
+    private final ItemStack weapon;
     private ItemStack projectile;
 
-    public ProjectileSelectionContext(final LivingEntity entity, final ItemStack projectile) {
+    public ProjectileSelectionContext(final LivingEntity entity, final ItemStack weapon, final ItemStack projectile) {
         this.entity = entity;
+        this.weapon = weapon;
         this.projectile = projectile;
+    }
+
+    public ItemStack getProjectileWeaponItemStack() {
+        return weapon;
     }
 
     public LivingEntity getEntity() {

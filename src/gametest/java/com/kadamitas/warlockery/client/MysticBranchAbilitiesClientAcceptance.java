@@ -3,6 +3,7 @@ package com.kadamitas.warlockery.client;
 import com.google.gson.GsonBuilder;
 import com.kadamitas.warlockery.item.ManualProfile;
 import com.kadamitas.warlockery.item.AbyssalBanishment;
+import net.minecraft.server.level.ServerLevel;
 import com.kadamitas.warlockery.magic.MagicPath;
 import com.kadamitas.warlockery.magic.MagicPathState;
 import com.kadamitas.warlockery.magic.SymbolBranchState;
@@ -226,9 +227,18 @@ public final class MysticBranchAbilitiesClientAcceptance implements FabricClient
             if (mode == SymbolSpell.Target.BLOCK || spell == SymbolSpell.SNUFF_LIGHT)
                 player.level().setBlockAndUpdate(BLOCK, Blocks.STONE.defaultBlockState());
             if (mode == SymbolSpell.Target.ENTITY) {
-                final Mob mob = createMob(player, "minecraft:cow", new Vec3(.5, 100, 2.3), spell != SymbolSpell.DOMINATE);
+                // A NoAI mob never runs travel(), so an applied knockback impulse would never become movement.
+                final Mob mob = createMob(player, "minecraft:cow", new Vec3(.5, 100, 2.3),
+                    spell != SymbolSpell.DOMINATE && spell != SymbolSpell.REPULSE);
                 target = mob.getUUID();
                 targetStart = mob.position();
+                if (spell == SymbolSpell.ABYSSAL_BANISHMENT) {
+                    // The arrival chunk must stay loaded for the banished creature to be visible to the observer.
+                    final ServerLevel abyss = player.level().getServer().getLevel(AbyssalBanishment.DIMENSION);
+                    check(abyss != null, "The abyss dimension exists on the native server");
+                    final BlockPos arrival = AbyssalBanishment.arrivalFor(target);
+                    abyss.setChunkForced(arrival.getX() >> 4, arrival.getZ() >> 4, true);
+                }
                 if (spell == SymbolSpell.DOMINATE) mob.setTarget(player);
                 if (spell == SymbolSpell.DISARM) mob.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STICK));
                 if (spell == SymbolSpell.SOULFIRE_LANCE) secondary = createMob(player, "minecraft:cow", new Vec3(2,100,2.3), true).getUUID();
@@ -263,7 +273,8 @@ public final class MysticBranchAbilitiesClientAcceptance implements FabricClient
             case SOULFIRE_LANCE -> mob(player).getHealth() < mob(player).getMaxHealth() && mob(player).isOnFire()
                 && ((LivingEntity) player.level().getEntity(secondary)).getHealth() < ((LivingEntity) player.level().getEntity(secondary)).getMaxHealth();
             case RAVENOUS_COMMUNION -> player.getHealth() <= 16 && reserve(player) == 92;
-            case ABYSSAL_BANISHMENT -> player.level().getServer().getLevel(AbyssalBanishment.DIMENSION).getEntity(target) != null;
+            case ABYSSAL_BANISHMENT -> player.level().getEntity(target) == null
+                && player.level().getServer().getLevel(AbyssalBanishment.DIMENSION).getEntity(target) != null;
             case GRASP_OF_AIR -> {
                 final var item = player.level().getEntity(looseItem);
                 yield item == null ? player.getInventory().contains(new ItemStack(Items.DIAMOND))
@@ -279,7 +290,7 @@ public final class MysticBranchAbilitiesClientAcceptance implements FabricClient
             case MEND_FLESH -> recipient.getHealth() >= 8;
             case DISARM -> recipient.getMainHandItem().isEmpty() && !player.level().getEntitiesOfClass(ItemEntity.class,
                 recipient.getBoundingBox().inflate(3), item -> item.getItem().is(Items.STICK)).isEmpty();
-            case REPULSE -> recipient.position().distanceTo(player.position()) > targetStart.distanceTo(player.position()) + .3;
+            case REPULSE -> recipient.position().distanceTo(player.position()) > targetStart.distanceTo(player.position()) + 1.0;
             case HOBBLE -> recipient.hasEffect(MobEffects.SLOWNESS) && recipient.getEffect(MobEffects.SLOWNESS).getAmplifier() == 3;
             case DOMINATE -> mob(player).getTarget() == null && recipient.hasEffect(MobEffects.WEAKNESS)
                 && recipient.position().distanceTo(player.position()) < targetStart.distanceTo(player.position()) - .2;

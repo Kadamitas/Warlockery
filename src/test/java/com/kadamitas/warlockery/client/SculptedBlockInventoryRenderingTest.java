@@ -78,6 +78,10 @@ final class SculptedBlockInventoryRenderingTest {
             .map(Map.Entry::getValue)
             .map(JsonElement::getAsString)
             .filter(reference -> reference.startsWith("warlockery:block/"))
+            // The Wolf Head reuses the vanilla wolf sheet by design; it is not a sculpted material texture.
+            .filter(reference -> !reference.equals("warlockery:block/wolfhead"))
+            // The brazier flame is a transparent animated fire sheet on crossed planes, not a material surface.
+            .filter(reference -> !reference.equals("warlockery:block/brazier_flame"))
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
         assertTrue(textureUse.size() >= 80, textureUse.keySet().toString());

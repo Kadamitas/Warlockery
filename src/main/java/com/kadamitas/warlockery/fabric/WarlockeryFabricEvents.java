@@ -274,8 +274,8 @@ public final class WarlockeryFabricEvents {
         return context.getNewSpeed();
     }
 
-    public static ItemStack dispatchProjectileSelection(final LivingEntity entity, final ItemStack projectile) {
-        final ProjectileSelectionContext context = new ProjectileSelectionContext(entity, projectile);
+    public static ItemStack dispatchProjectileSelection(final LivingEntity entity, final ItemStack weapon, final ItemStack projectile) {
+        final ProjectileSelectionContext context = new ProjectileSelectionContext(entity, weapon, projectile);
         EquipmentSetEffects.handleGetProjectile(context);
         return context.getProjectileItemStack();
     }

@@ -54,6 +54,9 @@ final class PlaceableModelFaceTest {
                     // Its assembled blockstate and inventory model are checked as whole surfaces below.
                     if (Set.of("altar.json", "altar_top.json").contains(path.getFileName().toString())
                         && faces.keySet().equals(Set.of("down", "up"))) return;
+                    // The lit brazier's fire is two zero-thickness crossed planes (north/south faces only).
+                    if (path.getFileName().toString().equals("brazier_lit.json")
+                        && faces.keySet().equals(Set.of("north", "south"))) return;
                     List.of("down", "up", "north", "south", "west", "east")
                         .forEach(face -> assertTrue(faces.has(face), path.getFileName() + " missing " + face));
                 });

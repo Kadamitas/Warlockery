@@ -23,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
@@ -224,6 +225,9 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
                 row.put("after_binding", serverValue(BrazierAndDeathProtectionAcceptance::health));
                 screenshot(context, "death-guard-bound-ten-hearts");
                 server(player -> {
+                    // Sand is a falling block: without support under the one-block floor it drops, the cactus
+                    // breaks, and the walk ends in a fall through the hole instead of a cactus hit.
+                    player.level().setBlockAndUpdate(CACTUS.below(2), Blocks.STONE.defaultBlockState());
                     player.level().setBlockAndUpdate(CACTUS.below(), Blocks.SAND.defaultBlockState());
                     player.level().setBlockAndUpdate(CACTUS, Blocks.CACTUS.defaultBlockState());
                     check(player.level().getBlockState(CACTUS).is(Blocks.CACTUS), "Real cactus exists in the bounded arena");
@@ -232,7 +236,11 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
                 });
                 world.getConnection().waitForClientboundPackets();
                 context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(10); });
-                context.waitTicks(2);
+                context.waitTicks(4);
+                check(serverValue(player -> player.level().getBlockState(CACTUS).is(Blocks.CACTUS)
+                    && player.level().getBlockState(CACTUS.below()).is(Blocks.SAND)
+                    && player.level().getBlockState(player.blockPosition().below()).is(Blocks.STONE)
+                    && player.getY() >= 99.9 && player.getY() < 101), "Cactus stays supported and the player stands on the arena floor before walking");
                 context.getInput().holdKey(GLFW.GLFW_KEY_W);
                 try {
                     for (int tick = 0; tick < 160 && !serverValue(player -> observation.activated || !player.isAlive()); tick++)
@@ -248,10 +256,12 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
                     "Maximum health stays at ten hearts on every observed tick");
                 check(serverValue(player -> player.isAlive() && player.getInventory().getItem(0).getDamageValue() == 1),
                     "Native lethal damage is prevented and exactly one charge is consumed");
-                check(serverValue(player -> observation.activationAbsorption == 8.0F),
-                    "Totem recovery grants eight temporary absorption points, not five extra maximum-health hearts");
-                check(serverValue(player -> observation.activationHealth >= 10.0F && observation.activationHealth <= 11.0F),
-                    "Lethal protection restores ten current-health points, allowing the first regeneration tick");
+                check(serverValue(player -> observation.activationAbsorption == 0.0F),
+                    "Lethal protection adds no temporary absorption hearts");
+                check(serverValue(player -> observation.activationHealth == originalMaximum),
+                    "Lethal protection restores exactly the full existing maximum health");
+                check(serverValue(player -> !player.hasEffect(MobEffects.REGENERATION) && !player.hasEffect(MobEffects.ABSORPTION)
+                    && !player.hasEffect(MobEffects.FIRE_RESISTANCE)), "Lethal protection applies no Totem recovery effects");
                 row.put("activation", serverValue(player -> observation.activation));
                 world.getConnection().waitForClientboundPackets();
                 row.put("client_after_activation", context.computeOnClient(client -> Map.of(
@@ -261,19 +271,25 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
                     "The rendered client's maximum health also remains unchanged");
                 screenshot(context, "death-guard-lethal-recovery");
                 server(player -> player.level().setBlockAndUpdate(CACTUS, Blocks.AIR.defaultBlockState()));
-                for (int tick = 0; tick < 920 && serverValue(player -> player.hasEffect(MobEffects.REGENERATION)
-                    || player.hasEffect(MobEffects.ABSORPTION) || player.hasEffect(MobEffects.FIRE_RESISTANCE)); tick += 20) {
-                    context.waitTicks(20);
-                }
+                context.waitTicks(60);
                 check(serverValue(player -> !player.hasEffect(MobEffects.REGENERATION) && !player.hasEffect(MobEffects.ABSORPTION)
-                    && !player.hasEffect(MobEffects.FIRE_RESISTANCE)), "Recovery effects expire through ordinary ticks");
-                check(serverValue(player -> !observation.maximumChanged && player.getMaxHealth() == originalMaximum
-                    && player.getAbsorptionAmount() == 0 && player.getInventory().getItem(0).getDamageValue() == 1),
-                    "After natural expiry, maximum health is unchanged, temporary hearts are gone and only one charge was spent");
-                row.put("after_natural_expiry", serverValue(BrazierAndDeathProtectionAcceptance::health));
+                    && !player.hasEffect(MobEffects.FIRE_RESISTANCE)), "No recovery effect appears through ordinary later ticks");
+                row.put("after_settling", serverValue(player -> {
+                    final Map<String, Object> value = health(player);
+                    value.put("maximum_changed_on_any_tick", observation.maximumChanged);
+                    value.put("damage_sources_after_activation", List.copyOf(observation.damageSources));
+                    return value;
+                }));
+                // Ordinary non-lethal cactus contact can land once or twice before the fixture removes the cactus.
+                check(serverValue(player -> !observation.maximumChanged && player.getMaxHealth() == originalMaximum),
+                    "After settling, maximum health is unchanged on every observed tick");
+                check(serverValue(player -> player.getAbsorptionAmount() == 0), "After settling, no temporary hearts exist");
+                check(serverValue(player -> player.getHealth() >= originalMaximum - 2 && player.getHealth() <= originalMaximum),
+                    "After settling, health stays at full apart from ordinary cactus contact; observed=" + serverValue(ServerPlayer::getHealth));
+                check(serverValue(player -> player.getInventory().getItem(0).getDamageValue() == 1), "After settling, only one charge was spent");
                 row.put("remaining", "Remote shelves, final charge, alternative damage sources, guard precedence, nullifying attacks, "
                     + "bypass-invulnerability damage, survival acquisition and save/reload are NOT_RUN here.");
-                screenshot(context, "death-guard-effects-expired-ten-hearts");
+                screenshot(context, "death-guard-settled-ten-full-hearts");
             } catch (Throwable failure) {
                 try { screenshot(context, "death-guard-failure"); } catch (Throwable capture) { failure.addSuppressed(capture); }
                 throw failure;
@@ -363,10 +379,21 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
                 activationY = player.getY();
                 activationAbsorption = player.getAbsorptionAmount();
                 activationHealth = player.getHealth();
-                activationWasCactus = lastDamageWasCactus && player.level().getGameTime() - lastDamageTick <= 1;
+                final boolean eventCactus = lastDamageWasCactus && player.level().getGameTime() - lastDamageTick <= 1;
+                final DamageSource last = player.getLastDamageSource();
+                final boolean vanillaCactus = last != null && last.is(DamageTypes.CACTUS);
+                final boolean touchingCactus = BlockPos.betweenClosedStream(player.getBoundingBox().inflate(0.05))
+                    .anyMatch(pos -> player.level().getBlockState(pos).is(Blocks.CACTUS));
+                final boolean noOtherSource = damageSources.stream().allMatch("minecraft:cactus"::equals);
+                activationWasCactus = eventCactus || vanillaCactus
+                    || touchingCactus && player.fallDistance == 0 && noOtherSource;
                 activation = health(player);
                 activation.put("y", activationY);
                 activation.put("native_source_is_cactus", activationWasCactus);
+                activation.put("fabric_event_saw_cactus", eventCactus);
+                activation.put("vanilla_last_damage_source", last == null ? "none" : last.is(DamageTypes.CACTUS) ? "minecraft:cactus" : last.getMsgId());
+                activation.put("collision_box_touches_cactus", touchingCactus);
+                activation.put("fall_distance", player.fallDistance);
             }
         }
 

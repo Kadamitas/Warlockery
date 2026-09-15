@@ -179,8 +179,8 @@ public final class SupernaturalProgressionGameTests {
 
         helper.assertValueEqual(
             gobletItem.interactLivingEntity(foreignGoblet, creator, target, InteractionHand.MAIN_HAND),
-            InteractionResult.FAIL,
-            "foreign-bound goblet interaction result"
+            InteractionResult.CONSUME,
+            "foreign-bound goblet refusal consumes the action so vanilla cannot fall through and drink"
         );
         helper.assertTrue(BloodGobletState.isFull(foreignGoblet),
             "a rejected foreign-bound goblet must remain full");

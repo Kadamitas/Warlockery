@@ -45,6 +45,10 @@ public final class DreamWeaverBlock extends Block {
         final InteractionHand hand,
         final BlockHitResult hitResult
     ) {
+        if (itemStack.isEmpty()) {
+            // An empty hand reads the block through useWithoutItem, as the guide promises.
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
         final boolean focus = itemStack.is(WitchcraftCompatibilityTags.CONFIGURATION_FOCI);
         if (level.isClientSide()) {
             return focus ? InteractionResult.SUCCESS : InteractionResult.FAIL;

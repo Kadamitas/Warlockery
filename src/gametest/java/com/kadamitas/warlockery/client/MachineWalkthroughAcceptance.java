@@ -653,6 +653,8 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
             aim(context, MACHINE);
             context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
             context.waitFor(client -> client.player.getInventory().getItem(2).getDamageValue() > 0);
+            context.waitTicks(12);
+            screenshot(context, "brazier-lit-world");
             context.getInput().pressKey(GLFW.GLFW_KEY_1);
             openMachine(context);
             result.put("ignition", "Actual flint-and-steel right-click ignites the brazier and consumes durability.");

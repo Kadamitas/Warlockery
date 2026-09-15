@@ -73,7 +73,7 @@ final class DedicatedAtlasArtistryTest {
     @Test
     void everyDedicatedCreatureAtlasMeetsTheAuthoredPixelArtFloor() throws Exception {
         assertEquals(46, MODELS.size(), "update the dedicated model catalog when a rig is added");
-        assertEquals(47, DEDICATED_ATLASES.size(), "Vampire owns two independently authored atlases");
+        assertEquals(55, DEDICATED_ATLASES.size(), "Vampire owns two authored skins and the Ent owns nine variant atlases");
         final List<String> failures = new ArrayList<>();
         for (final AtlasSpec spec : DEDICATED_ATLASES) {
             final Path atlas = TEXTURE_ROOT.resolve(spec.fileName());
@@ -307,6 +307,11 @@ final class DedicatedAtlasArtistryTest {
             if (model.getKey().equals("vampire")) {
                 atlases.add(new AtlasSpec("vampire_feminine.png", model.getValue()));
                 atlases.add(new AtlasSpec("vampire_masculine.png", model.getValue()));
+            } else if (model.getKey().equals("ent")) {
+                atlases.add(new AtlasSpec("ent.png", model.getValue()));
+                for (final String variant : List.of("birch", "spruce", "jungle", "dark_oak", "acacia", "mangrove", "cherry", "pale_oak")) {
+                    atlases.add(new AtlasSpec("ent_" + variant + ".png", model.getValue()));
+                }
             } else {
                 atlases.add(new AtlasSpec(model.getKey() + ".png", model.getValue()));
             }

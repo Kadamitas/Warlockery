@@ -43,6 +43,7 @@ public final class ImpTextureClientAcceptance implements FabricClientGameTest {
     private TestSingleplayerContext world;
     private Path evidence;
     private int impId;
+    private net.minecraft.resources.ResourceKey<Level> stagedDimension=Level.OVERWORLD;
 
     @Override
     public void runTest(final ClientGameTestContext context) {
@@ -50,8 +51,8 @@ public final class ImpTextureClientAcceptance implements FabricClientGameTest {
             .resolve("imp-texture").resolve(UUID.randomUUID().toString());
         report.put("capture_completed",false);
         report.put("visual_review_status","PENDING_IMAGE_REVIEW");
-        report.put("scope","Actual rendered Imp texture in a disposable daytime world, viewed from six angles/distances. No behavior, combat, acquisition, UV correctness or aesthetic approval is inferred from successful capture.");
-        report.put("fixture","Actual registered ImpEntity with no AI, no target, no equipment, persistent and stationary at yaw 0; native model animation remains active. Neutral smooth-stone pad surrounded by grass, clear daylight. Spectator camera placement and F1 HUD control only.");
+        report.put("scope","Actual rendered Imp texture in a disposable world, viewed from six daylight angles/distances plus two real Nether dark-terrain views. No behavior, combat, acquisition, UV correctness or aesthetic approval is inferred from successful capture.");
+        report.put("fixture","Actual registered ImpEntity with no AI, no target, no equipment, persistent and stationary at yaw 0; native model animation remains active. Neutral smooth-stone pad surrounded by grass in clear daylight, then a netherrack pad in the actual Nether dimension lit only by four embedded glowstone corners. Spectator camera placement and F1 HUD control only.");
         report.put("views",views); report.put("screenshots",screenshots);
         final int originalFov=context.computeOnClient(client -> client.options.fov().get());
         final boolean originalHudHidden=context.computeOnClient(client -> client.gui.hud.isHidden());
@@ -74,7 +75,10 @@ public final class ImpTextureClientAcceptance implements FabricClientGameTest {
                     capture(context,"04-side-wings",new Vec3(3.10,100.70,.5),new Vec3(.5,100.50,.5));
                     capture(context,"05-back-wings-tail",new Vec3(.5,100.75,-2.15),new Vec3(.5,100.50,.5));
                     capture(context,"06-normal-play-distance",new Vec3(1.25,101.62,6.50),new Vec3(.5,100.50,.5));
-                    check(views.size()==6 && screenshots.size()==6,"All six native views captured");
+                    stageNether(context);
+                    capture(context,"07-nether-oblique",new Vec3(2.40,100.85,2.55),new Vec3(.5,100.50,.5));
+                    capture(context,"08-nether-play-distance",new Vec3(1.25,101.62,6.50),new Vec3(.5,100.50,.5));
+                    check(views.size()==8 && screenshots.size()==8,"All eight native views captured");
                     report.put("capture_completed",true); write();
                 } catch(Throwable failure) {
                     try { ManualClientAcceptance.saveScreenshot(context,evidence,"failure-in-world",screenshots); }
@@ -145,12 +149,43 @@ public final class ImpTextureClientAcceptance implements FabricClientGameTest {
         }));
     }
 
+    private void stageNether(final ClientGameTestContext context) {
+        world.getServer().runOnServer(server -> {
+            final var level=server.getLevel(Level.NETHER);
+            check(level!=null,"The native server provides the actual Nether dimension");
+            for(BlockPos pos:BlockPos.betweenClosed(new BlockPos(-12,99,-12),new BlockPos(12,106,12))) {
+                final var state=pos.getY()!=99?Blocks.AIR.defaultBlockState()
+                    :Math.abs(pos.getX())==4 && Math.abs(pos.getZ())==4?Blocks.GLOWSTONE.defaultBlockState():Blocks.NETHERRACK.defaultBlockState();
+                level.setBlockAndUpdate(pos,state);
+            }
+            final var player=world.getConnection().getServerPlayer();
+            check(player.teleportTo(level,.5,101,4.5,Set.of(),180,15,true),"Native camera enters the actual Nether");
+            player.setDeltaMovement(Vec3.ZERO);
+            final var entity=ModEntities.ALL.get("imp").get().create(level,EntitySpawnReason.COMMAND);
+            check(entity instanceof ImpEntity,"Registry creates the actual Nether ImpEntity");
+            final ImpEntity imp=(ImpEntity)entity;
+            imp.setNoAi(true); imp.setPersistenceRequired(); imp.setTarget(null);
+            imp.snapTo(IMP_POSITION.x,IMP_POSITION.y,IMP_POSITION.z,0,0);
+            imp.setYBodyRot(0); imp.setYHeadRot(0); imp.setDeltaMovement(Vec3.ZERO);
+            check(level.addFreshEntity(imp),"Actual Imp is added to the native Nether");
+            impId=imp.getId();
+            report.put("nether_fixture",Map.of("dimension",level.dimension().identifier().toString(),
+                "uuid",imp.getStringUUID(),"terrain","netherrack pad, four embedded glowstone corners, no sky light"));
+        });
+        stagedDimension=Level.NETHER;
+        world.getConnection().waitForClientboundPackets(); world.getConnection().waitForChunksRender();
+        context.waitFor(client -> client.level!=null && client.level.dimension().equals(Level.NETHER)
+            && client.level.getEntity(impId) instanceof ImpEntity,200);
+    }
+
     private void capture(final ClientGameTestContext context,final String name,final Vec3 eye,final Vec3 target) throws Exception {
         world.getServer().runOnServer(server -> {
             final var player=world.getConnection().getServerPlayer();
-            check(player.level().dimension().equals(Level.OVERWORLD),"Camera remains in the staged world");
-            check(player.teleportTo(server.overworld(),eye.x,eye.y-player.getEyeHeight(),eye.z,Set.of(),player.getYRot(),player.getXRot(),true),
+            final var level=server.getLevel(stagedDimension);
+            check(level!=null,"Staged dimension exists on the native server");
+            check(player.teleportTo(level,eye.x,eye.y-player.getEyeHeight(),eye.z,Set.of(),player.getYRot(),player.getXRot(),true),
                 "Native camera teleport succeeds");
+            check(player.level().dimension().equals(stagedDimension),"Camera is in the staged dimension");
             player.setDeltaMovement(Vec3.ZERO);
         });
         world.getConnection().waitForClientboundPackets(); world.getConnection().waitForChunksRender();
