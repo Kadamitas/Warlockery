@@ -99,6 +99,12 @@ public final class EquipmentSetEffects {
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }
+        final ItemStack bolt = CrossbowBoltAmmo.select(
+            player, event.getProjectileWeaponItemStack(), event.getProjectileItemStack());
+        if (bolt != event.getProjectileItemStack()) {
+            event.setProjectileItemStack(bolt);
+            return;
+        }
         final ItemStack projectile = event.getProjectileItemStack();
         final boolean wearingQuiver = player.getItemBySlot(EquipmentSlot.CHEST)
             .is(WarlockeryTags.Items.ARCHERY_ARMOR);

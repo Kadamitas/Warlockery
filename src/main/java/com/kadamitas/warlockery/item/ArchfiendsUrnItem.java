@@ -39,7 +39,8 @@ public final class ArchfiendsUrnItem extends Item {
         final ArchfiendsUrnState state = ArchfiendsUrnState.read(urn);
         if (state.brews().isEmpty()) {
             show(player, getName(urn), false);
-            return InteractionResult.FAIL;
+            // A refusal must still consume the action, or vanilla falls through to the off hand and uses the brew itself.
+            return InteractionResult.CONSUME;
         }
         if (level instanceof ServerLevel serverLevel) {
             final var hit = player.pick(CAST_RANGE, 0.0F, false);
@@ -80,7 +81,7 @@ public final class ArchfiendsUrnItem extends Item {
         final ArchfiendsUrnState.AddResult result = ArchfiendsUrnState.read(urn).add(brew);
         if (!result.changed()) {
             show(player, Component.translatable("item.warlockery." + BrewFactory.itemId(brew)), false);
-            return InteractionResult.FAIL;
+            return InteractionResult.CONSUME;
         }
         if (!level.isClientSide()) {
             result.state().write(urn);

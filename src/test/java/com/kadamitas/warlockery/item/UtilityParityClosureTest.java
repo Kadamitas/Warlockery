@@ -272,7 +272,7 @@ final class UtilityParityClosureTest {
     }
 
     private void boltDiagnostic() {
-        assertTrue(read(Path.of("src", "main", "resources", "data", "minecraft", "tags", "item", "arrows.json"))
+        assertTrue(read(Path.of("src", "main", "resources", "data", "warlockery", "tags", "item", "crossbow_bolts.json"))
             .contains("warlockery:ingredient_bolt_holy"));
     }
 

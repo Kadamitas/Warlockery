@@ -125,7 +125,7 @@ A hollow 3 by 3 ring of eight Ritual Chalk marks acts as a Listening Ring. Leave
 - **Hunger Guard Doll**: Spends durability to prevent lethal starvation, fills the hunger bar, restores saturation, and applies the vanilla Saturation effect.
 - **Fire Guard Doll**: Spends durability to prevent lethal fire or lava damage, clears fire, grants Fire Resistance, and searches for safe footing after a lava activation.
 - **Tool Mending Doll**: Spends one point of its durability to repair two durability on a damaged held tool.
-- **Death Guard Doll**: Spends durability to prevent an otherwise lethal hit and applies the vanilla Totem recovery effects without the Totem screen animation.
+- **Death Guard Doll**: Spends durability to prevent an otherwise lethal hit and restores full health; it grants no Totem effects, absorption or extra hearts and never plays the Totem screen animation.
 - **Hex Guard Doll**: Spends durability to block hostile circle hexes, including Heat Metal, aimed at its bound target.
 - **Hexing Doll**: Cycles through prick, shove, ignite, and drown actions against an available bound target.
 - **Blood Link Doll**: Spends durability to transfer half of the holder's incoming damage to an available bound target.

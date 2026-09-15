@@ -167,6 +167,7 @@ public final class WarlockeryTags {
         public static final TagKey<Item> BITING_ARMOR = create("biting_armor");
         public static final TagKey<Item> UNARMED_POWER_ARMOR = create("unarmed_power_armor");
         public static final TagKey<Item> ARCHERY_ARMOR = create("archery_armor");
+        public static final TagKey<Item> CROSSBOW_BOLTS = create("crossbow_bolts");
         public static final TagKey<Item> NECROMANCER_GARB = create("necromancer_garb");
         public static final TagKey<Item> TWISTING_BANDS = create("twisting_bands");
         public static final TagKey<Item> BAT_BINDING_FIBERS = create("bat_binding_fibers");

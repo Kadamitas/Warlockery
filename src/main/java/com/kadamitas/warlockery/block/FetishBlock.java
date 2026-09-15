@@ -87,6 +87,10 @@ public final class FetishBlock extends Block {
         final InteractionHand hand,
         final BlockHitResult hitResult
     ) {
+        if (itemStack.isEmpty()) {
+            // An empty hand reads the block through useWithoutItem, as the guide promises.
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
         final boolean focus = itemStack.is(WitchcraftCompatibilityTags.CONFIGURATION_FOCI);
         final boolean dye = itemStack.getItem() instanceof DyeItem;
         if (level.isClientSide()) {
