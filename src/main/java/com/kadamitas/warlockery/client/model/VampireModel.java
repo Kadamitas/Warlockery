@@ -16,15 +16,21 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
+/**
+ * The vampire court wears authored 64x64 player skins on a plain player-proportioned rig, so every
+ * skin layer (hat, jacket, sleeves, pants) renders exactly as a skin editor previews it. The court
+ * skins are slim-arm skins, so the arms are three pixels wide.
+ */
 public final class VampireModel extends EntityModel<VampireModel.State> {
-    public static final int TEXTURE_WIDTH = 128;
-    public static final int TEXTURE_HEIGHT = 128;
+    public static final int TEXTURE_WIDTH = 64;
+    public static final int TEXTURE_HEIGHT = 64;
     public static final Identifier MASCULINE_TEXTURE = Identifier.fromNamespaceAndPath(
         "warlockery", "textures/entity/vampire_masculine.png"
     );
     public static final Identifier FEMININE_TEXTURE = Identifier.fromNamespaceAndPath(
         "warlockery", "textures/entity/vampire_feminine.png"
     );
+    private static final CubeDeformation OUTER_LAYER = new CubeDeformation(0.25F);
 
     private final ModelPart head;
     private final ModelPart body;
@@ -32,16 +38,6 @@ public final class VampireModel extends EntityModel<VampireModel.State> {
     private final ModelPart leftArm;
     private final ModelPart rightLeg;
     private final ModelPart leftLeg;
-    private final ModelPart masculineVariant;
-    private final ModelPart feminineVariant;
-    private final ModelPart masculineHair;
-    private final ModelPart masculineCollar;
-    private final ModelPart masculineCoatTail;
-    private final ModelPart feminineHair;
-    private final ModelPart feminineBackHair;
-    private final ModelPart feminineRightLock;
-    private final ModelPart feminineLeftLock;
-    private final ModelPart feminineSkirt;
 
     public VampireModel(final ModelPart root) {
         super(root);
@@ -51,122 +47,71 @@ public final class VampireModel extends EntityModel<VampireModel.State> {
         leftArm = root.getChild("left_arm");
         rightLeg = root.getChild("right_leg");
         leftLeg = root.getChild("left_leg");
-        masculineVariant = root.getChild("masculine_variant");
-        feminineVariant = root.getChild("feminine_variant");
-        masculineHair = masculineVariant.getChild("short_hair");
-        masculineCollar = masculineVariant.getChild("coat_collar");
-        masculineCoatTail = masculineVariant.getChild("coat_tail");
-        feminineHair = feminineVariant.getChild("long_hair_cap");
-        feminineBackHair = feminineVariant.getChild("back_hair");
-        feminineRightLock = feminineVariant.getChild("right_hair_lock");
-        feminineLeftLock = feminineVariant.getChild("left_hair_lock");
-        feminineSkirt = feminineVariant.getChild("dress_skirt");
     }
 
     public static LayerDefinition createBodyLayer() {
         final MeshDefinition mesh = new MeshDefinition();
         final PartDefinition root = mesh.getRoot();
+        final PartDefinition head = root.addOrReplaceChild(
+            "head",
+            CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F),
+            PartPose.ZERO
+        );
+        head.addOrReplaceChild(
+            "hat",
+            CubeListBuilder.create().texOffs(32, 0)
+                .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.5F)),
+            PartPose.ZERO
+        );
         final PartDefinition body = root.addOrReplaceChild(
             "body",
-            CubeListBuilder.create().texOffs(32, 0)
-                .addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
+            CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F),
+            PartPose.ZERO
         );
         body.addOrReplaceChild(
-            "pearl_brooch",
-            CubeListBuilder.create().texOffs(92, 52)
-                .addBox(-1.0F, -1.0F, -0.5F, 2.0F, 2.0F, 1.0F),
-            PartPose.offset(0.0F, 3.0F, -2.15F)
+            "jacket",
+            CubeListBuilder.create().texOffs(16, 32).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, OUTER_LAYER),
+            PartPose.ZERO
         );
-        root.addOrReplaceChild(
-            "head",
-            CubeListBuilder.create().texOffs(0, 0)
-                .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
-        );
-        root.addOrReplaceChild(
+        final PartDefinition rightArm = root.addOrReplaceChild(
             "right_arm",
-            CubeListBuilder.create().texOffs(0, 20)
-                .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F),
-            PartPose.offset(-6.0F, 10.0F, 0.0F)
+            CubeListBuilder.create().texOffs(40, 16).addBox(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F),
+            PartPose.offset(-5.0F, 2.5F, 0.0F)
         );
-        root.addOrReplaceChild(
+        rightArm.addOrReplaceChild(
+            "right_sleeve",
+            CubeListBuilder.create().texOffs(40, 32).addBox(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, OUTER_LAYER),
+            PartPose.ZERO
+        );
+        final PartDefinition leftArm = root.addOrReplaceChild(
             "left_arm",
-            CubeListBuilder.create().texOffs(16, 20)
-                .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F),
-            PartPose.offset(6.0F, 10.0F, 0.0F)
+            CubeListBuilder.create().texOffs(32, 48).addBox(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F),
+            PartPose.offset(5.0F, 2.5F, 0.0F)
         );
-        root.addOrReplaceChild(
+        leftArm.addOrReplaceChild(
+            "left_sleeve",
+            CubeListBuilder.create().texOffs(48, 48).addBox(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, OUTER_LAYER),
+            PartPose.ZERO
+        );
+        final PartDefinition rightLeg = root.addOrReplaceChild(
             "right_leg",
-            CubeListBuilder.create().texOffs(32, 20)
-                .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F),
-            PartPose.offset(-2.0F, 20.0F, 0.0F)
+            CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F),
+            PartPose.offset(-1.9F, 12.0F, 0.0F)
         );
-        root.addOrReplaceChild(
+        rightLeg.addOrReplaceChild(
+            "right_pants",
+            CubeListBuilder.create().texOffs(0, 32).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, OUTER_LAYER),
+            PartPose.ZERO
+        );
+        final PartDefinition leftLeg = root.addOrReplaceChild(
             "left_leg",
-            CubeListBuilder.create().texOffs(48, 20)
-                .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F),
-            PartPose.offset(2.0F, 20.0F, 0.0F)
+            CubeListBuilder.create().texOffs(16, 48).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F),
+            PartPose.offset(1.9F, 12.0F, 0.0F)
         );
-
-        final PartDefinition masculine = root.addOrReplaceChild(
-            "masculine_variant",
-            CubeListBuilder.create(),
+        leftLeg.addOrReplaceChild(
+            "left_pants",
+            CubeListBuilder.create().texOffs(0, 48).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, OUTER_LAYER),
             PartPose.ZERO
-        );
-        masculine.addOrReplaceChild(
-            "short_hair",
-            CubeListBuilder.create().texOffs(0, 40)
-                .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 3.0F, 8.0F, new CubeDeformation(0.18F)),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
-        );
-        masculine.addOrReplaceChild(
-            "coat_collar",
-            CubeListBuilder.create().texOffs(32, 40)
-                .addBox(-4.5F, 0.0F, -2.5F, 9.0F, 3.0F, 5.0F),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
-        );
-        masculine.addOrReplaceChild(
-            "coat_tail",
-            CubeListBuilder.create().texOffs(60, 40)
-                .addBox(-4.0F, 9.0F, 1.6F, 8.0F, 10.0F, 1.0F),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
-        );
-
-        final PartDefinition feminine = root.addOrReplaceChild(
-            "feminine_variant",
-            CubeListBuilder.create(),
-            PartPose.ZERO
-        );
-        feminine.addOrReplaceChild(
-            "long_hair_cap",
-            CubeListBuilder.create().texOffs(0, 40)
-                .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 4.0F, 8.0F, new CubeDeformation(0.18F)),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
-        );
-        feminine.addOrReplaceChild(
-            "back_hair",
-            CubeListBuilder.create().texOffs(32, 52)
-                .addBox(-4.0F, -5.0F, 3.7F, 8.0F, 12.0F, 1.0F),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
-        );
-        feminine.addOrReplaceChild(
-            "right_hair_lock",
-            CubeListBuilder.create().texOffs(50, 52)
-                .addBox(-5.0F, -5.0F, -4.5F, 2.0F, 11.0F, 1.0F),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
-        );
-        feminine.addOrReplaceChild(
-            "left_hair_lock",
-            CubeListBuilder.create().texOffs(100, 52)
-                .addBox(3.0F, -5.0F, -4.5F, 2.0F, 11.0F, 1.0F),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
-        );
-        feminine.addOrReplaceChild(
-            "dress_skirt",
-            CubeListBuilder.create().texOffs(60, 52)
-                .addBox(-5.0F, 8.0F, -2.5F, 10.0F, 12.0F, 5.0F),
-            PartPose.offset(0.0F, 8.0F, 0.0F)
         );
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
@@ -204,17 +149,16 @@ public final class VampireModel extends EntityModel<VampireModel.State> {
     @Override
     public void setupAnim(final State state) {
         super.setupAnim(state);
-        masculineVariant.visible = state.variant == Variant.MASCULINE;
-        feminineVariant.visible = state.variant == Variant.FEMININE;
         head.yRot = state.yRot * Mth.DEG_TO_RAD;
         head.xRot = state.xRot * Mth.DEG_TO_RAD;
-        final float pace = state.walkAnimationPos * 0.6F;
-        final float stride = Math.min(state.walkAnimationSpeed, 1.0F) * 0.75F;
-        rightLeg.xRot = Mth.cos(pace) * stride;
-        leftLeg.xRot = Mth.cos(pace + Mth.PI) * stride;
-        rightArm.xRot = Mth.cos(pace + Mth.PI) * stride * 0.55F;
-        leftArm.xRot = Mth.cos(pace) * stride * 0.55F;
-        body.zRot = Mth.sin(state.ageInTicks * 0.045F) * 0.018F;
+        final float pace = state.walkAnimationPos * 0.6662F;
+        final float stride = Math.min(state.walkAnimationSpeed, 1.0F);
+        rightLeg.xRot = Mth.cos(pace) * 1.4F * stride;
+        leftLeg.xRot = Mth.cos(pace + Mth.PI) * 1.4F * stride;
+        rightArm.xRot = Mth.cos(pace + Mth.PI) * stride;
+        leftArm.xRot = Mth.cos(pace) * stride;
+        rightArm.zRot = Mth.cos(state.ageInTicks * 0.09F) * 0.05F + 0.05F;
+        leftArm.zRot = -Mth.cos(state.ageInTicks * 0.09F) * 0.05F - 0.05F;
         if (state.activity == Activity.STALKING) {
             body.xRot = 0.12F;
             head.xRot -= 0.15F;
@@ -236,20 +180,6 @@ public final class VampireModel extends EntityModel<VampireModel.State> {
             body.xRot = 0.2F;
             head.xRot += 0.18F;
         }
-        copyRotation(head, masculineHair);
-        copyRotation(head, feminineHair);
-        copyRotation(head, feminineBackHair);
-        copyRotation(head, feminineRightLock);
-        copyRotation(head, feminineLeftLock);
-        copyRotation(body, masculineCollar);
-        copyRotation(body, masculineCoatTail);
-        copyRotation(body, feminineSkirt);
-    }
-
-    private static void copyRotation(final ModelPart source, final ModelPart target) {
-        target.xRot = source.xRot;
-        target.yRot = source.yRot;
-        target.zRot = source.zRot;
     }
 
     public enum Variant {

@@ -22,7 +22,7 @@ final class ReleaseMetadataTest {
         final var matcher = GRADLE_VERSION.matcher(build);
         assertTrue(matcher.find());
         final String version = matcher.group(1);
-        assertEquals("1.5.4", version);
+        assertEquals("1.5.5", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
@@ -90,7 +90,7 @@ final class ReleaseMetadataTest {
             ".github/workflows/publish-modrinth.yml"
         }) {
             final String contents = read(workflow);
-            assertTrue(contents.contains("default: v1.5.4"));
+            assertTrue(contents.contains("default: v1.5.5"));
             assertTrue(contents.contains("- forge"));
             assertTrue(contents.contains("- neoforge"));
             assertTrue(contents.contains("- fabric"));

@@ -30,12 +30,12 @@ final class EntVariantTest {
     }
 
     @Test
-    void everyVariantHasAnOpaqueUniqueTintAndRoundTripsItsName() {
-        final Set<Integer> tints = Arrays.stream(EntVariant.values())
-            .map(EntVariant::tint)
-            .collect(Collectors.toUnmodifiableSet());
-        assertEquals(EntVariant.values().length, tints.size());
+    void everyVariantOwnsAnAtlasKeepsAnOpaqueTintAndRoundTripsItsName() {
         Arrays.stream(EntVariant.values()).forEach(variant -> {
+            final String atlas = variant == EntVariant.OAK ? "ent.png" : "ent_" + variant.serializedName() + ".png";
+            assertTrue(java.nio.file.Files.isRegularFile(java.nio.file.Path.of(
+                "src/main/resources/assets/warlockery/textures/entity", atlas)), atlas);
+            assertEquals(0xFFFFFFFF, variant.tint(), "variant atlases replace the shared-atlas tint");
             assertEquals(0xFF000000, variant.tint() & 0xFF000000);
             assertSame(variant, EntVariant.fromSerializedName(variant.serializedName()));
             assertSame(variant, EntVariant.byOrdinal(variant.ordinal()));

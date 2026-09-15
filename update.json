@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/Kadamitas/Warlockery/releases",
   "promos": {
-    "26.2-latest": "1.5.4",
-    "26.2-recommended": "1.5.4"
+    "26.2-latest": "1.5.5",
+    "26.2-recommended": "1.5.5"
   },
   "26.2": {
     "1.0.0-alpha.1": "Initial public alpha.",
@@ -17,6 +17,7 @@
     "1.5.1": "Isolates Forge GameTests, reworks vampire blood, Sanguine regeneration, and sunlight, adds werewolf prey drive, and refreshes Mandrake, Dreamroot, and magical plant visuals.",
     "1.5.2": "Improves in-game guides and recipe discovery, adds native REI, RRV, and EMI compatibility, and unlocks conventional recipes in Minecraft's recipe book.",
     "1.5.3": "Fixes broom flight, dolls, spirit capture, brewing effects and recipe discovery, expands practical item instructions, and restores missing crafting routes.",
-    "1.5.4": "Refreshes creature and plant visuals, improves ritual books and connected magic blocks, fixes creature presentation and cross-system behavior, and removes development GameTest fixtures from production artifacts."
+    "1.5.4": "Refreshes creature and plant visuals, improves ritual books and connected magic blocks, fixes creature presentation and cross-system behavior, and removes development GameTest fixtures from production artifacts.",
+    "1.5.5": "Makes bolts crossbow-only, fixes doll, goblet, urn, web-climb, device and Stonebroker behavior, and remakes the brazier, Ents, vampires, Circle Mage, Lycan Villager, Wolf Head and plant visuals."
   }
 }

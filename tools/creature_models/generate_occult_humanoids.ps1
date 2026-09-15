@@ -11,34 +11,8 @@ function Get-OccultColor {
     return [System.Drawing.ColorTranslator]::FromHtml($Hex)
 }
 
-# Circle Mage: restrained charcoal-plum study robes, drowned silver, and a teal circle focus.
-$circleMage = New-PixelAtlas -Width 128 -Height 128
-try {
-    Set-AtlasRectangle -Atlas $circleMage -X 0 -Y 0 -Width 26 -Height 18 -Color (Get-OccultColor '#665968')
-    Set-AtlasRectangle -Atlas $circleMage -X 2 -Y 2 -Width 22 -Height 5 -Color (Get-OccultColor '#292331')
-    Set-AtlasRectangle -Atlas $circleMage -X 28 -Y 0 -Width 18 -Height 7 -Color (Get-OccultColor '#47777C')
-    Set-AtlasRectangle -Atlas $circleMage -X 30 -Y 2 -Width 14 -Height 2 -Color (Get-OccultColor '#A9C7C5')
-    Set-AtlasRectangle -Atlas $circleMage -X 48 -Y 0 -Width 12 -Height 6 -Color (Get-OccultColor '#86A8AA')
-    Set-AtlasRectangle -Atlas $circleMage -X 0 -Y 16 -Width 55 -Height 26 -Color (Get-OccultColor '#30263A')
-    Set-AtlasRectangle -Atlas $circleMage -X 24 -Y 16 -Width 30 -Height 14 -Color (Get-OccultColor '#493450')
-    Set-AtlasRectangle -Atlas $circleMage -X 56 -Y 16 -Width 14 -Height 12 -Color (Get-OccultColor '#234E57')
-    Set-AtlasRectangle -Atlas $circleMage -X 58 -Y 18 -Width 10 -Height 8 -Color (Get-OccultColor '#7FC9C2')
-    Set-AtlasRectangle -Atlas $circleMage -X 61 -Y 20 -Width 4 -Height 4 -Color (Get-OccultColor '#D2E1D8')
-    Set-AtlasRectangle -Atlas $circleMage -X 72 -Y 16 -Width 18 -Height 16 -Color (Get-OccultColor '#D1C5A0')
-    for ($y = 19; $y -lt 30; $y += 3) {
-        Set-AtlasRectangle -Atlas $circleMage -X 74 -Y $y -Width 12 -Height 1 -Color (Get-OccultColor '#65536B')
-    }
-    Set-AtlasRectangle -Atlas $circleMage -X 88 -Y 16 -Width 26 -Height 13 -Color (Get-OccultColor '#51314B')
-    Set-AtlasRectangle -Atlas $circleMage -X 0 -Y 36 -Width 48 -Height 24 -Color (Get-OccultColor '#241D2C')
-    for ($x = 2; $x -lt 46; $x += 8) {
-        Set-AtlasRectangle -Atlas $circleMage -X $x -Y 38 -Width 2 -Height 18 -Color (Get-OccultColor '#3E3048')
-    }
-    Set-AtlasRectangle -Atlas $circleMage -X 16 -Y 36 -Width 16 -Height 12 -Color (Get-OccultColor '#6F6372')
-    Save-PixelAtlas -Atlas $circleMage -Path (Join-Path $entityTextureRoot 'circle_mage.png')
-}
-finally {
-    $circleMage.Dispose()
-}
+# Circle Mage: the circle_mage atlas is now a 64x64 player-layout skin owned by
+# tools/creature_models/generate_circle_mage_skin.py. This script no longer writes it.
 
 # Hedge Crone: bark, moss, root fiber, stone mortar, and amber ward knots.
 $hedgeCrone = New-PixelAtlas -Width 128 -Height 128
@@ -228,10 +202,10 @@ try {
     for ($x = 2; $x -lt 62; $x += 7) {
         Set-AtlasPixel -Atlas $lycanVillager -X $x -Y (($x * 3) % 18) -Color (Get-OccultColor '#948A7A')
     }
-    Save-PixelAtlas -Atlas $lycanVillager -Path (Join-Path $entityTextureRoot 'lycan_villager.png')
+    # lycan_villager atlas is owned by tools/creature_models/generate_lycan_villager_fur.py; not written here
 }
 finally {
     $lycanVillager.Dispose()
 }
 
-Write-Output 'Generated seven independent occult-humanoid rigs across eight dedicated atlases.'
+Write-Output 'Generated the occult-humanoid atlases (hedge_crone, blood_thrall, corpse, werewolf_hunter, lycan_villager); circle_mage is owned by generate_circle_mage_skin.py.'

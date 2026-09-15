@@ -4,13 +4,16 @@
   "textures": { "particle": "#plant", "plant": "minecraft:block/lily_pad" },
   "elements": [
     {
-      "from": [0, 1, 0], "to": [16, 1, 16],
-      "faces": { "up": { "uv": [0, 0, 16, 16], "texture": "#plant" }, "down": { "uv": [0, 0, 16, 16], "texture": "#plant" } }
+      "from": [0.8, 0, 8], "to": [15.2, 16, 8],
+      "rotation": { "origin": [8, 8, 8], "axis": "y", "angle": 45, "rescale": true },
+      "shade": false,
+      "faces": { "north": { "uv": [0, 0, 16, 16], "texture": "#plant" }, "south": { "uv": [0, 0, 16, 16], "texture": "#plant" } }
     },
     {
-      "from": [4, 1, 8], "to": [12, 9, 8],
-      "rotation": { "origin": [8, 5, 8], "axis": "y", "angle": 45 },
-      "faces": { "north": { "uv": [4, 4, 12, 12], "texture": "#plant" }, "south": { "uv": [4, 4, 12, 12], "texture": "#plant" } }
+      "from": [0.8, 0, 8], "to": [15.2, 16, 8],
+      "rotation": { "origin": [8, 8, 8], "axis": "y", "angle": -45, "rescale": true },
+      "shade": false,
+      "faces": { "north": { "uv": [0, 0, 16, 16], "texture": "#plant" }, "south": { "uv": [0, 0, 16, 16], "texture": "#plant" } }
     }
   ]
 }

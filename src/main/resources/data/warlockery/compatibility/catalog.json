@@ -149,7 +149,7 @@
       "role": "projectile",
       "registry": "item",
       "tags": [
-        "minecraft:arrows",
+        "warlockery:crossbow_bolts",
         "warlockery:throwing_stones"
       ]
     },
@@ -741,7 +741,7 @@
     },
     {
       "registry": "item",
-      "tag": "minecraft:arrows",
+      "tag": "warlockery:crossbow_bolts",
       "contains": [
         "warlockery:ingredient_bolt_anti_magic",
         "warlockery:ingredient_bolt_holy",

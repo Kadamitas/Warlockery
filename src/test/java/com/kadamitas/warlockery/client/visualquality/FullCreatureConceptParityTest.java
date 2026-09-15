@@ -92,10 +92,10 @@ final class FullCreatureConceptParityTest {
 
         final ModelPart masculine = bakeModel(vampires.get("vampire_masculine"));
         final ModelPart feminine = bakeModel(vampires.get("vampire_feminine"));
-        assertCollapsed(masculine.getChild("feminine_variant"),
-            "masculine comparison hidden feminine rig");
-        assertCollapsed(feminine.getChild("masculine_variant"),
-            "feminine comparison hidden masculine rig");
+        assertEquals(masculine.getAllParts().size(), feminine.getAllParts().size(),
+            "both court rows bake the one shared player-skin rig");
+        assertTrue(masculine.getChild("right_arm").getChild("right_sleeve") != null,
+            "the shared rig carries the skin outer layers");
     }
 
     @Test
@@ -124,7 +124,9 @@ final class FullCreatureConceptParityTest {
             // These redesigned rigs supersede the archived concept silhouettes.
             // Their anatomy is covered by model tests and native multi-view review.
             if (Set.of("death", "naamah", "spirit", "werewolf_hunter", "illusion_creeper",
-                    "pale_steed", "storm_simian", "ent", "circle_mage").contains(entry.atlasId())) continue;
+                    "pale_steed", "storm_simian", "ent", "circle_mage", "lycan_villager",
+                    "vampire_masculine", "vampire_feminine")
+                .contains(entry.atlasId())) continue;
             final BufferedImage board = board(entry.board(), boards);
             final ModelPart model = bakeModel(entry);
             compareSilhouette(
@@ -274,27 +276,10 @@ final class FullCreatureConceptParityTest {
         assertTrue(Modifier.isStatic(factory.getModifiers()), entry.modelClass() + ".createBodyLayer");
         assertEquals(LayerDefinition.class, factory.getReturnType(),
             entry.modelClass() + ".createBodyLayer return type");
-        final ModelPart root = ((LayerDefinition) factory.invoke(null)).bakeRoot();
-        if (entry.atlasId().equals("vampire_masculine")) {
-            collapse(root.getChild("feminine_variant"));
-        } else if (entry.atlasId().equals("vampire_feminine")) {
-            collapse(root.getChild("masculine_variant"));
-        }
-        return root;
+        return ((LayerDefinition) factory.invoke(null)).bakeRoot();
     }
 
-    private static void collapse(final ModelPart part) {
-        part.visible = false;
-        part.xScale = 0.0F;
-        part.yScale = 0.0F;
-        part.zScale = 0.0F;
-    }
 
-    private static void assertCollapsed(final ModelPart part, final String description) {
-        assertEquals(0.0F, part.xScale, description + " xScale");
-        assertEquals(0.0F, part.yScale, description + " yScale");
-        assertEquals(0.0F, part.zScale, description + " zScale");
-    }
 
     private static Mask renderedMask(
         final ModelPart root,
