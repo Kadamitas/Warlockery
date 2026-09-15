@@ -30,11 +30,13 @@ final class DollRulesTest {
     }
 
     @Test
-    void lethalProtectionRestoresHealthWithinTheExistingMaximum() {
+    void lethalProtectionRestoresTheFullExistingMaximumWithoutExtraHearts() {
         assertFalse(DollRules.isLethal(5.0F, 4.0F));
         assertTrue(DollRules.isLethal(5.0F, 5.0F));
-        assertEquals(10.0F, DollRules.restoredHealth(20.0F));
+        assertEquals(20.0F, DollRules.restoredHealth(20.0F));
+        assertEquals(30.0F, DollRules.restoredHealth(30.0F));
         assertEquals(6.0F, DollRules.restoredHealth(6.0F));
+        assertEquals(1.0F, DollRules.restoredHealth(0.0F));
     }
 
     @Test

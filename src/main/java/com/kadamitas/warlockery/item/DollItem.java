@@ -28,7 +28,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
@@ -198,7 +197,6 @@ public final class DollItem extends Item {
         final ItemStack stack = guard.orElseThrow();
         final DollKind kind = ((DollItem) stack.getItem()).kind;
         player.setHealth(DollRules.restoredHealth(player.getMaxHealth()));
-        DeathProtection.TOTEM_OF_UNDYING.applyEffects(stack.copy(), player);
         lethalBehavior(kind).recover(player, source);
         activate(player, stack, kind);
         return true;

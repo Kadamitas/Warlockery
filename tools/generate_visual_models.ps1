@@ -283,38 +283,7 @@ Write-SculptedModel 'bloodcrucible' ([ordered]@{
     (Cube-Element @(3, 7, 3) @(13, 8, 13) '#blood')
 )
 
-Write-SculptedModel 'brazier' ([ordered]@{
-    particle = 'warlockery:block/brazier'; metal = 'warlockery:block/brazier'; ember = 'warlockery:block/brazier_ember'
-}) @(
-    (Cube-Element @(3, 0, 3) @(13, 2, 13) '#metal'),
-    (Cube-Element @(7, 2, 7) @(9, 7, 9) '#metal'),
-    (Cube-Element @(2, 7, 2) @(14, 9, 14) '#metal'),
-    (Cube-Element @(3, 9, 3) @(13, 11, 13) '#ember'),
-    (Cube-Element @(2, 9, 2) @(4, 14, 4) '#metal'),
-    (Cube-Element @(12, 9, 2) @(14, 14, 4) '#metal'),
-    (Cube-Element @(2, 9, 12) @(4, 14, 14) '#metal'),
-    (Cube-Element @(12, 9, 12) @(14, 14, 14) '#metal')
-)
-
-Write-SculptedModel 'brazier_lit' ([ordered]@{
-    particle = 'warlockery:block/brazier'; metal = 'warlockery:block/brazier'; ember = 'warlockery:block/brazier_ember'; flame = 'warlockery:block/brazier_flame'
-}) @(
-    (Cube-Element @(3, 0, 3) @(13, 2, 13) '#metal'),
-    (Cube-Element @(7, 2, 7) @(9, 7, 9) '#metal'),
-    (Cube-Element @(2, 7, 2) @(14, 9, 14) '#metal'),
-    (Cube-Element @(3, 9, 3) @(13, 11, 13) '#ember'),
-    (Cube-Element @(2, 9, 2) @(4, 14, 4) '#metal'),
-    (Cube-Element @(12, 9, 2) @(14, 14, 4) '#metal'),
-    (Cube-Element @(2, 9, 12) @(4, 14, 14) '#metal'),
-    (Cube-Element @(12, 9, 12) @(14, 14, 14) '#metal'),
-    (Cube-Element @(6, 10, 6) @(10, 16, 10) '#flame')
-)
-Write-Json (Join-Path $blockStateRoot 'brazier.json') ([ordered]@{
-    variants = [ordered]@{
-        'lit=false' = [ordered]@{ model = 'warlockery:block/brazier' }
-        'lit=true' = [ordered]@{ model = 'warlockery:block/brazier_lit' }
-    }
-})
+# brazier and brazier_lit models, blockstate and textures are owned by tools/generate_brazier_assets.py
 
 Write-SculptedModel 'candelabra' ([ordered]@{
     particle = 'warlockery:block/candelabra'; metal = 'warlockery:block/candelabra'; wax = 'warlockery:block/candelabra_wax'; flame = 'warlockery:block/candelabra_flame'
@@ -622,17 +591,7 @@ Write-SculptedModel 'wolfaltar' ([ordered]@{
     (Cube-Element @(6, 12, 2) @(10, 15, 6) '#fur')
 )
 
-Write-SculptedModel 'wolfhead' ([ordered]@{
-    particle = 'warlockery:block/wolfhead'; fur = 'warlockery:block/wolfhead'; eye = 'warlockery:block/wolfhead_eye'
-}) @(
-    (Cube-Element @(4, 2, 6) @(12, 13, 15) '#fur'),
-    (Cube-Element @(2, 10, 8) @(6, 16, 14) '#fur'),
-    (Cube-Element @(10, 10, 8) @(14, 16, 14) '#fur'),
-    (Cube-Element @(5, 1, 2) @(11, 8, 9) '#fur'),
-    (Cube-Element @(4, 8, 4) @(7, 11, 8) '#eye'),
-    (Cube-Element @(9, 8, 4) @(12, 11, 8) '#eye'),
-    (Cube-Element @(7, 3, 0) @(9, 6, 4) '#fur')
-)
+# wolfhead model and texture are owned by tools/generate_wolf_head_assets.py
 
 Write-SculptedModel 'wolftrap' ([ordered]@{
     particle = 'warlockery:block/wolftrap'; metal = 'warlockery:block/wolftrap'; silver = 'warlockery:block/wolftrap_silver'; rune = 'warlockery:block/wolftrap_rune'

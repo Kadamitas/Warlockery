@@ -180,9 +180,7 @@ public final class WerewolfHunterEntity extends Pillager implements ArcaneCreatu
         if (!(weapon.getItem() instanceof ProjectileWeaponItem projectileWeapon)) {
             return ItemStack.EMPTY;
         }
-        final ItemStack held = ProjectileWeaponItem.getHeldProjectile(
-            this, projectileWeapon.getSupportedHeldProjectiles()
-        );
+        final ItemStack held = getOffhandItem();
         return held.is(silverBolt()) ? held : ItemStack.EMPTY;
     }
 

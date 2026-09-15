@@ -1,130 +1,212 @@
 package com.kadamitas.warlockery.client.model;
 
+import static com.kadamitas.warlockery.client.model.CreatureModelTestSupport.bounds;
 import static com.kadamitas.warlockery.client.model.CreatureModelTestSupport.geometrySnapshot;
+import static com.kadamitas.warlockery.client.model.CreatureModelTestSupport.matrixSnapshot;
 import static com.kadamitas.warlockery.client.model.CreatureModelTestSupport.requiredChild;
 import static com.kadamitas.warlockery.client.model.CreatureModelTestSupport.softwareSnapshot;
 import static com.kadamitas.warlockery.client.model.CreatureModelTestSupport.solidPartCount;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.kadamitas.warlockery.entity.CircleMageEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.imageio.ImageIO;
-import com.kadamitas.warlockery.entity.CircleMageEntity;
+import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 import org.junit.jupiter.api.Test;
 
+/** The Circle Mage is a player-proportioned robed scholar with a modeled wizard hat. */
 final class CircleMageModelTest {
     private static final Path SOURCE = Path.of(
         "src/main/java/com/kadamitas/warlockery/client/model/CircleMageModel.java"
     );
+    private static final Path RENDERERS = Path.of(
+        "src/main/java/com/kadamitas/warlockery/client/DedicatedCreatureRenderers.java"
+    );
     private static final Path TEXTURE = Path.of(
         "src/main/resources/assets/warlockery/textures/entity/circle_mage.png"
     );
-    private static final Path GENERATOR = Path.of("tools/creature_models/generate_occult_humanoids.ps1");
+    private static final Path OCCULT_GENERATOR = Path.of(
+        "tools/creature_models/generate_occult_humanoids.ps1"
+    );
+    private static final Path SKIN_GENERATOR = Path.of(
+        "tools/creature_models/generate_circle_mage_skin.py"
+    );
+    /** Skin outer layers are legitimately transparent where the skin has no second layer. */
+    private static final Set<String> OUTER_LAYERS = Set.of(
+        "hood", "jacket", "right_sleeve", "left_sleeve", "right_pants", "left_pants"
+    );
+    private static final float EPSILON = 0.001F;
 
     @Test
-    void ownsARestrainedStudyRigAndCircleFocus() throws Exception {
+    void ownsPlayerProportionedHumanoidPartsOnAStandardSkinLayout() {
         final ModelPart root = CircleMageModel.createBodyLayer().bakeRoot();
-        final ModelPart head = requiredChild(root, "head");
-        final ModelPart body = requiredChild(root, "body");
-        final ModelPart hoodBrow = requiredChild(head, "study_visor");
-        assertFalse(hoodBrow.isEmpty());
-        assertTrue(hoodBrow.y < -5.0F, "the cloth brow must leave the mage's face visible");
-        final ModelPart hoodPeak = requiredChild(requiredChild(head, "temple_prism"), "hood_peak");
-        assertFalse(hoodPeak.isEmpty());
-        assertFalse(requiredChild(hoodPeak, "hood_tip").isEmpty());
-        final ModelPart mantle = requiredChild(body, "layered_mantle");
-        assertFalse(requiredChild(mantle, "right_broken_ring_shard").isEmpty());
-        assertFalse(requiredChild(mantle, "left_broken_ring_shard").isEmpty());
-        assertFalse(requiredChild(mantle, "rear_broken_ring_shard").isEmpty());
-        final ModelPart focus = requiredChild(body, "circle_focus");
-        assertFalse(requiredChild(focus, "separate_focus_ring").isEmpty());
-        assertFalse(requiredChild(focus, "focus_core").isEmpty());
-        final CreatureModelTestSupport.Bounds focusBounds = CreatureModelTestSupport.bounds(focus);
-        assertTrue(focusBounds.maxX() - focusBounds.minX() >= 6.0F);
-        assertTrue(focusBounds.maxZ() - focusBounds.minZ() >= 2.5F);
-        final ModelPart slate = requiredChild(body, "script_panel");
-        assertFalse(requiredChild(slate, "right_folding_slate_leaf").isEmpty());
-        assertFalse(requiredChild(slate, "left_folding_slate_leaf").isEmpty());
-        final CreatureModelTestSupport.Bounds slateBounds = CreatureModelTestSupport.bounds(slate);
-        assertTrue(slateBounds.maxX() - slateBounds.minX() >= 6.0F);
-        assertTrue(slateBounds.maxZ() - slateBounds.minZ() >= 2.0F);
-        final ModelPart tunic = requiredChild(body, "split_knee_tunic");
-        assertFalse(requiredChild(tunic, "right_tunic_panel").isEmpty());
-        assertFalse(requiredChild(tunic, "left_tunic_panel").isEmpty());
-        assertTrue(CreatureModelTestSupport.bounds(tunic).maxY()
-                - CreatureModelTestSupport.bounds(tunic).minY() >= 8.0F);
-        final ModelPart rightArm = requiredChild(root, "right_arm");
-        final ModelPart leftArm = requiredChild(root, "left_arm");
-        assertFalse(requiredChild(rightArm, "right_forearm").isEmpty());
-        assertFalse(requiredChild(rightArm, "right_hand").isEmpty());
-        assertFalse(requiredChild(leftArm, "left_forearm").isEmpty());
-        assertFalse(requiredChild(leftArm, "left_hand").isEmpty());
-        assertTrue(CreatureModelTestSupport.bounds(rightArm).maxY()
-                - CreatureModelTestSupport.bounds(rightArm).minY() >= 10.0F);
-        assertTrue(CreatureModelTestSupport.bounds(leftArm).maxY()
-                - CreatureModelTestSupport.bounds(leftArm).minY() >= 10.0F);
-        assertFalse(requiredChild(requiredChild(root, "right_leg"), "right_study_boot").isEmpty());
-        assertFalse(requiredChild(requiredChild(root, "left_leg"), "left_study_boot").isEmpty());
-        assertTrue(solidPartCount(root) >= 28);
+        // Left 64x64 is the standard skin layout; the right half carries the modeled hat islands.
+        assertEquals(128, CircleMageModel.TEXTURE_WIDTH);
+        assertEquals(64, CircleMageModel.TEXTURE_HEIGHT);
+
+        assertBoxSize(requiredChild(root, "head"), 8.0F, 8.0F, 8.0F, "head");
+        assertBoxSize(requiredChild(root, "body"), 8.0F, 12.0F, 4.0F, "body");
+        assertBoxSize(requiredChild(root, "right_arm"), 4.0F, 12.0F, 4.0F, "right_arm");
+        assertBoxSize(requiredChild(root, "left_arm"), 4.0F, 12.0F, 4.0F, "left_arm");
+        assertBoxSize(requiredChild(root, "right_leg"), 4.0F, 12.0F, 4.0F, "right_leg");
+        assertBoxSize(requiredChild(root, "left_leg"), 4.0F, 12.0F, 4.0F, "left_leg");
+
+        final CreatureModelTestSupport.Bounds legs = bounds(requiredChild(root, "left_leg"));
+        assertEquals(24.25F, legs.maxY(), EPSILON, "feet (with the pants overlay) stand on the ground");
+        final CreatureModelTestSupport.Bounds head = bounds(requiredChild(root, "head"));
+        assertTrue(head.minY() < -20.0F, "the hat must rise well above the 8-pixel head: " + head.minY());
         CreatureModelTestSupport.assertUvsWithin(
             root, CircleMageModel.TEXTURE_WIDTH, CircleMageModel.TEXTURE_HEIGHT
         );
-        final java.awt.image.BufferedImage texture = ImageIO.read(TEXTURE.toFile());
+    }
+
+    @Test
+    void wearsEverySkinOuterLayerSoTheAtlasRendersAsASkinEditorShowsIt() {
+        final ModelPart root = CircleMageModel.createBodyLayer().bakeRoot();
+        assertBoxSize(requiredChild(requiredChild(root, "head"), "hood"), 9.0F, 9.0F, 9.0F, "hood");
+        assertBoxSize(requiredChild(requiredChild(root, "body"), "jacket"), 8.5F, 12.5F, 4.5F, "jacket");
+        assertBoxSize(requiredChild(requiredChild(root, "right_arm"), "right_sleeve"),
+            4.5F, 12.5F, 4.5F, "right_sleeve");
+        assertBoxSize(requiredChild(requiredChild(root, "left_arm"), "left_sleeve"),
+            4.5F, 12.5F, 4.5F, "left_sleeve");
+        assertBoxSize(requiredChild(requiredChild(root, "right_leg"), "right_pants"),
+            4.5F, 12.5F, 4.5F, "right_pants");
+        assertBoxSize(requiredChild(requiredChild(root, "left_leg"), "left_pants"),
+            4.5F, 12.5F, 4.5F, "left_pants");
+    }
+
+    @Test
+    void wearsAModeledWideBrimHatThatTapersToADroopingTip() {
+        final ModelPart root = CircleMageModel.createBodyLayer().bakeRoot();
+        final ModelPart head = requiredChild(root, "head");
+        final ModelPart brim = requiredChild(head, "hat_brim");
+        final ModelPart cone1 = requiredChild(brim, "hat_cone_1");
+        final ModelPart cone2 = requiredChild(cone1, "hat_cone_2");
+        final ModelPart cone3 = requiredChild(cone2, "hat_cone_3");
+        final ModelPart tip = requiredChild(cone3, "hat_tip");
+        for (final ModelPart part : List.of(brim, cone1, cone2, cone3, tip)) {
+            assertFalse(part.isEmpty());
+        }
+        final CreatureModelTestSupport.Bounds brimBounds = bounds(brim);
+        assertTrue(brimBounds.maxX() - brimBounds.minX() >= 11.0F, "brim is wider than the head");
+        final float cone1Width = width(cone1);
+        final float cone2Width = width(cone2);
+        final float cone3Width = width(cone3);
+        assertTrue(cone1Width > cone2Width && cone2Width > cone3Width,
+            "cone boxes must shrink upward: " + cone1Width + " > " + cone2Width + " > " + cone3Width);
+        assertTrue(cone2.y < 0.0F && cone3.y < 0.0F && tip.y < 0.0F,
+            "each cone box stacks above its parent so the tip caps the cone");
+        assertTrue(tip.zRot > cone3.zRot && cone3.zRot > 0.0F, "the point droops sideways");
+        assertTrue(solidPartCount(root) >= 17);
+    }
+
+    @Test
+    void atlasIsAComposedSkinWithOpaqueBaseLayersAndAReadableFace() throws Exception {
+        final ModelPart root = CircleMageModel.createBodyLayer().bakeRoot();
+        final BufferedImage texture = ImageIO.read(TEXTURE.toFile());
         assertEquals(CircleMageModel.TEXTURE_WIDTH, texture.getWidth());
         assertEquals(CircleMageModel.TEXTURE_HEIGHT, texture.getHeight());
-        assertEquals(0xFFC58F72, texture.getRGB(9, 8), "the hood opening keeps a readable skin face");
-        assertNotEquals(texture.getRGB(8, 9), texture.getRGB(9, 9),
-            "the dark pupil must contrast with the skin around it");
-        CreatureModelTestSupport.assertOpaqueUvs(root, texture, cube -> true);
+        // Base body islands and the modeled hat must be fully painted; outer layers may be cut out.
+        CreatureModelTestSupport.assertOpaqueUvs(
+            root, texture, cube -> OUTER_LAYERS.stream().noneMatch(cube.path()::endsWith)
+        );
+        // The face island (8..16, 8..16) must carry authored detail, not a flat fill.
+        final Set<Integer> faceColors = new HashSet<>();
+        for (int y = 8; y < 16; y++) {
+            for (int x = 8; x < 16; x++) {
+                faceColors.add(texture.getRGB(x, y));
+            }
+        }
+        assertTrue(faceColors.size() >= 3, "the face needs skin, eyes, and shading: " + faceColors.size());
     }
 
     @Test
-    void conceptShapeStaysNarrowWhileHeldRitualToolsBuildTheFrontAndLeftSilhouettes() {
-        final ModelPart root = CircleMageModel.createBodyLayer().bakeRoot();
-        final CreatureModelTestSupport.Bounds bounds = CreatureModelTestSupport.bounds(root);
-        final float height = bounds.maxY() - bounds.minY();
-        final float frontAspect = (bounds.maxX() - bounds.minX()) / height;
-        final float sideAspect = (bounds.maxZ() - bounds.minZ()) / height;
-        assertTrue(frontAspect >= 0.66F && frontAspect <= 0.86F,
-            "broken ring, folded slate, arms, and tunic must build the concept front: " + frontAspect);
-        assertTrue(sideAspect >= 0.47F && sideAspect <= 0.66F,
-            "inward-held ring and slate need authored profile depth: " + sideAspect);
-    }
-
-    @Test
-    void studyAndBoltPresentationChangeTheOwnedGeometry() {
+    void presentationChangesTheOwnedGeometry() {
         final CircleMageModel model = new CircleMageModel(CircleMageModel.createBodyLayer().bakeRoot());
-        final String neutral = geometrySnapshot(model.root());
         final CircleMageModel.State state = new CircleMageModel.State();
-        state.activity = CircleMageModel.Activity.STUDYING;
-        state.focusPrepared = true;
         state.ageInTicks = 18.0F;
         model.setupAnim(state);
+        final String neutral = geometrySnapshot(model.root());
+
+        state.focusPrepared = true;
+        model.setupAnim(state);
+        final String bookOut = geometrySnapshot(model.root());
+        assertNotEquals(neutral, bookOut, "the prepared book lifts the left arm");
+
+        state.activity = CircleMageModel.Activity.STUDYING;
+        model.setupAnim(state);
         final String studying = geometrySnapshot(model.root());
-        assertNotEquals(neutral, studying);
+        assertNotEquals(bookOut, studying);
 
         state.activity = CircleMageModel.Activity.DEFENDING;
         state.ageInTicks = 27.0F;
         model.setupAnim(state);
-        assertNotEquals(studying, geometrySnapshot(model.root()));
+        final String defending = geometrySnapshot(model.root());
+        assertNotEquals(studying, defending);
+
+        state.activity = CircleMageModel.Activity.WITHDRAWING;
+        model.setupAnim(state);
+        assertNotEquals(defending, geometrySnapshot(model.root()));
+
+        state.activity = CircleMageModel.Activity.IDLE;
+        state.focusPrepared = false;
+        state.walkAnimationSpeed = 1.0F;
+        state.walkAnimationPos = 3.0F;
+        model.setupAnim(state);
+        assertNotEquals(neutral, geometrySnapshot(model.root()), "walking swings the limbs");
+    }
+
+    @Test
+    void translatesToEitherHandForTheHeldBook() {
+        final CircleMageModel model = new CircleMageModel(CircleMageModel.createBodyLayer().bakeRoot());
+        assertTrue(model instanceof ArmedModel<?>);
+        final CircleMageModel.State state = new CircleMageModel.State();
+        state.activity = CircleMageModel.Activity.STUDYING;
+        model.setupAnim(state);
+
+        final PoseStack left = new PoseStack();
+        final String identity = matrixSnapshot(left);
+        model.translateToHand(state, HumanoidArm.LEFT, left);
+        assertNotEquals(identity, matrixSnapshot(left));
+
+        final PoseStack right = new PoseStack();
+        model.translateToHand(state, HumanoidArm.RIGHT, right);
+        assertNotEquals(matrixSnapshot(left), matrixSnapshot(right));
+    }
+
+    @Test
+    void rendererPutsTheCircleMagicBookInTheLeftHand() throws Exception {
+        final String renderers = Files.readString(RENDERERS);
+        assertTrue(renderers.contains("class CircleMageRenderer"));
+        assertTrue(renderers.contains("\"ingredient_book_circle_magic\""));
+        assertTrue(renderers.contains("ItemDisplayContext.THIRD_PERSON_LEFT_HAND"));
+        assertTrue(renderers.contains("state.leftHandItemStack = book"));
     }
 
     @Test
     void sourceContainsNoSharedWarlockeryRigOrHelper() throws Exception {
         final String source = Files.readString(SOURCE);
-        for (final String forbidden : java.util.List.of(
+        for (final String forbidden : List.of(
             "ArcaneCreatureModel", "CreatureModelProfile", "AnimationHelper", "GeometryHelper",
             "ModelHelper", "HedgeCroneModel", "VampireModel", "HumanoidModel<",
             "generic_book", "held_staff", "broom", "cape"
         )) {
             assertFalse(source.contains(forbidden), forbidden);
         }
+        assertTrue(source.contains("extends EntityModel<"));
     }
 
     @Test
@@ -136,18 +218,39 @@ final class CircleMageModelTest {
 
     @Test
     void packageGeneratorOwnsOnlyTheOccultAtlases() throws Exception {
-        final String generator = Files.readString(GENERATOR);
-        for (final String id : java.util.List.of(
+        final String generator = Files.readString(OCCULT_GENERATOR);
+        for (final String id : List.of(
             "circle_mage", "hedge_crone", "blood_thrall", "corpse", "werewolf_hunter",
             "lycan_villager"
         )) {
             assertTrue(generator.contains(id), id);
         }
-        for (final String forbidden : java.util.List.of(
+        for (final String forbidden : List.of(
             "banshee", "vampire_masculine.png", "vampire_feminine.png", "werewolf.png",
-            "imp.png", "goblin.png", "mandrake.png"
+            "imp.png", "goblin.png", "mandrake.png", "circle_mage.png"
         )) {
             assertFalse(generator.contains(forbidden), forbidden);
+        }
+    }
+
+    @Test
+    void dedicatedSkinGeneratorComposesTheAtlasFromTheOwnersReferences() throws Exception {
+        assertTrue(Files.isRegularFile(SKIN_GENERATOR));
+        final String generator = Files.readString(SKIN_GENERATOR);
+        assertTrue(generator.contains("circle_mage.png"));
+        assertTrue(generator.contains("from PIL import Image"));
+        assertFalse(generator.contains("import random"));
+        for (final String reference : List.of(
+            "docs/art-source/skin-references/circle_mage_reference_1.png", "docs/art-source/skin-references/circle_mage_reference_2.png", "docs/art-source/skin-references/circle_mage_reference_3.png"
+        )) {
+            assertTrue(generator.contains(reference), reference);
+            assertFalse(Files.exists(Path.of("src/main/resources/assets/warlockery/textures/entity", reference)),
+                reference + " must stay out of the shipped assets");
+        }
+        for (final String foreign : List.of(
+            "hedge_crone", "blood_thrall", "corpse.png", "werewolf_hunter", "lycan_villager", "nami"
+        )) {
+            assertFalse(generator.contains(foreign), foreign);
         }
     }
 
@@ -165,14 +268,58 @@ final class CircleMageModelTest {
         );
     }
 
+    private static void assertBoxSize(
+        final ModelPart part,
+        final float width,
+        final float height,
+        final float depth,
+        final String name
+    ) {
+        assertFalse(part.isEmpty(), name);
+        final float[] size = ownCubeSize(part);
+        assertEquals(width, size[0], EPSILON, name + " width");
+        assertEquals(height, size[1], EPSILON, name + " height");
+        assertEquals(depth, size[2], EPSILON, name + " depth");
+    }
+
+    private static float width(final ModelPart part) {
+        return ownCubeSize(part)[0];
+    }
+
+    /** Untransformed size in pixels of the part's own cubes, ignoring every child. */
+    private static float[] ownCubeSize(final ModelPart part) {
+        final float[] extent = {
+            Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
+            Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY
+        };
+        final String[] ownPath = {null};
+        part.visit(new PoseStack(), (pose, path, cubeIndex, cube) -> {
+            if (ownPath[0] == null) {
+                ownPath[0] = path;
+            }
+            if (!path.equals(ownPath[0])) {
+                return;
+            }
+            for (final ModelPart.Polygon polygon : cube.polygons) {
+                for (final ModelPart.Vertex vertex : polygon.vertices()) {
+                    extent[0] = Math.min(extent[0], vertex.worldX() * 16.0F);
+                    extent[1] = Math.min(extent[1], vertex.worldY() * 16.0F);
+                    extent[2] = Math.min(extent[2], vertex.worldZ() * 16.0F);
+                    extent[3] = Math.max(extent[3], vertex.worldX() * 16.0F);
+                    extent[4] = Math.max(extent[4], vertex.worldY() * 16.0F);
+                    extent[5] = Math.max(extent[5], vertex.worldZ() * 16.0F);
+                }
+            }
+        });
+        return new float[] {extent[3] - extent[0], extent[4] - extent[1], extent[5] - extent[2]};
+    }
+
     private static void writeContactSheet(
         final CircleMageModel model,
         final CircleMageModel.State action,
         final Path output
     ) throws Exception {
-        final java.awt.image.BufferedImage sheet = new java.awt.image.BufferedImage(
-            768, 160, java.awt.image.BufferedImage.TYPE_INT_ARGB
-        );
+        final BufferedImage sheet = new BufferedImage(768, 160, BufferedImage.TYPE_INT_ARGB);
         final java.awt.Graphics2D graphics = sheet.createGraphics();
         graphics.setColor(new java.awt.Color(31, 38, 45));
         graphics.fillRect(0, 0, sheet.getWidth(), sheet.getHeight());

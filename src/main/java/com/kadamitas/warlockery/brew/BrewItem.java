@@ -1,5 +1,9 @@
 package com.kadamitas.warlockery.brew;
 
+import com.kadamitas.warlockery.item.ArchfiendsUrnItem;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import com.kadamitas.warlockery.brew.custom.CustomBrewCloudRules;
 import com.kadamitas.warlockery.brew.custom.CustomBrewDelivery;
 import com.kadamitas.warlockery.brew.custom.CustomBrewRuntime;
@@ -37,6 +41,16 @@ public final class BrewItem extends SplashPotionItem {
     public BrewItem(final Item.Properties properties, final BrewKind kind) {
         super(configure(properties, kind));
         this.kind = Objects.requireNonNull(kind, "kind");
+    }
+
+    /** A crouch-use is meant for an Archfiend's Urn in the other hand; never throw the brew instead, even while the urn cools down. */
+    @Override
+    public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+        final InteractionHand other = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+        if (player.isSecondaryUseActive() && player.getItemInHand(other).getItem() instanceof ArchfiendsUrnItem) {
+            return InteractionResult.CONSUME;
+        }
+        return super.use(level, player, hand);
     }
 
     public BrewKind kind() {

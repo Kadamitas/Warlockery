@@ -137,7 +137,8 @@ public final class StonebrokerEntity extends AbstractGoblinMerchantEntity
     }
 
     private void syncPresentationFromRuntime() {
-        final byte action = EntityPresentationSync.encode(patronCore.state().combat().action());
+        final byte action = EntityPresentationSync.encode(
+            GoblinPatronRules.presentedAction(patronCore.state().combat()));
         if (entityData.get(DATA_PRESENTATION_ACTION) != action) {
             entityData.set(DATA_PRESENTATION_ACTION, action);
         }
