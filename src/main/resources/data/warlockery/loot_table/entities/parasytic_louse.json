@@ -10,12 +10,15 @@
           "name": "warlockery:louse"
         }
       ],
-      "conditions": [
-        {
-          "condition": "minecraft:random_chance",
-          "chance": 0.35
-        }
-      ]
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "chance": 0.35,
+            "type": "minecraft:random_chance"
+          }
+        ]
+      }
     }
   ],
   "random_sequence": "warlockery:entities/parasytic_louse"

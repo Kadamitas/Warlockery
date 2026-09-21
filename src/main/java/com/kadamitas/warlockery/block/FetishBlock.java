@@ -1,6 +1,5 @@
 package com.kadamitas.warlockery.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,7 +26,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public final class FetishBlock extends Block {
-    public static final MapCodec<FetishBlock> CODEC = simpleCodec(FetishBlock::new);
     public static final EnumProperty<FetishMode> MODE = EnumProperty.create("mode", FetishMode.class);
     public static final BooleanProperty ENABLED = BooleanProperty.create("enabled");
     public static final BooleanProperty ALARM = BooleanProperty.create("alarm");
@@ -42,11 +40,6 @@ public final class FetishBlock extends Block {
             .setValue(ALARM, false)
             .setValue(BOUND, false)
             .setValue(ROBE, DyeColor.BROWN));
-    }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return CODEC;
     }
 
     @Override
@@ -195,13 +188,14 @@ public final class FetishBlock extends Block {
 
     @Override
     public void playerDestroy(
-        final Level level,
-        final Player player,
+        final net.minecraft.server.level.ServerLevel level,
+        final net.minecraft.server.level.ServerPlayer player,
         final BlockPos pos,
         final BlockState state,
         final net.minecraft.world.level.block.entity.BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
+        final var serverLevel = level;
         player.awardStat(Stats.BLOCK_MINED.get(this));
         player.causeFoodExhaustion(0.005F);
         if (player.hasInfiniteMaterials()) {

@@ -36,7 +36,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Stages prerequisites; only native input and ordinary server ticks trigger passive outcomes. */
 public final class InfusionPassiveClientAcceptance implements FabricClientGameTest {
@@ -82,9 +81,9 @@ public final class InfusionPassiveClientAcceptance implements FabricClientGameTe
                         row().put("status", "FAILED"); row().put("failure", failure.toString()); failures.add(id + ": " + failure);
                         try { screenshot(context, id + "-failure"); } catch (Exception ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
                         write(false);
                     }
                 } finally { world = null; }
@@ -118,7 +117,7 @@ public final class InfusionPassiveClientAcceptance implements FabricClientGameTe
         supply(context, ItemStack.EMPTY);
         final float baseline = receiveZombieHit(context);
         position(context, START);
-        server(player -> { player.setHealth(20); player.invulnerableTime = 0; MagicPathState.grantPermanent(player, MagicPath.LIGHT); });
+        server(player -> { player.setHealth(20); player.damageCooldownTime = 0; MagicPathState.grantPermanent(player, MagicPath.LIGHT); });
         final int before = reserve(MagicPath.LIGHT);
         final float infused = receiveZombieHit(context);
         check(baseline > 0 && Math.abs(infused - baseline * .6F) < .02F, "Light reduces the same ordinary zombie hit to sixty percent");
@@ -160,20 +159,20 @@ public final class InfusionPassiveClientAcceptance implements FabricClientGameTe
         });
         check(!value(player -> MagicPathState.has(player, MagicPath.IMP)), "No Imp infusion is injected before binding");
         supply(context, new ItemStack(ModItems.ALL.get("ingredient_contract").get()));
-        aim(context, imp); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        aim(context, imp); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> CreatureBehaviorState.isOwnedBy(imp, player.getUUID()), 40, "Native contract binds the imp");
         check(value(player -> player.experienceLevel == 0 && player.getMainHandItem().isEmpty()), "Binding consumes exactly twenty-five levels and one contract");
         await(context, player -> MagicPathState.has(player, MagicPath.IMP), 40, "Owned imp proximity grants its timed infusion naturally");
         final Mob victim = value(player -> mob(player, "minecraft:cow", new Vec3(.5, 100, .5)));
         supply(context, ItemStack.EMPTY); final int before = reserve(MagicPath.IMP); final float health = value(player -> victim.getHealth());
-        aim(context, victim); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        aim(context, victim); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         await(context, player -> victim.getHealth() < health && victim.isOnFire(), 30, "Native bare-hand hit ignites the creature");
         check(reserve(MagicPath.IMP) == before - 2, "Native punch pays exactly two Imp reserve");
         row().put("punch_reserve_before", before); row().put("punch_reserve_after", reserve(MagicPath.IMP));
         try { screenshot(context, active + "-native-burning-victim"); } catch (Exception failure) { throw new AssertionError(failure); }
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); });
         // The supplied imp has NoAI, so this ordinary walk really leaves its proximity volume.
-        context.getInput().holdKeyFor(GLFW.GLFW_KEY_W, 220);
+        context.getInput().holdKeyFor(com.mojang.blaze3d.platform.InputConstants.KEY_W, 220);
         check(value(player -> player.getZ() - imp.getZ() > 33), "Native walking leaves the bound imp's thirty-two-block area");
         row().put("distance_after_walk", value(player -> player.distanceTo(imp)));
         await(context, player -> !MagicPathState.has(player, MagicPath.IMP), 85, "Timed Imp infusion expires after leaving its owner-bound imp");
@@ -191,10 +190,10 @@ public final class InfusionPassiveClientAcceptance implements FabricClientGameTe
         final float cowBefore = value(player -> cow.getHealth()); final float before = value(ServerPlayer::getHealth);
         final int mana = reserve(MagicPath.OVERWORLD);
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(20); });
-        context.getInput().holdKeyFor(GLFW.GLFW_KEY_W, 8);
+        context.getInput().holdKeyFor(com.mojang.blaze3d.platform.InputConstants.KEY_W, 8);
         await(context, player -> !player.onGround() && player.getY() < 107.8, 30, "Native walking leaves the staged eight-block ledge");
         // Begin crouching only after leaving the ledge, since edge-sneaking prevents a fall.
-        if (crouched) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        if (crouched) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         try {
             await(context, player -> reserveOn(player, MagicPath.OVERWORLD) < mana, 65, "A genuinely damaging landing activates Earth cushioning");
             check(reserve(MagicPath.OVERWORLD) == mana - 4, "Exactly one landing spends four Earth reserve");
@@ -207,7 +206,7 @@ public final class InfusionPassiveClientAcceptance implements FabricClientGameTe
             row().put("stone_blocks_broken", broken); row().put("health_before", before); row().put("health_after", value(ServerPlayer::getHealth));
             row().put("cow_health_before", cowBefore); row().put("cow_health_after", value(player -> cow.getHealth()));
             row().put("reserve_before", mana); row().put("reserve_after", reserve(MagicPath.OVERWORLD));
-        } finally { if (crouched) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+        } finally { if (crouched) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
     }
 
     private void grave(final ClientGameTestContext context) {
@@ -219,7 +218,7 @@ public final class InfusionPassiveClientAcceptance implements FabricClientGameTe
         supply(context, new ItemStack(Items.DIAMOND_SWORD));
         final int mana = reserve(MagicPath.GRAVE); final int food = value(player -> player.getFoodData().getFoodLevel());
         final float health = value(ServerPlayer::getHealth);
-        aim(context, cow); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        aim(context, cow); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         await(context, player -> !cow.isAlive(), 30, "Native sword attack kills the supplied living cow");
         check(value(player -> cow.getLastHurtByMob() == player), "The nourishing kill is attributed to the real player");
         check(value(player -> player.getHealth() == health + 4 && player.getFoodData().getFoodLevel() == food + 4), "Actual nourishing kill restores four health and four food");
@@ -236,7 +235,7 @@ public final class InfusionPassiveClientAcceptance implements FabricClientGameTe
     }
     private void supply(final ClientGameTestContext context, final ItemStack stack) {
         server(player -> { player.getInventory().setItem(0, stack); player.getInventory().setSelectedSlot(0); player.containerMenu.broadcastChanges(); });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(3);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(3);
     }
     private void aim(final ClientGameTestContext context, final Mob mob) {
         final Vec3 target = value(player -> mob.position().add(0, mob.getBbHeight() * .65, 0));
@@ -270,7 +269,7 @@ public final class InfusionPassiveClientAcceptance implements FabricClientGameTe
         final ManualProfile profile = ManualProfile.profiles().stream().filter(book -> book.sections().contains(id)).findFirst().orElseThrow();
         supply(context, new ItemStack(ModItems.ALL.get(profile.id()).get()));
         context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, id);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString());
         final int pages = context.computeOnClient(client -> {
@@ -292,7 +291,7 @@ public final class InfusionPassiveClientAcceptance implements FabricClientGameTe
             screenshot(context, active + "-guide-" + page);
         }
         row().put("guide", Map.of("section", id, "book", profile.id(), "body", body, "pages_read", pages));
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
     }
     private Map<String, Object> row() { return results.get(active); }
     private int reserve(final MagicPath path) { return value(player -> reserveOn(player, path)); }

@@ -40,7 +40,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.Entity;
 
@@ -119,10 +118,10 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
                         fail(id, row, failure);
                         try { screenshot(context, id + "-failure-in-world"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
                         if (observation != null) row.put("last_runtime_observation", serverValue(player -> observation.report()));
                         observation = null;
                         write(false);
@@ -177,7 +176,7 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
             "Native block use records exact loaded biome ID at clicked block");
         check(serverValue(player -> count(player, item("biomenote")) == 1 && player.getMainHandItem().has(DataComponents.CUSTOM_NAME)
             && player.getMainHandItem().has(DataComponents.LORE)), "Biome note remains usable and receives recorded name/lore");
-        context.getInput().pressKey(GLFW.GLFW_KEY_E); context.waitForScreen(net.minecraft.client.gui.screens.inventory.InventoryScreen.class);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E); context.waitForScreen(net.minecraft.client.gui.screens.inventory.InventoryScreen.class);
         final int[] point = context.computeOnClient(client -> {
             final var slot = client.player.containerMenu.slots.stream().filter(value -> value.container == client.player.getInventory()
                 && value.getContainerSlot() == 0).findFirst().orElseThrow();
@@ -209,9 +208,9 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
             && player.level().getBlockState(destination.east()).is(Blocks.DIAMOND_BLOCK), 30, "Native third click copies both exact block states at clicked-face destination");
         check(serverValue(player -> player.getMainHandItem().getDamageValue() == 1 && player.level().getBlockState(one).is(Blocks.GOLD_BLOCK)
             && player.level().getBlockState(two).is(Blocks.DIAMOND_BLOCK)), "Copy preserves originals and costs exactly one durability");
-        context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3);
         try { use(context, Vec3.atCenterOf(destination), destination); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
         await(context, player -> ReplicationSelection.read(player.getMainHandItem()).isEmpty(), 20, "Native crouch click clears selection");
         row.put("checked", List.of("first/second native corner selection", "exact two-block copy", "one durability", "originals preserved", "native crouch clear"));
         row.put("not_run", List.of("block-entity copy exclusion (native inventory block interaction precedence)", "512-volume limit", "cross-dimension selection rejection"));
@@ -265,7 +264,7 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
         check(serverValue(player -> com.kadamitas.warlockery.transformation.SupernaturalState.getReserve(player) == 0
             && player.hasEffect(MobEffects.HUNGER) && player.getEffect(MobEffects.HUNGER).getAmplifier() == 1
             && player.getEffect(MobEffects.HUNGER).getDuration() >= 580), "Human receives Hunger II for 600 ticks and no vampire reserve");
-        context.getInput().pressKey(GLFW.GLFW_KEY_E);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E);
         context.waitForScreen(net.minecraft.client.gui.screens.inventory.InventoryScreen.class);
         clickPlayerSlot(context, 0); clickPlayerSlot(context, 9); close(context);
         check(serverValue(player -> count(player, Items.GLASS_BOTTLE) == 1), "Native inventory click preserves first drink's empty bottle");
@@ -367,7 +366,7 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
         supply(context, 0, item(id));
         // Downward-forward throw lands ahead of the player, leaving room for a collision-checked duplicate.
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(35); }); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> count(player, item(id)) == 0 && !observation.ownedProjectiles.isEmpty(), 20,
             "Native item throw consumes one and creates an owned projectile");
     }
@@ -386,13 +385,13 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
         final Vec3 point = serverValue(player -> living(player, id).position().add(0, living(player, id).getBbHeight() * .55, 0));
         look(context, point);
         check(context.computeOnClient(client -> client.hitResult instanceof EntityHitResult hit && hit.getEntity().getUUID().equals(id)), "Native pointer hits exact prerequisite creature");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
     }
     private void eat(final ClientGameTestContext context, final Item expected) {
         context.runOnClient(client -> client.player.setXRot(-75)); context.waitTicks(2);
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try { await(context, player -> count(player, expected) == 0, 55, "Native held use completes eating and consumes one item"); }
-        finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
     }
     private static void look(final ClientGameTestContext context, final Vec3 point) {
         context.runOnClient(client -> {
@@ -403,7 +402,7 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
     }
     private static void useAir(final ClientGameTestContext context) {
         context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
     }
     private static final class ToolObservation {
         final ServerPlayer player;
@@ -443,7 +442,7 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
             final var profile = found.orElseThrow();
             supply(context, 0, item(profile.id()));
             context.runOnClient(client -> client.player.setXRot(-70));
-            context.waitTicks(2); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.waitTicks(2); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitForScreen(ManualScreen.class);
             ManualClientAcceptance.selectSection(context, section);
             final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
@@ -473,9 +472,9 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
     private void place(final ClientGameTestContext context, final Item item, final BlockPos target, final String expectedId,
         final boolean crouch) {
         supply(context, 0, item);
-        if (crouch) { context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3); }
+        if (crouch) { context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3); }
         try { use(context, new Vec3(target.getX() + 0.5, target.getY() - 0.001, target.getZ() + 0.5), target.below()); }
-        finally { if (crouch) { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2); } }
+        finally { if (crouch) { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(2); } }
         final Identifier expected = expectedId.contains(":") ? Identifier.parse(expectedId) : Identifier.fromNamespaceAndPath("warlockery", expectedId);
         await(context, player -> BuiltInRegistries.BLOCK.getKey(player.level().getBlockState(target).getBlock()).equals(expected), 30,
             "Native placement produces the expected device at " + target);
@@ -489,7 +488,7 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
 
     private void sync(final ClientGameTestContext context, final int hotbar) {
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1 + hotbar); context.waitTicks(2);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + hotbar); context.waitTicks(2);
     }
 
     private static void use(final ClientGameTestContext context, final Vec3 point, final BlockPos expected) {
@@ -501,7 +500,7 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
         context.waitTicks(2);
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(expected)),
             "Native pointer targets the intended support/device: " + expected);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
     }
 
     private static void clickPlayerSlot(final ClientGameTestContext context, final int index) {
@@ -527,7 +526,7 @@ public final class RemainingToolsAbilitiesClientAcceptance implements FabricClie
 
     private static void close(final ClientGameTestContext context) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTicks(3);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitTicks(3);
         }
     }
 

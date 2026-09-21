@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:trent_effigy"
+        "recipes": "warlockery:trent_effigy"
       }
     },
     "has_ingredient_0": {

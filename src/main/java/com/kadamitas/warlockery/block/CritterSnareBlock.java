@@ -97,13 +97,14 @@ public final class CritterSnareBlock extends BushBlock {
 
     @Override
     public void playerDestroy(
-        final Level level,
-        final Player player,
+        final net.minecraft.server.level.ServerLevel level,
+        final net.minecraft.server.level.ServerPlayer player,
         final BlockPos pos,
         final BlockState state,
         final @Nullable BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
+        final var serverLevel = level;
         player.causeFoodExhaustion(0.005F);
         if (player.hasInfiniteMaterials()) {
             return;

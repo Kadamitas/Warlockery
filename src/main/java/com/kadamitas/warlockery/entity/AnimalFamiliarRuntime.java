@@ -1092,7 +1092,7 @@ public final class AnimalFamiliarRuntime {
         final ServerLevel level,
         final LivingEntity target
     ) {
-        body.swing(InteractionHand.MAIN_HAND);
+        body.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         body.familiarCounters().meleeOpportunities++;
         body.doHurtTarget(level, target);
     }

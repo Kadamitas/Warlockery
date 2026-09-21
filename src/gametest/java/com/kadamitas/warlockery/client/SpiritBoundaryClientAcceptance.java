@@ -33,7 +33,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class SpiritBoundaryClientAcceptance implements FabricClientGameTest {
     private final Map<String, Object> report = new LinkedHashMap<>();
@@ -69,7 +68,7 @@ public final class SpiritBoundaryClientAcceptance implements FabricClientGameTes
                             level.setBlockAndUpdate(pos, pos.getY() == 99 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState());
                     }
                     player.setGameMode(GameType.SURVIVAL);
-                    player.setInvulnerable(true);
+                    player.setPermanentlyInvulnerable(true);
                     player.teleportTo(0.5, 100, 0.5);
                     player.setYRot(37);
                     player.setYHeadRot(37);
@@ -122,10 +121,10 @@ public final class SpiritBoundaryClientAcceptance implements FabricClientGameTes
                     "position", client.player.position().toString(), "eye", client.player.getEyePosition().toString(),
                     "direction", client.player.getLookAngle().toString(), "hit", String.valueOf(client.hitResult))));
                 screenshot(context, "portal-approach");
-                context.getInput().holdKey(GLFW.GLFW_KEY_W);
+                context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                 try {
                     waitServer(context, ManifestationRuntime::isActive, 120, "Actual portal contact must manifest the observer");
-                } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+                } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
                 arrival(context);
                 check(serverValue(player -> player.level().dimension().equals(Level.OVERWORLD)
                     && player.level().getEntity(session.body()) != null), "The original body remains while manifested");
@@ -183,19 +182,19 @@ public final class SpiritBoundaryClientAcceptance implements FabricClientGameTes
     }
 
     private void command(final ClientGameTestContext context, final String command) {
-        context.getInput().pressKey(GLFW.GLFW_KEY_T);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_T);
         context.waitForScreen(ChatScreen.class);
         context.getInput().typeChars(command);
-        context.getInput().pressKey(GLFW.GLFW_KEY_ENTER);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN);
         context.waitTicks(4);
     }
 
     private void useNeedle(final ClientGameTestContext context) {
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.waitTicks(3);
         context.runOnClient(client -> client.player.setXRot(-85));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
     }
 
     private void arrival(final ClientGameTestContext context) {

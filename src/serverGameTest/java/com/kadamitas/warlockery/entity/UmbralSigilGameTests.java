@@ -77,7 +77,7 @@ public final class UmbralSigilGameTests {
             // reason that has nothing to do with F22. The subject is therefore held ineligible for
             // the first hundred ticks, which both removes that window from the run and gives the
             // appointment filter a genuine ineligible candidate to reject.
-            subject.setInvulnerable(true);
+            subject.setPermanentlyInvulnerable(true);
             helper.onEachTick(() -> {
                 if (subject.getLastHurtByMob() == sigil) {
                     attributed.set(true);
@@ -94,8 +94,8 @@ public final class UmbralSigilGameTests {
                 helper.assertTrue(sigil.sigilCounters().appointmentCandidateVisits()
                         >= sigil.sigilCounters().appointmentSweeps(),
                     "the ineligible candidate was charged a read before it could be rejected");
-                subject.setInvulnerable(false);
-                subject.invulnerableTime = 0;
+                subject.setPermanentlyInvulnerable(false);
+                subject.damageCooldownTime = 0;
             });
 
             helper.runAfterDelay(260L, () -> {
@@ -290,7 +290,7 @@ public final class UmbralSigilGameTests {
                 openSealOn(helper, sigil, subject);
                 helper.assertTrue(sigil.sigilTransient().appointed(),
                     "armed control: the seal is genuinely open before the blow lands");
-                sigil.invulnerableTime = 0;
+                sigil.damageCooldownTime = 0;
                 helper.assertTrue(sigil.hurtServer(
                         helper.getLevel(), helper.getLevel().damageSources().magic(), 2.0F),
                     "the fixture blow must genuinely land, or the cancel proves nothing");
@@ -678,7 +678,7 @@ public final class UmbralSigilGameTests {
             helper.getLevel().getServer().getPlayerList()
                 .placeNewPlayer(connection, player, cookie);
             player.setGameMode(GameType.SURVIVAL);
-            player.setInvulnerable(false);
+            player.setPermanentlyInvulnerable(false);
             final BlockPos absolute = helper.absolutePos(position);
             player.teleportTo(absolute.getX() + 0.5D, absolute.getY(), absolute.getZ() + 0.5D);
             return track(player);

@@ -49,7 +49,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import org.lwjgl.glfw.GLFW;
 
 public final class MysticBranchAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final BlockPos BLOCK = new BlockPos(0, 100, 2);
@@ -116,8 +115,8 @@ public final class MysticBranchAbilitiesClientAcceptance implements FabricClient
                         failures.add(id + ": " + failure);
                         try { screenshot(context, id.replace('/', '-') + "-failure"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                         if (deflection != null) row.put("projectile_observation", serverValue(player -> deflection.details()));
                         deflection = null;
                         write(false);
@@ -325,10 +324,10 @@ public final class MysticBranchAbilitiesClientAcceptance implements FabricClient
         for (int count = 0; count < SymbolSpell.VALUES.size()
             && serverValue(player -> SymbolBranchState.selected(player.getMainHandItem())) != wanted; count++) {
             final SymbolSpell previous = serverValue(player -> SymbolBranchState.selected(player.getMainHandItem()));
-            context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(2);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitTicks(2);
-            context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
             for (int tick = 0; tick < 15 && serverValue(player -> SymbolBranchState.selected(player.getMainHandItem())) == previous; tick++)
                 context.waitTicks(1);
             check(serverValue(player -> SymbolBranchState.selected(player.getMainHandItem())) == previous.next(),
@@ -359,14 +358,14 @@ public final class MysticBranchAbilitiesClientAcceptance implements FabricClient
             check(context.computeOnClient(client -> client.hitResult instanceof EntityHitResult hit && hit.getEntity().getUUID().equals(target)),
                 "Native pointer targets the exact creature");
         }
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(3);
     }
 
     private void deflect(final ClientGameTestContext context, final boolean offhand, final Map<String, Object> row) throws Exception {
         supply(context, new ItemStack(ModItems.ALL.get("mysticbranch").get()));
         if (offhand) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_F);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F);
             context.waitTicks(3);
             check(serverValue(player -> player.getOffhandItem().is(ModItems.ALL.get("mysticbranch").get())
                 && player.getMainHandItem().isEmpty()), "Native swap puts the branch in the offhand");
@@ -449,7 +448,7 @@ public final class MysticBranchAbilitiesClientAcceptance implements FabricClient
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> client.player.setXRot(-70));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, id);
         final String text = context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString());
@@ -473,7 +472,7 @@ public final class MysticBranchAbilitiesClientAcceptance implements FabricClient
         row.put("section", id);
         row.put("book_text", text);
         row.put("book_pages_read", pages);
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
     }
 

@@ -1,21 +1,24 @@
 {
-    "type":  "minecraft:block",
-    "pools":  [
-                  {
-                      "rolls":  1,
-                      "bonus_rolls":  0,
-                      "entries":  [
-                                      {
-                                          "type":  "minecraft:item",
-                                          "name":  "warlockery:barrier"
-                                      }
-                                  ],
-                      "conditions":  [
-                                         {
-                                             "condition":  "minecraft:survives_explosion"
-                                         }
-                                     ]
-                  }
-              ],
-    "random_sequence":  "warlockery:blocks/barrier"
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "warlockery:barrier"
+        }
+      ],
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:survives_explosion"
+          }
+        ]
+      }
+    }
+  ],
+  "random_sequence": "warlockery:blocks/barrier"
 }

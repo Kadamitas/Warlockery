@@ -17,13 +17,13 @@ final class ReleaseMetadataTest {
     @Test
     void stableVersionMatchesUpdateFeedAndChangelog() throws IOException {
         final String version = property("mod_version");
-        assertEquals("1.5.5", version);
+        assertEquals("1.5.6", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
-        assertEquals(version, promotions.get("26.2-latest").getAsString());
-        assertEquals(version, promotions.get("26.2-recommended").getAsString());
-        assertTrue(update.getAsJsonObject("26.2").has(version));
+        assertEquals(version, promotions.get("26.3-latest").getAsString());
+        assertEquals(version, promotions.get("26.3-recommended").getAsString());
+        assertTrue(update.getAsJsonObject("26.3").has(version));
 
         final String changelog = read("changelog.txt");
         assertTrue(changelog.startsWith("Warlockery " + version));
@@ -50,6 +50,7 @@ final class ReleaseMetadataTest {
             .getAsJsonObject("entrypoints").getAsJsonArray("client").get(0).getAsString());
         final JsonObject dependencies = metadata.getAsJsonObject("depends");
         assertEquals(">=0.19.3", dependencies.get("fabricloader").getAsString());
+        assertEquals(">=0.30.1", dependencies.get("quilt_loader").getAsString());
         assertEquals(">=" + property("fabric_api_version"), dependencies.get("fabric-api").getAsString());
         assertEquals("~" + property("minecraft_version"), dependencies.get("minecraft").getAsString());
         assertEquals(">=25", dependencies.get("java").getAsString());
@@ -69,7 +70,7 @@ final class ReleaseMetadataTest {
         assertTrue(build.contains("id 'net.fabricmc.fabric-loom' version \"${loom_version}\""));
         assertTrue(build.contains("net.fabricmc:fabric-loader:${project.loader_version}"));
         assertTrue(build.contains("net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"));
-        assertTrue(build.contains("mezz.jei:jei-26.2-fabric-api"));
+        assertTrue(build.contains("mezz.jei:jei-26.3-fabric-api"));
         assertTrue(build.contains("archivesName = project.archives_base_name"));
         assertTrue(build.contains("LICENSE-Warlockery.txt"));
         assertTrue(build.contains("CHANGELOG-Warlockery.txt"));
@@ -81,10 +82,11 @@ final class ReleaseMetadataTest {
 
         final String gradleProperties = read("gradle.properties");
         assertTrue(gradleProperties.contains("org.gradle.configuration-cache=false"));
-        assertEquals("warlockery-fabric", property("archives_base_name"));
+        assertEquals("warlockery-quilt", property("archives_base_name"));
+        assertEquals("0.30.1", property("quilt_loader_version"));
         assertEquals("1.17.19", property("loom_version"));
         assertEquals("0.19.5", property("loader_version"));
-        assertEquals("0.158.0+26.2", property("fabric_api_version"));
+        assertEquals("0.161.0+26.3", property("fabric_api_version"));
 
         final String wrapper = read("gradle/wrapper/gradle-wrapper.properties");
         assertTrue(wrapper.contains("gradle-9.5.1-bin.zip"));
@@ -94,7 +96,7 @@ final class ReleaseMetadataTest {
     @Test
     void curseForgeWorkflowKeepsNormalLoadersAndGuardsTheSupporterBuild() throws IOException {
         final String contents = read(".github/workflows/publish-curseforge.yml");
-        assertTrue(contents.contains("default: v1.5.5"));
+        assertTrue(contents.contains("default: v1.5.6"));
         assertTrue(contents.contains("- forge"));
         assertTrue(contents.contains("- neoforge"));
         assertTrue(contents.contains("- fabric"));

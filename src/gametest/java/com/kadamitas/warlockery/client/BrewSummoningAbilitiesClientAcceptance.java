@@ -55,7 +55,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class BrewSummoningAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final Set<BrewBehavior> COVERED = Set.of(BrewBehavior.SUMMON_BATS,
@@ -126,7 +125,7 @@ public final class BrewSummoningAbilitiesClientAcceptance implements FabricClien
                         try { screenshot(context, id.getPath() + "-failure-in-world"); }
                         catch (Throwable capture) { row.put("screenshot_failure", capture.toString()); }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                         final SummonObservation current = observation;
                         if (current != null) row.put("impact_observation", serverValue(player -> current.report()));
                         observation = null;
@@ -194,13 +193,13 @@ public final class BrewSummoningAbilitiesClientAcceptance implements FabricClien
             observation = new SummonObservation(player, id, kind, prerequisites);
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(90); });
         context.waitTicks(3);
         if (kind.behaviors().contains(BrewBehavior.ATTRACT_ANIMALS)
                 || kind.behaviors().contains(BrewBehavior.BREED_ANIMALS)) server(player ->
             observation.prerequisites.forEach(mob -> mob.setNoAi(false)));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         for (int tick = 0; tick < 100 && !serverValue(player -> observation.projectileSeenAndGone()); tick++) context.waitTicks(1);
         check(serverValue(player -> observation.projectileIds.size() == 1 && observation.projectileSeenAndGone()),
             "Exactly one actual owned thrown brew was observed and naturally collided");
@@ -390,7 +389,7 @@ public final class BrewSummoningAbilitiesClientAcceptance implements FabricClien
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> client.player.setXRot(-75));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final String text = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
@@ -416,7 +415,7 @@ public final class BrewSummoningAbilitiesClientAcceptance implements FabricClien
         row.put("book_text", text);
         row.put("guide_mapping", "This exact registry item uses BrewKind " + kind.id() + "; canonical section " + section
             + " is read for that shared behavior. This does not assert identical acquisition recipes for aliases.");
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
     }
 

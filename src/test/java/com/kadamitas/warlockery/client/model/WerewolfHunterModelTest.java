@@ -93,7 +93,7 @@ final class WerewolfHunterModelTest {
 
         final WerewolfHunterModel.State drawEarly = new WerewolfHunterModel.State();
         drawEarly.activity = WerewolfHunterModel.Activity.ENGAGING;
-        drawEarly.attackTime = 0.1F;
+        drawEarly.swingAnimation = 0.1F;
         model.setupAnim(drawEarly);
         final String earlyPose = geometrySnapshot(model.root());
         drawEarly.chargingCrossbow = true;

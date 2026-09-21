@@ -240,7 +240,7 @@ public final class WerewolfHunterModel extends EntityModel<WerewolfHunterModel.S
         } else if (state.activity == Activity.ENGAGING) {
             final float draw = Math.max(
                 state.chargingCrossbow ? 1.0F : 0.0F,
-                Mth.clamp(state.attackTime, 0.0F, 1.0F)
+                Mth.clamp(state.swingAnimation, 0.0F, 1.0F)
             );
             rightArm.xRot = -1.35F;
             rightArm.yRot = -0.52F;

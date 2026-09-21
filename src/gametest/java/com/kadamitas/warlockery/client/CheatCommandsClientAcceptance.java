@@ -48,7 +48,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class CheatCommandsClientAcceptance implements FabricClientGameTest {
     private static final BlockPos CENTER = new BlockPos(0, 100, 0);
@@ -99,7 +98,7 @@ public final class CheatCommandsClientAcceptance implements FabricClientGameTest
                 Optional.of(LevelBasedPermissionSet.GAMEMASTER), Optional.empty());
             server.getPlayerList().sendPlayerPermissionLevel(player);
             player.setGameMode(GameType.SURVIVAL);
-            player.setInvulnerable(true);
+            player.setPermanentlyInvulnerable(true);
             player.getInventory().clearContent();
             for (int x = -radius; x <= radius; x += 16) for (int z = -radius; z <= radius; z += 16) {
                 player.level().getChunkAt(CENTER.offset(x, 0, z));
@@ -196,7 +195,7 @@ public final class CheatCommandsClientAcceptance implements FabricClientGameTest
                 check(villager != null, "Resident fixture must create a villager");
                 villager.setPos(5.5 + index, 100, 6.5);
                 villager.setNoAi(true);
-                villager.setInvulnerable(true);
+                villager.setPermanentlyInvulnerable(true);
                 if (index == 0) villager.getBrain().setMemory(MemoryModuleType.HOME, GlobalPos.of(level.dimension(), head));
                 level.addFreshEntity(villager);
             }
@@ -226,10 +225,10 @@ public final class CheatCommandsClientAcceptance implements FabricClientGameTest
 
     private void command(final ClientGameTestContext context, final String command, final String expected) throws Exception {
         context.runOnClient(client -> client.gui.hud.getChat().clearMessages(false));
-        context.getInput().pressKey(GLFW.GLFW_KEY_T);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_T);
         context.waitForScreen(ChatScreen.class);
         context.getInput().typeChars(command);
-        context.getInput().pressKey(GLFW.GLFW_KEY_ENTER);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN);
         context.waitFor(client -> client.gui.screen() == null, 40);
         context.waitFor(client -> chat(client.gui.hud.getChat()).contains(expected), 100);
         commands.add(Map.of("input", command, "response", context.computeOnClient(client -> chat(client.gui.hud.getChat()))));

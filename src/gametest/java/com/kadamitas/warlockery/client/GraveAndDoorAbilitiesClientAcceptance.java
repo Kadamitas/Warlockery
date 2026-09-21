@@ -46,7 +46,6 @@ import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final BlockPos FIRST_DOOR = new BlockPos(0, 100, 1);
@@ -81,8 +80,8 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
                         failures.add(scenario + ": " + failure);
                         try { screenshot(context, scenario + "-failure"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
                         write(false);
                     }
                 } finally { world = null; }
@@ -125,11 +124,11 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
         supply(context, 0, item("ingredient_brew_grave"));
         lookAir(context);
         screenshot(context, "grave-before-native-drinking");
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try {
             await(context, player -> MagicPathState.has(player, MagicPath.GRAVE) && count(player, item("ingredient_brew_grave")) == 0,
                 70, "Finishing the real drink consumes it and grants Grave attunement");
-        } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         check(serverValue(player -> MagicPathState.selected(player).orElseThrow() == MagicPath.GRAVE
             && MagicPathState.reserve(player, MagicPath.GRAVE) == 120), "The new Grave path starts selected with full reserve");
         await(context, player -> player.hasEffect(MobEffects.NIGHT_VISION), 30, "Normal path ticks provide passive Night Vision");
@@ -144,7 +143,7 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
 
         final UUID bodyId = spawn("warlockery:corpse", new Vec3(.5, 100, 1));
         server(player -> mob(player, bodyId).setTarget(player));
-        useEntity(context, bodyId, GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        useEntity(context, bodyId, com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> player.getStringUUID().equals(WarlockeryEntityData.get(mob(player, bodyId)).getStringOr("WarlockeryGraveOwner", ""))
             && mob(player, bodyId).getTarget() == null && mob(player, bodyId).isPersistenceRequired()
             && MagicPathState.reserve(player, MagicPath.GRAVE) == 106, 30,
@@ -171,7 +170,7 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
 
         moveFixturePlayer(context, new Vec3(-3.5, 100, -3.5));
         final UUID cowId = spawn("minecraft:cow", new Vec3(-3.5, 100, -1.5));
-        useEntity(context, cowId, GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        useEntity(context, cowId, com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         awaitOverlay(context, "message.warlockery.magic.invalid_target", Component.translatable("magic_path.warlockery.grave"));
         check(serverValue(player -> WarlockeryEntityData.get(mob(player, cowId)).getStringOr("WarlockeryGraveOwner", "").isEmpty()
             && MagicPathState.reserve(player, MagicPath.GRAVE) == 101), "An ordinary living animal refuses the bond without spending reserve");
@@ -181,7 +180,7 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
         });
         supply(context, 0, Items.DIAMOND_SWORD);
         context.waitTicks(22);
-        useEntity(context, cowId, GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        useEntity(context, cowId, com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         await(context, player -> (player.level().getEntity(cowId) == null || !mob(player, cowId).isAlive())
             && player.getHealth() == 14 && player.getFoodData().getFoodLevel() >= 13
             && MagicPathState.reserve(player, MagicPath.GRAVE) == 105, 30,
@@ -324,7 +323,7 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
     private void mergeKey(final ClientGameTestContext context, final RowanKeyState.Door source, final int expectedDoors) {
         check(serverValue(player -> player.getOffhandItem().isEmpty()), "The receiving trial starts with an empty off hand");
         select(context, keySlot(source));
-        context.getInput().pressKey(GLFW.GLFW_KEY_F);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F);
         await(context, player -> RowanKeyState.read(player.getOffhandItem()).opens(source), 30, "Native hand swap moves the generated key into the opposite hand");
         select(context, 0); useAir(context);
         await(context, player -> player.getOffhandItem().isEmpty() && player.getMainHandItem().is(item("ingredient_door_keyring"))
@@ -374,7 +373,7 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
         for (final String section : sections) {
             final ManualProfile profile = ManualProfile.profiles().stream().filter(candidate -> candidate.sections().contains(section)).findFirst().orElseThrow();
             supply(context, 0, item(profile.id())); lookAir(context);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
             selectGuide(context, section);
             final String text = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
             final int pages = context.computeOnClient(client -> {
@@ -435,7 +434,7 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
         select(context, slot);
     }
     private void select(final ClientGameTestContext context, final int slot) {
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1 + slot); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + slot); context.waitTicks(2);
     }
     private static void look(final ClientGameTestContext context, final Vec3 point) {
         context.runOnClient(client -> {
@@ -450,13 +449,13 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
             "Air-use input has no block or entity under the pointer");
     }
     private static void useAir(final ClientGameTestContext context) {
-        lookAir(context); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        lookAir(context); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
     }
     private static void useBlock(final ClientGameTestContext context, final Vec3 point, final BlockPos expected) {
         look(context, point);
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(expected)),
             "Native pointer targets the intended block: " + expected);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
     }
     private void await(final ClientGameTestContext context, final Predicate<ServerPlayer> condition, final int ticks, final String message) {
         for (int remaining = ticks; remaining > 0 && !serverValue(condition::test); remaining -= 2) context.waitTicks(2);
@@ -468,7 +467,7 @@ public final class GraveAndDoorAbilitiesClientAcceptance implements FabricClient
             && message.getString().equals(expected), 40);
     }
     private static void close(final ClientGameTestContext context) {
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
     }
     private static Object field(final Object object, final String name) {
         for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) try {

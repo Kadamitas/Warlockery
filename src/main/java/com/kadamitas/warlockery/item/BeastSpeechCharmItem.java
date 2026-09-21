@@ -49,7 +49,7 @@ public final class BeastSpeechCharmItem extends Item {
             final long seed = BeastSpeechTradeSeed.next(level, serverPlayer, target);
             final ItemStack reward = BeastSpeechTradeCatalog.exchange(partner, true, seed).orElseThrow();
             if (!player.getInventory().add(reward)) {
-                player.drop(reward, false);
+                player.drop(reward, false, net.minecraft.util.Prediction.SERVER_ONLY);
             }
             charm.hurtAndBreak(1, level, serverPlayer, _ -> { });
             if (target instanceof Mob mob) {

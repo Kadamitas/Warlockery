@@ -164,10 +164,6 @@ public final class InfernalHierarchyEntity extends ArcaneMob {
     }
 
     @Override
-    protected void doUnderWaterConversion(final ServerLevel level) {
-    }
-
-    @Override
     public boolean convertVillagerToZombieVillager(final ServerLevel level, final Villager villager) {
         return false;
     }

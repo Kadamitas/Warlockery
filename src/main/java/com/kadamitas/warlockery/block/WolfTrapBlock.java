@@ -2,7 +2,6 @@ package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.entity.WolfTrapBlockEntity;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
@@ -24,16 +23,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public final class WolfTrapBlock extends BaseEntityBlock {
-    public static final MapCodec<WolfTrapBlock> CODEC = simpleCodec(WolfTrapBlock::new);
     private static final VoxelShape SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 2.0, 13.0);
 
     public WolfTrapBlock(final BlockBehaviour.Properties properties) {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Override

@@ -3,7 +3,6 @@ package com.kadamitas.warlockery.block;
 import com.kadamitas.warlockery.block.AlluringSkullRules.Diagnostic;
 import com.kadamitas.warlockery.entity.EldritchWatcherEntity;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -30,7 +29,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class AlluringSkullBlock extends Block {
-    public static final MapCodec<AlluringSkullBlock> CODEC = simpleCodec(AlluringSkullBlock::new);
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
     private static final int LURE_INTERVAL = 20;
     private static final int LURE_RADIUS = 16;
@@ -39,11 +37,6 @@ public final class AlluringSkullBlock extends Block {
     public AlluringSkullBlock(final BlockBehaviour.Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(ACTIVE, false));
-    }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return CODEC;
     }
 
     @Override

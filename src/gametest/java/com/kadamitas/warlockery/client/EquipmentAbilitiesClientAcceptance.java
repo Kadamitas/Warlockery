@@ -45,7 +45,6 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class EquipmentAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final AABB AREA = new AABB(-12, 96, -10, 13, 113, 15);
@@ -175,7 +174,7 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
 
     private void stage(final ClientGameTestContext context) {
         release(context);
-        if (context.computeOnClient(client -> client.gui.screen() != null)) context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        if (context.computeOnClient(client -> client.gui.screen() != null)) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         server(player -> {
             final var server = player.level().getServer();
             final var rules = player.level().getGameRules();
@@ -210,7 +209,7 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.waitTicks(5);
     }
 
@@ -376,9 +375,9 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
     private void quiver(final ClientGameTestContext context, final Map<String, Object> row) {
         hold(context, Items.BOW);
         look(context, new Vec3(0.5, 100.6, 6.5));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(25);
-        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(4);
         check(serverValue(player -> player.level().getEntitiesOfClass(AbstractArrow.class, AREA).isEmpty()),
             "Arrowless unarmored bow must not create a shot");
@@ -389,9 +388,9 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
             .noneMatch(stack -> stack.is(Items.ARROW) || stack.is(Items.SPECTRAL_ARROW) || stack.is(Items.TIPPED_ARROW))),
             "Quiver fixture must contain no arrow ammunition");
         look(context, new Vec3(0.5, 100.7, 6.5));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(25);
-        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> living(player, target).getHealth() < 100
             && living(player, target).hasEffect(MobEffects.WEAKNESS), 70,
             "Native arrowless quiver shot must strike and weaken the cow");
@@ -406,13 +405,13 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
     private void deathDisguise(final ClientGameTestContext context, final Map<String, Object> row) {
         hold(context, ModItems.ALL.get("deathshand").get());
         look(context, new Vec3(0.5, 103, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(5);
         check(serverValue(player -> !HandOfDeathItem.isScythe(player.getMainHandItem())), "Incomplete disguise must refuse scythe toggle");
         for (String id : List.of("deathscowl", "deathsrobe", "deathsfeet")) equip(context, id);
         hold(context, ModItems.ALL.get("deathshand").get());
         look(context, new Vec3(0.5, 103, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> HandOfDeathItem.isScythe(player.getMainHandItem()), 20, "Complete native disguise must allow toggle");
         final int food = serverValue(player -> player.getFoodData().getFoodLevel());
         waitServer(context, player -> player.getFoodData().getFoodLevel() <= food - 2, 50, "Active scythe must drain hunger over normal ticks");
@@ -429,7 +428,7 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
     private void splashSelf(final ClientGameTestContext context, final String id, final Holder<MobEffect> effect) {
         hold(context, ModItems.ALL.get(id).get());
         look(context, serverValue(Entity::position).add(0, -0.3, 0.15));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.hasEffect(effect) && player.getMainHandItem().isEmpty(), 40,
             "Native " + id + " splash must produce prerequisite effect and consume the brew");
     }
@@ -438,7 +437,7 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
         hold(context, ModItems.ALL.get(id).get());
         final EquipmentSlot slot = serverValue(player -> player.getMainHandItem().get(DataComponents.EQUIPPABLE).slot());
         look(context, serverValue(Entity::position).add(0, 3, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.getItemBySlot(slot).is(ModItems.ALL.get(id).get()) && player.getMainHandItem().isEmpty(),
             25, "Native use must equip " + id + " without duplication");
     }
@@ -449,7 +448,7 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.waitTicks(3);
     }
 
@@ -473,7 +472,7 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
         final float before = serverValue(player -> living(player, target).getHealth());
         context.waitTicks(25);
         look(context, serverValue(player -> living(player, target).position()).add(0, 0.6, 0));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         waitServer(context, player -> living(player, target).getHealth() < before, 30, "Native attack must hit the live target");
         return before - serverValue(player -> living(player, target).getHealth());
     }
@@ -495,13 +494,13 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
             }
             final var profile = found.orElseThrow();
             hold(context, ModItems.ALL.get(profile.id()).get());
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitForScreen(ManualScreen.class);
             ManualClientAcceptance.selectSection(context, id);
             read.add(Map.of("item", id, "book", profile.id(), "section", id,
                 "text", context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString())));
             screenshot(context, test.id() + "-" + id + "-guide");
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
             context.waitFor(client -> client.gui.screen() == null, 30);
         }
         row.put("book_guidance_read", read);
@@ -521,16 +520,16 @@ public final class EquipmentAbilitiesClientAcceptance implements FabricClientGam
     }
 
     private static void walk(final ClientGameTestContext context, final int ticks) {
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { context.waitTicks(ticks); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
     }
 
     private static void release(final ClientGameTestContext context) {
-        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
-        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-        for (int key : List.of(GLFW.GLFW_KEY_W, GLFW.GLFW_KEY_S, GLFW.GLFW_KEY_A, GLFW.GLFW_KEY_D,
-            GLFW.GLFW_KEY_SPACE, GLFW.GLFW_KEY_LEFT_SHIFT)) context.getInput().releaseKey(key);
+        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+        for (int key : List.of(com.mojang.blaze3d.platform.InputConstants.KEY_W, com.mojang.blaze3d.platform.InputConstants.KEY_S, com.mojang.blaze3d.platform.InputConstants.KEY_A, com.mojang.blaze3d.platform.InputConstants.KEY_D,
+            com.mojang.blaze3d.platform.InputConstants.KEY_SPACE, com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT)) context.getInput().releaseKey(key);
     }
 
     private void waitServer(final ClientGameTestContext context, final Predicate<ServerPlayer> condition, final int ticks, final String failure) {

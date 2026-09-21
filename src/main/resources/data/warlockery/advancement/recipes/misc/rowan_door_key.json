@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:rowan_door_key"
+        "recipes": "warlockery:rowan_door_key"
       }
     },
     "has_ingredient_0": {

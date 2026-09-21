@@ -543,7 +543,7 @@ public final class SpiritRuntime {
             state.guard().strikes() + 1, state.guard().recoverRemainingTicks()
         )));
         spirit.spiritCounters().strikes++;
-        spirit.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        spirit.swing(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         spirit.doHurtTarget(level, attacker);
         releaseGuard(spirit);
     }

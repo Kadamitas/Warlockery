@@ -34,7 +34,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Native Moon Charm holds: form and level gates, early-release control, wolf and wolfman changes in both directions, and charm wear. */
 public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGameTest {
@@ -79,8 +78,8 @@ public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGam
                     run(context, "wolfman_back_to_human", row -> shift(context, row, true, WerewolfShape.WOLFMAN, WerewolfShape.HUMAN, 4));
                     run(context, "durability", row -> durability(context, row));
                 } finally {
-                    context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
-                    context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                    context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
+                    context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                     context.runOnClient(client -> client.options.setCameraType(CameraType.FIRST_PERSON));
                     world = null;
                 }
@@ -106,7 +105,7 @@ public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGam
             row.put("status", "FAILED"); row.put("failure", stack(failure)); failures.add(id + ": " + failure);
             try { screenshot(context, id + "-failure"); } catch (Throwable ignored) { }
         } finally {
-            context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             row.put("state_after", serverValue(MoonCharmAbilitiesClientAcceptance::state)); write(false);
         }
     }
@@ -141,13 +140,13 @@ public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGam
         supply(context);
         final int damage = serverValue(player -> player.getMainHandItem().getDamageValue());
         lookSky(context); clearOverlay(context);
-        if (crouch) { context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3); check(serverValue(ServerPlayer::isShiftKeyDown), "Server sees the real crouch"); }
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        if (crouch) { context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3); check(serverValue(ServerPlayer::isShiftKeyDown), "Server sees the real crouch"); }
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try {
             context.waitTicks(HOLD);
             awaitOverlay(context, translated(context, key));
             check(serverValue(player -> !player.isUsingItem()), "A locked charm never starts the three-second use");
-        } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); if (crouch) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3); }
+        } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); if (crouch) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3); }
         check(serverValue(player -> SupernaturalProgression.werewolfShape(player) == WerewolfShape.HUMAN && player.getMainHandItem().getDamageValue() == damage),
             "A refused hold changes no shape and wears nothing");
         row.put("overlay", overlay(context)); row.put("crouched", crouch); row.put("held_ticks", HOLD);
@@ -157,7 +156,7 @@ public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGam
 
     private void earlyRelease(final ClientGameTestContext context, final Map<String, Object> row) throws Exception {
         supply(context); lookSky(context); clearOverlay(context);
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         int remaining;
         try {
             await(context, ServerPlayer::isUsingItem, 10, "A level 2 werewolf begins the charm use natively");
@@ -165,7 +164,7 @@ public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGam
             remaining = serverValue(ServerPlayer::getUseItemRemainingTicks);
             check(serverValue(player -> player.isUsingItem() && player.getUseItemRemainingTicks() > 10), "Use is still in progress when released early; remaining=" + remaining);
             screenshot(context, "moon-charm-holding-before-early-release");
-        } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(5); }
+        } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(5); }
         check(serverValue(player -> !player.isUsingItem() && SupernaturalProgression.werewolfShape(player) == WerewolfShape.HUMAN && player.getMainHandItem().getDamageValue() == 0),
             "Releasing early completes nothing: shape human and charm unworn");
         check(!overlay(context).equals(translated(context, "message.warlockery.moon_charm.shifted", translated(context, "shape.warlockery.wolf"))), "No shift message after an early release");
@@ -180,13 +179,13 @@ public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGam
         check(serverValue(player -> SupernaturalProgression.werewolfShape(player) == from && player.getMainHandItem().getDamageValue() == expectedDamage - 1),
             "Shape and wear before the hold are " + from + "/" + (expectedDamage - 1));
         lookSky(context); clearOverlay(context);
-        if (crouch) { context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3); check(serverValue(ServerPlayer::isShiftKeyDown), "Server sees the real crouch"); }
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        if (crouch) { context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3); check(serverValue(ServerPlayer::isShiftKeyDown), "Server sees the real crouch"); }
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try {
             await(context, ServerPlayer::isUsingItem, 10, "The charm use begins natively");
             check(serverValue(player -> player.getUseItemRemainingTicks() <= 60 && player.getUseItemRemainingTicks() > 40), "Use duration is the documented three seconds");
             await(context, player -> SupernaturalProgression.werewolfShape(player) == to, HOLD, "Holding through the full use changes shape to " + to);
-        } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); if (crouch) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3); }
+        } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); if (crouch) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3); }
         awaitOverlay(context, translated(context, "message.warlockery.moon_charm.shifted", translated(context, "shape.warlockery." + to.id())));
         check(serverValue(player -> player.getMainHandItem().getDamageValue() == expectedDamage), "Each completed change wears the charm by one; expected " + expectedDamage);
         check(serverValue(player -> !player.isUsingItem() && player.getMainHandItem().is(item(CHARM))), "The charm survives the change and the use ends");
@@ -218,7 +217,7 @@ public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGam
             if (!player.getInventory().getItem(0).is(item(CHARM))) { player.getInventory().clearContent(); player.getInventory().setItem(0, new ItemStack(item(CHARM))); }
             player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges();
         });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
         check(serverValue(player -> player.getMainHandItem().is(item(CHARM))), "The Moon Charm is actually held");
     }
     private static void lookSky(final ClientGameTestContext context) { context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(-80); }); context.waitTicks(2); }
@@ -240,9 +239,9 @@ public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGam
     private void readGuide(final ClientGameTestContext context, final String section, final Map<String, Object> row) throws Exception {
         final ManualProfile profile = ManualProfile.profiles().stream().filter(book -> book.sections().contains(section)).findFirst().orElseThrow();
         server(player -> { player.getInventory().clearContent(); player.getInventory().setItem(0, new ItemStack(item(profile.id()))); player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
         lookSky(context);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
         final int pages = context.computeOnClient(client -> {
@@ -261,7 +260,7 @@ public final class MoonCharmAbilitiesClientAcceptance implements FabricClientGam
             screenshot(context, section + "-guide-" + page);
         }
         row.put("guide", Map.of("book", profile.id(), "section", section, "text", body, "pages_read", pages));
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
     }
     private static Object field(final Object object, final String name) {
         for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) try {

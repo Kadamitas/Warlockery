@@ -29,7 +29,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class SpiritTravelClientAcceptance implements FabricClientGameTest {
     private static final BlockPos HEART = new BlockPos(0, 100, 3);
@@ -60,7 +59,7 @@ public final class SpiritTravelClientAcceptance implements FabricClientGameTest 
                 readGuide(context, "ingredient_book_circle_magic", "rite_manifestation");
                 enterDream(context);
                 select(context, 1);
-                context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                 waitServer(context, player -> !SpiritWorldState.active(player), 80,
                     "Native Icy Needle use must wake the dreamer");
                 check(serverValue(player -> count(player, ModItems.ALL.get("ingredient_icy_needle").get()) == 2
@@ -85,12 +84,12 @@ public final class SpiritTravelClientAcceptance implements FabricClientGameTest 
                 });
                 world.getConnection().waitForClientboundPackets();
                 context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); });
-                context.getInput().holdKey(GLFW.GLFW_KEY_W);
+                context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                 try {
                     waitServer(context, SpiritManifestationState::active, 60,
                         "Native forward movement into the constructed portal must begin manifestation");
                 } finally {
-                    context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+                    context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                 }
                 awaitArrival(context);
                 check(serverValue(player -> SpiritWorldState.active(player)
@@ -133,7 +132,7 @@ public final class SpiritTravelClientAcceptance implements FabricClientGameTest 
                 world.getConnection().waitForClientboundPackets();
                 select(context, 3);
                 look(context, Vec3.atCenterOf(returnPortal));
-                context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                 waitServer(context, player -> !SpiritWorldState.active(player), 60,
                     "The Silver Cord guide promises that using a Spirit Portal wakes a dreamer without manifestation permission");
                 report.put("portal_wake", "PASSED");
@@ -162,7 +161,7 @@ public final class SpiritTravelClientAcceptance implements FabricClientGameTest 
             .findFirst().orElseThrow(() -> new AssertionError("A surviving needle must remain in the hotbar")));
         select(context, slot);
         context.runOnClient(client -> client.player.setXRot(-60));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
     }
 
     private static int count(final ServerPlayer player, final net.minecraft.world.item.Item item) {
@@ -180,7 +179,7 @@ public final class SpiritTravelClientAcceptance implements FabricClientGameTest 
     private void enterDream(final ClientGameTestContext context) throws Exception {
         server(player -> {
             player.setGameMode(GameType.SURVIVAL);
-            player.setInvulnerable(true);
+            player.setPermanentlyInvulnerable(true);
             player.getFoodData().setFoodLevel(10);
             player.getInventory().clearContent();
             player.getInventory().setItem(0, new ItemStack(ModItems.ALL.get("ingredient_sleeping_apple").get()));
@@ -195,11 +194,11 @@ public final class SpiritTravelClientAcceptance implements FabricClientGameTest 
         world.getConnection().waitForClientboundPackets();
         select(context, 0);
         context.runOnClient(client -> client.player.setXRot(-40));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try {
             waitServer(context, SpiritWorldState::active, 100, "Eating the actual Sleeping Apple must begin a dream session");
         } finally {
-            context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         }
         awaitArrival(context);
         check(serverValue(player -> SpiritWorldRuntime.isSpiritWorld(player.level(), player)
@@ -225,14 +224,14 @@ public final class SpiritTravelClientAcceptance implements FabricClientGameTest 
         select(context, 0);
         for (BlockPos pos : frame) {
             look(context, new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 1.001));
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             waitServer(context, player -> player.level().getBlockState(pos).is(Blocks.SNOW_BLOCK),
                 30, "Native block use must place snow frame member " + pos);
         }
         check(serverValue(player -> player.getInventory().getItem(0).isEmpty()), "Eight native frame placements consume eight snow blocks");
         select(context, 2);
         look(context, Vec3.atCenterOf(HEART.below()).add(0, 0.49, 0));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> List.of(HEART, HEART.east(), HEART.above(), HEART.east().above()).stream()
                 .allMatch(pos -> player.level().getBlockState(pos).is(ModBlocks.ALL.get("spiritportal").get()))
                 && player.getMainHandItem().is(Items.BUCKET),
@@ -259,7 +258,7 @@ public final class SpiritTravelClientAcceptance implements FabricClientGameTest 
         });
         world.getConnection().waitForClientboundPackets();
         select(context, 8);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         report.put(section + "_guide", context.computeOnClient(client -> ManualArticleCatalog.article(book, section).body().getString()));
@@ -277,13 +276,13 @@ public final class SpiritTravelClientAcceptance implements FabricClientGameTest 
             if (page > 0) ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.next").getString());
             screenshot(context, section + "-guide-" + (page + 1));
         }
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null, 30);
     }
 
     private void select(final ClientGameTestContext context, final int slot) {
         awaitArrival(context);
-        context.getInput().pressKey(GLFW.GLFW_KEY_1 + slot);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + slot);
         waitServer(context, player -> player.getInventory().getSelectedSlot() == slot, 30, "Native hotbar selection " + slot);
     }
 

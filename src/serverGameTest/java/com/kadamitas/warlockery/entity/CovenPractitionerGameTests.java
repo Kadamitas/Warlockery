@@ -193,8 +193,8 @@ public final class CovenPractitionerGameTests {
             // the "never discharges twice" and "never discharges on fall damage" assertions
             // passing vacuously because no second damage event was ever delivered.
             final float attackerHealth = attacker.getHealth();
-            crone.invulnerableTime = 0;
-            attacker.invulnerableTime = 0;
+            crone.damageCooldownTime = 0;
+            attacker.damageCooldownTime = 0;
             crone.hurtServer(helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 4.0F);
             helper.assertTrue(crone.croneCounters().wardsDischarged() == 1L,
                 "an accepted living-source hit discharges the ward exactly once");
@@ -207,8 +207,8 @@ public final class CovenPractitionerGameTests {
                 "the exact min(6, 2 + amount * 0.25) thorns retaliation is issued once");
 
             final float afterFirst = attacker.getHealth();
-            crone.invulnerableTime = 0;
-            attacker.invulnerableTime = 0;
+            crone.damageCooldownTime = 0;
+            attacker.damageCooldownTime = 0;
             crone.hurtServer(helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 4.0F);
             helper.assertTrue(crone.croneCounters().wardsDischarged() == 1L,
                 "a spent ward never discharges twice");
@@ -218,7 +218,7 @@ public final class CovenPractitionerGameTests {
             // Environmental damage neither consumes nor retaliates.
             crone.setCroneState(crone.croneState().withWork(new HedgeCroneState.Work(
                 true, java.util.Optional.empty(), java.util.Optional.empty(), 0, 0)));
-            crone.invulnerableTime = 0;
+            crone.damageCooldownTime = 0;
             crone.hurtServer(helper.getLevel(), helper.getLevel().damageSources().fall(), 3.0F);
             helper.assertTrue(crone.croneCounters().wardsDischarged() == 1L,
                 "environmental, null-source, or invalid-relation damage never discharges a ward");

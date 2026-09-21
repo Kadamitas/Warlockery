@@ -1,0 +1,11 @@
+accessWidener v2 official
+
+# Quilt Loader 0.30.1 drops its startup patches in development if its
+# transformer sees no access or side-stripping changes. These already-public
+# classes make Quilt retain its own initialization and branding hooks.
+# This development-only companion is never packaged into Warlockery's release JAR.
+accessible class net/minecraft/server/Main
+accessible class net/minecraft/client/main/Main
+accessible class net/minecraft/client/Minecraft
+accessible class net/minecraft/client/ClientBrandRetriever
+

@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:silver_ingot_from_smelting"
+        "recipes": "warlockery:silver_ingot_from_smelting"
       }
     },
     "has_ingredient_0": {

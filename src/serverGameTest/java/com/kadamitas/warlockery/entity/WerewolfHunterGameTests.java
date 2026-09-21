@@ -124,7 +124,7 @@ public final class WerewolfHunterGameTests {
 
             final Zombie attacker = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(2, 1, 0), EntitySpawnReason.EVENT);
             attacker.setNoAi(true);
-            hunter.invulnerableTime = 0;
+            hunter.damageCooldownTime = 0;
             helper.assertTrue(hunter.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 1.0F
             ), "the warrant fixture needs one real accepted hit");
@@ -156,7 +156,7 @@ public final class WerewolfHunterGameTests {
             helper.assertTrue(hunter.hunterState().quarryId().isEmpty(),
                 "expired evidence releases every quarry claim");
 
-            villager.invulnerableTime = 0;
+            villager.damageCooldownTime = 0;
             helper.assertTrue(villager.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 1.0F
             ), "the witnessed-attack fixture needs one real hit on a protected resident");
@@ -197,7 +197,7 @@ public final class WerewolfHunterGameTests {
             )));
             final Zombie attacker = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(3, 1, 1), EntitySpawnReason.EVENT);
             attacker.setNoAi(true);
-            hunter.invulnerableTime = 0;
+            hunter.damageCooldownTime = 0;
             helper.assertTrue(hunter.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 1.0F
             ), "the tracking fixture needs a real direct hit");
@@ -242,7 +242,7 @@ public final class WerewolfHunterGameTests {
                     EntityTypes.ZOMBIE, new BlockPos(2, 1, 2), EntitySpawnReason.EVENT
                 );
                 secondAttacker.setNoAi(true);
-                hunter.invulnerableTime = 0;
+                hunter.damageCooldownTime = 0;
                 helper.assertTrue(hunter.hurtServer(
                     helper.getLevel(), helper.getLevel().damageSources().mobAttack(secondAttacker), 1.0F
                 ), "the re-warn fixture needs a second real direct hit");
@@ -529,7 +529,7 @@ public final class WerewolfHunterGameTests {
                 "the refused charging transfer changes no reserve");
             hunter.setChargingCrossbow(false);
 
-            hunter.invulnerableTime = 0;
+            hunter.damageCooldownTime = 0;
             helper.assertTrue(hunter.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().playerAttack(donor), 1.0F
             ), "the hostile-donor fixture needs a real hit");

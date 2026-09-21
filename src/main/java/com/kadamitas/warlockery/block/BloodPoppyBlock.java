@@ -104,19 +104,20 @@ public final class BloodPoppyBlock extends BushBlock {
 
     @Override
     public void playerDestroy(
-        final Level level,
-        final Player player,
+        final net.minecraft.server.level.ServerLevel level,
+        final net.minecraft.server.level.ServerPlayer player,
         final BlockPos pos,
         final BlockState state,
         final @Nullable BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
+        final var serverLevel = level;
         if (destroyedWith.is(ResourceCompatibilityTags.Items.SAFE_MAGICAL_PLANT_TOOLS)) {
             super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
             return;
         }
         player.causeFoodExhaustion(0.05F);
-        if (level instanceof ServerLevel serverLevel) {
+        {
             player.hurtServer(serverLevel, player.damageSources().sweetBerryBush(), 2.0F);
             player.sendOverlayMessage(Component.translatable("message.warlockery.blood_poppy.unsafe_harvest"));
         }

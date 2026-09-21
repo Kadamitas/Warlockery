@@ -21,7 +21,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
-import org.lwjgl.glfw.GLFW;
 
 public final class RecipeBookAcceptance implements FabricClientGameTest {
     @Override public void runTest(ClientGameTestContext context) {
@@ -58,7 +57,7 @@ public final class RecipeBookAcceptance implements FabricClientGameTest {
                     player.inventoryMenu.broadcastChanges();
                 });
                 world.getConnection().waitForClientboundPackets();
-                context.getInput().pressKey(GLFW.GLFW_KEY_E);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E);
                 context.waitForScreen(InventoryScreen.class);
                 if (!context.computeOnClient(client -> book(client.gui.screen()).isVisible())) {
                     double[] point = context.computeOnClient(client -> client.gui.screen().children().stream()

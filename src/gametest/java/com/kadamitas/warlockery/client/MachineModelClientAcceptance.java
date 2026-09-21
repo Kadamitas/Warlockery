@@ -31,7 +31,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class MachineModelClientAcceptance implements FabricClientGameTest {
     private static final BlockPos SINGLE = new BlockPos(-6, 100, 0);
@@ -186,14 +185,14 @@ public final class MachineModelClientAcceptance implements FabricClientGameTest 
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         position(context, new Vec3(pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5));
         aimDown(context, pos.below());
         tracePlacement(context, pos, "before-click");
         check(serverValue(player -> player.connection.hasClientLoaded()
             && !awaitingTeleport(player) && player.isWithinBlockInteractionRange(pos.below(), 1.0)),
             "Server is ready to accept this placement input");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         for (int tick = 0; tick < 30 && !serverValue(player -> player.level().getBlockState(pos).is(ModBlocks.ALL.get(id).get())); tick++) {
             context.waitTicks(1);
         }
@@ -211,7 +210,7 @@ public final class MachineModelClientAcceptance implements FabricClientGameTest 
         });
         position(context, new Vec3(pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5));
         aimDown(context, pos);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         for (int tick = 0; tick < 30 && !serverValue(player -> player.level().getBlockState(pos).isAir()); tick++) {
             context.waitTicks(1);
         }

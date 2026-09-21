@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.*;
-import org.lwjgl.glfw.GLFW;
 
 /** Real planting, ordinary accelerated random ticks, native bonemeal, harvest and extracted Mandrake combat. */
 public final class PlantGrowthClientAcceptance implements FabricClientGameTest {
@@ -82,7 +81,7 @@ public final class PlantGrowthClientAcceptance implements FabricClientGameTest {
     private void stage(final ClientGameTestContext context) {
         world.getConnection().waitForChunksRender();
         server(player -> {
-            player.setGameMode(GameType.SURVIVAL); player.setInvulnerable(false); player.getInventory().clearContent();
+            player.setGameMode(GameType.SURVIVAL); player.setPermanentlyInvulnerable(false); player.getInventory().clearContent();
             player.level().getGameRules().set(GameRules.SPAWN_MOBS, false, player.level().getServer());
             player.level().getGameRules().set(GameRules.RANDOM_TICK_SPEED, 0, player.level().getServer());
             player.level().clockManager().setTotalTicks(player.level().dimensionType().defaultClock().orElseThrow(), 6000L);
@@ -107,7 +106,7 @@ public final class PlantGrowthClientAcceptance implements FabricClientGameTest {
         row().put("immature_drops", items());
         // Collect the real returned seed and use that stack to replant.
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); });
-        context.getInput().holdKeyFor(GLFW.GLFW_KEY_W, 12);
+        context.getInput().holdKeyFor(com.mojang.blaze3d.platform.InputConstants.KEY_W, 12);
         await(context, player -> inventoryCount(player, seed) > 0, 40, "Native walk collects the immature crop seed");
         position(context, CAMERA); selectExisting(context, seed); useBlock(context, PLANT.below(), true);
         await(context, player -> state(player).is(block(id)), 40, "Returned seed replants natively");
@@ -167,7 +166,7 @@ public final class PlantGrowthClientAcceptance implements FabricClientGameTest {
                     look(context, value(player -> player.level().getEntity(spawned).getBoundingBox().getCenter()));
                     check(context.computeOnClient(client -> client.hitResult instanceof EntityHitResult aim && aim.getEntity().getUUID().equals(spawned)),
                         "Native attack pointer must hit the extracted Mandrake");
-                    context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT); context.waitTicks(12);
+                    context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT); context.waitTicks(12);
                 }
                 check(!value(player -> alive(player, spawned)), "Native sword attacks kill the actual extracted Mandrake");
                 killed = true; rootObtained |= total(item("ingredient_mandrake_root")) > 0;
@@ -247,7 +246,7 @@ public final class PlantGrowthClientAcceptance implements FabricClientGameTest {
         if(Set.of("embermoss","leapinglily","bloodrose").contains(id)) {
             supply(context,ItemStack.EMPTY);
             context.runOnClient(client -> {client.player.setYRot(0);client.player.setXRot(0);});
-            context.getInput().holdKeyFor(GLFW.GLFW_KEY_W,14);
+            context.getInput().holdKeyFor(com.mojang.blaze3d.platform.InputConstants.KEY_W,14);
             if(id.equals("embermoss")) await(context,ServerPlayer::isOnFire,40,"Native walking contact with Ember Moss ignites player");
             if(id.equals("leapinglily")) await(context,player -> player.hasEffect(net.minecraft.world.effect.MobEffects.JUMP_BOOST)
                 && player.hasEffect(net.minecraft.world.effect.MobEffects.SPEED),40,"Native lily contact grants jump and speed");
@@ -354,12 +353,12 @@ public final class PlantGrowthClientAcceptance implements FabricClientGameTest {
     private Map<String,Integer> items(){ return value(player -> { final Map<String,Integer> result=new TreeMap<>(); for(int slot=0;slot<player.getInventory().getContainerSize();slot++){ ItemStack stack=player.getInventory().getItem(slot); if(!stack.isEmpty()) result.merge(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(),stack.getCount(),Integer::sum); } player.level().getEntitiesOfClass(ItemEntity.class,new AABB(PLANT).inflate(12)).forEach(drop -> result.merge(BuiltInRegistries.ITEM.getKey(drop.getItem().getItem()).toString(),drop.getItem().getCount(),Integer::sum)); return result; }); }
     private void plant(ClientGameTestContext context,Item item,BlockPos support,String id){ plant(context,item,support,id,PLANT); }
     private void plant(ClientGameTestContext context,Item item,BlockPos support,String id,BlockPos target){ supply(context,new ItemStack(item)); useBlock(context,support,true); await(context,player -> player.level().getBlockState(target).is(block(id)),60,"Native planting places "+id); }
-    private void selectExisting(ClientGameTestContext context,Item item){ server(player -> { for(int slot=0;slot<player.getInventory().getContainerSize();slot++) if(player.getInventory().getItem(slot).is(item)){ ItemStack old=player.getInventory().getItem(0); player.getInventory().setItem(0,player.getInventory().getItem(slot)); player.getInventory().setItem(slot,old); break; } player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); }); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(3); }
-    private void supply(ClientGameTestContext context,ItemStack stack){ server(player -> { player.getInventory().setItem(0,stack);player.getInventory().setSelectedSlot(0);player.inventoryMenu.broadcastChanges(); }); world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1);context.waitTicks(3); }
+    private void selectExisting(ClientGameTestContext context,Item item){ server(player -> { for(int slot=0;slot<player.getInventory().getContainerSize();slot++) if(player.getInventory().getItem(slot).is(item)){ ItemStack old=player.getInventory().getItem(0); player.getInventory().setItem(0,player.getInventory().getItem(slot)); player.getInventory().setItem(slot,old); break; } player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); }); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(3); }
+    private void supply(ClientGameTestContext context,ItemStack stack){ server(player -> { player.getInventory().setItem(0,stack);player.getInventory().setSelectedSlot(0);player.inventoryMenu.broadcastChanges(); }); world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);context.waitTicks(3); }
     private Vec3 top(BlockPos pos){return value(player -> {var shape=player.level().getBlockState(pos).getShape(player.level(),pos);return new Vec3(pos.getX()+.5,pos.getY()+(shape.isEmpty()?1:shape.bounds().maxY)-.005,pos.getZ()+.5);});}
     private Vec3 outline(BlockPos pos){return value(player -> {var shape=player.level().getBlockState(pos).getShape(player.level(),pos);return shape.isEmpty()?Vec3.atCenterOf(pos):shape.bounds().getCenter().add(pos.getX(),pos.getY(),pos.getZ());});}
-    private void useBlock(ClientGameTestContext context,BlockPos pos,boolean placement){ look(context,placement && pos.getY()<100 ? top(pos) : outline(pos)); check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(pos)),"Native pointer must target "+pos); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3); }
-    private void breakBlock(ClientGameTestContext context,BlockPos pos){ look(context,outline(pos));check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(pos)),"Native harvest pointer must target plant");context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);try{ await(context,player -> player.level().getBlockState(pos).isAir(),240,"Native attack removes plant"); }finally{context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);}context.waitTicks(2); }
+    private void useBlock(ClientGameTestContext context,BlockPos pos,boolean placement){ look(context,placement && pos.getY()<100 ? top(pos) : outline(pos)); check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(pos)),"Native pointer must target "+pos); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3); }
+    private void breakBlock(ClientGameTestContext context,BlockPos pos){ look(context,outline(pos));check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(pos)),"Native harvest pointer must target plant");context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);try{ await(context,player -> player.level().getBlockState(pos).isAir(),240,"Native attack removes plant"); }finally{context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);}context.waitTicks(2); }
     private void position(ClientGameTestContext context,Vec3 point){
         server(player -> {player.setDeltaMovement(Vec3.ZERO);player.teleportTo(point.x,point.y,point.z);});
         world.getConnection().waitForClientboundPackets();
@@ -382,17 +381,17 @@ public final class PlantGrowthClientAcceptance implements FabricClientGameTest {
     private <T>T value(Function<ServerPlayer,T> action){AtomicReference<T> result=new AtomicReference<>();server(player -> result.set(action.apply(player)));return result.get();}
     private Map<String,Object> row(){return results.get(active);}
     private void shot(ClientGameTestContext context,String name)throws Exception{ManualClientAcceptance.saveScreenshot(context,evidence,active+"-"+name,screenshots);}
-    private static void release(ClientGameTestContext context){context.getInput().releaseKey(GLFW.GLFW_KEY_W);context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);}
+    private static void release(ClientGameTestContext context){context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);}
     private void write()throws Exception{Files.writeString(evidence.resolve("plant-growth.json"),new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("results",results,"screenshots",screenshots,"failures",failures,"all_plant_abilities_certified",false)));}
     private static void check(boolean ok,String message){if(!ok)throw new AssertionError(message);}
     private static String guide(String id){return switch(id){case "garlicplant" -> "plant_garlic";case "embermoss" -> "plant_ember_moss";case "glintweed" -> "plant_glint_weed";case "spanishmoss" -> "plant_spanish_moss";case "somniancotton" -> "plant_somnian_cotton";case "leapinglily" -> "plant_leaping_lily";case "bloodrose" -> "plant_blood_rose";case "grassper" -> "plant_grassper";case "crittersnare" -> "plant_critter_snare";case "voidbramble" -> "plant_void_bramble";case "plantmine" -> "device_plant_mine";default -> ContentCatalog.CROPS.contains(id)||id.equals("bramble")||id.equals("pitgrass")?"plant_"+id:id;};}
     private void readGuide(ClientGameTestContext context,String section)throws Exception{
         Optional<ManualProfile> found=ManualProfile.profiles().stream().filter(book -> book.sections().contains(section)).findFirst();
         if(found.isEmpty()){row().put("guide_status","NO_INDEXED_ENTRY: "+section);return;}
-        ManualProfile profile=found.orElseThrow();supply(context,new ItemStack(item(profile.id())));context.runOnClient(client -> client.player.setXRot(-75));context.waitTicks(2);context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);context.waitForScreen(ManualScreen.class);ManualClientAcceptance.selectSection(context,section);
+        ManualProfile profile=found.orElseThrow();supply(context,new ItemStack(item(profile.id())));context.runOnClient(client -> client.player.setXRot(-75));context.waitTicks(2);context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);context.waitForScreen(ManualScreen.class);ManualClientAcceptance.selectSection(context,section);
         int pages=context.computeOnClient(client -> {try{var method=ManualScreen.class.getDeclaredMethod("bodyPages",ManualLayout.class,String.class);method.setAccessible(true);return ((List<?>)method.invoke(client.gui.screen(),ManualLayout.calculate(client.gui.screen().width,client.gui.screen().height),section)).size();}catch(ReflectiveOperationException e){throw new AssertionError(e);}});
         String body=context.computeOnClient(client -> ManualArticleCatalog.article(profile,section).body().getString());
         for(int page=0;page<pages;page++){if(page>0)ManualClientAcceptance.clickButton(context,Component.translatable("screen.warlockery.manual.next").getString());shot(context,"guide-"+page);}
-        row().put("guide",Map.of("book",profile.id(),"section",section,"body",body,"pages",pages));context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);context.waitFor(client -> client.gui.screen()==null);
+        row().put("guide",Map.of("book",profile.id(),"section",section,"body",body,"pages",pages));context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);context.waitFor(client -> client.gui.screen()==null);
     }
 }

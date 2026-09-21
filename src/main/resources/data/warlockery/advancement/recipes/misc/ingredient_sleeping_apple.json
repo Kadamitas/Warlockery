@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_sleeping_apple"
+        "recipes": "warlockery:ingredient_sleeping_apple"
       }
     },
     "has_ingredient_0": {

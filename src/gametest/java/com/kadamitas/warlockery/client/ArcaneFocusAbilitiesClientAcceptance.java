@@ -50,7 +50,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final Vec3 START = new Vec3(0.5, 100, -2);
@@ -391,7 +390,7 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
     }
     private void reset(final ClientGameTestContext context, final MagicPath path) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
         }
         server(player -> {
             player.level().getEntities((Entity) null, AREA, entity -> entity != player).forEach(Entity::discard);
@@ -411,7 +410,7 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets(); world.getConnection().waitForChunksRender();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(5);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(5);
         cases.get(activeCase).put("initial_path", path == null ? "none" : path.id());
     }
     private UUID spawn(final EntityType<?> type, final Vec3 pos) {
@@ -431,7 +430,7 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
             look(context, value(player -> living(player, target).getBoundingBox().getCenter()));
             check(context.computeOnClient(client -> client.hitResult instanceof EntityHitResult hit && hit.getEntity().getUUID().equals(target)),
                 "Native focus pointer hits intended creature");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         });
     }
     private void block(final ClientGameTestContext context, final BlockPos pos, final boolean secondary) {
@@ -440,7 +439,7 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
             look(context, new Vec3(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5));
             check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(pos)),
                 "Native focus pointer hits intended block");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         });
     }
     private void air(final ClientGameTestContext context, final boolean secondary, final float pitch) {
@@ -448,16 +447,16 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
             context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(pitch); }); context.waitTicks(3);
             check(context.computeOnClient(client -> client.hitResult != null && client.hitResult.getType() == HitResult.Type.MISS),
                 "Native personal focus use aims at empty air");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         });
     }
     private void secondary(final ClientGameTestContext context, final boolean secondary, final Runnable action) {
         await(context, player -> player.connection.hasClientLoaded() && !awaitingTeleport(player),
             "Native connection and teleport acknowledgement are ready before Focus input");
         context.waitTicks(5);
-        if (secondary) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        if (secondary) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         try { context.waitTicks(2); action.run(); context.waitTicks(2); }
-        finally { if (secondary) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+        finally { if (secondary) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
     }
     private static void look(final ClientGameTestContext context, final Vec3 target) {
         context.runOnClient(client -> {
@@ -506,18 +505,18 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
         context.runOnClient(client -> client.player.setXRot(15));
         waitForHud(context, 120);
         screenshot(context, "focus-first-person-full-reserve");
-        context.getInput().pressKey(GLFW.GLFW_KEY_2);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
         context.waitFor(client -> client.player.getMainHandItem().isEmpty());
         context.waitTicks(3);
         check(!manaVisible(context), "Mana bar disappears when the Focus is put away");
         screenshot(context, "focus-put-away-no-mana-bar");
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.waitFor(client -> client.player.getMainHandItem().is(ModItems.ALL.get("arcane_focus").get()));
-        context.getInput().pressKey(GLFW.GLFW_KEY_F);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F);
         context.waitFor(client -> client.player.getOffhandItem().is(ModItems.ALL.get("arcane_focus").get()));
         check(manaVisible(context), "Holding the Focus in the off hand also shows the mana bar");
         screenshot(context, "focus-off-hand-mana-bar");
-        context.getInput().pressKey(GLFW.GLFW_KEY_F);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F);
         context.waitFor(client -> client.player.getMainHandItem().is(ModItems.ALL.get("arcane_focus").get()));
         paid(context, ActionKind.SELF, () -> air(context, false, -65), player -> player.hasEffect(MobEffects.INVISIBILITY),
             "Normal casting still spends reserve and applies its power");
@@ -548,17 +547,17 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
         });
         context.runOnClient(client -> client.player.setXRot(15));
         screenshot(context, "focus-switch-name-only");
-        context.getInput().pressKey(GLFW.GLFW_KEY_E);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E);
         context.waitForScreen(net.minecraft.client.gui.screens.inventory.InventoryScreen.class);
         screenshot(context, "focus-inventory-model");
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
-        context.getInput().pressKey(GLFW.GLFW_KEY_F5);
-        context.getInput().pressKey(GLFW.GLFW_KEY_F5);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5);
         context.runOnClient(client -> client.player.setXRot(0));
         context.waitTicks(4);
         screenshot(context, "focus-third-person-front");
-        context.getInput().pressKey(GLFW.GLFW_KEY_F5);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5);
         note("Native cast has no success overlay; switching shows only the path name. Full/half/empty HUD and first-person/inventory/third-person Focus model captured. Half and empty resources are staged presentation inputs, not claimed gameplay recharge.");
     }
     private void waitForHud(final ClientGameTestContext context, final int resource) {
@@ -599,7 +598,7 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
         guides.put(id + "_opening", context.computeOnClient(client -> Map.of("book", profile.id(),
             "held_item_class", client.player.getMainHandItem().getItem().getClass().getName(),
             "hit", String.valueOf(client.hitResult), "screen", String.valueOf(client.gui.screen()))));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try {
             context.waitForScreen(ManualScreen.class);
         } catch (Throwable failure) {
@@ -630,7 +629,7 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
             screenshot(context, id + "-book-" + page);
         }
         guides.put(id, Map.of("book", profile.id(), "body", body, "pages_read", pages));
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
     }
     private void infernalPower(final ClientGameTestContext context, final InfernalPower power) throws Exception {
@@ -680,7 +679,7 @@ public final class ArcaneFocusAbilitiesClientAcceptance implements FabricClientG
                 paid(context, ActionKind.SELF, () -> air(context, false, -45),
                     player -> player.getEffect(MobEffects.JUMP_BOOST) != null && player.getEffect(MobEffects.JUMP_BOOST).getAmplifier() == 2,
                     "Native rabbit power grants Jump Boost III above its passive Jump Boost I");
-                context.getInput().holdKeyFor(GLFW.GLFW_KEY_SPACE, 2);
+                context.getInput().holdKeyFor(com.mojang.blaze3d.platform.InputConstants.KEY_SPACE, 2);
                 double peak = value(ServerPlayer::getY);
                 for (int tick = 0; tick < 60; tick++) {
                     context.waitTicks(1);

@@ -26,13 +26,14 @@ public final class DisturbedCottonBlock extends Block {
 
     @Override
     public void playerDestroy(
-        final Level level,
-        final Player player,
+        final net.minecraft.server.level.ServerLevel level,
+        final net.minecraft.server.level.ServerPlayer player,
         final BlockPos pos,
         final BlockState state,
         final @Nullable BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
+        final var serverLevel = level;
         if (!level.isClientSide() && qualifies(player, level)) {
             player.awardStat(Stats.BLOCK_MINED.get(this));
             player.causeFoodExhaustion(0.005F);

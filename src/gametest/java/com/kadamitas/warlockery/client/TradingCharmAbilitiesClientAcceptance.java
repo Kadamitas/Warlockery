@@ -40,7 +40,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Native Beast-Speech and Silver-Tongue trades with real offerings, plus a passive comparison of demon aggression with and without the carried charm. */
 public final class TradingCharmAbilitiesClientAcceptance implements FabricClientGameTest {
@@ -90,7 +89,7 @@ public final class TradingCharmAbilitiesClientAcceptance implements FabricClient
                     run(context, "silver_tongue_trade", row -> trade(context, row, SILVER, imp, new ItemStack(Items.GOLD_INGOT, 2), BeastSpeechTradeCatalog.Partner.DEMON, "silver-tongue"));
                     run(context, "demon_pacification", row -> pacification(context, row));
                 } finally {
-                    context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                    context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                     observation = null; world = null;
                 }
             }
@@ -224,7 +223,7 @@ public final class TradingCharmAbilitiesClientAcceptance implements FabricClient
             player.removeAllEffects(); player.clearFire(); player.setHealth(200);
             player.teleportTo(PEN_PLAYER.x, PEN_PLAYER.y, PEN_PLAYER.z); player.setDeltaMovement(Vec3.ZERO);
         });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(3);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(3);
         check(serverValue(player -> player.getMainHandItem().isEmpty() && player.getInventory().contains(new ItemStack(item(SILVER))) == carried), "Charm carried state is exactly " + carried);
         final UUID demon = serverValue(player -> mob(player, "warlockery:demon", PEN_DEMON, false).getUUID());
         world.getConnection().waitForClientboundPackets(); context.waitTicks(3);
@@ -236,7 +235,7 @@ public final class TradingCharmAbilitiesClientAcceptance implements FabricClient
         // Honest prerequisite: one real bare-hand punch makes the actor the demon's recorded aggressor.
         final float demonHealth = serverValue(player -> mob(player, demon).getHealth());
         aim(context, demon);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         await(context, player -> mob(player, demon).getHealth() < demonHealth && player.getUUID().toString().equals(hierarchyAggressor(mob(player, demon))), 20,
             "A real punch lands and the demon records the actor as its aggressor");
         provocation.put("aggressor_after_punch", serverValue(player -> hierarchyAggressor(mob(player, demon))));
@@ -307,12 +306,12 @@ public final class TradingCharmAbilitiesClientAcceptance implements FabricClient
             player.setItemSlot(EquipmentSlot.OFFHAND, offhand.copy());
             player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges();
         });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
         check(serverValue(player -> player.getMainHandItem().is(item(charm)) && ItemStack.isSameItem(player.getOffhandItem(), offhand)), "Charm and offering are actually in opposite hands");
     }
     private void useOn(final ClientGameTestContext context, final UUID subject) {
         aim(context, subject);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
     }
     private void aim(final ClientGameTestContext context, final UUID subject) {
         world.getConnection().waitForClientboundPackets();
@@ -347,9 +346,9 @@ public final class TradingCharmAbilitiesClientAcceptance implements FabricClient
     private void readGuide(final ClientGameTestContext context, final String section, final Map<String, Object> row) throws Exception {
         final ManualProfile profile = ManualProfile.profiles().stream().filter(book -> book.sections().contains(section)).findFirst().orElseThrow();
         server(player -> { player.getInventory().clearContent(); player.getInventory().setItem(0, new ItemStack(item(profile.id()))); player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(-80); }); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
         final int pages = context.computeOnClient(client -> {
@@ -368,7 +367,7 @@ public final class TradingCharmAbilitiesClientAcceptance implements FabricClient
         }
         row.put("guide", Map.of("book", profile.id(), "section", section, "text", body, "pages_read", pages,
             "guide_gap", "The guide does not describe carried-charm demon pacification or charm wear; those come from the item code and are recorded as observed."));
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
     }
     private static Object field(final Object object, final String name) {
         for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) try {

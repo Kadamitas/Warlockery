@@ -29,7 +29,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Renders every registered creature (plus Ent variants and both vampire variants) from five angles; capture is not approval. */
 public final class MobVisualRosterAcceptance implements FabricClientGameTest {
@@ -102,7 +101,7 @@ public final class MobVisualRosterAcceptance implements FabricClientGameTest {
             throw new AssertionError("Mob visual roster evidence: " + evidence, failure);
         } finally {
             context.runOnClient(client -> client.options.fov().set(originalFov));
-            if (context.computeOnClient(client -> client.gui.hud.isHidden()) != originalHud) context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+            if (context.computeOnClient(client -> client.gui.hud.isHidden()) != originalHud) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
         }
     }
 
@@ -125,8 +124,8 @@ public final class MobVisualRosterAcceptance implements FabricClientGameTest {
         });
         world.getConnection().waitForClientboundPackets();
         world.getConnection().waitForChunksRender();
-        for (int i = 0; i < 3 && !context.computeOnClient(c -> c.options.getCameraType().isFirstPerson()); i++) context.getInput().pressKey(GLFW.GLFW_KEY_F5);
-        if (!context.computeOnClient(client -> client.gui.hud.isHidden())) context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+        for (int i = 0; i < 3 && !context.computeOnClient(c -> c.options.getCameraType().isFirstPerson()); i++) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5);
+        if (!context.computeOnClient(client -> client.gui.hud.isHidden())) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
     }
 
     private void creature(final ClientGameTestContext context, final String key) throws Exception {

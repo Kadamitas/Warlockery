@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_bone_needle"
+        "recipes": "warlockery:ingredient_bone_needle"
       }
     },
     "has_ingredient_0": {

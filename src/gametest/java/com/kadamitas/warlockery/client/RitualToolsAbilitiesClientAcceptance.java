@@ -39,7 +39,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Rendered native-input checks for ritual utility items with stateful or contextual abilities. */
 public final class RitualToolsAbilitiesClientAcceptance implements FabricClientGameTest {
@@ -145,9 +144,9 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_9);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_9);
         look(context, new Vec3(0.5, 96, 5));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         check(context.computeOnClient(client -> section.equals(field(client.gui.screen(), "selectedSection"))),
@@ -174,7 +173,7 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
         }
         row.put("book_pages_read", pages);
         closeScreen(context);
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         waitServer(context, player -> player.getInventory().getSelectedSlot() == 0, 30,
             "Native hotbar input must return from the book to the ritual tool");
         return body;
@@ -198,7 +197,7 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
         });
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(0.5, 104, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(4);
         check(serverValue(player -> player.getMainHandItem().getCount() == 2),
             "Icy Needle must refuse an ordinary waking use without being consumed");
@@ -211,7 +210,7 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
             player.addEffect(new MobEffectInstance(MobEffects.SPEED, 1200));
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.getMainHandItem().getCount() == 1
                 && player.level().getEntity(nightmare) == null
                 && !player.hasEffect(MobEffects.DARKNESS) && !player.hasEffect(MobEffects.NAUSEA)
@@ -261,7 +260,7 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
             30, "Native Bat Ball interaction must capture the exact staged bat and record one occupant");
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(0.5, 103, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> BatBallItem.captured(player.getMainHandItem()) == 0
                 && entities(player, "minecraft:bat").size() == 1,
             30, "Native filled Bat Ball use must release the stored bat and empty the reusable ball");
@@ -282,24 +281,24 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
         });
         world.getConnection().waitForClientboundPackets();
         if (initiallyBoundKind) {
-            context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
             context.waitFor(client -> client.player.isCrouching(), 30);
         }
         try {
             look(context, Vec3.atCenterOf(WAYSTONE_FLOOR).add(0, 0.49, 0));
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             waitServer(context, player -> player.getMainHandItem().is(ModItems.ALL.get("ingredient_waystone_bound").get())
                     && WaystoneState.read(player.getMainHandItem()).filter(location ->
                         location.position().equals(WAYSTONE_DESTINATION)
                             && location.dimension().equals(player.level().dimension().identifier())).isPresent(),
                 30, "Native Waystone block use must record the clicked floor's stand position and actual dimension");
         } finally {
-            context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         }
         server(player -> player.teleportTo(-3.5, 100, 0.5));
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(-3.5, 103, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.position().distanceToSqr(Vec3.atBottomCenterOf(WAYSTONE_DESTINATION)) < 0.04,
             30, "Native Bound Waystone use must teleport the player to the recorded same-dimension destination");
         check(serverValue(player -> player.getMainHandItem().is(ModItems.ALL.get("ingredient_waystone_bound").get())
@@ -328,7 +327,7 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
             30, "Native plain-Waystone entity use must create a Blooded Waystone bound to the exact live target");
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(0.5, 104, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(4);
         check(serverValue(player -> player.getMainHandItem().is(ModItems.ALL.get("ingredient_waystone_creature_bound").get())
                 && player.getMainHandItem().getCount() == 1 && player.level().getEntity(cow) != null),
@@ -345,14 +344,14 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
         });
         world.getConnection().waitForClientboundPackets();
         look(context, Vec3.atCenterOf(FLUID_POS.below()).add(0, 0.49, 0));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getFluidState(FLUID_POS).getType() == ModFluids.SPIRIT_SOURCE.get()
                 && player.level().getFluidState(FLUID_POS).isSource()
                 && player.getMainHandItem().is(Items.BUCKET),
             30, "Native Spirit Bucket use must place a real source of Flowing Spirit and leave an empty bucket");
         world.getConnection().waitForClientboundPackets();
         look(context, Vec3.atCenterOf(FLUID_POS));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.getMainHandItem().is(ModItems.ALL.get("bucketspirit").get())
                 && player.getMainHandItem().getCount() == 1
                 && !player.level().getFluidState(FLUID_POS).isSource(),
@@ -383,7 +382,7 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
         look(context, position);
         context.waitFor(client -> client.hitResult instanceof EntityHitResult hit
             && hit.getEntity().getUUID().equals(target), 30);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
     }
 
     private void resetArena() {
@@ -436,7 +435,7 @@ public final class RitualToolsAbilitiesClientAcceptance implements FabricClientG
 
     private static void closeScreen(final ClientGameTestContext context) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
             context.waitFor(client -> client.gui.screen() == null, 30);
         }
     }

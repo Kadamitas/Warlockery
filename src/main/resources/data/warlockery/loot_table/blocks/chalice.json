@@ -10,15 +10,18 @@
             {
               "type": "minecraft:item",
               "name": "warlockery:ingredient_chalice_full",
-              "conditions": [
-                {
-                  "condition": "minecraft:block_state_property",
-                  "block": "warlockery:chalice",
-                  "properties": {
-                    "filled": "true"
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
+                  {
+                    "type": "minecraft:match_block",
+                    "blocks": "warlockery:chalice",
+                    "state": {
+                      "filled": "true"
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             {
               "type": "minecraft:item",
@@ -27,11 +30,14 @@
           ]
         }
       ],
-      "conditions": [
-        {
-          "condition": "minecraft:survives_explosion"
-        }
-      ]
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:survives_explosion"
+          }
+        ]
+      }
     }
   ],
   "random_sequence": "warlockery:blocks/chalice"

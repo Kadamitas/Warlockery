@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:blood_link_doll"
+        "recipes": "warlockery:blood_link_doll"
       }
     },
     "has_ingredient_0": {

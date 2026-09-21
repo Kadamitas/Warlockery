@@ -53,7 +53,6 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Native Cane Sword, bolt and Wooden Stake acceptance. Every toggle, walk, melee strike and bow shot comes
@@ -113,10 +112,10 @@ public final class CaneSwordAndProjectilesClientAcceptance implements FabricClie
                         failures.add(id + ": " + failure);
                         try { screenshot(context, id + "-failure"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
                         if (observation != null) row.put("arrow_observation", serverValue(player -> observation.report()));
                         observation = null; write(false);
                     }
@@ -406,23 +405,23 @@ public final class CaneSwordAndProjectilesClientAcceptance implements FabricClie
 
     /** Bolts are crossbow ammunition only: hold right-click until the crossbow is charged, release, then click once to fire. */
     private Map<String, Object> fire(final ClientGameTestContext context) {
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try {
             for (int tick = 0; tick < 60 && !serverValue(player -> player.isUsingItem() && player.getTicksUsingItem() >= CrossbowItem.getChargeDuration(player.getMainHandItem(), player) + 2); tick++) context.waitTicks(1);
-        } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         context.waitTicks(2);
         final Map<String, Object> charge = serverValue(player -> Map.of("charged", CrossbowItem.isCharged(player.getMainHandItem()),
-            "charged_projectiles", player.getMainHandItem().getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).itemCopies().stream()
+            "charged_projectiles", player.getMainHandItem().getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).itemCopies()
                 .map(stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()).toString()).toList()));
         check(Boolean.TRUE.equals(charge.get("charged")), "Native hold-and-release loads the crossbow; state=" + charge);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
         return charge;
     }
 
     /** Bow refusal control: a full draw with only bolts carried fires nothing and spends nothing. */
     private void drawBow(final ClientGameTestContext context) {
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-        try { context.waitTicks(25); } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+        try { context.waitTicks(25); } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         context.waitTicks(5);
     }
 
@@ -436,7 +435,7 @@ public final class CaneSwordAndProjectilesClientAcceptance implements FabricClie
             worn.forEach(player::setItemSlot);
             player.setItemSlot(EquipmentSlot.OFFHAND, ammo.copyWithCount(count)); player.inventoryMenu.broadcastChanges();
         });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
         check(serverValue(player -> player.getMainHandItem().is(weapon) && player.getOffhandItem().getCount() == count && !CrossbowItem.isCharged(player.getMainHandItem())),
             "Weapon in the main hand (uncharged) and ammunition in the off hand");
     }
@@ -454,7 +453,7 @@ public final class CaneSwordAndProjectilesClientAcceptance implements FabricClie
             aimEntity(context, target.getUUID());
             final Map<String, Object> click = new LinkedHashMap<>(pointers.getLast());
             click.put("attempt", attempt);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
             for (int tick = 0; tick < 15 && serverValue(player -> target.getHealth()) >= before && serverValue(player -> target.isAlive()); tick++) context.waitTicks(1);
             after = serverValue(player -> target.isAlive() ? target.getHealth() : 0);
             click.put("health_after_click", after); attempts.add(click);
@@ -471,8 +470,8 @@ public final class CaneSwordAndProjectilesClientAcceptance implements FabricClie
         position(context, START);
         context.runOnClient(client -> { client.player.setYRot(180); client.player.setXRot(0); }); context.waitTicks(3);
         final Vec3 from = serverValue(ServerPlayer::position);
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
-        try { context.waitTicks(20); } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+        try { context.waitTicks(20); } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         context.waitTicks(3);
         final Vec3 to = serverValue(ServerPlayer::position);
         check(Math.abs(to.y - from.y) < .01 && to.z < from.z - .5, "Native walking crosses the level arena floor toward -z; from=" + from + " to=" + to);
@@ -509,16 +508,16 @@ public final class CaneSwordAndProjectilesClientAcceptance implements FabricClie
     private static ItemStack modItem(final String id) { return new ItemStack(ModItems.ALL.get(id).get()); }
     private void supply(final ClientGameTestContext context, final ItemStack item) {
         server(player -> { player.getInventory().clearContent(); player.getInventory().setItem(0, item); player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
     }
     private void position(final ClientGameTestContext context, final Vec3 point) {
         server(player -> { player.teleportTo(point.x, point.y, point.z); player.setDeltaMovement(Vec3.ZERO); });
         world.getConnection().waitForClientboundPackets(); context.waitTicks(3);
     }
-    private static void use(final ClientGameTestContext context) { context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3); }
+    private static void use(final ClientGameTestContext context) { context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3); }
     private static void crouchUse(final ClientGameTestContext context) {
-        context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3);
-        try { use(context); } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2); }
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3);
+        try { use(context); } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(2); }
     }
     private void lookUp(final ClientGameTestContext context) {
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(-70); }); context.waitTicks(2);
@@ -599,7 +598,7 @@ public final class CaneSwordAndProjectilesClientAcceptance implements FabricClie
         final ManualProfile profile = indexed.orElseThrow();
         supply(context, modItem(profile.id()));
         context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         clientWait(context, client -> client.gui.screen() instanceof ManualScreen, 60, "manual screen opens after native use of " + profile.id());
         selectGuideSection(context, profile, id, row);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString());
@@ -617,7 +616,7 @@ public final class CaneSwordAndProjectilesClientAcceptance implements FabricClie
             screenshot(context, row.get("item") + "-" + id + "-book-" + page);
         }
         row.put("guide", Map.of("book", profile.id(), "section", id, "text", body, "pages_read", pages)); row.put("guide_status", "PASSED");
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         clientWait(context, client -> client.gui.screen() == null, 40, "manual closes after Escape");
     }
 

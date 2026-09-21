@@ -1,10 +1,5 @@
 {
   "type": "minecraft:block",
-  "functions": [
-    {
-      "function": "minecraft:explosion_decay"
-    }
-  ],
   "pools": [
     {
       "entries": [
@@ -16,34 +11,42 @@
       "rolls": 1
     },
     {
-      "conditions": [
-        {
-          "block": "warlockery:dreamroot",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "age": "7"
-          }
-        }
-      ],
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "warlockery:seedsdreamroot",
+          "modifier": [
             {
               "enchantment": "minecraft:fortune",
               "formula": "minecraft:binomial_with_bonus_count",
-              "function": "minecraft:apply_bonus",
               "parameters": {
                 "extra": 3,
                 "probability": 0.5714286
-              }
+              },
+              "type": "minecraft:apply_bonus"
             }
-          ],
-          "name": "warlockery:seedsdreamroot"
+          ]
         }
       ],
-      "rolls": 1
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:match_block",
+            "blocks": "warlockery:dreamroot",
+            "state": {
+              "age": "7"
+            }
+          }
+        ]
+      }
     }
   ],
-  "random_sequence": "warlockery:blocks/dreamroot"
+  "random_sequence": "warlockery:blocks/dreamroot",
+  "modifier": [
+    {
+      "type": "minecraft:explosion_decay"
+    }
+  ]
 }

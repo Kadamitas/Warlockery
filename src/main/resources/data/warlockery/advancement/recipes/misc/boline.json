@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:boline"
+        "recipes": "warlockery:boline"
       }
     },
     "has_ingredient_0": {

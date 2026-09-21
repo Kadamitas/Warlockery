@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.glfw.GLFW;
 
 public final class SupernaturalControls {
     private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
@@ -15,14 +14,14 @@ public final class SupernaturalControls {
     );
     private static final KeyMapping CYCLE_POWER = new KeyMapping(
         "key.warlockery.cycle_power",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_V,
+        InputConstants.Type.KEYBOARD,
+        com.mojang.blaze3d.platform.InputConstants.KEY_V,
         CATEGORY
     );
     private static final KeyMapping ACTIVATE_POWER = new KeyMapping(
         "key.warlockery.activate_power",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_G,
+        InputConstants.Type.KEYBOARD,
+        com.mojang.blaze3d.platform.InputConstants.KEY_G,
         CATEGORY
     );
 

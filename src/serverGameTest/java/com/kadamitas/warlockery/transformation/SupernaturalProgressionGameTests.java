@@ -413,7 +413,7 @@ public final class SupernaturalProgressionGameTests {
         final int cost = SupernaturalAbilityRules.sunlightBloodCost(5, maximum);
         SupernaturalProgression.setResource(player, SupernaturalProgression.Path.VAMPIRE, cost);
         player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 200));
-        player.invulnerableTime = 0;
+        player.damageCooldownTime = 0;
         final float health = player.getHealth();
         final var source = VampireDamageTypes.sunlight(helper.getLevel());
         helper.assertFalse(source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE), "owned sunlight is not fire damage");
@@ -423,14 +423,14 @@ public final class SupernaturalProgressionGameTests {
             "a successful Sun Resistance blood payment prevents owned sunlight damage");
         helper.assertValueEqual(SupernaturalProgression.resource(player, SupernaturalProgression.Path.VAMPIRE), 0,
             "Sun Resistance consumes its exact blood payment");
-        player.invulnerableTime = 0;
+        player.damageCooldownTime = 0;
         player.tickCount = 60;
         SupernaturalState.applyVampireSunlight(player, 5);
         helper.assertTrue(player.getHealth() < health, "Fire Resistance does not cancel owned sunlight");
 
         SupernaturalProgression.setResource(player, SupernaturalProgression.Path.VAMPIRE, maximum);
         player.setHealth(player.getMaxHealth());
-        player.invulnerableTime = 0;
+        player.damageCooldownTime = 0;
         helper.assertTrue(player.hurtServer(helper.getLevel(), player.damageSources().generic(), 50.0F),
             "an ordinary lethal hit still lands on a vampire protected by the death ward");
         helper.assertTrue(player.isAlive(), "the supernatural death ward preserves the vampire");
@@ -447,7 +447,7 @@ public final class SupernaturalProgressionGameTests {
         helper.assertTrue(wardReserve < cost, "the lethal regression begins below the Sun Resistance payment");
         SupernaturalProgression.setResource(player, SupernaturalProgression.Path.VAMPIRE, wardReserve);
         player.setHealth(0.5F);
-        player.invulnerableTime = 0;
+        player.damageCooldownTime = 0;
         player.tickCount = 80;
         SupernaturalState.applyVampireSunlight(player, 5);
         helper.assertFalse(player.isAlive(), "owned sunlight bypasses the vampire death ward and kills");

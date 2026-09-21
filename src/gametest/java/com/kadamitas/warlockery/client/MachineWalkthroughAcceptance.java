@@ -40,7 +40,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
-import org.lwjgl.glfw.GLFW;
 
 public final class MachineWalkthroughAcceptance implements FabricClientGameTest {
     private static final BlockPos MACHINE = new BlockPos(0, 80, 0);
@@ -221,7 +220,8 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
             : new com.kadamitas.warlockery.util.FluidContents(water.variant(), buckets * 1000);
         final List<ItemStack> witness = serverValue(player -> winningInputs(match, profile, fluid, result));
         final List<Integer> slots = MachineRecipeSlotPlan.inputSlots(profile, recipe);
-        final int coalDuration = serverValue(player -> player.level().fuelValues().burnDuration(new ItemStack(Items.COAL)));
+        final int coalDuration = serverValue(player -> com.kadamitas.warlockery.block.entity.CookingFuels
+            .burnDuration(player.level(), new ItemStack(Items.COAL), machine(player)));
         check(coalDuration > 0, "Loaded fuel registry defines a positive coal burn duration");
         final int fuelCount = recipe.requiresFuel() ? Math.ceilDiv(recipe.processingTime(), coalDuration) : 0;
         server(player -> {
@@ -253,14 +253,14 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
         for (int bucket = 0; bucket < buckets; bucket++) {
             server(player -> { player.getInventory().setItem(1, new ItemStack(Items.WATER_BUCKET)); player.inventoryMenu.broadcastChanges(); });
             world.getConnection().waitForClientboundPackets();
-            context.getInput().pressKey(GLFW.GLFW_KEY_2);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
             aim(context, MACHINE);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitFor(client -> client.player.getInventory().getItem(1).is(Items.BUCKET));
             final int expected = (bucket + 1) * 1000;
             check(serverValue(player -> machine(player).getFluidAmount()) == expected, "Native bucket increases tank by exactly 1000 mB");
         }
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         openMachine(context);
         for (int index = 0; index < witness.size(); index++) {
             clickPlayerSlot(context, 9 + index);
@@ -275,11 +275,11 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
         if (recipe.machine().equals("brazier")) {
             if (observation.effect.equals("GRAVEYARD_MIST")) check(!mistParticlesVisible(context), "Fresh fixture has no explosion particles before ignition");
             closeScreen(context);
-            context.getInput().pressKey(GLFW.GLFW_KEY_3);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_3);
             aim(context, MACHINE);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitFor(client -> client.player.getInventory().getItem(2).getDamageValue() > 0);
-            context.getInput().pressKey(GLFW.GLFW_KEY_1);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
             openMachine(context);
             result.put("brazier_ash", "Ash appears at ignition; it is not accepted as completion or effect evidence.");
         }
@@ -491,7 +491,7 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
                 check(drainUndead != null, "Drain Growth has an actual wounded undead target");
                 drainUndead.snapTo(2.5, 80, -0.5);
                 drainUndead.setNoAi(true);
-                drainUndead.setInvulnerable(true);
+                drainUndead.setPermanentlyInvulnerable(true);
                 drainUndead.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
                 drainUndead.setHealth(1.0F);
                 check(player.level().addFreshEntity(drainUndead), "Wounded undead fixture spawned without invoking the Brazier effect");
@@ -582,15 +582,15 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
         stageMachine(context, profile, recipe);
         readBook(context, profile, result);
         if (profile.supportsFluids()) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_2);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
             aim(context, MACHINE);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitFor(client -> client.player.getInventory().getItem(1).is(Items.BUCKET));
             check(serverValue(player -> machine(player).getFluidAmount()) == 1000,
                 "Native water-bucket interaction fills exactly one bucket of water");
             result.put("fluid_interaction", "Right-click water bucket fills 1000 mB and returns empty bucket.");
         } else result.put("fluid_interaction", "This machine profile has no fluid tank.");
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         openMachine(context);
         context.waitFor(client -> jei() != null && jei().getIngredientListOverlay().isListDisplayed());
         check(context.computeOnClient(client -> ((MachineMenu) client.player.containerMenu).kind().equals(kind)),
@@ -649,13 +649,13 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
             context.waitFor(client -> ((MachineMenu) client.player.containerMenu).status() == MachineStatus.NO_IGNITION);
             screenshot(context, "brazier-awaiting-ignition");
             closeScreen(context);
-            context.getInput().pressKey(GLFW.GLFW_KEY_3);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_3);
             aim(context, MACHINE);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitFor(client -> client.player.getInventory().getItem(2).getDamageValue() > 0);
             context.waitTicks(12);
             screenshot(context, "brazier-lit-world");
-            context.getInput().pressKey(GLFW.GLFW_KEY_1);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
             openMachine(context);
             result.put("ignition", "Actual flint-and-steel right-click ignites the brazier and consumes durability.");
         }
@@ -746,10 +746,10 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
         server(player -> { player.getInventory().setItem(3, new ItemStack(ModItems.ALL.get(book.id()).get()));
             player.inventoryMenu.broadcastChanges(); });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_4);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_4);
         context.runOnClient(client -> client.player.setXRot(-60));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         final String title = context.computeOnClient(client -> Component.translatable(book.translatedSectionTitleKey(section)).getString());
         ManualClientAcceptance.search(context, title);
@@ -845,14 +845,14 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
         context.waitFor(client -> jei() != null && jei().getIngredientListOverlay().isListDisplayed());
         cursorSlot(context, ingredientSlot);
         context.waitTicks(2);
-        context.getInput().pressKey(GLFW.GLFW_KEY_U);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_U);
         context.waitFor(client -> client.gui.screen() != null && client.gui.screen().getClass().getSimpleName().equals("RecipesGui"));
         screenshot(context, kind + "-jei-ingredient-uses");
         closeScreen(context);
         context.waitForScreen(MachineScreen.class);
         cursorSlot(context, ingredientSlot);
         context.waitTicks(2);
-        context.getInput().pressKey(GLFW.GLFW_KEY_R);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_R);
         context.waitTicks(5);
         final boolean recipeScreen = context.computeOnClient(client -> client.gui.screen().getClass().getSimpleName().equals("RecipesGui"));
         if (recipeScreen) {
@@ -956,7 +956,7 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
         });
         world.getConnection().waitForClientboundPackets();
         aim(context, furnace);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(net.minecraft.client.gui.screens.inventory.FurnaceScreen.class);
         clickPlayerSlot(context, 19);
         clickSlot(context, 0);
@@ -983,7 +983,7 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
 
     private void openMachine(final ClientGameTestContext context) {
         aim(context, MACHINE);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(MachineScreen.class);
     }
 
@@ -1016,13 +1016,13 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
 
     private static void clickSlot(final ClientGameTestContext context, final int slotIndex) {
         cursorSlot(context, slotIndex);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTicks(2);
     }
 
     private static void closeScreen(final ClientGameTestContext context) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
             context.waitTicks(3);
         }
     }

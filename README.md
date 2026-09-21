@@ -2,21 +2,21 @@
 
 [Releases](https://github.com/Kadamitas/Warlockery/releases) | [Issue tracker](https://github.com/Kadamitas/Warlockery/issues) | [MIT license](LICENSE)
 
-Warlockery 1.5.5 is a standalone ritual magic mod by Kadamitas for Minecraft 26.2, Java 25, and Fabric.
+Warlockery 1.5.6 is a standalone ritual magic mod by Kadamitas for Minecraft 26.3, Java 25, and Quilt.
 
 It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, goblin village enclaves, silver hunting equipment, and Netherite-tier Goblinite gear.
 
 ## Installation
 
-1. Install Minecraft 26.2 with Java 25 and Fabric Loader 0.19.3 or newer.
-2. Install Fabric API 0.158.0+26.2 or newer for Minecraft 26.2.
-3. Download the Fabric Warlockery release and copy its JAR into the instance or server `mods` folder.
+1. Install Minecraft 26.3 with Java 25 and Quilt Loader 0.30.1.
+2. Install Fabric API 0.161.0+26.3 or newer for Minecraft 26.3.
+3. Download the Quilt Warlockery release and copy its JAR into the instance or server `mods` folder.
 4. Install the same Warlockery and Fabric API versions on the client and server.
 5. Start Minecraft and confirm that Warlockery loaded successfully.
 
-JEI integration is optional and activates when a compatible Fabric JEI build is installed. The integration targets JEI 30.7.0.41 or newer through its Fabric API.
+JEI integration is optional and activates when a compatible Fabric JEI build is installed. The integration targets JEI 31.3.0.17 or newer through its Fabric API.
 
-Normal builds target Forge 65.1.0, NeoForge 26.2.0.87, and Fabric Loader 0.19.5 with Fabric API 0.158.0+26.2. Fabric Loader 0.19.3 and newer remain supported. The `1.5.5-LlaGuiT0-26.2.0.45` supporter build remains NeoForge-only and requires NeoForge `[26.2.0.45-beta,26.2.0.46-beta)`.
+Normal 1.5.6 releases target Minecraft 26.3 with Forge 66.0.2, NeoForge 26.3.0.7-beta, Fabric Loader 0.19.5, or Quilt Loader 0.30.1. Fabric and Quilt use Fabric API 0.161.0+26.3. The `1.5.5-LlaGuiT0-26.2.0.45` supporter build remains on Minecraft 26.2, NeoForge-only, and requires NeoForge `[26.2.0.45-beta,26.2.0.46-beta)`.
 
 ## Languages
 

@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_flying_ointment"
+        "recipes": "warlockery:ingredient_flying_ointment"
       }
     },
     "has_ingredient_0": {

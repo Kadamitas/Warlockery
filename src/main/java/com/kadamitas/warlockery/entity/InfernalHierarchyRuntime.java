@@ -596,7 +596,7 @@ public final class InfernalHierarchyRuntime {
             state.cadence().nextFeedbackAt()
         ));
         int reads = 0;
-        for (final BlockPos candidate : BlockPos.withinManhattan(
+        for (final BlockPos candidate : BlockPos.withinBoxByManhattanDistance(
             entity.blockPosition(),
             InfernalHierarchyRules.DEMON_ANCHOR_RADIUS,
             2,
@@ -777,7 +777,7 @@ public final class InfernalHierarchyRuntime {
             state.cadence().nextFeedbackAt()
         ));
         int reads = 0;
-        for (final BlockPos candidate : BlockPos.withinManhattan(
+        for (final BlockPos candidate : BlockPos.withinBoxByManhattanDistance(
             entity.blockPosition(),
             InfernalHierarchyRules.ARCHFIEND_ANCHOR_RADIUS,
             2,
@@ -833,7 +833,7 @@ public final class InfernalHierarchyRuntime {
             state.cadence().nextFeedbackAt()
         ));
         int reads = 0;
-        for (final BlockPos candidate : BlockPos.withinManhattan(
+        for (final BlockPos candidate : BlockPos.withinBoxByManhattanDistance(
             entity.blockPosition(),
             InfernalHierarchyRules.REGENT_ANCHOR_RADIUS,
             4,
@@ -860,7 +860,7 @@ public final class InfernalHierarchyRuntime {
             }
             reads += 3;
             entity.hierarchyCounters().blockReads += 3;
-            if (!level.getBlockState(candidate.below()).blocksMotion()
+            if (!com.kadamitas.warlockery.util.BlockSupport.blocksMotion(level.getBlockState(candidate.below()))
                 || !level.getBlockState(candidate).getCollisionShape(level, candidate).isEmpty()
                 || !level.getBlockState(candidate.above())
                     .getCollisionShape(level, candidate.above()).isEmpty()) {
@@ -1665,7 +1665,7 @@ public final class InfernalHierarchyRuntime {
             if (!level.hasChunkAt(candidate)) continue;
             reads += 3;
             regent.hierarchyCounters().blockReads += 3;
-            if (level.getBlockState(candidate.below()).blocksMotion()
+            if (com.kadamitas.warlockery.util.BlockSupport.blocksMotion(level.getBlockState(candidate.below()))
                 && level.getBlockState(candidate).getCollisionShape(level, candidate).isEmpty()
                 && level.getBlockState(candidate.above()).getCollisionShape(level, candidate.above()).isEmpty()
                 && level.getWorldBorder().isWithinBounds(candidate)) {
@@ -1731,7 +1731,7 @@ public final class InfernalHierarchyRuntime {
             : archfiend.blockPosition();
         int contributors = 0;
         int reads = 0;
-        for (final BlockPos candidate : BlockPos.withinManhattan(
+        for (final BlockPos candidate : BlockPos.withinBoxByManhattanDistance(
             primary,
             InfernalHierarchyRules.CAULDRON_CONTRIBUTOR_RADIUS,
             InfernalHierarchyRules.CAULDRON_CONTRIBUTOR_RADIUS,

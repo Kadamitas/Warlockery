@@ -329,14 +329,15 @@ public class InteractiveUtilityBlock extends Block {
 
     @Override
     public void playerDestroy(
-        final Level level,
-        final Player player,
+        final net.minecraft.server.level.ServerLevel level,
+        final net.minecraft.server.level.ServerPlayer player,
         final BlockPos pos,
         final BlockState state,
         final @Nullable BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
-        if (profile != UtilityDeviceProfile.LEECH_CHEST || !(level instanceof ServerLevel serverLevel)) {
+        final var serverLevel = level;
+        if (profile != UtilityDeviceProfile.LEECH_CHEST) {
             super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
             return;
         }

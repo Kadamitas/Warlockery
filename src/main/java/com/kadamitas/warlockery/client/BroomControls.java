@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.glfw.GLFW;
 
 public final class BroomControls {
     private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
@@ -15,8 +14,8 @@ public final class BroomControls {
     );
     private static final KeyMapping GLIDE = new KeyMapping(
         "key.warlockery.broom_glide",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_LEFT_ALT,
+        InputConstants.Type.KEYBOARD,
+        com.mojang.blaze3d.platform.InputConstants.KEY_LALT,
         CATEGORY
     );
     private static ControlState lastState = ControlState.IDLE;

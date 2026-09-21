@@ -243,7 +243,7 @@ public final class ThornedPursuerModel extends EntityModel<ThornedPursuerModel.S
         state.snaring = phase == ThornedPursuerRules.Phase.SET
             || phase == ThornedPursuerRules.Phase.PRESS;
         state.snareCooldownRemaining = entity.presentationSnareCooldownRemaining();
-        state.actionProgress = state.snaring ? 1.0F : entity.getAttackAnim(partialTicks);
+        state.actionProgress = state.snaring ? 1.0F : entity.getSwingAnimation(partialTicks);
     }
 
     public static final class State extends LivingEntityRenderState {

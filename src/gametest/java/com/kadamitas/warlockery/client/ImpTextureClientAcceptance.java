@@ -31,7 +31,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Captures the real Imp renderer; staged pose and camera are visual prerequisites, not behavior evidence. */
 public final class ImpTextureClientAcceptance implements FabricClientGameTest {
@@ -65,9 +64,9 @@ public final class ImpTextureClientAcceptance implements FabricClientGameTest {
                 try {
                     stage(context);
                     for(int cycle=0;cycle<3 && !context.computeOnClient(client -> client.options.getCameraType().isFirstPerson());cycle++)
-                        context.getInput().pressKey(GLFW.GLFW_KEY_F5);
+                        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5);
                     check(context.computeOnClient(client -> client.options.getCameraType().isFirstPerson()),"Native first-person camera is active");
-                    if(!context.computeOnClient(client -> client.gui.hud.isHidden())) context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+                    if(!context.computeOnClient(client -> client.gui.hud.isHidden())) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
                     context.waitFor(client -> client.gui.hud.isHidden() && client.gui.screen()==null,30);
                     capture(context,"01-face-close",new Vec3(.5,100.78,1.80),new Vec3(.5,100.73,.5));
                     capture(context,"02-front-full",new Vec3(.5,100.66,2.85),new Vec3(.5,100.50,.5));
@@ -86,7 +85,7 @@ public final class ImpTextureClientAcceptance implements FabricClientGameTest {
                     throw failure;
                 } finally {
                     if(context.computeOnClient(client -> client.gui.hud.isHidden())!=originalHudHidden)
-                        context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+                        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
                 }
             }
             System.out.println("WARLOCKERY_IMP_TEXTURE_CAPTURED "+evidence);

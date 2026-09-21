@@ -28,7 +28,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class DiagonalChalkClientAcceptance implements FabricClientGameTest {
     private static final BlockPos CENTER = new BlockPos(0, 100, 0);
@@ -227,14 +226,14 @@ public final class DiagonalChalkClientAcceptance implements FabricClientGameTest
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
     }
 
     private void clickLine(final ClientGameTestContext context, final BlockPos pos, final double x, final double z) {
         position(context, new Vec3(pos.getX() + x, pos.getY(), pos.getZ() + z));
         aimDown(context, pos);
         check(context.computeOnClient(client -> client.player.getMainHandItem().isEmpty()), "Connection editing uses a genuinely empty main hand");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(5);
         world.getConnection().waitForClientboundPackets();
     }
@@ -270,26 +269,26 @@ public final class DiagonalChalkClientAcceptance implements FabricClientGameTest
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         position(context, new Vec3(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5));
-        if (glyph.equals("circleglyphgolden")) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        if (glyph.equals("circleglyphgolden")) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         try {
             aimDown(context, recolor ? pos : pos.below());
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitFor(client -> client.level.getBlockState(pos).is(ModBlocks.ALL.get(glyph).get()), 30);
             check(serverValue(player -> player.level().getBlockState(pos).is(ModBlocks.ALL.get(glyph).get())),
                 "Native chalk use places the server glyph " + glyph);
             check(serverValue(player -> player.getMainHandItem().getDamageValue()) == 1,
                 "Native Survival drawing consumes exactly one chalk use");
         } finally {
-            if (glyph.equals("circleglyphgolden")) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            if (glyph.equals("circleglyphgolden")) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         }
     }
 
     private void erase(final ClientGameTestContext context, final BlockPos pos) {
         position(context, new Vec3(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5));
         aimDown(context, pos);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         for (int tick = 0; tick < 30 && !serverValue(player -> player.level().getBlockState(pos).isAir()); tick++) {
             context.waitTicks(1);
         }

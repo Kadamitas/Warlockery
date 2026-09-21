@@ -777,7 +777,7 @@ public final class SupernaturalProgressionRuntime {
         if (player.level().getGameTime() >= ready && player.getRandom().nextInt(20) == 0) {
             final ItemStack bones = new ItemStack(Items.BONE, player.getRandom().nextIntBetweenInclusive(1, 2));
             if (!player.getInventory().add(bones)) {
-                player.drop(bones, false);
+                player.drop(bones, false, net.minecraft.util.Prediction.SERVER_ONLY);
             }
             SupernaturalProgression.setValue(player, WEREWOLF, "bone_finding_ready",
                 player.level().getGameTime() + 1_200L);
@@ -895,7 +895,7 @@ public final class SupernaturalProgressionRuntime {
         final Vec3 look = player.getLookAngle();
         for (int distance = 24; distance >= 4; distance -= 2) {
             final Vec3 destination = player.position().add(look.scale(distance));
-            if (player.randomTeleport(destination.x, destination.y, destination.z, true)) {
+            if (player.randomTeleport(destination.x, destination.y, destination.z, true, com.kadamitas.warlockery.util.BlockSupport.NO_ADDITIONAL_TELEPORT_AVOIDANCE)) {
                 return true;
             }
         }

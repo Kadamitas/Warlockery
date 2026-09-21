@@ -24,7 +24,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class VisualUpdateClientAcceptance implements FabricClientGameTest {
     private static final List<String> CREATURES=List.of("abyssal_regent","dreamroot","circle_mage","echo_shade","eldritch_watcher","emberhorn_archfiend","feral_lycan","hellhound","nightmare","poltergeist","spectral_familiar","spectre","werewolf","death","naamah","spirit","werewolf_hunter","illusion_creeper","pale_steed","stonebroker","storm_simian","ent");
@@ -59,13 +58,13 @@ public final class VisualUpdateClientAcceptance implements FabricClientGameTest 
                     world=created;
                     try{stage(context);if(id.equals("icons"))icons(context);else creature(context,id);row().put("status","CAPTURED_REVIEW_PENDING");}
                     catch(Throwable failure){row().put("status","FAILED");row().put("failure",failure.toString());failures.add(id+": "+failure);try{shot(context,"failure");}catch(Throwable ignored){}}
-                    finally{context.getInput().releaseKey(GLFW.GLFW_KEY_W);write();}
+                    finally{context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);write();}
                 }finally{world=null;}
             }
             report.put("capture_completed",failures.isEmpty());write();check(failures.isEmpty(),String.join("; ",failures));
             System.out.println("WARLOCKERY_VISUAL_UPDATE_CAPTURED "+evidence);
         }catch(Throwable failure){throw new AssertionError("Visual update evidence: "+evidence,failure);}
-        finally{context.runOnClient(client->client.options.fov().set(originalFov));if(context.computeOnClient(client->client.gui.hud.isHidden())!=originalHud)context.getInput().pressKey(GLFW.GLFW_KEY_F1);}
+        finally{context.runOnClient(client->client.options.fov().set(originalFov));if(context.computeOnClient(client->client.gui.hud.isHidden())!=originalHud)context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);}
     }
 
     private void stage(ClientGameTestContext context){
@@ -78,7 +77,7 @@ public final class VisualUpdateClientAcceptance implements FabricClientGameTest 
             var player=world.getConnection().getServerPlayer();player.setGameMode(GameType.SPECTATOR);player.getInventory().clearContent();player.removeAllEffects();player.teleportTo(level,.5,102,8.5,Set.of(),180,15,true);
         });
         world.getConnection().waitForClientboundPackets();world.getConnection().waitForChunksRender();
-        for(int i=0;i<3&&!context.computeOnClient(c->c.options.getCameraType().isFirstPerson());i++)context.getInput().pressKey(GLFW.GLFW_KEY_F5);
+        for(int i=0;i<3&&!context.computeOnClient(c->c.options.getCameraType().isFirstPerson());i++)context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5);
         hud(context,true);
     }
 
@@ -126,13 +125,13 @@ public final class VisualUpdateClientAcceptance implements FabricClientGameTest 
 
     private void icons(ClientGameTestContext context)throws Exception{
         hud(context,false);
-        world.getServer().runOnServer(server->{var player=world.getConnection().getServerPlayer();player.setGameMode(GameType.SURVIVAL);player.setInvulnerable(true);player.teleportTo(server.overworld(),.5,100,-2.5,Set.of(),0,15,true);for(int i=0;i<ICONS.size();i++)player.getInventory().setItem(i,new ItemStack(ModItems.ALL.get(ICONS.get(i)).get()));player.inventoryMenu.broadcastChanges();});
-        world.getConnection().waitForClientboundPackets();context.getInput().pressKey(GLFW.GLFW_KEY_E);context.waitTicks(5);shot(context,"inventory");context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        world.getServer().runOnServer(server->{var player=world.getConnection().getServerPlayer();player.setGameMode(GameType.SURVIVAL);player.setPermanentlyInvulnerable(true);player.teleportTo(server.overworld(),.5,100,-2.5,Set.of(),0,15,true);for(int i=0;i<ICONS.size();i++)player.getInventory().setItem(i,new ItemStack(ModItems.ALL.get(ICONS.get(i)).get()));player.inventoryMenu.broadcastChanges();});
+        world.getConnection().waitForClientboundPackets();context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E);context.waitTicks(5);shot(context,"inventory");context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         final Map<String,Object> resources=new LinkedHashMap<>();row().put("runtime_icons",resources);
         for(String id:ICONS){
             resources.put(id,resource(context,"textures/item/"+id+".png"));
             world.getServer().runOnServer(server->{server.overworld().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(-18,99,-18,18,112,18)).forEach(Entity::discard);var player=world.getConnection().getServerPlayer();player.getInventory().setItem(0,new ItemStack(ModItems.ALL.get(id).get()));player.getInventory().setSelectedSlot(0);player.inventoryMenu.broadcastChanges();});
-            world.getConnection().waitForClientboundPackets();context.runOnClient(client->{client.player.setYRot(0);client.player.setXRot(20);});context.waitTicks(4);shot(context,id+"-held");context.getInput().pressKey(GLFW.GLFW_KEY_Q);context.waitTicks(8);context.runOnClient(client->client.player.setXRot(45));context.waitTicks(2);shot(context,id+"-dropped");
+            world.getConnection().waitForClientboundPackets();context.runOnClient(client->{client.player.setYRot(0);client.player.setXRot(20);});context.waitTicks(4);shot(context,id+"-held");context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_Q);context.waitTicks(8);context.runOnClient(client->client.player.setXRot(45));context.waitTicks(2);shot(context,id+"-dropped");
         }
     }
 
@@ -146,7 +145,7 @@ public final class VisualUpdateClientAcceptance implements FabricClientGameTest 
         context.waitFor(client->client.player!=null&&client.player.getEyePosition().distanceTo(eye)<.05,60);
         context.runOnClient(client->{var delta=target.subtract(client.player.getEyePosition());client.player.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));client.player.setXRot((float)-Math.toDegrees(Math.atan2(delta.y,Math.hypot(delta.x,delta.z))));});context.waitTicks(4);shot(context,name);
     }
-    private void hud(ClientGameTestContext context,boolean hidden){if(context.computeOnClient(client->client.gui.hud.isHidden())!=hidden)context.getInput().pressKey(GLFW.GLFW_KEY_F1);}
+    private void hud(ClientGameTestContext context,boolean hidden){if(context.computeOnClient(client->client.gui.hud.isHidden())!=hidden)context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);}
     private void shot(ClientGameTestContext context,String name)throws Exception{ManualClientAcceptance.saveScreenshot(context,evidence,active+"-"+name,screenshots);write();}
     private Map<String,Object> row(){return results.get(active);}
     private void write()throws Exception{Files.writeString(evidence.resolve("visual-update.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}

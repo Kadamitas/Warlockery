@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:universal_antidote"
+        "recipes": "warlockery:universal_antidote"
       }
     },
     "has_ingredient_0": {

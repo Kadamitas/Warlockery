@@ -47,7 +47,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Native Verdant Catalyst transformations (ordinary and prime, Overworld and Spirit World) and the
@@ -115,8 +114,8 @@ public final class VerdantCatalystAndBrewBucketClientAcceptance implements Fabri
                         fail(id, row, failure);
                         try { screenshot(context, id + "-failure"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
                         write(false);
                     }
                 } catch (Throwable failure) { fail(id, row, failure); }
@@ -437,7 +436,7 @@ public final class VerdantCatalystAndBrewBucketClientAcceptance implements Fabri
             final var profile = found.orElseThrow();
             supply(context, 0, new ItemStack(item(profile.id())));
             context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
             ManualClientAcceptance.selectSection(context, section);
             final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
             final int pages = context.computeOnClient(client -> {
@@ -465,7 +464,7 @@ public final class VerdantCatalystAndBrewBucketClientAcceptance implements Fabri
         server(player -> { player.getInventory().setItem(slot, stack); player.inventoryMenu.broadcastChanges(); }); sync(context, slot);
     }
     private void sync(final ClientGameTestContext context, final int slot) {
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1 + slot); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + slot); context.waitTicks(2);
     }
     private void position(final ClientGameTestContext context, final Vec3 point) {
         server(player -> { player.teleportTo(point.x, point.y, point.z); player.setDeltaMovement(Vec3.ZERO); });
@@ -482,7 +481,7 @@ public final class VerdantCatalystAndBrewBucketClientAcceptance implements Fabri
         look(context, point);
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(expected)),
             "Native pointer targets intended block " + expected + "; actual=" + describeHit(context));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
     }
     private static String describeHit(final ClientGameTestContext context) {
         return context.computeOnClient(client -> {
@@ -538,7 +537,7 @@ public final class VerdantCatalystAndBrewBucketClientAcceptance implements Fabri
         return aim;
     }
     private static void closeScreen(final ClientGameTestContext context) {
-        if (context.computeOnClient(client -> client.gui.screen() != null)) { context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTicks(3); }
+        if (context.computeOnClient(client -> client.gui.screen() != null)) { context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitTicks(3); }
     }
     private void await(final ClientGameTestContext context, final Predicate<ServerPlayer> predicate, final int ticks, final String message) {
         for (int remaining = ticks; remaining > 0 && !serverValue(predicate::test); remaining -= 2) context.waitTicks(2);

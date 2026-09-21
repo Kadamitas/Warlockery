@@ -5,7 +5,8 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "warlockery:seedsdreamroot",
+          "modifier": [
             {
               "count": {
                 "type": "minecraft:uniform",
@@ -13,10 +14,9 @@
                 "min": 0
               },
               "enchantment": "minecraft:looting",
-              "function": "minecraft:enchanted_count_increase"
+              "type": "minecraft:enchanted_count_increase"
             }
-          ],
-          "name": "warlockery:seedsdreamroot"
+          ]
         }
       ],
       "rolls": 1

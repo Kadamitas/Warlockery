@@ -5,7 +5,8 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "warlockery:ingredient_mandrake_root",
+          "modifier": [
             {
               "count": {
                 "type": "minecraft:uniform",
@@ -13,10 +14,9 @@
                 "min": 0
               },
               "enchantment": "minecraft:looting",
-              "function": "minecraft:enchanted_count_increase"
+              "type": "minecraft:enchanted_count_increase"
             }
-          ],
-          "name": "warlockery:ingredient_mandrake_root"
+          ]
         }
       ],
       "rolls": 1
@@ -25,7 +25,8 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "warlockery:seedsmandrake",
+          "modifier": [
             {
               "count": {
                 "type": "minecraft:uniform",
@@ -33,10 +34,9 @@
                 "min": 0
               },
               "enchantment": "minecraft:looting",
-              "function": "minecraft:enchanted_count_increase"
+              "type": "minecraft:enchanted_count_increase"
             }
-          ],
-          "name": "warlockery:seedsmandrake"
+          ]
         }
       ],
       "rolls": 1

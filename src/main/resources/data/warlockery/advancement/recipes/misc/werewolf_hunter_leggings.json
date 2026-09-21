@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:werewolf_hunter_leggings"
+        "recipes": "warlockery:werewolf_hunter_leggings"
       }
     },
     "has_ingredient_0": {

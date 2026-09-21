@@ -38,7 +38,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     private static final BlockPos CENTER = new BlockPos(0, 50, 0);
@@ -123,12 +122,12 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 screenshot(context, "broiling-cooked-beef-on-ground");
                 final Vec3 cookedPosition = serverValue(player -> dropped(player, Items.COOKED_BEEF).getFirst().position());
                 look(context, cookedPosition);
-                context.getInput().holdKey(GLFW.GLFW_KEY_W);
+                context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                 try {
                     context.waitFor(client -> client.player.getInventory().getNonEquipmentItems().stream()
                         .anyMatch(stack -> stack.is(Items.COOKED_BEEF)), 100);
                 } finally {
-                    context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+                    context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                 }
                 checks.add("Native Begin Rite starts the real cast, consumes one dropped Coal, converts dropped Raw Beef, and normal forward movement collects the Cooked Beef.");
                 screenshot(context, "broiling-output-collected");
@@ -186,7 +185,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 com.kadamitas.warlockery.data.WarlockeryEntityData.get(player).remove("WarlockeryMagicPaths");
             }
             player.setDeltaMovement(Vec3.ZERO);
-            player.hurtMarked = true;
+            player.syncVelocity = true;
             isolation.put("after", playerTrace(player));
             isolation.put("remaining_wards", wardTrace(player));
             syntheticPlayers.forEach(player.level().getServer().getPlayerList()::remove);
@@ -228,7 +227,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     private Map<String, Integer> readGuide(final ClientGameTestContext context, final String section) throws Exception {
         context.runOnClient(client -> client.player.setXRot(-60));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         final ManualProfile book = ManualProfile.find("ingredient_book_circle_magic").orElseThrow();
         final String title = Component.translatable(book.translatedSectionTitleKey(section)).getString();
@@ -265,14 +264,14 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     }
 
     private void drawCircle(final ClientGameTestContext context, final Map<String, Integer> glyphs, final String id) throws Exception {
-        context.getInput().pressKey(GLFW.GLFW_KEY_2);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
         drawMark(context, CENTER, "circle");
         final List<List<Integer>> positions = new ArrayList<>();
         for (var glyph : glyphs.entrySet()) {
             context.getInput().pressKey(chalkKey(glyph.getKey()));
             final var size = ChalkCircleLayout.Size.forMarkCount(glyph.getValue());
             final boolean goldenRing = glyph.getKey().equals("circleglyphgolden");
-            if (goldenRing) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            if (goldenRing) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
             try {
                 context.waitTicks(2);
                 for (BlockPos offset : size.offsets()) {
@@ -281,7 +280,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     positions.add(List.of(offset.getX(), offset.getZ()));
                 }
             } finally {
-                if (goldenRing) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                if (goldenRing) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
             }
         }
         check(serverValue(player -> glyphs.entrySet().stream().allMatch(glyph ->
@@ -310,10 +309,10 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
 
     private static int chalkKey(final String glyph) {
         return switch (glyph) {
-            case "circleglyphritual" -> GLFW.GLFW_KEY_3;
-            case "circleglyphinfernal" -> GLFW.GLFW_KEY_5;
-            case "circleglyph_veil" -> GLFW.GLFW_KEY_6;
-            case "circleglyphgolden" -> GLFW.GLFW_KEY_2;
+            case "circleglyphritual" -> com.mojang.blaze3d.platform.InputConstants.KEY_3;
+            case "circleglyphinfernal" -> com.mojang.blaze3d.platform.InputConstants.KEY_5;
+            case "circleglyph_veil" -> com.mojang.blaze3d.platform.InputConstants.KEY_6;
+            case "circleglyphgolden" -> com.mojang.blaze3d.platform.InputConstants.KEY_2;
             default -> throw new AssertionError("No native chalk item is staged for " + glyph);
         };
     }
@@ -339,7 +338,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         trace.put("supporting_floor_matched", supportingFloor);
         if (!supportingFloor) System.out.println("WARLOCKERY_CHALK_RAY_FAILURE " + new GsonBuilder().create().toJson(trace));
         check(supportingFloor, "Native chalk ray targets the supporting floor at " + target);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitFor(client -> client.level.getBlockState(target).is(ModBlocks.ALL.get(glyph).get()));
         trace.put("actual_chalk_placed", true);
     }
@@ -409,10 +408,10 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     private void dropOfferings(final ClientGameTestContext context) {
         position(context, 0.5, CENTER.getY(), -2.5);
         look(context, new Vec3(0.5, CENTER.getY() + 0.1, 0.5));
-        context.getInput().pressKey(GLFW.GLFW_KEY_5);
-        context.getInput().pressKey(GLFW.GLFW_KEY_Q);
-        context.getInput().pressKey(GLFW.GLFW_KEY_6);
-        context.getInput().pressKey(GLFW.GLFW_KEY_Q);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_5);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_Q);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_6);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_Q);
         context.waitTicks(3);
         check(serverValue(player -> dropped(player, Items.COAL).size()) == 1, "Native drop key creates the coal offering");
         check(serverValue(player -> dropped(player, Items.BEEF).size()) == 1, "Native drop key puts raw food in the ritual area");
@@ -427,11 +426,11 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         final int bookSlot = serverValue(player -> java.util.stream.IntStream.range(0, 9)
             .filter(slot -> player.getInventory().getItem(slot).is(ModItems.ALL.get("ingredient_book_circle_magic").get()))
             .findFirst().orElseThrow(() -> new AssertionError("Circle Magic book must be accessible in the hotbar")));
-        context.getInput().pressKey(GLFW.GLFW_KEY_1 + bookSlot);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + bookSlot);
         look(context, new Vec3(0.5, CENTER.getY() + 0.01, 0.5));
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(CENTER)),
             "Circle Magic book ray targets the Golden Chalk heart");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
     }
 
@@ -476,7 +475,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             altar.receivePower(definition.power());
             check(altar.availablePower() >= definition.power(), "Natural fixture altar capacity supports " + id);
         });
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         final Map<String, Integer> guideGlyphs = readGuide(context, "rite_" + id);
         final Map<String, Integer> glyphs = castingGlyphs(definition, guideGlyphs);
         drawCircle(context, glyphs, id);
@@ -606,7 +605,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         screenshot(context, id + "-actual-result");
         if (definition.action().equals("summon_item") && serverValue(player ->
                 dropped(player, targetItem(definition.target())).isEmpty())) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_E);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E);
             context.waitForScreen(net.minecraft.client.gui.screens.inventory.InventoryScreen.class);
             screenshot(context, id + "-output-picked-up-inventory");
             closeScreen(context);
@@ -755,8 +754,10 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             level.registryAccess(),
             generator,
             new net.minecraft.world.level.biome.FixedBiomeSource(deepOcean),
+            level.getChunkSource().randomState().createClimateSampler(
+                net.minecraft.world.level.levelgen.densityfunction.SamplerContext.builder().enableCaches().build()),
             level.getChunkSource().randomState(),
-            level.getStructureManager(),
+            level.getStructureTemplateManager(),
             level.getSeed(),
             origin,
             0,
@@ -1071,7 +1072,9 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     .setValue(net.minecraft.world.level.block.BedBlock.PART,
                         net.minecraft.world.level.block.state.properties.BedPart.HEAD));
                 final ServerPlayer dreamer = connectedFixturePlayer(player, "RiteDreamer", foot);
-                check(dreamer.startSleepInBed(foot).right().isPresent(),
+                final var bedState = level.getBlockState(head);
+                final var bed = (net.minecraft.world.level.block.AbstractBedBlock) bedState.getBlock();
+                check(dreamer.startSleepInBed(bed, bedState, bed.getBedRule(level, head), head).right().isPresent(),
                     "Manifestation fixture uses normal bed sleep for its connected target");
                 check(dreamer.isSleeping(), "Manifestation target is actually sleeping before native activation");
                 actionTargets.put(id, dreamer.getUUID());
@@ -1464,8 +1467,8 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             world.getConnection().waitForClientboundPackets();
             position(context, 0.5, CENTER.getY(), -2.5);
             look(context, new Vec3(0.5, CENTER.getY() + 0.1, 0.5));
-            context.getInput().pressKey(GLFW.GLFW_KEY_9);
-            context.getInput().pressKey(GLFW.GLFW_KEY_Q);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_9);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_Q);
             context.waitTicks(3);
             check(serverValue(player -> !dropped(player, ModItems.ALL.get("sympathetic_vial").get()).isEmpty()),
                 "Native Q supplies the sympathetic vial required by the Manifestation guide");
@@ -1482,8 +1485,8 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         world.getConnection().waitForClientboundPackets();
         position(context, 0.5, CENTER.getY(), -2.5);
         look(context, new Vec3(0.5, CENTER.getY() + 0.1, 0.5));
-        context.getInput().pressKey(GLFW.GLFW_KEY_9);
-        context.getInput().pressKey(GLFW.GLFW_KEY_Q);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_9);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_Q);
         context.waitTicks(3);
         check(serverValue(player -> dropped(player, ModItems.ALL.get("bookbiomes2").get()).stream()
                 .map(ItemEntity::getItem).map(com.kadamitas.warlockery.item.BiomeNoteState::read)
@@ -1553,8 +1556,8 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             look(context, new Vec3(0.5, CENTER.getY() + 0.1, 0.5));
             for (int index = batchStart; index < batchEnd; index++) {
                 final var input = requirements.get(index);
-                context.getInput().pressKey(GLFW.GLFW_KEY_5 + index - batchStart);
-                for (int item = 0; item < input.count(); item++) context.getInput().pressKey(GLFW.GLFW_KEY_Q);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_5 + index - batchStart);
+                for (int item = 0; item < input.count(); item++) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_Q);
                 evidence.add(new OfferingEvidence(matchingItem(input.ingredient()), input.count(), input.consume(), input.ingredient()));
             }
             context.waitTicks(3);
@@ -1635,10 +1638,10 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         final String label = Component.translatable("screen.warlockery.manual.book_link",
             Component.translatable(distilling.translatedTitleKey()),
             Component.translatable(distilling.translatedSectionTitleKey("machine_recipe_distill_vitriol"))).getString();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.runOnClient(client -> client.player.setXRot(-60));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         final String title = Component.translatable(circle.translatedSectionTitleKey("golden_chalk")).getString();
         ManualClientAcceptance.search(context, title);
@@ -1695,7 +1698,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 }), "Missing-book preview visibly names the exact required book before its crafting recipe");
             }
             screenshot(context, "book-reference-" + placement);
-            if (placement.equals("offhand")) context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            if (placement.equals("offhand")) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
             else ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.back").getString());
             context.waitFor(client -> client.gui.screen() == source);
             check(context.computeOnClient(client -> (int) field(source, "bodyPage") == page && field(source, "query").equals(query)),
@@ -1903,7 +1906,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
 
     private static void closeScreen(final ClientGameTestContext context) {
         for (int step = 0; step < 2 && context.computeOnClient(client -> client.gui.screen() != null); step++) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
             context.waitTicks(2);
         }
         context.waitFor(client -> client.gui.screen() == null);

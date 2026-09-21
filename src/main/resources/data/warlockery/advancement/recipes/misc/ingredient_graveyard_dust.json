@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_graveyard_dust"
+        "recipes": "warlockery:ingredient_graveyard_dust"
       }
     },
     "has_ingredient_0": {

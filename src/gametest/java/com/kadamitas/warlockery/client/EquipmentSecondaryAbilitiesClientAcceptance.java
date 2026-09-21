@@ -56,7 +56,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Secondary equipment behaviors beyond the primary equipment slices: Hunter set hex rejection,
@@ -217,7 +216,7 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
         server(player -> {
             final ServerPlayer other = fixturePlayer(player);
             for (EquipmentSlot slot : List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET)) other.setItemSlot(slot, ItemStack.EMPTY);
-            other.setHealth(20); other.invulnerableTime = 0;
+            other.setHealth(20); other.damageCooldownTime = 0;
         });
         context.waitTicks(25);
         airUse(context, false);
@@ -267,12 +266,12 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
             server(player -> {
                 final ServerPlayer other = fixturePlayer(player);
                 other.teleportTo(0.5, 100, 0.5); other.setDeltaMovement(Vec3.ZERO);
-                other.setHealth(16.0F); other.invulnerableTime = 0;
+                other.setHealth(16.0F); other.damageCooldownTime = 0;
                 player.teleportTo(0.5, 100, -1.5); player.setDeltaMovement(Vec3.ZERO);
             });
             ready(context);
             aimFixture(context);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
             await(context, player -> fixturePlayer(player).getHealth() < 16.0F || SupernaturalState.getForm(fixturePlayer(player)) == SupernaturalForm.WEREWOLF,
                 30, "Each native punch must actually hurt the victim");
             hits++;
@@ -443,9 +442,9 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
         server(player -> player.getFoodData().setFoodLevel(10));
         hold(context, new ItemStack(Items.PUFFERFISH));
         look(context, new Vec3(0.5, 105, 6));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try { await(context, player -> player.hasEffect(MobEffects.NAUSEA) && player.getMainHandItem().isEmpty(), 80, "Natively eating pufferfish causes Nausea"); }
-        finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         server(player -> player.removeEffect(MobEffects.POISON));
         context.waitTicks(60);
         check(value(player -> player.hasEffect(MobEffects.NAUSEA)), "Control: Nausea persists for sixty ticks without earmuffs");
@@ -485,8 +484,8 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
         await(context, player -> player.isInWater(), 30, "Player starts in the staged water trench");
         final Vec3 start = value(Entity::position);
         look(context, new Vec3(0.5, 100.5, 30));
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
-        try { context.waitTicks(40); } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+        try { context.waitTicks(40); } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         context.waitTicks(3);
         return value(player -> player.position().distanceTo(start));
     }
@@ -510,16 +509,16 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
         hold(context, ItemStack.EMPTY);
         look(context, value(player -> living(player, attacker).getEyePosition()));
         context.waitTicks(20);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         await(context, player -> living(player, attacker).getHealth() < 100.0F, 20, "Native punch provokes the werewolf");
         final float provoked = value(player -> living(player, attacker).getHealth());
         final DamageWatch watch = value(player -> new DamageWatch(player, attacker, provoked));
         damageWatch = watch;
         server(player -> ((Mob) living(player, attacker)).setNoAi(false));
         look(context, value(player -> living(player, attacker).getEyePosition()));
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { for (int tick = 0; tick < 160 && watch.hit == null; tick++) context.waitTicks(1); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); damageWatch = null; }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); damageWatch = null; }
         if (watch.hit == null) throw new UnsupportedOperationException("Live werewolf did not strike within 160 ticks; no ability pass is claimed.");
         check(attacker.toString().equals(watch.hit.sourceOwner()), "Observed damage must come from the staged werewolf");
         server(player -> ((Mob) living(player, attacker)).setNoAi(true));
@@ -552,13 +551,13 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
     // ------------------------------------------------------------------ potions
 
     private Drink harmingDrink(final ClientGameTestContext context) {
-        server(player -> { player.setHealth(player.getMaxHealth()); player.invulnerableTime = 0; });
+        server(player -> { player.setHealth(player.getMaxHealth()); player.damageCooldownTime = 0; });
         hold(context, PotionContents.createItemStack(Items.POTION, Potions.HARMING));
         final float before = value(LivingEntity::getHealth);
         look(context, new Vec3(0.5, 105, 6));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try { await(context, player -> player.getMainHandItem().is(Items.GLASS_BOTTLE), 60, "Native drinking consumes the Harming potion"); }
-        finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         context.waitTicks(3);
         return new Drink(before - value(LivingEntity::getHealth));
     }
@@ -630,7 +629,7 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
         server(player -> { player.teleportTo(0.5, 100, -1.5); player.setDeltaMovement(Vec3.ZERO); });
         ready(context);
         aimFixture(context);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         final UUID id = fixture;
         await(context, player -> SympatheticBinding.read(player.getMainHandItem()).filter(binding -> binding.targetId().equals(id)).isPresent(), 60,
             "Native entity use binds the doll to the fixture player");
@@ -641,7 +640,7 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
     private void stage(final ClientGameTestContext context) {
         damageWatch = null;
         release(context);
-        if (context.computeOnClient(client -> client.gui.screen() != null)) context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        if (context.computeOnClient(client -> client.gui.screen() != null)) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         server(player -> {
             final var server = player.level().getServer();
             server.setDifficulty(Difficulty.NORMAL, true);
@@ -668,7 +667,7 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         ready(context);
     }
 
@@ -687,14 +686,14 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
 
     private void airUse(final ClientGameTestContext context, final boolean secondary) {
         ready(context);
-        if (secondary) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        if (secondary) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         try {
             context.runOnClient(client -> { client.player.setYRot(180); client.player.setXRot(-60); });
             context.waitTicks(5);
             check(context.computeOnClient(client -> client.hitResult != null && client.hitResult.getType() == HitResult.Type.MISS), "Native air use has no entity or block hit");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitTicks(2);
-        } finally { if (secondary) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+        } finally { if (secondary) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
     }
 
     private void awaitOverlay(final ClientGameTestContext context, final String key) {
@@ -732,7 +731,7 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
     }
 
     private void moveInventorySlot(final ClientGameTestContext context, final int from, final int to) {
-        context.getInput().pressKey(GLFW.GLFW_KEY_E);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E);
         context.waitForScreen(InventoryScreen.class);
         for (int index : new int[] {from, to}) {
             final int[] point = context.computeOnClient(client -> {
@@ -743,7 +742,7 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
             ManualClientAcceptance.click(context, point[0], point[1]);
         }
         context.waitTicks(3);
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null, 30);
         world.getConnection().waitForClientboundPackets();
     }
@@ -751,7 +750,7 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
     private void hold(final ClientGameTestContext context, final ItemStack stack) {
         server(player -> { player.getInventory().setItem(0, stack.copy()); player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.waitTicks(3);
     }
 
@@ -765,9 +764,9 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
     }
 
     private static void release(final ClientGameTestContext context) {
-        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
-        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-        for (int key : List.of(GLFW.GLFW_KEY_W, GLFW.GLFW_KEY_S, GLFW.GLFW_KEY_A, GLFW.GLFW_KEY_D, GLFW.GLFW_KEY_SPACE, GLFW.GLFW_KEY_LEFT_SHIFT))
+        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+        for (int key : List.of(com.mojang.blaze3d.platform.InputConstants.KEY_W, com.mojang.blaze3d.platform.InputConstants.KEY_S, com.mojang.blaze3d.platform.InputConstants.KEY_A, com.mojang.blaze3d.platform.InputConstants.KEY_D, com.mojang.blaze3d.platform.InputConstants.KEY_SPACE, com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT))
             context.getInput().releaseKey(key);
     }
 
@@ -785,7 +784,7 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
         ready(context);
         context.runOnClient(client -> client.player.setXRot(-70));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, id);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString());
@@ -805,7 +804,7 @@ public final class EquipmentSecondaryAbilitiesClientAcceptance implements Fabric
             screenshot(context, active + "-" + id + "-guide-" + page);
         }
         read.add(Map.of("item", id, "book", profile.id(), "section", id, "pages_read", pages, "text", body));
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null, 30);
         server(player -> { player.getInventory().setItem(0, ItemStack.EMPTY); player.inventoryMenu.broadcastChanges(); });
         world.getConnection().waitForClientboundPackets();

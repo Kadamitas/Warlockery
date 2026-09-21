@@ -49,7 +49,6 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Native Glass Goblet (blood goblet) acceptance: real right-click fills on creatures, crouch self-fill,
@@ -113,7 +112,7 @@ public final class BloodGobletAbilitiesClientAcceptance implements FabricClientG
                         failures.add(id + ": " + failure);
                         try { screenshot(context, id + "-failure"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
                         if (observation != null) row.put("spawn_observation", serverValue(player -> observation.report()));
                         observation = null; write(false);
                     }
@@ -476,12 +475,12 @@ public final class BloodGobletAbilitiesClientAcceptance implements FabricClientG
     private static ItemStack goblet() { return new ItemStack(ModItems.ALL.get("glassgoblet").get()); }
     private void supply(final ClientGameTestContext context, final ItemStack item) {
         server(player -> { player.getInventory().clearContent(); player.getInventory().setItem(0, item); player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
     }
-    private static void use(final ClientGameTestContext context) { context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3); }
+    private static void use(final ClientGameTestContext context) { context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3); }
     private static void crouchUse(final ClientGameTestContext context) {
-        context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3);
-        try { use(context); } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2); }
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3);
+        try { use(context); } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(2); }
     }
     private void lookUp(final ClientGameTestContext context) {
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(-70); }); context.waitTicks(2);
@@ -558,7 +557,7 @@ public final class BloodGobletAbilitiesClientAcceptance implements FabricClientG
         final ManualProfile profile = ManualProfile.profiles().stream().filter(book -> book.sections().contains(id)).findFirst().orElseThrow();
         supply(context, new ItemStack(ModItems.ALL.get(profile.id()).get()));
         context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         clientWait(context, client -> client.gui.screen() instanceof ManualScreen, 60, "manual screen opens after native use of " + profile.id());
         ManualClientAcceptance.selectSection(context, id);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString());
@@ -576,7 +575,7 @@ public final class BloodGobletAbilitiesClientAcceptance implements FabricClientG
             screenshot(context, row.get("item") + "-" + id + "-book-" + page);
         }
         row.put("guide", Map.of("book", profile.id(), "section", id, "text", body, "pages_read", pages)); row.put("guide_status", "PASSED");
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         clientWait(context, client -> client.gui.screen() == null, 40, "manual closes after Escape");
     }
     private static void clientWait(final ClientGameTestContext context, final Predicate<net.minecraft.client.Minecraft> predicate, final int ticks, final String message) {

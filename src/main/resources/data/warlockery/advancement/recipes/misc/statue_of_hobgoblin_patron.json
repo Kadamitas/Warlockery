@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:statue_of_hobgoblin_patron"
+        "recipes": "warlockery:statue_of_hobgoblin_patron"
       }
     },
     "has_ingredient_0": {

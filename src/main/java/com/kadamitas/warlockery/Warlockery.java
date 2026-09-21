@@ -59,6 +59,6 @@ public final class Warlockery implements ModInitializer {
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents.CHUNK_LOAD.register(
             (level, chunk, newChunk) -> ConnectedGlyphChunkRefresh.queue(level, chunk.getPos()));
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_LEVEL_TICK.register(ConnectedGlyphChunkRefresh::tick);
-        LOGGER.info("Loading Warlockery for Minecraft 26.2 on Fabric");
+        LOGGER.info("Loading Warlockery for Minecraft 26.3 on Quilt");
     }
 }

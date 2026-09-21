@@ -39,7 +39,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class OtherDevicesAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final List<String> DEVICES = List.of("alluringskull", "beartrap", "plantmine",
@@ -97,8 +96,8 @@ public final class OtherDevicesAbilitiesClientAcceptance implements FabricClient
                         fail(id, row, failure);
                         try { screenshot(context, id + "-failure-in-world"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
                         write(false);
                     }
                 } catch (Throwable failure) {
@@ -273,9 +272,9 @@ public final class OtherDevicesAbilitiesClientAcceptance implements FabricClient
 
     private void walkInto(final ClientGameTestContext context, final Predicate<ServerPlayer> outcome, final int ticks, final String message) {
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); });
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { await(context, outcome, ticks, message); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
     }
 
     private static long blocks(final ServerPlayer player, final net.minecraft.world.level.block.Block block) {
@@ -303,7 +302,7 @@ public final class OtherDevicesAbilitiesClientAcceptance implements FabricClient
             final var profile = found.orElseThrow();
             supply(context, 0, item(profile.id()));
             context.runOnClient(client -> client.player.setXRot(-70));
-            context.waitTicks(2); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.waitTicks(2); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitForScreen(ManualScreen.class);
             ManualClientAcceptance.selectSection(context, section);
             final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
@@ -333,9 +332,9 @@ public final class OtherDevicesAbilitiesClientAcceptance implements FabricClient
     private void place(final ClientGameTestContext context, final Item item, final BlockPos target, final String expectedId,
         final boolean crouch) {
         supply(context, 0, item);
-        if (crouch) { context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3); }
+        if (crouch) { context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3); }
         try { use(context, new Vec3(target.getX() + 0.5, target.getY() - 0.001, target.getZ() + 0.5), target.below()); }
-        finally { if (crouch) { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2); } }
+        finally { if (crouch) { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(2); } }
         final Identifier expected = expectedId.contains(":") ? Identifier.parse(expectedId) : Identifier.fromNamespaceAndPath("warlockery", expectedId);
         await(context, player -> BuiltInRegistries.BLOCK.getKey(player.level().getBlockState(target).getBlock()).equals(expected), 30,
             "Native placement produces the expected device at " + target);
@@ -349,7 +348,7 @@ public final class OtherDevicesAbilitiesClientAcceptance implements FabricClient
 
     private void sync(final ClientGameTestContext context, final int hotbar) {
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1 + hotbar); context.waitTicks(2);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + hotbar); context.waitTicks(2);
     }
 
     private static void use(final ClientGameTestContext context, final Vec3 point, final BlockPos expected) {
@@ -361,7 +360,7 @@ public final class OtherDevicesAbilitiesClientAcceptance implements FabricClient
         context.waitTicks(2);
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(expected)),
             "Native pointer targets the intended support/device: " + expected);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
     }
 
     private void await(final ClientGameTestContext context, final Predicate<ServerPlayer> predicate, final int ticks, final String message) {
@@ -371,7 +370,7 @@ public final class OtherDevicesAbilitiesClientAcceptance implements FabricClient
 
     private static void close(final ClientGameTestContext context) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTicks(3);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitTicks(3);
         }
     }
 

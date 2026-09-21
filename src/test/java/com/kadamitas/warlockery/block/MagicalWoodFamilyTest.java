@@ -121,10 +121,15 @@ final class MagicalWoodFamilyTest {
         assertTrue(worldGeneration.contains("BiomeModifications.addFeature"));
         FAMILIES.forEach(family -> {
             final String configured = readString(DATA.resolve(
-                "warlockery/worldgen/configured_feature/" + family + "_tree.json"
+                "warlockery/worldgen/feature/" + family + "_tree.json"
             ));
             assertTrue(configured.contains("warlockery:" + family + "_log"), family);
             assertTrue(configured.contains("warlockery:" + family + "_leaves"), family);
+            final JsonObject feature = JsonParser.parseString(configured).getAsJsonObject();
+            assertEquals("minecraft:tree", feature.get("type").getAsString(), family);
+            assertTrue(!feature.has("config"), "26.3 feature fields must not retain the old config wrapper");
+            assertEquals("warlockery:" + family + "_log", feature.getAsJsonObject("trunk_provider").get("id").getAsString());
+            assertEquals("warlockery:" + family + "_leaves", feature.getAsJsonObject("foliage_provider").get("id").getAsString());
             final String placed = readString(DATA.resolve(
                 "warlockery/worldgen/placed_feature/" + family + "_tree.json"
             ));

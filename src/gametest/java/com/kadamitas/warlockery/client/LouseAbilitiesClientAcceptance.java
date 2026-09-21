@@ -39,7 +39,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class LouseAbilitiesClientAcceptance implements FabricClientGameTest {
     private final Map<String, Object> report = new LinkedHashMap<>();
@@ -70,7 +69,7 @@ public final class LouseAbilitiesClientAcceptance implements FabricClientGameTes
                         stage(context);
                         readGuide(context, scenario, row);
                         load(context, harmful, row);
-                        context.getInput().pressKey(GLFW.GLFW_KEY_2);
+                        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
                         context.waitTicks(25);
                         check(serverValue(player -> player.getHealth() == player.getMaxHealth()
                             && player.getActiveEffects().isEmpty() && loaded(player)),
@@ -96,8 +95,8 @@ public final class LouseAbilitiesClientAcceptance implements FabricClientGameTes
                         try { screenshot(context, scenario + "-failure"); } catch (Throwable capture) { failure.addSuppressed(capture); }
                         throw failure;
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                         write(false);
                     }
                 }
@@ -133,7 +132,7 @@ public final class LouseAbilitiesClientAcceptance implements FabricClientGameTes
         final ManualProfile profile = ManualProfile.profiles().stream().filter(value -> value.sections().contains(section)).findFirst().orElseThrow();
         server(player -> { player.getInventory().setItem(0, new ItemStack(ModItems.ALL.get(profile.id()).get())); player.inventoryMenu.broadcastChanges(); });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         useAir(context);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
@@ -154,7 +153,7 @@ public final class LouseAbilitiesClientAcceptance implements FabricClientGameTes
             screenshot(context, scenario + "-guide-" + (page + 1));
         }
         row.put("guide_pages", pages);
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
     }
 
@@ -168,7 +167,7 @@ public final class LouseAbilitiesClientAcceptance implements FabricClientGameTes
             player.setItemSlot(EquipmentSlot.OFFHAND, potion.copy()); player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         check(serverValue(player -> !loaded(player)), "The supplied louse starts empty");
         useAir(context);
         await(context, LouseAbilitiesClientAcceptance::loaded, 30, "Native air use loads the opposite-hand potion into the louse");
@@ -201,9 +200,9 @@ public final class LouseAbilitiesClientAcceptance implements FabricClientGameTes
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); }); context.waitTicks(2);
         final float before = serverValue(ServerPlayer::getHealth);
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { await(context, player -> player.getHealth() < before, 50, "Native forward movement causes ordinary cactus damage"); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         row.put("after_environmental_damage", serverValue(LouseAbilitiesClientAcceptance::playerState));
         server(player -> { player.level().setBlockAndUpdate(new BlockPos(0, 100, -4), Blocks.AIR.defaultBlockState()); player.setDeltaMovement(Vec3.ZERO); });
     }
@@ -260,7 +259,7 @@ public final class LouseAbilitiesClientAcceptance implements FabricClientGameTes
         context.runOnClient(client -> client.player.setXRot(-75)); context.waitTicks(2);
         check(context.computeOnClient(client -> client.hitResult != null
             && client.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.MISS), "The native use ray points into clear air");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
     }
     private void await(final ClientGameTestContext context, final Predicate<ServerPlayer> condition, final int ticks, final String message) {
         for (int elapsed = 0; elapsed < ticks && !serverValue(condition::test); elapsed += 2) context.waitTicks(2);

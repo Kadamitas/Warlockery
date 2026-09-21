@@ -64,7 +64,6 @@ import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Native Dream Weaver sleep rewards, bound Scarecrow modes, both statue wards, Wolf Altar, Wolf Trap and
@@ -137,9 +136,9 @@ public final class DreamAndBoundDevicesClientAcceptance implements FabricClientG
                         fail(id, row, failure);
                         try { screenshot(context, id + "-failure"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                         if (observation != null) row.put("entity_observation", serverValue(player -> observation.report()));
                         observation = null; write(false);
                     }
@@ -436,10 +435,10 @@ public final class DreamAndBoundDevicesClientAcceptance implements FabricClientG
         position(context, new Vec3(2.5, 100, -1.0));
         supply(context, 0, new ItemStack(item("hexing_doll")));
         aimEntity(context, cow);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
         await(context, player -> SympatheticBinding.read(player.getMainHandItem()).filter(binding -> binding.targetId().equals(cow)).isPresent(), 20,
             "Native doll use on the cow binds the Hexing Doll to it");
-        context.getInput().pressKey(GLFW.GLFW_KEY_F); context.waitTicks(3);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F); context.waitTicks(3);
         check(serverValue(player -> SympatheticBinding.read(player.getOffhandItem()).filter(binding -> binding.targetId().equals(cow)).isPresent()),
             "Native hand swap moves the bound doll to the offhand");
     }
@@ -448,7 +447,7 @@ public final class DreamAndBoundDevicesClientAcceptance implements FabricClientG
         final String messageKey, final Map<String, Object> row, final String label) throws Exception {
         supply(context, 0, new ItemStack(item("ingredient_bone_needle"), 2));
         context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(6);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(6);
         awaitOverlay(context, translated(context, messageKey));
         final float health = serverValue(player -> living(player, cow).getHealth());
         final int needles = serverValue(player -> count(player, item("ingredient_bone_needle")));
@@ -555,9 +554,9 @@ public final class DreamAndBoundDevicesClientAcceptance implements FabricClientG
     private void walkAcross(final ClientGameTestContext context, final Predicate<ServerPlayer> outcome, final int ticks, final String message) {
         position(context, START);
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); });
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { await(context, outcome, ticks, message); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); context.waitTicks(3); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); context.waitTicks(3); }
     }
 
     private void trent(final ClientGameTestContext context, final Map<String, Object> row) throws Exception {
@@ -622,7 +621,7 @@ public final class DreamAndBoundDevicesClientAcceptance implements FabricClientG
             final var profile = found.orElseThrow();
             supply(context, 0, new ItemStack(item(profile.id())));
             context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
             ManualClientAcceptance.selectSection(context, section);
             final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
             final int pages = context.computeOnClient(client -> {
@@ -680,7 +679,7 @@ public final class DreamAndBoundDevicesClientAcceptance implements FabricClientG
         check(serverValue(player -> player.getMainHandItem().isEmpty()), "Main hand is actually empty");
     }
     private void sync(final ClientGameTestContext context, final int slot) {
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1 + slot); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + slot); context.waitTicks(2);
     }
     private void position(final ClientGameTestContext context, final Vec3 point) {
         server(player -> { player.teleportTo(point.x, point.y, point.z); player.setDeltaMovement(Vec3.ZERO); });
@@ -698,7 +697,7 @@ public final class DreamAndBoundDevicesClientAcceptance implements FabricClientG
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(expected)),
             "Native pointer targets intended block " + expected + "; actual=" + context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit
                 ? hit.getType() + " " + hit.getBlockPos() + " face=" + hit.getDirection() + " at=" + hit.getLocation() : String.valueOf(client.hitResult)));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
     }
     /** Guide-promised empty-hand reading; recorded as a guide deviation (not a scenario failure) when the coded block refuses it. */
     private void inspectEmptyHand(final ClientGameTestContext context, final Map<String, Object> row, final String id, final String expected, final String note) {
@@ -711,7 +710,7 @@ public final class DreamAndBoundDevicesClientAcceptance implements FabricClientG
         row.put("empty_hand_inspection", inspection);
     }
     private static void closeScreen(final ClientGameTestContext context) {
-        if (context.computeOnClient(client -> client.gui.screen() != null)) { context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTicks(3); }
+        if (context.computeOnClient(client -> client.gui.screen() != null)) { context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitTicks(3); }
     }
     private void await(final ClientGameTestContext context, final Predicate<ServerPlayer> predicate, final int ticks, final String message) {
         for (int remaining = ticks; remaining > 0 && !serverValue(predicate::test); remaining -= 2) context.waitTicks(2);

@@ -426,7 +426,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             return false;
         }
         final ItemStack fuel = items.get(profile.fuelSlot());
-        final int duration = level.fuelValues().burnDuration(fuel);
+        final int duration = CookingFuels.burnDuration(level, fuel, this);
         if (duration <= 0) {
             return false;
         }
@@ -809,7 +809,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             if (outputs.isEmpty() || outputs.stream().anyMatch(ItemStack::isEmpty) || !canAccept(outputs, profile)) {
                 status = MachineStatus.OUTPUT_BLOCKED;
             } else if (profile.hasFuelSlot() && burnTime <= 0
-                && level.fuelValues().burnDuration(items.get(profile.fuelSlot())) <= 0) {
+                && CookingFuels.burnDuration(level, items.get(profile.fuelSlot()), this) <= 0) {
                 status = MachineStatus.NO_FUEL;
             } else if (diagnostic.recipe().equals(activeRecipe) && progress > 0) {
                 status = MachineStatus.PROCESSING;
@@ -860,7 +860,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             stack,
             level == null || !level.isClientSide(),
             candidate -> MachineRecipeManager.INSTANCE.acceptsInput(profile, slot, candidate),
-            candidate -> level != null && level.fuelValues().isFuel(candidate)
+            candidate -> level != null && com.kadamitas.warlockery.block.entity.CookingFuels.isFuel(candidate)
         );
     }
 
@@ -884,7 +884,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             return true;
         }
         return slotLayout().extractsFuelRemainder(direction, slot)
-            && (level == null || !level.fuelValues().isFuel(stack));
+            && (level == null || !com.kadamitas.warlockery.block.entity.CookingFuels.isFuel(stack));
     }
 
     @Override
@@ -1139,7 +1139,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         recovered.stream().map(ItemStack::copy).forEach(stack -> {
             player.getInventory().add(stack);
             if (!stack.isEmpty()) {
-                player.drop(stack, false);
+                player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
             }
         });
     }

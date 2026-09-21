@@ -141,7 +141,7 @@ public final class MimicryGameTests {
             fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(11, 1, 9))
         );
         vanilla.forEach(entity -> {
-            entity.setInvulnerable(true);
+            entity.setPermanentlyInvulnerable(true);
             if (entity instanceof Mob mob) mob.setNoAi(true);
         });
         final List<Float> health = vanilla.stream().map(LivingEntity::getHealth).toList();
@@ -248,7 +248,8 @@ public final class MimicryGameTests {
         ));
         sleepCancellation.getNavigation().moveTo(sleeper, 1.0D);
         sleepCancellation.setDeltaMovement(0.25D, 0.0D, 0.25D);
-        sleeper.startSleeping(helper.absolutePos(new BlockPos(5, 1, 11)));
+        com.kadamitas.warlockery.util.GameTestMockPlayers.sleepInBed(helper, sleeper,
+            helper.absolutePos(new BlockPos(5, 1, 11)));
         helper.assertTrue(sleeper.isSleeping(), "the cancellation subject entered real sleeping state");
         MimicryRuntime.tick(sleepCancellation, helper.getLevel());
         helper.assertValueEqual(sleepCancellation.mimicCore().counters().cancellations, 1L,
@@ -701,9 +702,9 @@ public final class MimicryGameTests {
         });
         helper.runAfterDelay(4L, () -> {
             copy.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(attacker), 0.0F);
-            copy.setInvulnerable(true);
+            copy.setPermanentlyInvulnerable(true);
             copy.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(attacker), 3.0F);
-            copy.setInvulnerable(false);
+            copy.setPermanentlyInvulnerable(false);
             helper.assertValueEqual(copy.mimicCore().counters().attributions, 0L,
                 "zeroed and fully refused hits mint no attribution");
         });
@@ -741,7 +742,7 @@ public final class MimicryGameTests {
                 actor.teleportTo(probeStart.x, probeStart.y, probeStart.z);
                 for (int x = -4; x <= 4; x++) for (int z = -4; z <= 4; z++) {
                     final var landingBox = actor.getBoundingBox().move(x, -2.0D, z);
-                    helper.assertTrue(helper.getLevel().getBlockState(BlockPos.containing(probeStart.add(x, -3.0D, z))).blocksMotion()
+                    helper.assertTrue(com.kadamitas.warlockery.util.BlockSupport.blocksMotion(helper.getLevel().getBlockState(BlockPos.containing(probeStart.add(x, -3.0D, z))))
                             && helper.getLevel().noCollision(actor, landingBox)
                             && !helper.getLevel().containsAnyLiquid(landingBox),
                         "every first shared-hook proposal has a supported clear landing for " + sharedHookIds.get(index));
@@ -1030,7 +1031,7 @@ public final class MimicryGameTests {
             final IllusionZombieEntity zombie =
                 (IllusionZombieEntity) spawnMimic(fixture, "illusion_zombie", new BlockPos(2, 1, 2));
             final ServerPlayer observer = fixture.connectedPlayer(new BlockPos(0, 1, 0));
-            observer.setInvulnerable(false);
+            observer.setPermanentlyInvulnerable(false);
 
             // The observer deliberately looks away along +X, so the creeper's discovery predicate
             // cannot fire and the telegraph and hold phases are actually reached.

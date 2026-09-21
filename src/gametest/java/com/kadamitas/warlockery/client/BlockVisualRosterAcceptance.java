@@ -25,7 +25,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Renders every machine/device block from five angles plus its lit/active state; capture is not visual approval. */
 public final class BlockVisualRosterAcceptance implements FabricClientGameTest {
@@ -103,7 +102,7 @@ public final class BlockVisualRosterAcceptance implements FabricClientGameTest {
             throw new AssertionError("Block visual roster evidence: " + evidence, failure);
         } finally {
             context.runOnClient(client -> client.options.fov().set(originalFov));
-            if (context.computeOnClient(client -> client.gui.hud.isHidden()) != originalHud) context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+            if (context.computeOnClient(client -> client.gui.hud.isHidden()) != originalHud) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
         }
     }
 
@@ -125,8 +124,8 @@ public final class BlockVisualRosterAcceptance implements FabricClientGameTest {
         });
         world.getConnection().waitForClientboundPackets();
         world.getConnection().waitForChunksRender();
-        for (int i = 0; i < 3 && !context.computeOnClient(c -> c.options.getCameraType().isFirstPerson()); i++) context.getInput().pressKey(GLFW.GLFW_KEY_F5);
-        if (!context.computeOnClient(client -> client.gui.hud.isHidden())) context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+        for (int i = 0; i < 3 && !context.computeOnClient(c -> c.options.getCameraType().isFirstPerson()); i++) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5);
+        if (!context.computeOnClient(client -> client.gui.hud.isHidden())) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
     }
 
     private void block(final ClientGameTestContext context, final String id) throws Exception {

@@ -3,7 +3,6 @@ package com.kadamitas.warlockery.block;
 import com.kadamitas.warlockery.block.ConnectedGlyphGeometry.Side;
 import com.kadamitas.warlockery.item.ArcaneFocusItem;
 import com.kadamitas.warlockery.item.ChalkItem;
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -36,7 +35,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class ConnectedGlyphBlock extends Block {
-    public static final MapCodec<ConnectedGlyphBlock> CODEC = simpleCodec(ConnectedGlyphBlock::new);
     public static final BooleanProperty NORTH = BlockStateProperties.NORTH;
     public static final BooleanProperty EAST = BlockStateProperties.EAST;
     public static final BooleanProperty SOUTH = BlockStateProperties.SOUTH;
@@ -73,11 +71,6 @@ public class ConnectedGlyphBlock extends Block {
             .setValue(SOUTH_WEST, false)
             .setValue(NORTH_WEST, false));
         shapes = getShapeForEachState(ConnectedGlyphBlock::shapeForState);
-    }
-
-    @Override
-    public MapCodec<ConnectedGlyphBlock> codec() {
-        return CODEC;
     }
 
     @Override

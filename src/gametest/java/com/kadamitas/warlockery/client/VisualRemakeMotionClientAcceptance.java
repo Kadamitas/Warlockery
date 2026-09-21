@@ -47,7 +47,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Private native-capture helper for the four approved visual remakes.
@@ -108,8 +107,8 @@ public final class VisualRemakeMotionClientAcceptance implements FabricClientGam
                         failures.add(id + ": " + failure);
                         try { screenshot(context, id + "-failure"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                         write(false);
                     }
                 } finally {
@@ -124,7 +123,7 @@ public final class VisualRemakeMotionClientAcceptance implements FabricClientGam
         } finally {
             context.runOnClient(client -> client.options.fov().set(originalFov));
             if (context.computeOnClient(client -> client.gui.hud.isHidden()) != originalHud) {
-                context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
             }
         }
     }
@@ -152,9 +151,9 @@ public final class VisualRemakeMotionClientAcceptance implements FabricClientGam
         });
         stand(context, new Vec3(0.5, 100.0, -7.5));
         for (int i = 0; i < 3 && !context.computeOnClient(client -> client.options.getCameraType().isFirstPerson()); i++) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_F5);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5);
         }
-        if (!context.computeOnClient(client -> client.gui.hud.isHidden())) context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+        if (!context.computeOnClient(client -> client.gui.hud.isHidden())) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
         row().put("fixture", "Fresh Survival world at night; flat arena, starting positions, supplies, health thresholds, Resistance IV, and absorption are staged. AI remains enabled. Native mouse input supplies binding and player attacks. No presentation state or attack result is forced.");
     }
 
@@ -254,8 +253,8 @@ public final class VisualRemakeMotionClientAcceptance implements FabricClientGam
         hold(context, Items.BOW, new ItemStack(Items.ARROW, 8));
         final float healthBefore = serverValue(player -> entity(player, id, WerewolfHunterEntity.class).getHealth());
         aimEntity(context, id);
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-        try { context.waitTicks(24); } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+        try { context.waitTicks(24); } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         await(context, player -> entity(player, id, WerewolfHunterEntity.class).getHealth() < healthBefore,
             50, "A native player bow shot records direct-attack evidence at non-close range");
         final List<Map<String, Object>> frames = frames();
@@ -349,14 +348,14 @@ public final class VisualRemakeMotionClientAcceptance implements FabricClientGam
     private void nativeAttack(final ClientGameTestContext context, final UUID id) {
         aimEntity(context, id);
         row().put("native_hit_health_before", serverValue(player -> living(player, id).getHealth()));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-        try { context.waitTicks(25); } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+        try { context.waitTicks(25); } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         context.waitTicks(9);
         row().put("native_hit_health_after", serverValue(player -> living(player, id).getHealth()));
     }
     private void useEntity(final ClientGameTestContext context, final UUID id) {
         aimEntity(context, id);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(4);
     }
 
@@ -420,7 +419,7 @@ public final class VisualRemakeMotionClientAcceptance implements FabricClientGam
         server(player -> {
             player.teleportTo(position.x, position.y, position.z);
             player.setDeltaMovement(Vec3.ZERO);
-            player.hurtMarked = true;
+            player.syncVelocity = true;
         });
         world.getConnection().waitForClientboundPackets();
         context.waitFor(client -> client.player.position().distanceTo(position) < 0.15, 60);

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "warlockery_quilt_dev",
+  "version": "1.0.0",
+  "name": "Warlockery Quilt Development Bootstrap",
+  "environment": "*",
+  "accessWidener": "quilt-development-bootstrap.accesswidener",
+  "depends": { "quilt_loader": ">=0.30.1", "minecraft": "26.3" }
+}
+

@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:delvealloyhelm"
+        "recipes": "warlockery:delvealloyhelm"
       }
     },
     "has_ingredient_0": {

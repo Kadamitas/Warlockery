@@ -16,7 +16,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
-import org.lwjgl.glfw.GLFW;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class JeiCatalogAcceptance implements FabricClientGameTest {
@@ -105,7 +104,7 @@ public final class JeiCatalogAcceptance implements FabricClientGameTest {
                         List.of(List.of("warlockery:ingredient_annointing_paste x1"), List.of("minecraft:cauldron x1"))));
                 });
                 if (MACHINES_ONLY) expected.entrySet().removeIf(entry -> !entry.getValue().kind.equals("machine"));
-                context.getInput().pressKey(GLFW.GLFW_KEY_E);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E);
                 context.waitFor(client -> ManualJeiAcceptance.runtime() != null);
                 var batches = context.computeOnClient(client -> inventory());
                 write("baseline.json", false);
@@ -144,6 +143,7 @@ public final class JeiCatalogAcceptance implements FabricClientGameTest {
                     if (!record.problems.isEmpty()) errors.add(record.key + ": " + record.problems);
                 }
                 write("coverage.json", errors.isEmpty());
+                errors.forEach(error -> System.err.println("WARLOCKERY_JEI_COVERAGE_FAILURE " + error));
                 System.out.println("WARLOCKERY_JEI_CATALOG_COMPLETE " + evidence + " entries=" + coverage.size() + " errors=" + errors.size());
                 if (!errors.isEmpty()) throw new AssertionError(errors.size() + " recipe coverage failures; see coverage.json");
             }
@@ -306,7 +306,7 @@ public final class JeiCatalogAcceptance implements FabricClientGameTest {
             });
             if (point == null) continue;
             ManualClientAcceptance.cursor(context, point[0], point[1]);
-            context.getInput().pressKey(role == RecipeIngredientRole.OUTPUT ? GLFW.GLFW_KEY_R : GLFW.GLFW_KEY_U);
+            context.getInput().pressKey(role == RecipeIngredientRole.OUTPUT ? com.mojang.blaze3d.platform.InputConstants.KEY_R : com.mojang.blaze3d.platform.InputConstants.KEY_U);
             context.waitTicks(2);
             boolean focused = context.computeOnClient(client -> {
                 var group = (mezz.jei.api.recipe.IFocusGroup) invoke(read(read(client.gui.screen(), "logic"), "state"), "getFocuses");
@@ -314,7 +314,7 @@ public final class JeiCatalogAcceptance implements FabricClientGameTest {
             });
             if (!focused) errors.add("Native recipe/use key failed to establish " + role + " focus for " + category.getRecipeType().getUid());
             navigation.add("Native " + (role == RecipeIngredientRole.OUTPUT ? "R" : "U") + " from rendered " + category.getRecipeType().getUid() + " " + role);
-            context.getInput().pressKey(GLFW.GLFW_KEY_BACKSPACE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_BACKSPACE);
             context.waitTicks(2);
         }
     }

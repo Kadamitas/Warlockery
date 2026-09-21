@@ -70,10 +70,10 @@ final class DeathModelTest {
         final String telegraphPose = geometrySnapshot(model.root());
 
         final DeathModel.State reapEarly = new DeathModel.State();
-        reapEarly.attackTime = 0.15F;
+        reapEarly.swingAnimation = 0.15F;
         model.setupAnim(reapEarly);
         final String earlyPose = geometrySnapshot(model.root());
-        reapEarly.attackTime = 0.75F;
+        reapEarly.swingAnimation = 0.75F;
         model.setupAnim(reapEarly);
         final String latePose = geometrySnapshot(model.root());
 

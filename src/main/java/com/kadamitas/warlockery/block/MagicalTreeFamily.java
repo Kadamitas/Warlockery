@@ -8,7 +8,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.grower.TreeGrower;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.util.random.WeightedList;
 
 public enum MagicalTreeFamily implements StringIdentified {
     ALDER("alder"),
@@ -18,20 +19,21 @@ public enum MagicalTreeFamily implements StringIdentified {
     private static final EnumLookup<MagicalTreeFamily> LOOKUP = EnumLookup.create("magical tree family", values());
 
     private final String id;
-    private final ResourceKey<ConfiguredFeature<?, ?>> configuredFeature;
+    private final ResourceKey<Feature> configuredFeature;
     private final TreeGrower treeGrower;
 
     MagicalTreeFamily(final String id) {
         this.id = id;
         configuredFeature = ResourceKey.create(
-            Registries.CONFIGURED_FEATURE,
+            Registries.FEATURE,
             Identifier.fromNamespaceAndPath(Warlockery.MOD_ID, id + "_tree")
         );
         treeGrower = new TreeGrower(
             Warlockery.MOD_ID + "_" + id,
-            Optional.empty(),
-            Optional.of(configuredFeature),
-            Optional.empty()
+            WeightedList.of(configuredFeature),
+            WeightedList.of(),
+            WeightedList.of(),
+            configuredFeature
         );
     }
 
@@ -39,7 +41,7 @@ public enum MagicalTreeFamily implements StringIdentified {
         return id;
     }
 
-    public ResourceKey<ConfiguredFeature<?, ?>> configuredFeature() {
+    public ResourceKey<Feature> configuredFeature() {
         return configuredFeature;
     }
 
