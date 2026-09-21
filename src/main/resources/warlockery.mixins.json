@@ -12,7 +12,6 @@
     "ThrownEnderpearlMixin"
   ],
   "client": [
-    "client.AvatarRendererMixin",
     "client.ItemInHandRendererMixin",
     "client.LivingEntityRendererMixin",
     "client.MultiPlayerGameModeMixin"
