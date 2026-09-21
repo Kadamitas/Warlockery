@@ -310,7 +310,8 @@ public final class LivingRootsGameTests {
             final DreamrootEntity sleepingDreamroot = fixture.dreamroot(new BlockPos(1, 1, 2));
             MandrakeRuntime.acceptedDamage(sleepingMandrake, sleepingActor);
             DreamrootRuntime.acceptedDamage(sleepingDreamroot, sleepingActor);
-            sleepingActor.startSleeping(helper.absolutePos(new BlockPos(0, 1, 2)));
+            com.kadamitas.warlockery.util.GameTestMockPlayers.sleepInBed(helper, sleepingActor,
+                helper.absolutePos(new BlockPos(0, 1, 2)));
             helper.assertTrue(sleepingActor.isSleeping(), "the bound player is in the live sleeping state");
             MandrakeRuntime.tick(sleepingMandrake, helper.getLevel());
             DreamrootRuntime.tick(sleepingDreamroot, helper.getLevel());

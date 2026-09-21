@@ -185,10 +185,10 @@ public final class NaamahCourtGameTests {
         final long now = helper.getLevel().getGameTime();
         NaamahCourtRuntime.rememberAttacker(naamah, challenger, now);
         naamah.setTarget(challenger);
-        challenger.setInvulnerableTime(0);
+        challenger.damageCooldownTime = 0;
         final AtomicBoolean clearChallengerInvulnerability = new AtomicBoolean(true);
         helper.onEachTick(() -> {
-            if (clearChallengerInvulnerability.get()) challenger.setInvulnerableTime(0);
+            if (clearChallengerInvulnerability.get()) challenger.damageCooldownTime = 0;
         });
         final float challengerHealth = challenger.getHealth();
         naamah.setCourtState(naamah.courtState()
@@ -239,7 +239,7 @@ public final class NaamahCourtGameTests {
             drainVictim.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                 MobEffects.FIRE_RESISTANCE, 200, 0
             ));
-            drainVictim.setInvulnerableTime(0);
+            drainVictim.damageCooldownTime = 0;
             drainVictimRef.set(drainVictim);
             final long meleeNow = helper.getLevel().getGameTime();
             NaamahCourtRuntime.rememberAttacker(naamah, drainVictim, meleeNow);
@@ -285,7 +285,7 @@ public final class NaamahCourtGameTests {
                 fixedTarget.getX() + 0.5D, fixedTarget.getY(), fixedTarget.getZ() + 0.5D
             );
             drainVictim.setDeltaMovement(0.0D, 0.0D, 0.0D);
-            drainVictim.setInvulnerableTime(0);
+            drainVictim.damageCooldownTime = 0;
             helper.assertTrue(naamah.getTarget() == drainVictim,
                 "the valid automatic challenger must remain selected during approach; target="
                     + naamah.getTarget() + ", recent=" + naamah.courtState().recentAttacker()
@@ -329,7 +329,7 @@ public final class NaamahCourtGameTests {
             final Sheep exactDrainVictim = helper.spawn(
                 EntityTypes.SHEEP, new BlockPos(2, 1, 3), EntitySpawnReason.EVENT
             );
-            exactDrainVictim.setInvulnerableTime(0);
+            exactDrainVictim.damageCooldownTime = 0;
             final float exactDrainHealth = naamah.getHealth();
             helper.assertTrue(naamah.doHurtTarget(helper.getLevel(), exactDrainVictim),
                 "the preserved direct blood-drain contract must still land");
@@ -360,7 +360,7 @@ public final class NaamahCourtGameTests {
             );
             obstructedVictim.setNoAi(true);
             obstructedVictim.setNoGravity(true);
-            obstructedVictim.setInvulnerableTime(0);
+            obstructedVictim.damageCooldownTime = 0;
             obstructedVictimRef.set(obstructedVictim);
             final long obstructedNow = helper.getLevel().getGameTime();
             NaamahCourtRuntime.rememberAttacker(naamah, obstructedVictim, obstructedNow);
@@ -392,7 +392,7 @@ public final class NaamahCourtGameTests {
             final Ravager obstructedVictim = obstructedVictimRef.get();
             if (obstructedVictim == null) return;
             obstructedVictim.setDeltaMovement(0.0D, 0.0D, 0.0D);
-            obstructedVictim.setInvulnerableTime(0);
+            obstructedVictim.damageCooldownTime = 0;
             final var hunger = obstructedVictim.getEffect(MobEffects.HUNGER);
             if (hunger == null) return;
             helper.assertTrue(naamah.getSensing().hasLineOfSight(obstructedVictim),
@@ -560,7 +560,7 @@ public final class NaamahCourtGameTests {
             pinInSunlight.set(false);
             helper.assertTrue(sunlightIgnited.get(),
                 "ordinary server ticks must invoke the retained SUNLIGHT_WEAKNESS ignition profile");
-            naamah.setInvulnerableTime(0);
+            naamah.damageCooldownTime = 0;
             final float beforeDaylightFire = naamah.getHealth();
             helper.assertTrue(naamah.hurtServer(helper.getLevel(), helper.getLevel().damageSources().onFire(), 1.0F),
                 "profile-ignited Naamah must accept the ordinary on-fire damage path");
@@ -568,7 +568,7 @@ public final class NaamahCourtGameTests {
                 "profile ignition must lead to real Naamah fire damage");
             naamah.clearFire();
             naamah.setHealth(naamah.getMaxHealth());
-            naamah.setInvulnerableTime(0);
+            naamah.damageCooldownTime = 0;
             helper.getLevel().clockManager().setTotalTicks(
                 helper.getLevel().registryAccess().get(WorldClocks.OVERWORLD).orElseThrow(), 18_000L
             );
@@ -906,8 +906,8 @@ public final class NaamahCourtGameTests {
             EntityTypes.SHEEP, new BlockPos(2, 1, 1), EntitySpawnReason.EVENT
         );
         crowdedWaveTarget.setNoAi(true);
-        crowdedWaveTarget.setInvulnerableTime(0);
-        crowdedCandidates.forEach(player -> player.setInvulnerableTime(0));
+        crowdedWaveTarget.damageCooldownTime = 0;
+        crowdedCandidates.forEach(player -> player.damageCooldownTime = 0);
         final List<Float> crowdedHealthBefore = crowdedCandidates.stream()
             .map(ServerPlayer::getHealth).toList();
         final float crowdedWaveTargetHealth = crowdedWaveTarget.getHealth();

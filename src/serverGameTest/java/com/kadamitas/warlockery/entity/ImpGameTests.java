@@ -537,7 +537,7 @@ public final class ImpGameTests {
             final Zombie target = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(11, 1, 3),
                 EntitySpawnReason.EVENT);
             target.setNoAi(true);
-            imp.setInvulnerableTime(0);
+            imp.damageCooldownTime = 0;
             helper.assertTrue(imp.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(target), 1.0F
             ), "the combat fixture needs one real attributed hit");
@@ -746,7 +746,7 @@ public final class ImpGameTests {
                     final Zombie victim = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 2),
                         EntitySpawnReason.EVENT);
                     victim.setNoAi(true);
-                    victim.setInvulnerableTime(0);
+                    victim.damageCooldownTime = 0;
                     helper.assertTrue(shooter.doHurtTarget(level, victim),
                         "the cornered melee path lands one ordinary attributed attack");
                     helper.assertTrue(victim.getRemainingFireTicks() >= 70
@@ -772,11 +772,11 @@ public final class ImpGameTests {
             final float ownerHealth = owner.getHealth();
             final float boundHealth = bound.getHealth();
 
-            bound.setInvulnerableTime(0);
+            bound.damageCooldownTime = 0;
             helper.assertFalse(bound.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().fall(), 6.0F
             ), "a validly bound imp ignores fall damage");
-            bound.setInvulnerableTime(0);
+            bound.damageCooldownTime = 0;
             helper.assertFalse(bound.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().drown(), 6.0F
             ), "a validly bound imp ignores drowning damage");
@@ -786,11 +786,11 @@ public final class ImpGameTests {
             final Zombie attacker = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(2, 1, 1),
                 EntitySpawnReason.EVENT);
             attacker.setNoAi(true);
-            bound.setInvulnerableTime(0);
+            bound.damageCooldownTime = 0;
             helper.assertTrue(bound.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 2.0F
             ), "attacker-caused damage remains fully effective on a bound imp");
-            bound.setInvulnerableTime(0);
+            bound.damageCooldownTime = 0;
             helper.assertTrue(bound.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().magic(), 2.0F
             ), "magic damage remains effective on a bound imp");
@@ -799,13 +799,13 @@ public final class ImpGameTests {
 
             final ImpEntity unbound = spawnImp(fixture, new BlockPos(0, 1, 0));
             final float unboundHealth = unbound.getHealth();
-            unbound.setInvulnerableTime(0);
+            unbound.damageCooldownTime = 0;
             helper.assertTrue(unbound.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().fall(), 4.0F
             ), "an unbound imp gains no new familiar safety beyond inherent fire immunity");
             helper.assertTrue(unbound.getHealth() < unboundHealth,
                 "the unbound fall damage really applies");
-            unbound.setInvulnerableTime(0);
+            unbound.damageCooldownTime = 0;
             helper.assertFalse(unbound.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().inFire(), 4.0F
             ), "inherent fire immunity stays for every imp");

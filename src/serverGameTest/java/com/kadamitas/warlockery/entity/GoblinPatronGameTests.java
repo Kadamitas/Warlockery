@@ -390,7 +390,7 @@ public final class GoblinPatronGameTests {
             warden.getSensing().tick();
             // Without this the surge's own hit leaves the victim invulnerable, doHurtTarget returns
             // false, and both rider assertions below would pass vacuously on stale state.
-            victim.setInvulnerableTime(0);
+            victim.damageCooldownTime = 0;
             victim.clearFire();
             final float beforeMelee = victim.getHealth();
             final boolean navigationIdleBefore = warden.getNavigation().isDone();
@@ -495,7 +495,7 @@ public final class GoblinPatronGameTests {
             // isolation, because stacking reads as correct in every unit test.
             final float raw = 100.0F;
             broker.setHealth(broker.getMaxHealth());
-            broker.setInvulnerableTime(0);
+            broker.damageCooldownTime = 0;
             final float healthBeforeWardedHit = broker.getHealth();
             broker.hurtServer(level, level.damageSources().mobAttack(challenger), raw);
             final float wardedLoss = healthBeforeWardedHit - broker.getHealth();
@@ -517,7 +517,7 @@ public final class GoblinPatronGameTests {
             // hammer rider is the only writer of the victim's vertical velocity.
             bystander.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
             bystander.setDeltaMovement(Vec3.ZERO);
-            bystander.setInvulnerableTime(0);
+            bystander.damageCooldownTime = 0;
             bystander.clearFire();
             helper.assertTrue(warden.doHurtTarget(level, bystander),
                 "the probe melee must actually be accepted or every rider assertion below is vacuous");

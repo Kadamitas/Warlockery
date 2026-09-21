@@ -419,13 +419,13 @@ public final class LycanPackGameTests {
             guard.setNoAi(true);
             VillageAssaultRuntime.markSettlementGuard(guard, SettlementKind.HUMAN);
             werewolf.setPackState(werewolf.packState().withNeeds(werewolf.packState().needs().hunger(), 0, now));
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(mundane), 1.0F
             ), "the ordinary fear fixture needs a real hit");
             helper.assertValueEqual(werewolf.packState().needs().fear(), LycanPackRules.ORDINARY_DAMAGE_FEAR,
                 "ordinary damage adds exactly 120 fear");
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(guard), 1.0F
             ), "the silver-guard fear fixture needs a real hit");
@@ -437,7 +437,7 @@ public final class LycanPackGameTests {
             final var armor = werewolf.getAttribute(Attributes.ARMOR);
             if (armor != null) armor.setBaseValue(0.0D);
             werewolf.setHealth(werewolf.getMaxHealth());
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().magic(), 4.0F
             ), "the generic magic fixture needs a real hit");
@@ -445,7 +445,7 @@ public final class LycanPackGameTests {
             helper.assertTrue(Math.abs(genericDelta - 0.6F) < 0.01F,
                 "ordinary magic keeps the generic supernatural reduction to fifteen percent; was " + genericDelta);
             werewolf.setHealth(werewolf.getMaxHealth());
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(),
                 LycanDamageTypes.harmWerewolvesSource(helper.getLevel(), alchemist, alchemist), 4.0F
@@ -458,7 +458,7 @@ public final class LycanPackGameTests {
             ));
             alchemist.setItemInHand(InteractionHand.MAIN_HAND, silverSword);
             werewolf.setHealth(werewolf.getMaxHealth());
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().playerAttack(alchemist), 4.0F
             ), "the silver fixture needs a real hit");
@@ -508,7 +508,7 @@ public final class LycanPackGameTests {
             SupernaturalState.setForm(bystander, SupernaturalForm.NONE);
 
             final ServerPlayer aggressor = fixture.connectedPlayer(new BlockPos(3, 1, 2));
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().playerAttack(aggressor), 1.0F
             ), "the melee attribution fixture needs a real hit");
@@ -523,17 +523,17 @@ public final class LycanPackGameTests {
                 EntityTypes.ARROW, new BlockPos(3, 1, 0), EntitySpawnReason.EVENT
             );
             arrow.setOwner(aggressor);
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().arrow(arrow, null), 1.0F
             ), "the projectile attribution fixture needs a real hit");
             helper.assertValueEqual(werewolf.packState().relationships().get(0).relation(), Relation.GRIEVANCE,
                 "a second accepted attributed form promotes the same player to GRIEVANCE");
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().indirectMagic(aggressor, aggressor), 1.0F
             ), "the indirect magic attribution fixture needs a real hit");
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().explosion(null, aggressor), 1.0F
             ), "the explosion attribution fixture needs a real hit");
@@ -542,7 +542,7 @@ public final class LycanPackGameTests {
             helper.assertValueEqual(werewolf.packCounters().relationshipWrites(), 4L,
                 "melee, projectile, indirect magic, and explosion each write the ledger once");
 
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().inFire(), 1.0F
             ), "the environmental negative fixture needs a real hit");
@@ -550,7 +550,7 @@ public final class LycanPackGameTests {
                 "environmental damage writes no relationship");
             final var mob = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(3, 1, 3), EntitySpawnReason.EVENT);
             mob.setNoAi(true);
-            werewolf.setInvulnerableTime(0);
+            werewolf.damageCooldownTime = 0;
             helper.assertTrue(werewolf.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(mob), 1.0F
             ), "the non-player negative fixture needs a real hit");
@@ -561,7 +561,7 @@ public final class LycanPackGameTests {
 
             for (int extra = 0; extra < 4; extra++) {
                 final ServerPlayer another = fixture.connectedPlayer(new BlockPos(4, 1, extra));
-                werewolf.setInvulnerableTime(0);
+                werewolf.damageCooldownTime = 0;
                 werewolf.hurtServer(
                     helper.getLevel(), helper.getLevel().damageSources().playerAttack(another), 1.0F
                 );

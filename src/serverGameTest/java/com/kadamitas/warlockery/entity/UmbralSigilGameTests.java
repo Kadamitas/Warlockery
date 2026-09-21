@@ -95,7 +95,7 @@ public final class UmbralSigilGameTests {
                         >= sigil.sigilCounters().appointmentSweeps(),
                     "the ineligible candidate was charged a read before it could be rejected");
                 subject.setPermanentlyInvulnerable(false);
-                subject.setInvulnerableTime(0);
+                subject.damageCooldownTime = 0;
             });
 
             helper.runAfterDelay(260L, () -> {
@@ -290,7 +290,7 @@ public final class UmbralSigilGameTests {
                 openSealOn(helper, sigil, subject);
                 helper.assertTrue(sigil.sigilTransient().appointed(),
                     "armed control: the seal is genuinely open before the blow lands");
-                sigil.setInvulnerableTime(0);
+                sigil.damageCooldownTime = 0;
                 helper.assertTrue(sigil.hurtServer(
                         helper.getLevel(), helper.getLevel().damageSources().magic(), 2.0F),
                     "the fixture blow must genuinely land, or the cancel proves nothing");

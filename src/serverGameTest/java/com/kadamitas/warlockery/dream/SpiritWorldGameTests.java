@@ -439,7 +439,7 @@ public final class SpiritWorldGameTests {
         final ServerPlayer player = connectedSurvivalPlayer(helper);
         helper.assertTrue(SpiritWorldRuntime.enter(player, false).entered(), "dream entry must succeed");
         player.setHealth(4.0F);
-        player.setInvulnerableTime(0);
+        player.damageCooldownTime = 0;
         player.hurtServer(player.level(), player.damageSources().magic(), 20.0F);
         helper.runAfterDelay(3, () -> {
             helper.assertFalse(SpiritWorldRuntime.isDreaming(player), "fatal dream damage must wake the player");
