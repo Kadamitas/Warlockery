@@ -38,7 +38,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class DollAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final List<String> DOLLS = List.of(
@@ -96,8 +95,8 @@ public final class DollAbilitiesClientAcceptance implements FabricClientGameTest
                         try { screenshot(context, id + "-failure-in-world"); }
                         catch (Throwable capture) { row.put("screenshot_failure", capture.toString()); }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_SPACE);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_SPACE);
                         final HazardObservation current = observation;
                         if (current != null) row.put("hazard_observation", serverValue(player -> current.report()));
                         observation = null;
@@ -159,7 +158,7 @@ public final class DollAbilitiesClientAcceptance implements FabricClientGameTest
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(-70); });
         context.waitTicks(2);
         check(serverValue(player -> SympatheticBinding.read(player.getMainHandItem()).isEmpty()), "Doll starts unbound");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         for (int tick = 0; tick < 30 && !serverValue(player -> DollItem.isBoundTo(player.getMainHandItem(), player)); tick++) {
             context.waitTicks(1);
         }
@@ -211,13 +210,13 @@ public final class DollAbilitiesClientAcceptance implements FabricClientGameTest
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(10); });
         final boolean movement = id.equals("earth_guard_doll") || id.equals("death_guard_doll");
-        if (movement) context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        if (movement) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try {
             for (int tick = 0; tick < 240; tick++) {
                 if (serverValue(player -> observation.firstActivation != null || observation.sawDeath)) break;
                 context.waitTicks(1);
             }
-        } finally { if (movement) context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        } finally { if (movement) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         final Map<String, Object> observed = serverValue(player -> observation.report());
         row.put("hazard_observation", observed);
         final Snapshot activated = serverValue(player -> observation.firstActivation);
@@ -283,7 +282,7 @@ public final class DollAbilitiesClientAcceptance implements FabricClientGameTest
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> client.player.setXRot(-70));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, id);
         final String text = context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString());
@@ -307,7 +306,7 @@ public final class DollAbilitiesClientAcceptance implements FabricClientGameTest
         row.put("section", id);
         row.put("book_text", text);
         row.put("book_pages_read", pages);
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
     }
 

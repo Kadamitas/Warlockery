@@ -91,7 +91,7 @@ final class ResourceAcquisitionResourcesTest {
     Stream<DynamicTest> everyCropUsesMaturityAndFortune() {
         return FORTUNE_CROPS.stream().map(id -> DynamicTest.dynamicTest(id, () -> {
             final String json = readString(BLOCK_LOOT.resolve(id + ".json"));
-            assertTrue(json.contains("minecraft:block_state_property"));
+            assertTrue(json.contains("minecraft:match_block"));
             assertTrue(json.contains("\"age\": \"7\""));
             assertTrue(json.contains("minecraft:fortune"));
             assertTrue(json.contains("minecraft:explosion_decay"));
@@ -158,7 +158,7 @@ final class ResourceAcquisitionResourcesTest {
             assertEquals("minecraft:recipe_unlocked", advancement.getAsJsonObject("criteria")
                 .getAsJsonObject("has_the_recipe").get("trigger").getAsString(), id);
             assertEquals(recipeId, advancement.getAsJsonObject("criteria").getAsJsonObject("has_the_recipe")
-                .getAsJsonObject("conditions").get("recipe").getAsString(), id);
+                .getAsJsonObject("conditions").get("recipes").getAsString(), id);
             assertEquals(List.of(recipeId), advancement.getAsJsonObject("rewards").getAsJsonArray("recipes")
                 .asList().stream().map(JsonElement::getAsString).toList(), id);
             final Set<String> inventoryIngredients = advancement.getAsJsonObject("criteria").entrySet().stream()

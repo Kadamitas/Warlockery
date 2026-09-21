@@ -21,8 +21,8 @@
       "predicate": {
         "type": "minecraft:would_survive",
         "state": {
-          "Name": "warlockery:hawthorn_sapling",
-          "Properties": {
+          "id": "warlockery:hawthorn_sapling",
+          "properties": {
             "stage": "0"
           }
         }

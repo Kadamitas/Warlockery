@@ -40,7 +40,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Native Archfiend's Urn storage, refusal, aimed casting and cooldown; the stored brews and their effects arise only from real input. */
 public final class ArchfiendUrnAbilitiesClientAcceptance implements FabricClientGameTest {
@@ -86,8 +85,8 @@ public final class ArchfiendUrnAbilitiesClientAcceptance implements FabricClient
                     run(context, "cooldown", row -> cooldown(context, row));
                     run(context, "capacity_refusal", row -> capacity(context, row));
                 } finally {
-                    context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
-                    context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                    context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
+                    context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                     world = null;
                 }
             }
@@ -148,7 +147,7 @@ public final class ArchfiendUrnAbilitiesClientAcceptance implements FabricClient
         supplyHands(context, item(URN), ItemStack.EMPTY);
         check(serverValue(player -> ArchfiendsUrnState.read(player.getMainHandItem()).brews().isEmpty()), "Supplied urn starts empty");
         lookSky(context); clearOverlay(context);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
         awaitOverlay(context, "✗ " + translated(context, "item.warlockery." + URN));
         check(serverValue(player -> !player.getCooldowns().isOnCooldown(player.getMainHandItem())), "An empty urn refuses and starts no cooldown");
         check(serverValue(player -> !living(player, target).hasEffect(MobEffects.SLOWNESS) && !living(player, control).hasEffect(MobEffects.SLOWNESS)),
@@ -201,7 +200,7 @@ public final class ArchfiendUrnAbilitiesClientAcceptance implements FabricClient
         check(!context.computeOnClient(client -> client.player.isShiftKeyDown()), "Cast is attempted without crouching");
         clearOverlay(context);
         screenshot(context, "urn-before-aimed-cast");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
         await(context, player -> living(player, target).hasEffect(MobEffects.SLOWNESS), 20, "Aimed native cast applies the stored brew to the creature near the aim point");
         awaitOverlay(context, "✓ " + translated(context, "item.warlockery." + URN));
         final Map<String, Object> effect = serverValue(player -> {
@@ -225,7 +224,7 @@ public final class ArchfiendUrnAbilitiesClientAcceptance implements FabricClient
     private void cooldown(final ClientGameTestContext context, final Map<String, Object> row) throws Exception {
         final int before = serverValue(player -> living(player, target).getEffect(MobEffects.SLOWNESS).getDuration());
         look(context, Vec3.atBottomCenterOf(AIM.above())); assertBlockPointer(context, AIM); clearOverlay(context);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(4);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(4);
         final int during = serverValue(player -> living(player, target).getEffect(MobEffects.SLOWNESS).getDuration());
         check(during < before, "During cooldown a second use does not refresh the target's effect; before=" + before + " after=" + during);
         check(overlay(context).isEmpty(), "During cooldown no new cast message appears; actual=" + overlay(context));
@@ -234,7 +233,7 @@ public final class ArchfiendUrnAbilitiesClientAcceptance implements FabricClient
         await(context, player -> !player.getCooldowns().isOnCooldown(player.getMainHandItem()), 70, "Cooldown expires after about three seconds");
         final int expired = serverValue(player -> living(player, target).getEffect(MobEffects.SLOWNESS).getDuration());
         clearOverlay(context); assertBlockPointer(context, AIM);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
         await(context, player -> living(player, target).getEffect(MobEffects.SLOWNESS).getDuration() >= expired, 20, "After the cooldown a native use casts again and refreshes the effect");
         awaitOverlay(context, "✓ " + translated(context, "item.warlockery." + URN));
         check(serverValue(player -> !living(player, control).hasEffect(MobEffects.SLOWNESS)), "Control cow still untouched after the second cast");
@@ -290,15 +289,15 @@ public final class ArchfiendUrnAbilitiesClientAcceptance implements FabricClient
             player.setItemSlot(EquipmentSlot.OFFHAND, offhand.copy());
             player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges();
         });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
         check(serverValue(player -> player.getMainHandItem().is(item(URN))), "The urn is actually held in the main hand");
     }
     private void crouchUse(final ClientGameTestContext context) {
-        context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3);
         try {
             check(serverValue(ServerPlayer::isShiftKeyDown), "Server sees the real crouch before use");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
-        } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2); }
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(2); }
     }
     private static void lookSky(final ClientGameTestContext context) { context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(-80); }); context.waitTicks(2); }
     private static void look(final ClientGameTestContext context, final Vec3 point) {
@@ -333,9 +332,9 @@ public final class ArchfiendUrnAbilitiesClientAcceptance implements FabricClient
     private void readGuide(final ClientGameTestContext context, final String section, final Map<String, Object> row) throws Exception {
         final ManualProfile profile = ManualProfile.profiles().stream().filter(book -> book.sections().contains(section)).findFirst().orElseThrow();
         server(player -> { player.getInventory().clearContent(); player.getInventory().setItem(0, new ItemStack(item(profile.id()))); player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
         lookSky(context);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
         final int pages = context.computeOnClient(client -> {
@@ -354,7 +353,7 @@ public final class ArchfiendUrnAbilitiesClientAcceptance implements FabricClient
             screenshot(context, section + "-guide-" + page);
         }
         row.put("guide", Map.of("book", profile.id(), "section", section, "text", body, "pages_read", pages));
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
     }
     private static Object field(final Object object, final String name) {
         for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) try {

@@ -122,7 +122,7 @@ final class SpouseCookingMachine {
         for (StorageView<ItemVariant> view : handler) {
             if (!view.isResourceBlank()
                 && view.getAmount() > 0
-                && level.fuelValues().isFuel(view.getResource().toStack())) {
+                && com.kadamitas.warlockery.block.entity.CookingFuels.isFuel(view.getResource().toStack())) {
                 return true;
             }
         }

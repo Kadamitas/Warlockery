@@ -46,7 +46,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final Set<String> EXPECTED_IDS = Set.of(
@@ -203,7 +202,7 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         }
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(90); }); context.waitTicks(2);
         screenshot(context, id.getPath() + "-before-native-throw");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> observation.finishedImpact(), 100, "An owned brew projectile must fly and finish its native collision");
         check(serverValue(player -> observation.projectiles.size() == 1 && player.getMainHandItem().isEmpty()),
             "Exactly one native throw consumes exactly one brew");
@@ -383,12 +382,12 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(10); });
         context.waitTicks(5);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> player.fishing != null && player.fishing.isOpenWaterFishing(), 80,
             "Native rod casting must put a real fishing hook into the open-water pool");
         await(context, player -> player.fishing != null && (int) field(player.fishing, "nibble") > 0, 1100,
             "Normal fishing ticks must produce a real bite without changing the fishing timer or loot");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> player.fishing == null && player.getMainHandItem().getDamageValue() > 0, 40,
             "Native reeling must retrieve the biting hook and wear the rod");
         await(context, player -> player.getInventory().getNonEquipmentItems().stream()
@@ -409,10 +408,10 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); }); context.waitTicks(8);
         if (water) check(serverValue(ServerPlayer::isUnderWater), "Native swim input begins actually submerged");
         final Vec3 before = serverValue(ServerPlayer::position);
-        if (sprint) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_CONTROL);
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        if (sprint) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LCONTROL);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { context.waitTicks(ticks); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LCONTROL); }
         final Vec3 after = serverValue(ServerPlayer::position);
         return Math.sqrt(Math.pow(after.x - before.x, 2) + Math.pow(after.z - before.z, 2));
     }
@@ -421,9 +420,9 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         server(BrewPotionEffectsAbilitiesClientAcceptance::reset); world.getConnection().waitForClientboundPackets();
         context.waitTicks(8); check(serverValue(ServerPlayer::onGround), "Jump trial starts on real ground");
         server(player -> observation.resetMotion());
-        context.getInput().holdKey(GLFW.GLFW_KEY_SPACE);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_SPACE);
         context.waitTicks(2);
-        context.getInput().releaseKey(GLFW.GLFW_KEY_SPACE);
+        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_SPACE);
         context.waitTicks(34);
         return serverValue(player -> observation.maxY - 100);
     }
@@ -447,7 +446,7 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         });
         world.getConnection().waitForClientboundPackets(); context.waitTicks(25);
         look(context, serverValue(player -> player.level().getEntity(target).getBoundingBox().getCenter()));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT); context.waitTicks(5);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT); context.waitTicks(5);
         final double damage = serverValue(player -> 40 - ((Mob) player.level().getEntity(target)).getHealth());
         server(player -> player.level().getEntity(target).discard()); return damage;
     }
@@ -456,13 +455,13 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         final BlockPos block = new BlockPos(0, 100, 2);
         server(player -> { reset(player); player.getInventory().setItem(0, ItemStack.EMPTY); player.inventoryMenu.broadcastChanges(); player.level().setBlockAndUpdate(block, Blocks.DIRT.defaultBlockState()); });
         world.getConnection().waitForClientboundPackets(); context.waitTicks(4); look(context, Vec3.atCenterOf(block));
-        int broken = -1; context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        int broken = -1; context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         try {
             for (int i = 1; i <= ticks; i++) {
                 context.waitTicks(1);
                 if (serverValue(player -> player.level().getBlockState(block).isAir())) { broken = i; break; }
             }
-        } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT); }
+        } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT); }
         server(player -> player.level().setBlockAndUpdate(block, Blocks.AIR.defaultBlockState())); return broken;
     }
 
@@ -476,10 +475,10 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); }); context.waitTicks(14);
         final float before = serverValue(ServerPlayer::getAbsorptionAmount);
         if (absorbed) check(before > 0, "Native Absorption provides real expendable extra health");
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { await(context, player -> absorbed ? player.getAbsorptionAmount() < before : player.getHealth() < 20, 45,
             "Native walking must contact cactus and spend the appropriate health pool"); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         final double damage = 20 - serverValue(ServerPlayer::getHealth);
         server(player -> { player.level().setBlockAndUpdate(new BlockPos(0, 100, -4), Blocks.AIR.defaultBlockState()); reset(player); });
         context.waitTicks(12); return damage;
@@ -535,7 +534,7 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
             player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); });
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> client.player.setXRot(-75)); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final String text = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
         check(!text.isBlank(), "Canonical guide must contain readable player instructions");
@@ -555,7 +554,7 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         }
         row.put("book", profile.id()); row.put("book_status", "ALL_PAGES_REACHED"); row.put("book_pages_read", pages); row.put("book_text", text);
         row.put("guide_mapping", "Exact registry item maps to BrewKind " + kind.id() + " and its canonical guide. Shared alias behavior does not establish alias acquisition.");
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
     }
 
     private void invisibilityFrame(final ClientGameTestContext context, final Identifier id, final String phase,
@@ -567,7 +566,7 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
         look(context, targetPoint);
         screenshot(context, id.getPath() + "-invisibility-target-" + phase);
         // Native perspective toggle: first-person -> rear third-person -> front third-person -> first-person.
-        context.getInput().pressKey(GLFW.GLFW_KEY_F5); context.waitTicks(3);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5); context.waitTicks(3);
         try {
             check(!context.computeOnClient(client -> client.options.getCameraType().isFirstPerson()),
                 "Native perspective key reaches third person");
@@ -576,8 +575,8 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
                 "player_position", client.player.position().toString(), "yaw", client.player.getYRot(),
                 "pitch", client.player.getXRot(), "player_invisible", client.player.isInvisible())));
         } finally {
-            context.getInput().pressKey(GLFW.GLFW_KEY_F5); context.waitTicks(2);
-            context.getInput().pressKey(GLFW.GLFW_KEY_F5); context.waitTicks(2);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5); context.waitTicks(2);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5); context.waitTicks(2);
         }
         check(context.computeOnClient(client -> client.options.getCameraType().isFirstPerson()),
             "Restore first person before the native throw or next trial");
@@ -632,8 +631,8 @@ public final class BrewPotionEffectsAbilitiesClientAcceptance implements FabricC
     }
 
     private static void release(final ClientGameTestContext context) {
-        for (int key : List.of(GLFW.GLFW_KEY_W, GLFW.GLFW_KEY_SPACE, GLFW.GLFW_KEY_LEFT_CONTROL)) context.getInput().releaseKey(key);
-        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT); context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        for (int key : List.of(com.mojang.blaze3d.platform.InputConstants.KEY_W, com.mojang.blaze3d.platform.InputConstants.KEY_SPACE, com.mojang.blaze3d.platform.InputConstants.KEY_LCONTROL)) context.getInput().releaseKey(key);
+        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT); context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
     }
 
     private void await(final ClientGameTestContext context, final Predicate<ServerPlayer> condition, final int ticks, final String message) {

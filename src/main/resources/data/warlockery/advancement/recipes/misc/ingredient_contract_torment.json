@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_contract_torment"
+        "recipes": "warlockery:ingredient_contract_torment"
       }
     },
     "has_ingredient_0": {

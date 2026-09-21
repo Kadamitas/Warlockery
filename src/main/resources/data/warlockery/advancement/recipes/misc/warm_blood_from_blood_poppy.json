@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:warm_blood_from_blood_poppy"
+        "recipes": "warlockery:warm_blood_from_blood_poppy"
       }
     },
     "has_ingredient_0": {

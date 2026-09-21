@@ -123,7 +123,7 @@ public final class VampireCourtEntity extends ArcaneMob {
             if (attackCooldown == 0 && member.isWithinMeleeAttackRange(target)
                 && member.getSensing().hasLineOfSight(target)) {
                 attackCooldown = adjustedTickDelay(20);
-                member.swing(InteractionHand.MAIN_HAND);
+                member.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
                 member.doHurtTarget((ServerLevel) member.level(), target);
             }
         }

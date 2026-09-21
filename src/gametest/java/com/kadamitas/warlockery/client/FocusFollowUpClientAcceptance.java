@@ -57,7 +57,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Arcane Focus follow-ups: paired-player and cross-dimension Otherwhere recall, Grave Corpse directives,
@@ -223,7 +222,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
         context.waitFor(client -> client.level != null && client.level.dimension().equals(Level.NETHER) && client.gui.screen() == null, 300);
         await(context, player -> player.connection.hasClientLoaded() && !awaitingTeleport(player) && player.level().dimension().equals(Level.NETHER), 100,
             "Server acknowledges the Nether arrival before native input");
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.waitTicks(10);
         row().put("staged_dimension", value(player -> player.level().dimension().identifier().toString()));
         screenshot(context, active + "-in-nether");
@@ -285,7 +284,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
         check(value(player -> ((Mob) living(player, thrall)).getTarget() == null), "Control: bound thrall has no target before the caster attacks");
         hold(context, ItemStack.EMPTY);
         lookAt(context, cow);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         await(context, player -> player.getLastHurtMob() != null && player.getLastHurtMob().getUUID().equals(cow), 30, "Native bare-hand punch records the cow as the caster's recent attack");
         await(context, player -> {
             final LivingEntity target = ((Mob) living(player, thrall)).getTarget();
@@ -337,7 +336,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
         world.getConnection().waitForChunksRender();
         world.getConnection().waitForClientboundPackets();
         await(context, player -> player.connection.hasClientLoaded() && !awaitingTeleport(player), 200, "Reopened world is ready");
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.waitTicks(10);
         check(value(player -> MagicPathState.has(player, MagicPath.LIGHT) && MagicPathState.reserve(player, MagicPath.LIGHT) == reserveBefore
             && MagicPathState.has(player, MagicPath.OTHERWHERE) && MagicPathState.selected(player).orElseThrow() == MagicPath.LIGHT),
@@ -459,7 +458,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
         double peak = value(ServerPlayer::getY);
         final List<Double> trace = new ArrayList<>();
         final List<Boolean> collisions = new ArrayList<>();
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try {
             for (int tick = 0; tick < 80; tick++) {
                 context.waitTicks(1);
@@ -468,7 +467,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
                 collisions.add(value(player -> player.horizontalCollision));
                 peak = Math.max(peak, y);
             }
-        } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         row().put("last_walk_y_per_tick", trace);
         row().put("last_walk_server_horizontal_collision", collisions);
         row().put("last_walk_end", Map.of("server", value(Entity::position).toString(), "client", context.computeOnClient(client -> client.player.position().toString()),
@@ -495,7 +494,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
         position(context, new Vec3(0.5, 108, -0.5));
         final float before = value(ServerPlayer::getHealth);
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(20); });
-        context.getInput().holdKeyFor(GLFW.GLFW_KEY_W, 8);
+        context.getInput().holdKeyFor(com.mojang.blaze3d.platform.InputConstants.KEY_W, 8);
         await(context, player -> player.onGround() && player.getY() < 100.5, 80, "Native walking leaves the ledge and lands on the arena");
         context.waitTicks(5);
         final float loss = before - value(ServerPlayer::getHealth);
@@ -607,7 +606,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
                 return entity.getBoundingBox().getCenter();
             }));
             check(context.computeOnClient(client -> client.hitResult instanceof EntityHitResult hit && hit.getEntity().getUUID().equals(target)), "Native focus pointer hits the intended entity");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         });
     }
 
@@ -616,7 +615,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
         secondary(context, secondary, () -> {
             look(context, new Vec3(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5));
             check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(pos)), "Native focus pointer hits the intended block");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         });
     }
 
@@ -624,16 +623,16 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
         secondary(context, secondary, () -> {
             context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(pitch); }); context.waitTicks(3);
             check(context.computeOnClient(client -> client.hitResult != null && client.hitResult.getType() == HitResult.Type.MISS), "Native personal focus use aims at empty air");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         });
     }
 
     private void secondary(final ClientGameTestContext context, final boolean secondary, final Runnable action) {
         await(context, player -> player.connection.hasClientLoaded() && !awaitingTeleport(player), 100, "Native connection and teleport acknowledgement are ready before Focus input");
         context.waitTicks(5);
-        if (secondary) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        if (secondary) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         try { context.waitTicks(2); action.run(); context.waitTicks(2); }
-        finally { if (secondary) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+        finally { if (secondary) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
     }
 
     private void lookAt(final ClientGameTestContext context, final UUID target) {
@@ -653,7 +652,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
     private void hold(final ClientGameTestContext context, final ItemStack stack) {
         server(player -> { player.getInventory().setItem(0, stack.copy()); player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.waitTicks(3);
     }
 
@@ -665,9 +664,9 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
     }
 
     private static void release(final ClientGameTestContext context) {
-        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
-        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-        for (int key : List.of(GLFW.GLFW_KEY_W, GLFW.GLFW_KEY_S, GLFW.GLFW_KEY_A, GLFW.GLFW_KEY_D, GLFW.GLFW_KEY_SPACE, GLFW.GLFW_KEY_LEFT_SHIFT))
+        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+        for (int key : List.of(com.mojang.blaze3d.platform.InputConstants.KEY_W, com.mojang.blaze3d.platform.InputConstants.KEY_S, com.mojang.blaze3d.platform.InputConstants.KEY_A, com.mojang.blaze3d.platform.InputConstants.KEY_D, com.mojang.blaze3d.platform.InputConstants.KEY_SPACE, com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT))
             context.getInput().releaseKey(key);
     }
 
@@ -675,7 +674,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
 
     private void reset(final ClientGameTestContext context, final MagicPath path) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
         }
         release(context);
         removeFixture();
@@ -702,7 +701,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets(); world.getConnection().waitForChunksRender();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(5);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(5);
         row().put("initial_path", path == null ? "none" : path.id());
     }
 
@@ -730,7 +729,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
         context.waitFor(client -> client.player.getMainHandItem().is(ModItems.ALL.get(profile.id()).get()));
         context.runOnClient(client -> client.player.setXRot(-70));
         context.waitTicks(6);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, id);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString());
@@ -750,7 +749,7 @@ public final class FocusFollowUpClientAcceptance implements FabricClientGameTest
             screenshot(context, id + "-book-" + page);
         }
         guides.put(id, Map.of("book", profile.id(), "body", body, "pages_read", pages));
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
         hold(context, new ItemStack(ModItems.ALL.get("arcane_focus").get()));
     }

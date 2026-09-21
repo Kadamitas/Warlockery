@@ -11,7 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - name: Check out source
@@ -31,6 +31,41 @@ jobs:
 
       - name: Build, test, and package
         run: ./gradlew releaseBundle --stacktrace
+
+      - name: Run dedicated-server GameTests
+        run: ./gradlew runGametest --stacktrace
+
+      - name: Validate release Minecraft metadata handling
+        run: python3 tools/test_release_compatibility.py
+
+      - name: Install virtual display and software rendering
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb xauth libgl1-mesa-dri libglx-mesa0 libopengl0 libopenal1 mesa-utils mesa-vulkan-drivers
+
+      - name: Run existing rendered-client acceptance tests
+        env:
+          LIBGL_ALWAYS_SOFTWARE: 'true'
+          ALSOFT_DRIVERS: 'null'
+        run: xvfb-run -a -s '-screen 0 1280x800x24' ./gradlew runClientGameTest --max-workers=2 --stacktrace
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: warlockery-fabric-diagnostics-${{ github.sha }}
+          path: |
+            build/test-results/**/*
+            build/reports/tests/**/*
+            build/gametest-results.xml
+            build/gametest/logs/**/*
+            build/runGameTestServer/**/*
+            run/logs/**/*
+            .codex-local/client-acceptance/**/*
+            .codex-local/new-player-audit/**/*.json
+            build/run/clientGameTest/logs/**/*
+          if-no-files-found: warn
+          include-hidden-files: true
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

@@ -18,7 +18,6 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
-import org.lwjgl.glfw.GLFW;
 
 public final class ManualClientAcceptance implements FabricClientGameTest {
     private final List<String> screenshots = new ArrayList<>();
@@ -54,7 +53,7 @@ public final class ManualClientAcceptance implements FabricClientGameTest {
                 });
                 world.getConnection().waitForChunksRender();
                 world.getConnection().waitForClientboundPackets();
-                context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                 context.waitForScreen(ManualScreen.class);
                 checks.add("Actual survival item use opens the circle manual.");
                 checkFirstChalkChapter(context, evidence);
@@ -94,19 +93,19 @@ public final class ManualClientAcceptance implements FabricClientGameTest {
                 final String remembered = context.computeOnClient(client -> selected(client.gui.screen()));
                 final int page = context.computeOnClient(client -> (int) field(client.gui.screen(), "bodyPage"));
                 check(remembered.equals("golden_chalk") && page > 0, "Next reaches a later page of the long Golden Chalk guide");
-                context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
                 context.waitFor(client -> client.gui.screen() == null);
-                context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                 context.waitForScreen(ManualScreen.class);
                 check(context.computeOnClient(client -> selected(client.gui.screen()).equals(remembered)
                     && (int) field(client.gui.screen(), "bodyPage") == page), "Reopening preserves section and body page");
                 screenshot(context, evidence, "reopened-reading-position");
                 checks.add("Closing and reopening through actual item use preserves section and page.");
-                context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
                 context.waitFor(client -> client.gui.screen() == null);
-                context.getInput().pressKey(GLFW.GLFW_KEY_4);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_4);
                 context.waitFor(client -> client.player.getMainHandItem().is(ModItems.ALL.get("ingredient_book_distilling").get()));
-                context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                 context.waitForScreen(ManualScreen.class);
                 selectSection(context, "machine_recipe_distill_vitriol");
                 assertArticle(context, "Gypsum", "480");
@@ -116,7 +115,7 @@ public final class ManualClientAcceptance implements FabricClientGameTest {
                     && (int) field(client.gui.screen(), "bodyPage") > 0), "Distilling results and power continue on the next page");
                 screenshot(context, evidence, "distilling-gypsum-results-and-power");
                 checks.add("Distilling book displays the real Gypsum recipe and altar power cost.");
-                context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
                 context.waitFor(client -> client.gui.screen() == null);
                 ManualJeiAcceptance.run(context, evidence, screenshots, checks);
                 world.getServer().runOnServer(server -> {
@@ -290,9 +289,9 @@ public final class ManualClientAcceptance implements FabricClientGameTest {
             .findFirst().orElseThrow());
         click(context, point[0], point[1]);
         int length = context.computeOnClient(client -> ((String) field(client.gui.screen(), "query")).length());
-        context.getInput().pressKey(GLFW.GLFW_KEY_END);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_END);
         for (int index = 0; index < length; index++) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_BACKSPACE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_BACKSPACE);
             context.waitTicks(1);
         }
         context.getInput().typeChars(query);
@@ -322,7 +321,7 @@ public final class ManualClientAcceptance implements FabricClientGameTest {
 
     static void click(final ClientGameTestContext context, final double x, final double y) {
         cursor(context, x, y);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTicks(3);
     }
 

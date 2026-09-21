@@ -28,7 +28,7 @@ public final class TacticalCombatGameTests {
             .forEach(position -> helper.setBlock(position, Blocks.STONE_BRICKS));
         final ServerPlayer player = connectedPlayer(helper, new BlockPos(0, 1, 0));
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BOW));
-        player.setInvulnerable(true);
+        player.setPermanentlyInvulnerable(true);
         final WerewolfHunterEntity hunter = helper.spawn(
             ModEntities.WEREWOLF_HUNTER.get(), new BlockPos(5, 1, 2), EntitySpawnReason.EVENT
         );
@@ -117,7 +117,7 @@ public final class TacticalCombatGameTests {
             }
         }
         final ServerPlayer player = connectedPlayer(helper, new BlockPos(0, 1, 0));
-        player.setInvulnerable(true);
+        player.setPermanentlyInvulnerable(true);
         final WerewolfHunterEntity melee = helper.spawn(
             ModEntities.WEREWOLF_HUNTER.get(), new BlockPos(4, 1, 0), EntitySpawnReason.EVENT
         );

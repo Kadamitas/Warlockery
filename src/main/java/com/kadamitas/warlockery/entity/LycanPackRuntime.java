@@ -357,8 +357,8 @@ public final class LycanPackRuntime {
             inspected.add(candidate);
             recruiter.packCounters().recruitmentInspections++;
             return inspected.size() >= LycanPackRules.MAX_RECRUITMENT_CANDIDATES
-                ? AbortableIterationConsumer.Continuation.ABORT
-                : AbortableIterationConsumer.Continuation.CONTINUE;
+                ? net.minecraft.util.Continuation.ABORT
+                : net.minecraft.util.Continuation.CONTINUE;
         });
         final List<WerewolfEntity> accepted = inspected.stream()
             .filter(candidate -> candidate.isAlive() && exactWerewolf(candidate))
@@ -595,8 +595,8 @@ public final class LycanPackRuntime {
         com.kadamitas.warlockery.entity.BoundedEntityQuery.visit(level, EntityTypeTest.forClass(WerewolfEntity.class), bounds, candidate -> {
             inspected.add(candidate);
             return inspected.size() >= LycanPackRules.MAX_RAW_CARRION_VISITS
-                ? AbortableIterationConsumer.Continuation.ABORT
-                : AbortableIterationConsumer.Continuation.CONTINUE;
+                ? net.minecraft.util.Continuation.ABORT
+                : net.minecraft.util.Continuation.CONTINUE;
         });
         for (final WerewolfEntity other : inspected) {
             if (other == mob || other.variant() != Variant.FERAL_LYCAN || !other.isAlive()) continue;
@@ -666,8 +666,8 @@ public final class LycanPackRuntime {
                     intruders.add(candidate);
                 }
                 return intruders.size() >= 2
-                    ? AbortableIterationConsumer.Continuation.ABORT
-                    : AbortableIterationConsumer.Continuation.CONTINUE;
+                    ? net.minecraft.util.Continuation.ABORT
+                    : net.minecraft.util.Continuation.CONTINUE;
             });
         if (intruders.isEmpty()) return state;
         if (state.cohort().warningExpiresAt() > now) return state;
@@ -725,8 +725,8 @@ public final class LycanPackRuntime {
                 visited.add(candidate);
                 mob.packCounters().carrionVisits++;
                 return visited.size() >= LycanPackRules.MAX_RAW_CARRION_VISITS
-                    ? AbortableIterationConsumer.Continuation.ABORT
-                    : AbortableIterationConsumer.Continuation.CONTINUE;
+                    ? net.minecraft.util.Continuation.ABORT
+                    : net.minecraft.util.Continuation.CONTINUE;
             });
         final Optional<ItemEntity> retained = visited.stream()
             .filter(item -> LycanPackRules.eligibleCarrion(carrionFacts(mob, item)))
@@ -797,8 +797,8 @@ public final class LycanPackRuntime {
                 visited.add(candidate);
                 mob.packCounters().candidateAppraisals++;
                 return visited.size() >= LycanPackRules.MAX_SCAN_RESULTS
-                    ? AbortableIterationConsumer.Continuation.ABORT
-                    : AbortableIterationConsumer.Continuation.CONTINUE;
+                    ? net.minecraft.util.Continuation.ABORT
+                    : net.minecraft.util.Continuation.CONTINUE;
             });
         final List<LivingEntity> retained = visited.stream()
             .filter(candidate -> LycanPackRules.eligibleLivingPrey(preyFacts(mob, candidate, radius)))

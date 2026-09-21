@@ -550,7 +550,7 @@ public final class ThornedPursuerGameTests {
         SupernaturalProgression.setLevel(caster, SupernaturalProgression.Path.WEREWOLF, 2);
         final int preservedLevel = SupernaturalProgression.level(caster, SupernaturalProgression.Path.WEREWOLF);
         final var clock = helper.getLevel().dimensionType().defaultClock().orElseThrow();
-        final long previousDayTime = helper.getLevel().clockManager().getTotalTicks(clock);
+        final long previousDayTime = helper.getLevel().clockManager().getInstance(clock).totalTicks();
         fixture.onClose(() -> helper.getLevel().clockManager().setTotalTicks(clock, previousDayTime));
         helper.getLevel().clockManager().setTotalTicks(clock, 18_000L);
 

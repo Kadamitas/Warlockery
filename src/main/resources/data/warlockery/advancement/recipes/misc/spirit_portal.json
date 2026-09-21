@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:spirit_portal"
+        "recipes": "warlockery:spirit_portal"
       }
     },
     "has_ingredient_0": {

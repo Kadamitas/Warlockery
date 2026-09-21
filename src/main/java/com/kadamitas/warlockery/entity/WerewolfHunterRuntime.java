@@ -373,7 +373,7 @@ public final class WerewolfHunterRuntime {
     ) {
         readBudget[0] -= 3;
         counters.blockReads += 3;
-        return level.getBlockState(pos.below()).blocksMotion()
+        return com.kadamitas.warlockery.util.BlockSupport.blocksMotion(level.getBlockState(pos.below()))
             && level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()
             && level.getBlockState(pos.above()).getCollisionShape(level, pos.above()).isEmpty();
     }

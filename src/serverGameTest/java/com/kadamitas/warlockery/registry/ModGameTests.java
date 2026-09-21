@@ -73,6 +73,8 @@ public final class ModGameTests {
     private static final TestRegistrar REGISTRY = new TestRegistrar();
 
     static {
+        REGISTRY.register("modern_loot_conditions_and_modifiers_are_live",
+            () -> LootSchemaGameTests::conditionsAndModifiersSurviveLoading);
         REGISTRY.register("hex_sapling_native_bonemeal_grows_tree",
             () -> com.kadamitas.warlockery.block.LegacyPlantGameTests::hexSaplingNativeBonemealGrowsExistingWoodAndDecayableLeaves);
         REGISTRY.register("vine_native_attachment_spread_and_support",

@@ -300,9 +300,9 @@ public final class VampireCourtGameTests {
         final VillageAssaultData data
     ) {
         try {
-            helper.assertTrue(helper.getLevel().getBlockState(
+            helper.assertTrue(com.kadamitas.warlockery.util.BlockSupport.blocksMotion(helper.getLevel().getBlockState(
                 objectiveLeader.blockPosition().above(3)
-            ).blocksMotion(), "the real-distance objective lane must have a solid roof");
+            )), "the real-distance objective lane must have a solid roof");
             helper.assertTrue(VillageAssaultRuntime.assignVampireObjective(
                 helper.getLevel(), objectiveLeader, objective
             ), "the live assault coordinator must publish the marked leader's exact objective");
@@ -422,10 +422,10 @@ public final class VampireCourtGameTests {
         helper.assertFalse(VampireCourtRuntime.eligibleTarget(vampire, player),
             "spectator players must never be selected or struck");
         player.setGameMode(GameType.SURVIVAL);
-        player.setInvulnerable(true);
+        player.setPermanentlyInvulnerable(true);
         helper.assertFalse(VampireCourtRuntime.eligibleTarget(vampire, player),
             "invulnerable players must never be selected or struck");
-        player.setInvulnerable(false);
+        player.setPermanentlyInvulnerable(false);
         SupernaturalState.setForm(player, SupernaturalForm.VAMPIRE);
         helper.assertFalse(VampireCourtRuntime.eligibleTarget(vampire, player),
             "a player Vampire must remain ordinary non-prey");

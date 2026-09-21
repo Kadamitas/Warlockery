@@ -56,7 +56,7 @@ abstract class LivingEntityMixin {
     private void warlockery$collectDeathDrop(
         final ItemStack stack,
         final boolean randomOffset,
-        final boolean includeThrower,
+        final net.minecraft.util.Prediction prediction,
         final CallbackInfoReturnable<ItemEntity> callback
     ) {
         if (warlockery$deathDrops == null || stack.isEmpty()) {
@@ -97,12 +97,13 @@ abstract class LivingEntityMixin {
         WarlockeryFabricEvents.dispatchFinishedItemUse(entity, entity.getUseItem().copy());
     }
 
-    @Inject(method = "randomTeleport", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "randomTeleport(DDDZLjava/util/function/Predicate;)Z", at = @At("HEAD"), cancellable = true)
     private void warlockery$blockRandomTeleport(
         final double x,
         final double y,
         final double z,
         final boolean showParticles,
+        final java.util.function.Predicate<net.minecraft.world.level.block.state.BlockState> isInvalidPosition,
         final CallbackInfoReturnable<Boolean> callback
     ) {
         if (WarlockeryFabricEvents.blocksTeleport((LivingEntity) (Object) this)) {

@@ -144,7 +144,7 @@ public final class RitualWardData extends SavedData {
             );
             if (!corrected.equals(entity.getDeltaMovement())) {
                 entity.setDeltaMovement(corrected);
-                entity.hurtMarked = true;
+                entity.syncVelocity = true;
             }
         });
     }
@@ -184,7 +184,7 @@ public final class RitualWardData extends SavedData {
             final double distance = entity.position().distanceTo(center);
             if (distance >= ward.radius() - 1.0) {
                 entity.setDeltaMovement(RitualWardRules.inwardVelocity(center, entity.position(), entity.getDeltaMovement()));
-                entity.hurtMarked = true;
+                entity.syncVelocity = true;
             }
             entity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, 4, true, true));
         });
@@ -204,7 +204,7 @@ public final class RitualWardData extends SavedData {
             mob.getNavigation().stop();
             mob.setDeltaMovement(RitualWardRules.outwardVelocity(center, mob.position(), mob.getDeltaMovement()));
             mob.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 2, true, true));
-            mob.hurtMarked = true;
+            mob.syncVelocity = true;
         });
     }
 

@@ -239,7 +239,7 @@ public final class InfernalHierarchyGameTests {
                 "an active truce suppresses targeting of that exact player");
             helper.assertFalse(demon.canAttack(player), "the live predicate honors the truce");
 
-            demon.invulnerableTime = 0;
+            demon.damageCooldownTime = 0;
             helper.assertTrue(demon.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 6.0F
             ), "the breach fixture needs one real accepted hit");
@@ -512,13 +512,13 @@ public final class InfernalHierarchyGameTests {
                     .anyMatch(row -> row.id().equals(extra.getUUID())),
                 "a full squad rejects the extra candidate at the cap");
 
-            archfiend.invulnerableTime = 0;
+            archfiend.damageCooldownTime = 0;
             helper.assertTrue(archfiend.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(challengerZombie), 1.0F
             ), "provocation requires one real accepted hit");
             helper.assertValueEqual(archfiend.hierarchyState().challengerId().orElseThrow(),
                 challengerZombie.getUUID(), "a direct attributed attack creates the challenger");
-            archfiend.invulnerableTime = 0;
+            archfiend.damageCooldownTime = 0;
             helper.assertTrue(archfiend.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(rival), 1.0F
             ), "the stability fixture needs a second real hit");
@@ -597,7 +597,7 @@ public final class InfernalHierarchyGameTests {
                     quarry.setDeltaMovement(Vec3.ZERO);
                     quarry.snapTo(quarrySite.getX() + 0.5D, quarrySite.getY(),
                         quarrySite.getZ() + 0.5D, 0.0F, 0.0F);
-                    marshal.invulnerableTime = 0;
+                    marshal.damageCooldownTime = 0;
                     helper.assertTrue(marshal.hurtServer(
                         helper.getLevel(), helper.getLevel().damageSources().mobAttack(quarry), 1.0F
                     ), "the live fixture needs one real accepted provocation");
@@ -841,7 +841,7 @@ public final class InfernalHierarchyGameTests {
             );
             challengerMob.setNoAi(true);
             challengerMob.setDeltaMovement(Vec3.ZERO);
-            regent.invulnerableTime = 0;
+            regent.damageCooldownTime = 0;
             helper.assertTrue(regent.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(challengerMob), 1.0F
             ), "the doctrine fixture needs one real accepted provocation");
@@ -896,7 +896,7 @@ public final class InfernalHierarchyGameTests {
             wardDemon.setHierarchyState(wardDemon.hierarchyState().withLeader(
                 Optional.of(doomed.getUUID()), Optional.of(Rank.ABYSSAL_REGENT), doomLease
             ));
-            doomed.invulnerableTime = 0;
+            doomed.damageCooldownTime = 0;
             helper.assertTrue(doomed.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().magic(), 10_000.0F
             ), "the captain fixture needs a real death rather than a discard");
@@ -937,7 +937,7 @@ public final class InfernalHierarchyGameTests {
             strayDemon.setHierarchyState(strayDemon.hierarchyState().withLeader(
                 Optional.of(lone.getUUID()), Optional.of(Rank.ABYSSAL_REGENT), doomLease
             ));
-            lone.invulnerableTime = 0;
+            lone.damageCooldownTime = 0;
             helper.assertTrue(lone.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().magic(), 10_000.0F
             ), "the dissolution fixture needs a real death too");
@@ -1299,7 +1299,7 @@ public final class InfernalHierarchyGameTests {
     ) {
         helper.assertFalse(marshal.canAttack(raider),
             "an unprovoked Archfiend is restrained against the raider");
-        ward.invulnerableTime = 0;
+        ward.damageCooldownTime = 0;
         helper.assertTrue(ward.hurtServer(
             helper.getLevel(), helper.getLevel().damageSources().playerAttack(raider), 2.0F
         ), "the squad member takes one real accepted hit");
@@ -1777,7 +1777,7 @@ public final class InfernalHierarchyGameTests {
             );
             provoker.setNoAi(true);
             provoker.setDeltaMovement(Vec3.ZERO);
-            liveDemon.invulnerableTime = 0;
+            liveDemon.damageCooldownTime = 0;
             helper.assertTrue(liveDemon.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(provoker), 1.0F
             ), "the live fixture needs one real accepted hit");

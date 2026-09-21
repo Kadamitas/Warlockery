@@ -1,7 +1,6 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.registry.WarlockeryTags;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -28,18 +27,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class BearTrapBlock extends Block {
-    public static final MapCodec<BearTrapBlock> CODEC = simpleCodec(BearTrapBlock::new);
     public static final EnumProperty<BearTrapState> TRAP_STATE = EnumProperty.create("trap_state", BearTrapState.class);
     private static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 3.0, 15.0);
 
     public BearTrapBlock(final BlockBehaviour.Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(TRAP_STATE, BearTrapState.DISARMED));
-    }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return CODEC;
     }
 
     @Override

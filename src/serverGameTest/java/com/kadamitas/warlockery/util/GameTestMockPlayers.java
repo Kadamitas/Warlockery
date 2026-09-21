@@ -24,6 +24,41 @@ public final class GameTestMockPlayers {
     private GameTestMockPlayers() {
     }
 
+    /** Connects a mock player through the normal packet listener for packet-producing fixtures. */
+    public static ServerPlayer connect(final GameTestHelper helper, final net.minecraft.world.level.GameType mode) {
+        final ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(mode);
+        final net.minecraft.network.Connection connection =
+            new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+        new io.netty.channel.embedded.EmbeddedChannel(connection);
+        helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player,
+            net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(), false));
+        player.connection.handleAcceptPlayerLoad(new net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket());
+        player.setGameMode(mode);
+        return autoDisconnect(helper, player);
+    }
+
+    /** Supplies the real bed required by 26.3's low-level sleep transition. */
+    public static void sleepInBed(final GameTestHelper helper, final ServerPlayer player,
+                                  final net.minecraft.core.BlockPos head) {
+        final var level = helper.getLevel();
+        final var foot = head.west();
+        final var oldHead = level.getBlockState(head);
+        final var oldFoot = level.getBlockState(foot);
+        final var bed = net.minecraft.core.registries.BuiltInRegistries.BLOCK
+            .getValue(net.minecraft.resources.Identifier.parse("minecraft:red_bed")).defaultBlockState()
+            .setValue(net.minecraft.world.level.block.BedBlock.FACING, net.minecraft.core.Direction.EAST);
+        level.setBlock(foot, bed.setValue(net.minecraft.world.level.block.BedBlock.PART,
+            net.minecraft.world.level.block.state.properties.BedPart.FOOT), 2);
+        level.setBlock(head, bed.setValue(net.minecraft.world.level.block.BedBlock.PART,
+            net.minecraft.world.level.block.state.properties.BedPart.HEAD), 2);
+        GameTestCleanup.add(helper, passed -> {
+            player.stopSleeping();
+            level.setBlock(head, oldHead, 2);
+            level.setBlock(foot, oldFoot, 2);
+        });
+        helper.assertTrue(player.startSleeping(head), "the real bed accepts the fixture's sleep transition");
+    }
+
     /** Discards an ordinary entity and fully disconnects a player. */
     public static void release(final Entity entity) {
         if (entity instanceof final ServerPlayer player) {

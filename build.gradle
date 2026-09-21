@@ -104,15 +104,15 @@ java {
 
 def generatedGameTestResources = layout.buildDirectory.dir('generated/gameTestResources')
 def generateEmptyGameTestStructure = tasks.register('generateEmptyGameTestStructure', GenerateEmptyGameTestStructure) {
-    structureSize.set(3); dataVersion.set(4_903); sparse.set(false)
+    structureSize.set(3); dataVersion.set(5_023); sparse.set(false)
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty3x3x3.nbt') })
 }
 def generateLargeGameTestStructure = tasks.register('generateLargeGameTestStructure', GenerateEmptyGameTestStructure) {
-    structureSize.set(15); dataVersion.set(4_903); sparse.set(false)
+    structureSize.set(15); dataVersion.set(5_023); sparse.set(false)
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty15x15x15.nbt') })
 }
 def generateIsolationGameTestStructure = tasks.register('generateIsolationGameTestStructure', GenerateEmptyGameTestStructure) {
-    structureSize.set(32); dataVersion.set(4_903); sparse.set(true)
+    structureSize.set(32); dataVersion.set(5_023); sparse.set(true)
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty32x32x32.nbt') })
 }
 
@@ -164,15 +164,22 @@ loom {
 
 def recipeViewer = providers.gradleProperty('warlockeryRecipeViewer').orElse('jei').get()
 if (!['jei', 'rei', 'rrv', 'emi', 'none'].contains(recipeViewer)) throw new GradleException('Unsupported recipe viewer profile: ' + recipeViewer)
+if (['rei', 'emi'].contains(recipeViewer)) {
+    throw new GradleException(recipeViewer.toUpperCase() + ' has no verified Minecraft 26.3 runtime. Integration source is retained; use jei, rrv, or none until the viewer is updated.')
+}
 
 repositories {
     maven {
         url = 'https://maven.blamejared.com'
-        content { includeGroup 'mezz.jei' }
+        content {
+            includeGroup 'mezz.jei'
+            includeGroup 'net.mezzdev.config'
+        }
     }
     maven { url = 'https://maven.shedaniel.me' }
     maven { url = 'https://maven.architectury.dev' }
     maven { url = 'https://maven.cassian.cc' }
+    maven { url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
     maven { url = 'https://cursemaven.com'; content { includeGroup 'curse.maven' } }
     mavenCentral()
 }
@@ -185,17 +192,11 @@ dependencies {
     compileOnly 'me.shedaniel:RoughlyEnoughItems-fabric:26.2.820'
     compileOnly 'dev.architectury:architectury-fabric:21.0.2'
     compileOnly 'me.shedaniel.cloth:basic-math:0.6.1'
-    compileOnly 'cc.cassian.rrv:reliable-recipe-viewer-fabric:8.10.4+26.2'
+    compileOnly 'maven.modrinth:5VolwT6c:8.10.5+26.3-fabric'
     compileOnly('curse.maven:emi-unofficial-port-unstable-1544558:8616656') { transitive = false }
-    if (recipeViewer == 'rei') {
-        runtimeOnly 'me.shedaniel:RoughlyEnoughItems-fabric:26.2.820'
-        runtimeOnly 'dev.architectury:architectury-fabric:21.0.2'
-        runtimeOnly 'me.shedaniel.cloth:cloth-config-fabric:26.2.155'
-    }
-    if (recipeViewer == 'rrv') runtimeOnly 'cc.cassian.rrv:reliable-recipe-viewer-fabric:8.10.4+26.2'
-    if (recipeViewer == 'emi') runtimeOnly 'curse.maven:emi-unofficial-port-unstable-1544558:8616656'
-    compileOnly 'mezz.jei:jei-26.2-fabric-api:30.7.0.41'
-    if (recipeViewer == 'jei') runtimeOnly 'mezz.jei:jei-26.2-fabric:30.7.0.41'
+    if (recipeViewer == 'rrv') runtimeOnly 'maven.modrinth:5VolwT6c:8.10.5+26.3-fabric'
+    compileOnly 'mezz.jei:jei-26.3-fabric-api:31.3.0.17'
+    if (recipeViewer == 'jei') runtimeOnly 'mezz.jei:jei-26.3-fabric:31.3.0.17'
 
     testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
     testImplementation platform('org.junit:junit-bom:6.1.0')
@@ -215,11 +216,14 @@ fabricApi {
 }
 
 dependencies {
-    gametestCompileOnly 'mezz.jei:jei-26.2-fabric-api:30.7.0.41'
-    if (recipeViewer == 'jei') gametestRuntimeOnly 'mezz.jei:jei-26.2-fabric:30.7.0.41'
+    gametestCompileOnly 'mezz.jei:jei-26.3-fabric-api:31.3.0.17'
+    if (recipeViewer == 'jei') gametestRuntimeOnly 'mezz.jei:jei-26.3-fabric:31.3.0.17'
 }
 
 tasks.named('runClientGameTest') {
+    // CI provides a 24-bit Xvfb display; avoid Loom starting a second display
+    // whose default depth can lack the GLX visual required by Minecraft 26.3.
+    useXvfb = false
     systemProperty 'warlockery.recipeViewer', recipeViewer
     systemProperty 'warlockery.itemIds', providers.gradleProperty('warlockeryItemIds').orElse('').get()
     systemProperty 'warlockery.ritualIds', providers.gradleProperty('warlockeryRitualIds').orElse('').get()
@@ -278,6 +282,18 @@ tasks.named('test', Test) {
 }
 
 tasks.named('runGametest') {
+    // SavedData survives a vanilla GameTestServer restart. Preserve the previous scratch
+    // world for diagnosis, then start fresh so finite marriage names and other state cannot leak.
+    doFirst {
+        def scratchWorld = layout.buildDirectory.dir('gametest/world').get().asFile.toPath()
+        if (java.nio.file.Files.exists(scratchWorld)) {
+            def history = layout.buildDirectory.dir('gametest-history').get().asFile.toPath()
+            java.nio.file.Files.createDirectories(history)
+            def previous = java.nio.file.Files.createTempDirectory(history, 'previous-').resolve('world')
+            java.nio.file.Files.move(scratchWorld, previous)
+            logger.lifecycle("Preserved previous GameTest scratch world at " + previous)
+        }
+    }
     outputs.file layout.buildDirectory.file('gametest-results.xml')
 }
 

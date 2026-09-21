@@ -14,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class RitualBookClientAcceptance implements FabricClientGameTest {
     @Override
@@ -33,7 +32,7 @@ public final class RitualBookClientAcceptance implements FabricClientGameTest {
                     world.getServer().runOnServer(server -> {
                         final var player = world.getConnection().getServerPlayer();
                         player.setGameMode(GameType.SURVIVAL);
-                        player.setInvulnerable(true);
+                        player.setPermanentlyInvulnerable(true);
                         for (BlockPos pos : BlockPos.betweenClosed(-3, 99, -4, 3, 103, 3)) {
                             player.level().setBlockAndUpdate(pos, pos.getY() == 99
                                 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState());
@@ -46,9 +45,9 @@ public final class RitualBookClientAcceptance implements FabricClientGameTest {
                     });
                     world.getConnection().waitForClientboundPackets();
                     context.waitFor(client -> client.gui.screen() == null, 300);
-                    context.getInput().pressKey(GLFW.GLFW_KEY_1);
+                    context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
                     aim(context, Vec3.atCenterOf(heart).add(0, -0.495, 0));
-                    context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                    context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                     context.waitTicks(20);
                     check(context.computeOnClient(client -> client.gui.screen() == null),
                         "Golden heart must refuse casting without a Circle Magic book");
@@ -60,15 +59,15 @@ public final class RitualBookClientAcceptance implements FabricClientGameTest {
                     });
                     world.getConnection().waitForClientboundPackets();
                     context.runOnClient(client -> client.player.setXRot(-50));
-                    context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                    context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                     context.waitForScreen(ManualScreen.class);
                     ManualClientAcceptance.selectSection(context, "rite_manifestation");
                     ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.next").getString());
                     final int savedPage = page(context);
                     check(savedPage > 0, "The back-button regression needs a nonzero reading page");
-                    context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+                    context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
                     aim(context, Vec3.atCenterOf(heart).add(0, -0.495, 0));
-                    context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                    context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                     context.waitForScreen(ManualScreen.class);
                     check(page(context) == savedPage, "Heart use must reopen the saved reading page");
                     ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.perform_ritual").getString());
@@ -80,14 +79,14 @@ public final class RitualBookClientAcceptance implements FabricClientGameTest {
                         .anyMatch(child -> child instanceof net.minecraft.client.gui.components.EditBox)),
                         "Returning to the ritual entry must restore book search");
                     ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.perform_ritual").getString());
-                    context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+                    context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
                     check(context.computeOnClient(client -> client.gui.screen() instanceof ManualScreen),
                         "Escape from Perform Ritual must return to its book entry");
                     check(page(context) == savedPage, "Escape must restore the reading page");
                     ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.perform_ritual").getString());
                     ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.close").getString());
                     aim(context, Vec3.atCenterOf(heart).add(0, -0.495, 0));
-                    context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                    context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                     context.waitForScreen(ManualScreen.class);
                     check(page(context) == savedPage, "Closing Perform Ritual must persist its normal reading page");
                     ManualClientAcceptance.saveScreenshot(context, evidence, "reopened-entry", screenshots);
@@ -97,7 +96,7 @@ public final class RitualBookClientAcceptance implements FabricClientGameTest {
                     checkCastingNavigation(context);
                     ManualClientAcceptance.clickButton(context, Component.translatable("screen.warlockery.manual.back_to_ritual").getString());
                     ManualClientAcceptance.saveScreenshot(context, evidence, "back-scale-three", screenshots);
-                    context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+                    context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
                     context.waitTicks(20);
                     ManualClientAcceptance.saveScreenshot(context, evidence, "selected-heart-display", screenshots);
                     Files.writeString(evidence.resolve("passed.txt"), "Native missing-book refusal, saved-page heart opening, Perform/Back, Escape and close/reopen at scales 2/3 passed.\n" + String.join("\n", screenshots));

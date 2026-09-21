@@ -31,7 +31,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class BrazierAndDeathProtectionAcceptance implements FabricClientGameTest {
     private static final List<String> BRAZIER_RECIPES = List.of(
@@ -216,7 +215,7 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
                 world.getConnection().waitForClientboundPackets();
                 context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(-70); });
                 context.waitTicks(2);
-                context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                 for (int tick = 0; tick < 30 && !serverValue(player -> DollItem.isBoundTo(player.getMainHandItem(), player)); tick++)
                     context.waitTicks(1);
                 check(serverValue(player -> DollItem.isBoundTo(player.getMainHandItem(), player)
@@ -241,12 +240,12 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
                     && player.level().getBlockState(CACTUS.below()).is(Blocks.SAND)
                     && player.level().getBlockState(player.blockPosition().below()).is(Blocks.STONE)
                     && player.getY() >= 99.9 && player.getY() < 101), "Cactus stays supported and the player stands on the arena floor before walking");
-                context.getInput().holdKey(GLFW.GLFW_KEY_W);
+                context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                 try {
                     for (int tick = 0; tick < 160 && !serverValue(player -> observation.activated || !player.isAlive()); tick++)
                         context.waitTicks(1);
                 } finally {
-                    context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+                    context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                 }
                 check(serverValue(player -> observation.activated), "Actual cactus collision activates the doll");
                 check(serverValue(player -> observation.activationWasCactus), "Passive native damage event proves cactus, not fall damage");
@@ -294,7 +293,7 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
                 try { screenshot(context, "death-guard-failure"); } catch (Throwable capture) { failure.addSuppressed(capture); }
                 throw failure;
             } finally {
-                context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+                context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                 if (observation != null) row.put("native_damage_observation", serverValue(player -> observation.details()));
                 observation = null;
             }
@@ -312,7 +311,7 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> client.player.setXRot(-70));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, id);
         final String text = context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString());
@@ -336,7 +335,7 @@ public final class BrazierAndDeathProtectionAcceptance implements FabricClientGa
         row.put("section", id);
         row.put("book_text", text);
         row.put("book_pages_read", pages);
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
     }
 

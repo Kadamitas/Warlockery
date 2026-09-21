@@ -33,7 +33,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Private native-client motion diagnosis for the three repaired rigs whose important poses are
@@ -79,7 +78,7 @@ public final class VisualRigMotionClientAcceptance implements FabricClientGameTe
             hud(context, true);
             for (int i = 0; i < 3
                 && !context.computeOnClient(client -> client.options.getCameraType().isFirstPerson()); i++) {
-                context.getInput().pressKey(GLFW.GLFW_KEY_F5);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F5);
             }
             for (final String id : CASES) {
                 results.put(id, new LinkedHashMap<>(Map.of("status", "NOT_RUN")));
@@ -123,7 +122,7 @@ public final class VisualRigMotionClientAcceptance implements FabricClientGameTe
         } finally {
             context.runOnClient(client -> client.options.fov().set(originalFov));
             if (context.computeOnClient(client -> client.gui.hud.isHidden()) != originalHud) {
-                context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
             }
         }
     }
@@ -143,7 +142,7 @@ public final class VisualRigMotionClientAcceptance implements FabricClientGameTe
             final ServerPlayer player = world.getConnection().getServerPlayer();
             player.getInventory().clearContent();
             player.removeAllEffects();
-            player.setInvulnerable(false);
+            player.setPermanentlyInvulnerable(false);
             player.setDeltaMovement(Vec3.ZERO);
         });
         world.getConnection().waitForClientboundPackets();
@@ -157,7 +156,7 @@ public final class VisualRigMotionClientAcceptance implements FabricClientGameTe
             player.setGameMode(GameType.SURVIVAL);
             // Survival invulnerability remains a legal challenger: patron protection excludes only
             // creative/spectator players, while this prevents the diagnostic target dying.
-            player.setInvulnerable(true);
+            player.setPermanentlyInvulnerable(true);
             player.teleportTo(level, 0.5, 100, 8.5, Set.of(), 180.0F, 5.0F, true);
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack(),
                 "summon warlockery:stonebroker 0.5 100 0.5 {PersistenceRequired:1b}");
@@ -418,7 +417,7 @@ public final class VisualRigMotionClientAcceptance implements FabricClientGameTe
 
     private void hud(final ClientGameTestContext context, final boolean hidden) {
         if (context.computeOnClient(client -> client.gui.hud.isHidden()) != hidden) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_F1);
         }
     }
 

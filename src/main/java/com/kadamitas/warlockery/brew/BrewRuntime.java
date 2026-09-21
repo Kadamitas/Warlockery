@@ -243,10 +243,10 @@ public final class BrewRuntime {
         for (int step = 0; step < MAX_FORCED_GROWTH_STEPS; step++) {
             final BlockState state = level.getBlockState(pos);
             if (!(state.getBlock() instanceof BonemealableBlock growable)
-                || !growable.isValidBonemealTarget(level, pos, state)) {
+                || !growable.isValidBonemealTarget(level, pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION)) {
                 break;
             }
-            growable.performBonemeal(level, level.getRandom(), pos, state);
+            growable.performBonemeal(level, level.getRandom(), pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION);
             changed |= !level.getBlockState(pos).equals(state);
         }
         return changed;
@@ -343,7 +343,7 @@ public final class BrewRuntime {
             entity.addDeltaMovement(BrewPhysics.radialVelocity(
                 context.center(), entity.position(), context.potency(), inward
             ));
-            entity.hurtMarked = true;
+            entity.syncVelocity = true;
         });
         return ImpactResult.entities(entities.size());
     }
@@ -353,7 +353,7 @@ public final class BrewRuntime {
         entities.forEach(entity -> {
             entity.addDeltaMovement(new Vec3(0.0, Math.clamp(context.potency(), 0.25F, 2.0F), 0.0));
             entity.resetFallDistance();
-            entity.hurtMarked = true;
+            entity.syncVelocity = true;
         });
         return ImpactResult.entities(entities.size());
     }
@@ -373,7 +373,7 @@ public final class BrewRuntime {
             animal.addDeltaMovement(BrewPhysics.radialVelocity(
                 context.center(), animal.position(), context.potency(), false
             ));
-            animal.hurtMarked = true;
+            animal.syncVelocity = true;
         });
         return ImpactResult.entities(animals.size());
     }
@@ -639,7 +639,7 @@ public final class BrewRuntime {
             entity.addDeltaMovement(BrewPhysics.radialVelocity(
                 context.center(), entity.position(), context.potency(), false
             ));
-            entity.hurtMarked = true;
+            entity.syncVelocity = true;
         });
         return ImpactResult.entities(entities.size());
     }
@@ -653,7 +653,7 @@ public final class BrewRuntime {
             entity.addDeltaMovement(BrewPhysics.radialVelocity(
                 destination, entity.position(), context.potency(), true
             ));
-            entity.hurtMarked = true;
+            entity.syncVelocity = true;
         });
         return ImpactResult.entities(entities.size());
     }
@@ -1024,7 +1024,7 @@ public final class BrewRuntime {
             final double x = entity.getX() + (context.level().getRandom().nextDouble() - 0.5) * range * 2.0;
             final double y = entity.getY() + context.level().getRandom().nextInt(17) - 8;
             final double z = entity.getZ() + (context.level().getRandom().nextDouble() - 0.5) * range * 2.0;
-            if (entity.randomTeleport(x, y, z, true)) {
+            if (entity.randomTeleport(x, y, z, true, com.kadamitas.warlockery.util.BlockSupport.NO_ADDITIONAL_TELEPORT_AVOIDANCE)) {
                 moved++;
             }
         }

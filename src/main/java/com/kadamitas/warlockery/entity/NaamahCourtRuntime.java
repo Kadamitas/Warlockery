@@ -354,7 +354,7 @@ public final class NaamahCourtRuntime {
             if (entity != naamah && entity.distanceToSqr(naamah) <= radiusSquared && eligibleTarget(naamah, entity)) {
                 retained.accept(candidate(naamah, entity, trialOwner, recentAttacker, currentChallenger));
             }
-            return AbortableIterationConsumer.Continuation.CONTINUE;
+            return net.minecraft.util.Continuation.CONTINUE;
         });
         final List<Candidate> candidates = retained.snapshot();
         naamah.courtCounters().candidates(candidates.size(), visited[0]);
@@ -602,8 +602,8 @@ public final class NaamahCourtRuntime {
         if (inspected.size() < NaamahCourtRules.MAX_CANDIDATES) {
             com.kadamitas.warlockery.entity.BoundedEntityQuery.visit(level, EntityTypeTest.forClass(LivingEntity.class), bounds, entity ->
                 inspectWaveCandidate(naamah, entity, radiusSquared, inspected, victims)
-                    ? AbortableIterationConsumer.Continuation.ABORT
-                    : AbortableIterationConsumer.Continuation.CONTINUE
+                    ? net.minecraft.util.Continuation.ABORT
+                    : net.minecraft.util.Continuation.CONTINUE
             );
         }
         naamah.courtCounters().wave(victims.size(), inspected.size());
@@ -863,7 +863,7 @@ public final class NaamahCourtRuntime {
             return false;
         }
         final BlockState floor = budget.read(level, position.below()).orElse(null);
-        if (floor == null || !floor.blocksMotion() || !floor.getFluidState().isEmpty()) {
+        if (floor == null || !com.kadamitas.warlockery.util.BlockSupport.blocksMotion(floor) || !floor.getFluidState().isEmpty()) {
             return false;
         }
         for (int y = -1; y <= 2; y++) {

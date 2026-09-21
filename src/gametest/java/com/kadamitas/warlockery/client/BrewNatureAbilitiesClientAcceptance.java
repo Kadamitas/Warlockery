@@ -52,7 +52,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class BrewNatureAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final Set<BrewBehavior> COVERED = Set.of(BrewBehavior.GROW, BrewBehavior.EXTINGUISH,
@@ -126,7 +125,7 @@ public final class BrewNatureAbilitiesClientAcceptance implements FabricClientGa
                         try { screenshot(context, id.getPath() + "-failure-in-world"); }
                         catch (Throwable capture) { row.put("screenshot_failure", capture.toString()); }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
                         final ImpactObservation current = observation;
                         if (current != null) row.put("impact_observation", serverValue(player -> current.report()));
                         observation = null;
@@ -196,7 +195,7 @@ public final class BrewNatureAbilitiesClientAcceptance implements FabricClientGa
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(90); });
         context.waitTicks(2);
         screenshot(context, id.getPath() + "-before-native-throw");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         for (int tick = 0; tick < 100; tick++) {
             if (serverValue(player -> !observation.projectileIds.isEmpty() && observation.projectilesPresent == 0)) break;
             context.waitTicks(1);
@@ -443,7 +442,7 @@ public final class BrewNatureAbilitiesClientAcceptance implements FabricClientGa
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> client.player.setXRot(-75));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final String text = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
@@ -469,16 +468,16 @@ public final class BrewNatureAbilitiesClientAcceptance implements FabricClientGa
         row.put("book_text", text);
         row.put("guide_mapping", "This exact registry item uses BrewKind " + kind.id() + "; canonical section " + section
             + " is read for that shared behavior. This does not assert identical acquisition recipes for aliases.");
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
     }
 
     private double walk(final ClientGameTestContext context, final int ticks) {
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); });
         final Vec3 before = serverValue(Entity::position);
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { context.waitTicks(ticks); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         return Math.sqrt(serverValue(player -> player.position().subtract(before).horizontalDistanceSqr()));
     }
 

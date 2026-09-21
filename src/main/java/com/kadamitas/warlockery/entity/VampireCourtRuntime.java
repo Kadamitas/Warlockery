@@ -299,7 +299,7 @@ public final class VampireCourtRuntime {
                         if (!level.hasChunkAt(candidate)) continue;
                         if (!level.canSeeSky(candidate) && level.isEmptyBlock(candidate)
                             && level.isEmptyBlock(candidate.above())
-                            && level.getBlockState(candidate.below()).blocksMotion()
+                            && com.kadamitas.warlockery.util.BlockSupport.blocksMotion(level.getBlockState(candidate.below()))
                             && tryClaimShelter(member, level, candidate, now)) {
                             selected = candidate;
                             break search;

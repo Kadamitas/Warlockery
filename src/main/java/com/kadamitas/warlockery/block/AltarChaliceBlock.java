@@ -2,7 +2,6 @@ package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.AltarChaliceRules.Diagnostic;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -24,18 +23,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class AltarChaliceBlock extends Block {
-    public static final MapCodec<AltarChaliceBlock> CODEC = simpleCodec(AltarChaliceBlock::new);
     public static final BooleanProperty FILLED = BooleanProperty.create("filled");
     private static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 12.0, 12.0);
 
     public AltarChaliceBlock(final BlockBehaviour.Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FILLED, false));
-    }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return CODEC;
     }
 
     @Override

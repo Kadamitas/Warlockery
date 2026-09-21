@@ -59,7 +59,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Rendered native acceptance for the advanced marker, hex, contagion and death-contract brews. */
 public final class BrewAdvancedAbilitiesClientAcceptance implements FabricClientGameTest {
@@ -198,7 +197,7 @@ public final class BrewAdvancedAbilitiesClientAcceptance implements FabricClient
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(90); });
         context.waitTicks(2);
         screenshot(context, id.getPath() + "-before-native-throw");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         for (int tick = 0; tick < 100 && !serverValue(player -> observation.impacted); tick++) context.waitTicks(1);
         check(serverValue(player -> observation.projectileIds.size() == 1 && observation.impacted),
             "Exactly one owned potion must fly and complete its native collision");
@@ -350,9 +349,9 @@ public final class BrewAdvancedAbilitiesClientAcceptance implements FabricClient
             });
             try {
                 world.getConnection().waitForClientboundPackets();
-                context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                 context.waitTicks(40);
-            } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+            } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
             final Vec3 after = serverValue(ServerPlayer::position);
             check(before.distanceToSqr(after) < 0.05, "Ender Inhibition must cancel a normally consumed chorus-fruit teleport");
             check(serverValue(player -> player.getMainHandItem().isEmpty()), "Chorus fruit must be consumed by native use");
@@ -492,7 +491,7 @@ public final class BrewAdvancedAbilitiesClientAcceptance implements FabricClient
         context.waitTicks(12);
         final Vec3 point = serverValue(player -> player.level().getEntity(target).getBoundingBox().getCenter());
         look(context, point);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTicks(4);
     }
 
@@ -665,7 +664,7 @@ public final class BrewAdvancedAbilitiesClientAcceptance implements FabricClient
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> client.player.setXRot(-75));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final String text = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
@@ -685,7 +684,7 @@ public final class BrewAdvancedAbilitiesClientAcceptance implements FabricClient
         row.put("book", profile.id());
         row.put("book_pages_read", pages);
         row.put("book_text", text);
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
     }
 

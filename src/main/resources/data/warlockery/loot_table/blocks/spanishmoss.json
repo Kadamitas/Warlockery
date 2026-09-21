@@ -2,24 +2,27 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "conditions": [
-        {
-          "condition": "minecraft:match_tool",
-          "predicate": {
-            "items": "minecraft:shears"
-          }
-        },
-        {
-          "condition": "minecraft:survives_explosion"
-        }
-      ],
       "entries": [
         {
           "type": "minecraft:item",
           "name": "warlockery:spanishmoss"
         }
       ],
-      "rolls": 1
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "predicate": {
+              "items": "minecraft:shears"
+            },
+            "type": "minecraft:match_tool"
+          },
+          {
+            "type": "minecraft:survives_explosion"
+          }
+        ]
+      }
     }
   ],
   "random_sequence": "warlockery:blocks/spanishmoss"

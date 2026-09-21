@@ -48,7 +48,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.Entity;
@@ -117,8 +116,8 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
                         fail(id, row, failure);
                         try { screenshot(context, id + "-failure-in-world"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
                         if (observation != null) row.put("last_runtime_observation", serverValue(player -> observation.report()));
                         observation = null;
                         write(false);
@@ -207,7 +206,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
             look(context, new Vec3(0.5, 101, 0.5));
             check(context.computeOnClient(client -> client.hitResult instanceof net.minecraft.world.phys.EntityHitResult hit
                 && hit.getEntity().getUUID().equals(otherId)), "Native pointer hits the other player");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             await(context, player -> SympatheticBinding.read(player.getMainHandItem()).filter(binding -> binding.targetId().equals(otherId)).isPresent(),
                 30, "Native compass use binds the actual other player UUID");
             server(player -> player.level().getServer().getPlayerList().getPlayer(otherId).teleportTo(7.5, 100, 0.5));
@@ -242,9 +241,9 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
         place(context, item("doll_shelf"), DEVICE, "doll_shelf", false);
         supply(context, 0, item("shelfcompass"));
         clearChat(context);
-        context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3);
         try { use(context, Vec3.atCenterOf(DEVICE), DEVICE); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
         await(context, player -> tracker(player.getMainHandItem()) != null && tracker(player.getMainHandItem()).pos().equals(DEVICE)
             && tracker(player.getMainHandItem()).dimension().equals(player.level().dimension()), 30, "Native crouch-use records exact clicked shelf and dimension");
         awaitChat(context, translated(context, "message.warlockery.shelf_compass.bound"));
@@ -264,7 +263,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
             observation = new BagObservation(player);
         });
         sync(context, 0);
-        context.getInput().pressKey(GLFW.GLFW_KEY_E);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E);
         context.waitForScreen(net.minecraft.client.gui.screens.inventory.InventoryScreen.class);
         clickPlayerSlot(context, 11); clickPlayerSlot(context, 0);
         check(context.computeOnClient(client -> client.player.containerMenu.getCarried().is(item("brewbag"))
@@ -275,7 +274,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
         check(context.computeOnClient(client -> client.player.containerMenu.getCarried().is(item("brewbag"))
             && bagCount(client.player.containerMenu.getCarried()) == 1 && client.player.getInventory().getItem(9).isEmpty()),
             "Native carried-bag primary click stores one allowed brew");
-        clickPlayerSlotButton(context, 10, GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        clickPlayerSlotButton(context, 10, com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         check(context.computeOnClient(client -> bagCount(client.player.containerMenu.getCarried()) == 0
             && client.player.getInventory().getItem(10).is(item("brew_freeze"))), "Native right-click into an empty inventory slot retrieves the exact brew");
         clickPlayerSlot(context, 10); clickPlayerSlot(context, 0);
@@ -283,7 +282,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
         screenshot(context, "brewbag-native-store-retrieve");
         close(context); sync(context, 0);
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(90); }); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> observation.projectiles.size() == 1 && bagCount(player.getMainHandItem()) == 0, 30,
             "Native bag use launches exactly one owned projectile carrying the stored brew and consumes its contents");
         check(serverValue(player -> player.getMainHandItem().is(item("brewbag")) && player.getMainHandItem().getCount() == 1),
@@ -374,7 +373,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
         return target != null && position != null && position.pos().equals(target.blockPosition()) && position.dimension().equals(target.level().dimension());
     }
     private static int bagCount(final ItemStack bag) {
-        return bag.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY).itemCopyStream().mapToInt(ItemStack::getCount).sum();
+        return bag.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY).itemCopies().mapToInt(ItemStack::getCount).sum();
     }
     private static void look(final ClientGameTestContext context, final Vec3 point) {
         context.runOnClient(client -> {
@@ -385,7 +384,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
     }
     private static void useAir(final ClientGameTestContext context) {
         context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
     }
     private static String translated(final ClientGameTestContext context, final String key, final Object... arguments) {
         return context.computeOnClient(client -> Component.translatable(key, arguments).getString());
@@ -434,7 +433,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
             final var profile = found.orElseThrow();
             supply(context, 0, item(profile.id()));
             context.runOnClient(client -> client.player.setXRot(-70));
-            context.waitTicks(2); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.waitTicks(2); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitForScreen(ManualScreen.class);
             ManualClientAcceptance.selectSection(context, section);
             final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
@@ -464,9 +463,9 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
     private void place(final ClientGameTestContext context, final Item item, final BlockPos target, final String expectedId,
         final boolean crouch) {
         supply(context, 0, item);
-        if (crouch) { context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3); }
+        if (crouch) { context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3); }
         try { use(context, new Vec3(target.getX() + 0.5, target.getY() - 0.001, target.getZ() + 0.5), target.below()); }
-        finally { if (crouch) { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2); } }
+        finally { if (crouch) { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(2); } }
         final Identifier expected = expectedId.contains(":") ? Identifier.parse(expectedId) : Identifier.fromNamespaceAndPath("warlockery", expectedId);
         await(context, player -> BuiltInRegistries.BLOCK.getKey(player.level().getBlockState(target).getBlock()).equals(expected), 30,
             "Native placement produces the expected device at " + target);
@@ -480,7 +479,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
 
     private void sync(final ClientGameTestContext context, final int hotbar) {
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1 + hotbar); context.waitTicks(2);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + hotbar); context.waitTicks(2);
     }
 
     private static void use(final ClientGameTestContext context, final Vec3 point, final BlockPos expected) {
@@ -492,7 +491,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
         context.waitTicks(2);
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(expected)),
             "Native pointer targets the intended support/device: " + expected);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
     }
 
     private static void clickPlayerSlot(final ClientGameTestContext context, final int index) {
@@ -518,7 +517,7 @@ public final class UtilityToolsAbilitiesClientAcceptance implements FabricClient
 
     private static void close(final ClientGameTestContext context) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTicks(3);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitTicks(3);
         }
     }
 

@@ -57,10 +57,10 @@ public final class RitualEclipseData extends SavedData {
         level.dimensionType().defaultClock().ifPresent(clock -> {
             final long now = level.getGameTime();
             if (!active) {
-                previousTicks = level.clockManager().getTotalTicks(clock);
+                previousTicks = level.clockManager().getInstance(clock).totalTicks();
                 started = now;
                 level.clockManager().moveToTimeMarker(clock, ClockTimeMarkers.NIGHT);
-                nightTicks = level.clockManager().getTotalTicks(clock);
+                nightTicks = level.clockManager().getInstance(clock).totalTicks();
                 active = true;
             }
             expiration = extendedExpiration(expiration, now, duration);

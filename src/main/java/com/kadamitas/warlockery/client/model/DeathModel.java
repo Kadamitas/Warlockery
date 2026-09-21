@@ -167,7 +167,7 @@ public final class DeathModel extends EntityModel<DeathModel.State> implements A
         reaper.y += Mth.sin(state.ageInTicks * 0.08F) * 0.18F;
 
         final float reap = Mth.clamp(state.reapProgress, 0.0F, 1.0F);
-        final float attackSwing = Mth.sin(Mth.sqrt(Mth.clamp(state.attackTime, 0.0F, 1.0F)) * Mth.PI);
+        final float attackSwing = Mth.sin(Mth.sqrt(Mth.clamp(state.swingAnimation, 0.0F, 1.0F)) * Mth.PI);
         final float swing = Math.max(reap, attackSwing);
         if (swing > 0.0F) {
             rightArm.xRot -= 0.75F + swing * 1.15F;

@@ -116,7 +116,7 @@ public final class BrewPersistentRuntime {
                 attacker.addDeltaMovement(BrewPhysics.radialVelocity(
                     target.position(), attacker.position(), 1.25, false
                 ));
-                attacker.hurtMarked = true;
+                attacker.syncVelocity = true;
             }
             reflectDamage(target, attacker, event.getAmount());
         }
@@ -228,7 +228,7 @@ public final class BrewPersistentRuntime {
         target.setSwimming(false);
         target.setSprinting(false);
         target.setDeltaMovement(SinkingRules.burden(target.getDeltaMovement()));
-        target.hurtMarked = true;
+        target.syncVelocity = true;
     }
 
     private static void tickArrowAttraction(final ServerLevel level, final LivingEntity target) {
@@ -316,7 +316,7 @@ public final class BrewPersistentRuntime {
         }
         final double direction = Math.floorMod(target.getId() * 37 + target.tickCount, 360) * Math.PI / 180.0;
         target.addDeltaMovement(new Vec3(Math.cos(direction) * 0.25, 1.05, Math.sin(direction) * 0.25));
-        target.hurtMarked = true;
+        target.syncVelocity = true;
     }
 
     private static void tickFear(final LivingEntity target) {

@@ -22,7 +22,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
-import org.lwjgl.glfw.GLFW;
 
 public final class CraftingCatalogAcceptance implements FabricClientGameTest {
     private final List<Map<String, Object>> results = new ArrayList<>();
@@ -110,7 +109,7 @@ public final class CraftingCatalogAcceptance implements FabricClientGameTest {
                         world.getConnection().waitForClientboundPackets();
                         world.getConnection().waitForChunksRender();
                         context.getInput().lookAt(new BlockPos(0, 80, 0));
-                        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                         if (cooking) context.waitFor(client -> client.player.containerMenu instanceof net.minecraft.world.inventory.AbstractFurnaceMenu);
                         else context.waitForScreen(CraftingScreen.class);
                         for (int i = 0; i < inputs.size(); i++) if (!inputs.get(i).isEmpty()) {
@@ -152,7 +151,7 @@ public final class CraftingCatalogAcceptance implements FabricClientGameTest {
                         ManualClientAcceptance.saveScreenshot(context, evidence, Identifier.parse(id).getPath() + "-failure", screenshots);
                     }
                     if (context.computeOnClient(client -> client.gui.screen() != null)) {
-                        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+                        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
                     }
                     write(false);
                 }

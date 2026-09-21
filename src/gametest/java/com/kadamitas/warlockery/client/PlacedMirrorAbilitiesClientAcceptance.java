@@ -53,7 +53,6 @@ import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Native placed-mirror controls, with read-only observation of their resulting state. */
 public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClientGameTest {
@@ -121,7 +120,7 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
                         fail(id, row, failure);
                         try { screenshot(context, id + "-failure-in-world"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
                         if (travelObservation != null) row.put("paired_travel_observation",serverValue(player -> travelObservation.report()));
                         travelObservation = null;
                         if (observation != null) row.put("reflection_observation", serverValue(player -> observation.report()));
@@ -228,7 +227,7 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
         });
         final long beforeTick = serverValue(player -> player.level().getGameTime());
         check(serverValue(player -> totalPower(player) == 500 && AltarPowerNetwork.available(player.level(), MIRROR) == 500), "Exactly 500 total power is reachable before native use");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
         await(context, player -> count(player, item("replication_charge")) == 1, 12, "Native powered mirror use creates one Replication Charge");
         final long afterTick = serverValue(player -> player.level().getGameTime());
         check(beforeTick / 40 == afterTick / 40, "Exact power observation excludes natural recharge");
@@ -259,7 +258,7 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
             .anyMatch(entity -> entity.getUUID().equals(witness)), 40);
         look(context, serverValue(player -> player.level().getEntity(witness).getBoundingBox().getCenter()));
         check(context.computeOnClient(client -> client.hitResult instanceof EntityHitResult hit && hit.getEntity().getUUID().equals(witness)), "Native pointer hits the named cow for sampling");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3);
         await(context, player -> SympatheticBinding.read(player.getMainHandItem()).filter(binding -> binding.targetId().equals(witness)
             && binding.targetName().equals("Mirror Witness")).isPresent(), 20, "Native vial use captures the exact living subject");
         position(context, START); use(context, Vec3.atCenterOf(MIRROR), MIRROR);
@@ -336,9 +335,9 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
     }
 
     private void crouchUse(final ClientGameTestContext context) {
-        context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3);
         try { use(context, Vec3.atCenterOf(MIRROR), MIRROR); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(2); }
     }
     private static boolean stableArrival(final ServerPlayer player,final Vec3 destination) {
         return Math.abs(player.getX()-destination.x)<.02 && Math.abs(player.getZ()-destination.z)<.02
@@ -394,7 +393,7 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
         final var profile = ManualProfile.profiles().stream().filter(book -> book.sections().contains(section)).findFirst().orElseThrow();
         supply(context, 0, item(profile.id()));
         context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
         final int pages = context.computeOnClient(client -> {
@@ -411,7 +410,7 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
             screenshot(context, section + "-guide-" + page);
         }
         row.put("guide", Map.of("book", profile.id(), "section", section, "text", body, "pages_read", pages)); row.put("guide_status", "PASSED");
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTicks(3);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitTicks(3);
     }
 
     private void place(final ClientGameTestContext context, final String id, final BlockPos pos, final int slot) {
@@ -428,7 +427,7 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
         sync(context, 8); check(serverValue(player -> player.getMainHandItem().isEmpty() && player.getOffhandItem().isEmpty()), "Both hands are actually empty");
     }
     private void sync(final ClientGameTestContext context, final int slot) {
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1 + slot); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + slot); context.waitTicks(2);
     }
     private void position(final ClientGameTestContext context, final Vec3 point) {
         server(player -> { player.teleportTo(point.x, point.y, point.z); player.setDeltaMovement(Vec3.ZERO); });
@@ -445,7 +444,7 @@ public final class PlacedMirrorAbilitiesClientAcceptance implements FabricClient
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(expected)), "Native pointer targets intended block " + expected);
     }
     private static void use(final ClientGameTestContext context, final Vec3 point, final BlockPos expected) {
-        look(context, point); assertBlockPointer(context, expected); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        look(context, point); assertBlockPointer(context, expected); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
     }
     private void await(final ClientGameTestContext context, final Predicate<ServerPlayer> predicate, final int ticks, final String message) {
         for (int remaining = ticks; remaining > 0 && !serverValue(predicate::test); remaining -= 2) context.waitTicks(2);

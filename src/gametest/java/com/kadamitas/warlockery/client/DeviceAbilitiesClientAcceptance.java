@@ -48,7 +48,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class DeviceAbilitiesClientAcceptance implements FabricClientGameTest {
     private static final List<String> DEVICES = List.of("fumefunnel", "filteredfumefunnel", "shadedglass",
@@ -106,8 +105,8 @@ public final class DeviceAbilitiesClientAcceptance implements FabricClientGameTe
                         fail(id, row, failure);
                         try { screenshot(context, id + "-failure-in-world"); } catch (Throwable ignored) { }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
                         if (observation != null) row.put("last_runtime_observation", serverValue(player -> observation.report()));
                         observation = null;
                         write(false);
@@ -313,7 +312,7 @@ public final class DeviceAbilitiesClientAcceptance implements FabricClientGameTe
         supply(context, 1, item("death_guard_doll"));
         context.runOnClient(client -> client.player.setXRot(-70));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> DollItem.isBound(player.getInventory().getItem(1)), 30, "Actual item-use self-binds Death Guard before shelf installation");
         check(serverValue(player -> SympatheticBinding.read(player.getInventory().getItem(1)).orElseThrow().targetId().equals(player.getUUID())),
             "Doll binds this native player");
@@ -337,9 +336,9 @@ public final class DeviceAbilitiesClientAcceptance implements FabricClientGameTe
         });
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); });
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { await(context, player -> observation.shelfActivated, 100, "Installed remote doll prevents lethal damage from native movement into a real cactus"); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         check(serverValue(player -> observation.recoveredHealth >= 10 && observation.recoveredHealth <= 11
             && observation.regeneration && player.isAlive()), "Shelf protection restores halfhealth and grants its actual regeneration outcome");
         check(serverValue(player -> ((DollShelfBlockEntity) player.level().getBlockEntity(DEVICE)).getItem(0).getDamageValue() == 1
@@ -365,7 +364,7 @@ public final class DeviceAbilitiesClientAcceptance implements FabricClientGameTe
             final var profile = found.orElseThrow();
             supply(context, 0, item(profile.id()));
             context.runOnClient(client -> client.player.setXRot(-70));
-            context.waitTicks(2); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.waitTicks(2); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitForScreen(ManualScreen.class);
             ManualClientAcceptance.selectSection(context, section);
             final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
@@ -395,9 +394,9 @@ public final class DeviceAbilitiesClientAcceptance implements FabricClientGameTe
     private void place(final ClientGameTestContext context, final Item item, final BlockPos target, final String expectedId,
         final boolean crouch) {
         supply(context, 0, item);
-        if (crouch) { context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(3); }
+        if (crouch) { context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(3); }
         try { use(context, new Vec3(target.getX() + 0.5, target.getY() - 0.001, target.getZ() + 0.5), target.below()); }
-        finally { if (crouch) { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); context.waitTicks(2); } }
+        finally { if (crouch) { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); context.waitTicks(2); } }
         final Identifier expected = expectedId.contains(":") ? Identifier.parse(expectedId) : Identifier.fromNamespaceAndPath("warlockery", expectedId);
         await(context, player -> BuiltInRegistries.BLOCK.getKey(player.level().getBlockState(target).getBlock()).equals(expected), 30,
             "Native placement produces the expected device at " + target);
@@ -411,7 +410,7 @@ public final class DeviceAbilitiesClientAcceptance implements FabricClientGameTe
 
     private void sync(final ClientGameTestContext context, final int hotbar) {
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1 + hotbar); context.waitTicks(2);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + hotbar); context.waitTicks(2);
     }
 
     private static void use(final ClientGameTestContext context, final Vec3 point, final BlockPos expected) {
@@ -423,7 +422,7 @@ public final class DeviceAbilitiesClientAcceptance implements FabricClientGameTe
         context.waitTicks(2);
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(expected)),
             "Native pointer targets the intended support/device: " + expected);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
     }
 
     private static void clickPlayerSlot(final ClientGameTestContext context, final int index) {
@@ -449,7 +448,7 @@ public final class DeviceAbilitiesClientAcceptance implements FabricClientGameTe
 
     private static void close(final ClientGameTestContext context) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTicks(3);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitTicks(3);
         }
     }
 

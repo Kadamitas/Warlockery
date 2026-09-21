@@ -15,7 +15,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import org.lwjgl.glfw.GLFW;
 
 public final class AllBooksClientAcceptance implements FabricClientGameTest {
     private final List<Map<String, Object>> sections = new ArrayList<>();
@@ -54,17 +53,17 @@ public final class AllBooksClientAcceptance implements FabricClientGameTest {
                                 player.inventoryMenu.broadcastChanges();
                             });
                             world.getConnection().waitForClientboundPackets();
-                            context.getInput().pressKey(GLFW.GLFW_KEY_2);
-                            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
+                            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                             int expectedUnlocked = unlocked + 1;
                             world.getServer().waitFor(server -> com.kadamitas.warlockery.item.ManualProgress.unlockedSectionCount(
                                 book, world.getConnection().getServerPlayer().getInventory().getItem(0)) == expectedUnlocked);
                             ManualClientAcceptance.check(world.getServer().computeOnServer(server ->
                                 world.getConnection().getServerPlayer().getInventory().getItem(1).isEmpty()), "Using a torn page must consume it and unlock one section");
                         }
-                        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+                        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
                     }
-                    context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                    context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                     context.waitForScreen(ManualScreen.class);
                     boolean firstSection = true;
                     for (var section : book.sections()) {
@@ -109,13 +108,13 @@ public final class AllBooksClientAcceptance implements FabricClientGameTest {
                     }
                     String last = context.computeOnClient(client -> (String) field(client.gui.screen(), "selectedSection"));
                     int page = context.computeOnClient(client -> (int) field(client.gui.screen(), "bodyPage"));
-                    context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+                    context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
                     context.waitFor(client -> client.gui.screen() == null);
-                    context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                    context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                     context.waitForScreen(ManualScreen.class);
                     ManualClientAcceptance.check(context.computeOnClient(client -> last.equals(field(client.gui.screen(), "selectedSection"))
                         && page == (int) field(client.gui.screen(), "bodyPage")), "Each book must reopen at its saved reading position");
-                    context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+                    context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
                     context.waitFor(client -> client.gui.screen() == null);
                 }
             }

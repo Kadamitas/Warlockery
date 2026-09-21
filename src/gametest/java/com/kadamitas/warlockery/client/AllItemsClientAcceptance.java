@@ -50,7 +50,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class AllItemsClientAcceptance implements FabricClientGameTest {
     private static final BlockPos TARGET = new BlockPos(0, 100, 0);
@@ -251,8 +250,8 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final int pages = context.computeOnClient(client -> {
@@ -272,7 +271,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             screenshot(context, section + "-guide-" + page);
         }
         closeScreen(context);
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
     }
 
     private void bloodLink(final ClientGameTestContext context, final Map<String, Object> row) throws Exception {
@@ -295,7 +294,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             world.getConnection().waitForClientboundPackets();
             context.waitFor(client -> client.level.getPlayerByUUID(otherId) != null, 40);
             look(context, new Vec3(0.5, 101, 0.5));
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             waitServer(context, player -> SympatheticBinding.read(player.getMainHandItem())
                 .filter(binding -> binding.targetId().equals(otherId)).isPresent(), 30,
                 "Native use on the other player must bind the Blood Link doll to that player");
@@ -347,7 +346,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         context.waitTicks(3);
         look(context, Vec3.atCenterOf(TARGET.below()).add(0, 0.49, 0));
     }
@@ -372,7 +371,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         world.getConnection().waitForClientboundPackets();
         look(context, support.equals("south supporting wall") ? new Vec3(0.5, 100.5, 1.0)
             : Vec3.atCenterOf(TARGET.below()).add(0, 0.49, 0));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getBlockState(TARGET).is(expected), 30,
             "Native placement must produce " + block + " at the clicked target");
         check(serverValue(player -> player.getMainHandItem().isEmpty()), "Survival placement must consume the one staged item");
@@ -385,7 +384,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             id.getPath().substring(0, id.getPath().length() - "_spawn_egg".length()));
         final EntityType<?> expected = BuiltInRegistries.ENTITY_TYPE.getValue(entityId);
         row.put("expected_entity", entityId.toString());
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getEntities((Entity) null, AREA,
             entity -> entity.getType() == expected).size() == 1, 40, "Egg must spawn exactly one intended entity");
         check(serverValue(player -> player.getMainHandItem().isEmpty()), "Survival egg use consumes exactly one egg");
@@ -482,11 +481,11 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         world.getConnection().waitForClientboundPackets();
         context.waitTicks(3);
         look(context, new Vec3(0.5, 103, 8));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try {
             waitServer(context, player -> player.getFoodData().getFoodLevel() > 4, 80,
                 "Native eating must increase hunger rather than merely consume or animate");
-        } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         final Item remainder = id.getPath().startsWith("stew") ? Items.BOWL : Items.AIR;
         check(serverValue(player -> remainder == Items.AIR ? player.getMainHandItem().isEmpty()
             : player.getMainHandItem().is(remainder)), "Food must leave the exact expected bowl/empty-hand remainder");
@@ -504,7 +503,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(0.5, 99.9, -2.4));
         row.put("expected_effects", brew.kind().effects().stream().map(Object::toString).toList());
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> brew.kind().effects().stream().allMatch(effect -> switch (effect.effect()) {
             case "minecraft:instant_health" -> player.getHealth() > 10;
             case "minecraft:instant_damage" -> player.getHealth() < 10;
@@ -524,7 +523,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             return equippable == null ? EquipmentSlot.LEGS : equippable.slot();
         });
         look(context, new Vec3(0.5, 103, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.getItemBySlot(expected).is(BuiltInRegistries.ITEM.getValue(id)), 20,
             "Native use must equip the item in " + expected);
         check(serverValue(player -> player.getMainHandItem().isEmpty()), "Equipping moves the held stack without duplication");
@@ -539,10 +538,10 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             server(player -> player.level().setBlockAndUpdate(TARGET, Blocks.STONE.defaultBlockState()));
             world.getConnection().waitForClientboundPackets();
             look(context, Vec3.atCenterOf(TARGET));
-            context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
             try { waitServer(context, player -> player.level().getBlockState(TARGET).isAir(), 140,
                 "Native mining must remove the staged stone"); }
-            finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT); }
+            finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT); }
         } else if (name.endsWith("axe") || name.endsWith("shovel") || name.endsWith("hoe")) {
             final var start = name.endsWith("axe") ? Blocks.OAK_LOG : Blocks.DIRT;
             final var expected = name.endsWith("axe") ? Blocks.STRIPPED_OAK_LOG
@@ -550,7 +549,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             server(player -> player.level().setBlockAndUpdate(TARGET.below(), start.defaultBlockState()));
             world.getConnection().waitForClientboundPackets();
             look(context, Vec3.atCenterOf(TARGET.below()).add(0, 0.49, 0));
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             waitServer(context, player -> player.level().getBlockState(TARGET.below()).is(expected), 25,
                 "Native tool use must produce " + BuiltInRegistries.BLOCK.getKey(expected));
         } else {
@@ -564,7 +563,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             });
             world.getConnection().waitForClientboundPackets();
             look(context, new Vec3(0.5, 100.6, 0.2));
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
             waitServer(context, player -> {
                 final Entity entity = player.level().getEntity(target);
                 return entity == null || entity instanceof LivingEntity living && living.getHealth() < living.getMaxHealth();
@@ -577,13 +576,13 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
 
     private void recordBiome(final ClientGameTestContext context, final Identifier id, final Map<String, Object> row) {
         final Identifier expected = serverValue(player -> player.level().getBiome(TARGET.below()).unwrapKey().orElseThrow().identifier());
-        if (!id.getPath().equals("biomenote")) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        if (!id.getPath().equals("biomenote")) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         try {
             context.waitTicks(2);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             waitServer(context, player -> BiomeNoteState.read(player.getMainHandItem()).filter(expected::equals).isPresent(),
                 30, "Native use must record the actual clicked biome in the held item");
-        } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+        } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
         check(serverValue(player -> player.getMainHandItem().getCount() == 1), "Biome recording preserves the item");
         world.getConnection().waitForClientboundPackets();
         context.waitFor(client -> BiomeNoteState.read(client.player.getMainHandItem()).filter(expected::equals).isPresent(), 30);
@@ -593,28 +592,28 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
 
     private void drawChalk(final ClientGameTestContext context, final Identifier id, final Map<String, Object> row) {
         final var expected = ModBlocks.ALL.get(CHALK_GLYPHS.get(id.getPath())).get();
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getBlockState(TARGET).is(expected), 30,
             "Chalk must draw its intended glyph on the clicked support");
         check(serverValue(player -> player.getMainHandItem().getDamageValue() == 1
             && player.getMainHandItem().getCount() == 1), "Drawing spends exactly one durability and preserves the chalk");
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(0.5, 100.01, 0.5));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(8);
         check(serverValue(player -> player.level().getBlockState(TARGET).is(expected)
             && player.getMainHandItem().getDamageValue() == 1), "Repeated use on the same glyph must preserve it and spend no durability");
         row.put("drawn_glyph", BuiltInRegistries.BLOCK.getKey(expected).toString());
         row.put("duplicate_drawing", "Rejected without further durability cost");
         if (id.getPath().equals("chalkheart")) {
-            context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
             try {
                 context.waitTicks(2);
                 look(context, Vec3.atCenterOf(TARGET.east().below()).add(0, 0.49, 0));
-                context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                 waitServer(context, player -> player.level().getBlockState(TARGET.east()).is(ModBlocks.ALL.get("circleglyphgolden").get()),
                     30, "Sneaking Golden Chalk must draw a golden ring glyph beside its center");
-            } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+            } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
             check(serverValue(player -> player.getMainHandItem().getDamageValue() == 2), "Golden secondary drawing spends one additional durability");
             row.put("secondary_glyph", "warlockery:circleglyphgolden");
         }
@@ -622,14 +621,14 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
     }
 
     private void anoint(final ClientGameTestContext context, final Map<String, Object> row) {
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitTicks(8);
         check(serverValue(player -> player.level().getBlockState(TARGET.below()).is(Blocks.DIRT)
             && player.getMainHandItem().getCount() == 1), "Paste must refuse dirt without consuming itself");
         server(player -> player.level().setBlockAndUpdate(TARGET, Blocks.CAULDRON.defaultBlockState()));
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(0.5, 100.5, 0.01));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getBlockState(TARGET).is(ModBlocks.ALL.get("cauldron").get()),
             30, "Native paste use must transform the staged vanilla cauldron into a Warlockery cauldron");
         check(serverValue(player -> player.getMainHandItem().isEmpty()), "Anointing consumes the one paste");
@@ -643,7 +642,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         final boolean milk = id.getPath().equals("ingredient_purified_milk");
         look(context, new Vec3(0.5, 103, 8));
         if (needle) {
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitTicks(8);
             check(serverValue(player -> player.getMainHandItem().getCount() == 1), "Icy Needle outside a dream condition must not be consumed");
         }
@@ -663,12 +662,12 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             : milk ? "Poison, wither and beneficial speed" : "Poison, wither, slowness and beneficial speed");
         world.getConnection().waitForClientboundPackets();
         context.waitTicks(2);
-        if (needle) context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
-        else context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        if (needle) context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
+        else context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try {
             waitServer(context, player -> needle ? player.getMainHandItem().isEmpty()
                 : player.getMainHandItem().is(Items.GLASS_BOTTLE), 80, "Native remedy use must complete and leave the correct remainder");
-        } finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        } finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         check(serverValue(player -> player.hasEffect(MobEffects.SPEED)), "The beneficial control effect must survive remedy use");
         if (needle) {
             check(serverValue(player -> !player.hasEffect(MobEffects.NAUSEA) && !player.hasEffect(MobEffects.BLINDNESS)
@@ -697,7 +696,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         row.put("staged_prerequisite", "One live cow with AI disabled; no binding component prewritten");
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(0.5, 100.6, 0.2));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> SympatheticBinding.read(player.getMainHandItem())
             .filter(binding -> binding.targetId().equals(target) && binding.targetType().equals("minecraft:cow")).isPresent(),
             30, "Native vial interaction must bind the exact live target UUID and type");
@@ -713,12 +712,12 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         final boolean alreadyPositionKind = id.getPath().equals("ingredient_waystone_bound");
         if (alreadyPositionKind) {
             final Vec3 initial = serverValue(Entity::position);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitTicks(8);
             check(serverValue(player -> player.position().distanceToSqr(initial) < 0.04
                 && WaystoneState.read(player.getMainHandItem()).isEmpty() && player.getMainHandItem().getCount() == 1),
                 "Uninitialized position waystone must not teleport, acquire a destination or be consumed");
-            context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
             context.waitTicks(2);
         }
         try {
@@ -726,17 +725,17 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             look(context, Vec3.atCenterOf(TARGET.below()).add(0, 0.49, 0));
             context.waitFor(client -> client.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit
                 && hit.getBlockPos().equals(TARGET.below()), 30);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             waitServer(context, player -> player.getMainHandItem().is(ModItems.ALL.get("ingredient_waystone_bound").get())
                 && WaystoneState.read(player.getMainHandItem()).filter(location -> location.position().equals(TARGET)
                     && location.dimension().equals(player.level().dimension().identifier())).isPresent(),
                 30, "Native waystone binding must record the clicked floor's stand position and actual dimension");
-        } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+        } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
         world.getConnection().waitForClientboundPackets();
         server(player -> player.teleportTo(3.5, 100, -2.5));
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(3.5, 103, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.position().distanceToSqr(new Vec3(0.5, 100, 0.5)) < 0.04,
             30, "Native bound-waystone use must teleport the player back to the recorded position");
         check(serverValue(player -> player.getMainHandItem().getCount() == 1
@@ -750,12 +749,12 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
     private void soaringBroom(final ClientGameTestContext context, final Map<String, Object> row) throws Exception {
         readItemGuide(context, "rite_infuse_brew_soaring", row);
         look(context, new Vec3(0.5, 104, 12));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try {
             waitServer(context, player -> player.hasEffect(com.kadamitas.warlockery.registry.ModEffects.SOARING.getHolder().orElseThrow()),
                 60, "Native drinking must apply Soaring");
         } finally {
-            context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         }
         check(serverValue(player -> player.getEffect(com.kadamitas.warlockery.registry.ModEffects.SOARING.getHolder().orElseThrow())
             .getDuration() >= 143_950 && player.getMainHandItem().is(Items.GLASS_BOTTLE)),
@@ -778,9 +777,9 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_2);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
         look(context, new Vec3(0.5, 105, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, "rite_infuse_broom");
         final int pages = context.computeOnClient(client -> {
@@ -797,10 +796,10 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             screenshot(context, "broom-instructions-" + page);
         }
         closeScreen(context);
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         look(context, new Vec3(0.5, 101.62, 20));
         final Vec3 launch = serverValue(Entity::position);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.getVehicle() instanceof com.kadamitas.warlockery.entity.BroomEntity
             && player.getMainHandItem().isEmpty(), 40, "Normal native use must mount the enchanted broom and transfer its item");
         context.waitFor(client -> client.player.getVehicle() instanceof com.kadamitas.warlockery.entity.BroomEntity, 40);
@@ -820,7 +819,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             steering[1] = rider.getYRot();
         });
         try {
-            context.getInput().holdKey(GLFW.GLFW_KEY_SPACE);
+            context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_SPACE);
             context.waitTicks(10);
             row.put("takeoff_client", context.computeOnClient(client -> "jump=" + client.options.keyJump.isDown()
                 + ",screen=" + client.gui.screen() + ",vehicle=" + client.player.getVehicle()));
@@ -831,9 +830,9 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             writeReport();
             waitServer(context, player -> player.getVehicle() != null && player.getVehicle().getY() >= launch.y + 3,
                 60, "Space must lift the mounted broom at least three blocks");
-            context.getInput().releaseKey(GLFW.GLFW_KEY_SPACE);
+            context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_SPACE);
             final Vec3 airborne = serverValue(player -> player.getVehicle().position());
-            context.getInput().holdKey(GLFW.GLFW_KEY_W);
+            context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
             waitServer(context, player -> player.getVehicle().getZ() >= airborne.z + 6, 60,
                 "Forward input must fly the broom through the world");
             context.runOnClient(client -> { client.player.setYRot(-90); client.player.setXRot(0); });
@@ -846,23 +845,23 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             check(Math.abs(observedTorque - expectedTorque) < 0.001,
                 "Observed native steering must match the normal or Soaring response: " + observedTorque);
             row.put("observed_steering_fraction_per_server_tick", observedTorque);
-            context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+            context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
             screenshot(context, "broom-airborne-and-steered");
-            context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_ALT);
+            context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LALT);
             waitServer(context, player -> player.getVehicle() instanceof com.kadamitas.warlockery.entity.BroomEntity broom
                 && broom.isGliding(), 30, "Native Glide Down key must reach the server");
             final double glideHeight = serverValue(player -> player.getVehicle().getY());
             waitServer(context, player -> player.getVehicle().getY() < glideHeight - 0.25, 40,
                 "Glide Down must descend while keeping the rider mounted");
-            context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_ALT);
+            context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LALT);
             screenshot(context, "broom-gliding");
             context.runOnClient(client -> client.player.setXRot(75));
-            context.getInput().holdKey(GLFW.GLFW_KEY_W);
+            context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
             waitServer(context, player -> player.getVehicle() != null && player.getVehicle().onGround(), 120,
                 "Looking down and flying forward must allow a controlled landing");
-            context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+            context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
             screenshot(context, "broom-landed");
-            context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+            context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
             waitServer(context, player -> !player.isPassenger()
                 && player.getMainHandItem().is(ModItems.ALL.get(id.getPath()).get()), 40,
                 "Native dismount must return the same usable broom");
@@ -875,7 +874,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             row.put("flight_fixture", "Staged Survival player, enchanted broom, Circle Magic book and level landing area; no vehicle spawn, mount, velocity, control packet, teleport or landing outcome injected");
         } finally {
             observedRider.set(null);
-            for (int key : new int[] {GLFW.GLFW_KEY_SPACE, GLFW.GLFW_KEY_W, GLFW.GLFW_KEY_LEFT_ALT, GLFW.GLFW_KEY_LEFT_SHIFT})
+            for (int key : new int[] {com.mojang.blaze3d.platform.InputConstants.KEY_SPACE, com.mojang.blaze3d.platform.InputConstants.KEY_W, com.mojang.blaze3d.platform.InputConstants.KEY_LALT, com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT})
                 context.getInput().releaseKey(key);
         }
     }
@@ -893,16 +892,16 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         row.put("staged_prerequisite", "Pre-drawn " + ((radius * 2 + 1) * (radius * 2 + 1))
             + " ritual glyphs in the clearing square, plus one outside the declared radius");
         world.getConnection().waitForClientboundPackets();
-        if (enchanted) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        if (enchanted) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         try {
             if (enchanted) context.waitFor(client -> client.player.isCrouching(), 30);
             look(context, new Vec3(0.5, 100.01, 0.5));
             context.waitFor(client -> client.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit
                 && hit.getBlockPos().equals(TARGET), 30);
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             waitServer(context, player -> BlockPos.betweenClosedStream(TARGET.offset(-radius, 0, -radius), TARGET.offset(radius, 0, radius))
                 .allMatch(pos -> player.level().getBlockState(pos).isAir()), 30, "Native broom use must remove every glyph inside its clearing radius");
-        } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+        } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
         check(serverValue(player -> player.level().getBlockState(TARGET.offset(radius + 1, 0, 0)).is(glyph)
             && player.getMainHandItem().getDamageValue() == 1 && player.getMainHandItem().getCount() == 1),
             "Broom must preserve the outside glyph, remain held and spend exactly one durability for the clearing action");
@@ -920,13 +919,13 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             case "buckethollowtears" -> ModFluids.HOLLOW_TEARS_SOURCE.get();
             default -> throw new AssertionError(id);
         };
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getFluidState(TARGET).getType() == fluid
             && player.level().getFluidState(TARGET).isSource(), 25, "Native bucket use must place the intended source fluid");
         check(serverValue(player -> player.getMainHandItem().is(Items.BUCKET)), "Pouring must leave one empty bucket");
         world.getConnection().waitForClientboundPackets();
         look(context, Vec3.atCenterOf(TARGET));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.getMainHandItem().is(BuiltInRegistries.ITEM.getValue(id))
             && player.getMainHandItem().getCount() == 1 && !player.level().getFluidState(TARGET).isSource(),
             25, "Native empty-bucket use must collect the placed source into the original filled bucket");
@@ -940,11 +939,11 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         server(player -> player.getFoodData().setFoodLevel(4));
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(0.5, 104, 8));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         try { waitServer(context, player -> name.equals("ingredient_warm_blood") ? player.getMainHandItem().is(Items.GLASS_BOTTLE)
             : name.equals("ingredient_redstone_soup") ? player.getMainHandItem().is(Items.BOWL) : player.getMainHandItem().isEmpty(),
             80, "Native special-food consumption must complete with the intended remainder"); }
-        finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+        finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
         final boolean benefit = serverValue(player -> switch (name) {
             case "ingredient_apple_wormy" -> player.getFoodData().getFoodLevel() == 4 && player.hasEffect(MobEffects.POISON);
             case "ingredient_berries_rowan" -> player.getFoodData().getFoodLevel() == 5;
@@ -973,11 +972,11 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             });
             world.getConnection().waitForClientboundPackets();
             context.waitTicks(3);
-            context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             try { waitServer(context, player -> player.getMainHandItem().is(Items.BOWL)
                 && player.hasEffect(MobEffects.HEALTH_BOOST) && player.getEffect(MobEffects.HEALTH_BOOST).getAmplifier() == 1
                 && player.getHealth() >= 18, 80, "A full-fed player must be able to drink Redstone Soup and receive its documented health benefit"); }
-            finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); }
+            finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); }
             row.put("full_hunger_health_benefit", "Health Boost II and eight health restored");
         }
         row.put("remaining", name.equals("ingredient_warm_blood") ? "Actual vampire reserve restoration and acquisition"
@@ -989,7 +988,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         final boolean toggle = id.getPath().equals("ingredient_fool_skull");
         final var type = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.fromNamespaceAndPath("warlockery", SUMMONING_ITEMS.get(id.getPath())));
         if (!seed) look(context, new Vec3(0.5, 103, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getEntities((Entity) null, AREA, entity -> entity.getType() == type).size() == 1,
             40, "Native summoning item must create exactly one intended creature");
         final UUID summoned = serverValue(player -> player.level().getEntities((Entity) null, AREA, entity -> entity.getType() == type).getFirst().getUUID());
@@ -1006,7 +1005,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
             world.getConnection().waitForClientboundPackets();
             context.waitTicks(5);
             look(context, new Vec3(0.5, 108, 8));
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             waitServer(context, player -> player.level().getEntity(summoned) == null, 30, "Second skull use must dismiss its owned steed");
             check(serverValue(player -> player.getMainHandItem().getCount() == 1), "Dismissing must retain the reusable skull");
             row.put("native_dismissal", true);
@@ -1017,12 +1016,12 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
     private void captureBat(final ClientGameTestContext context, final Map<String, Object> row) {
         final UUID captured = stageMob(context, "minecraft:bat", 0.5, 100.5, 0.2);
         look(context, new Vec3(0.5, 100.7, 0.2));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getEntity(captured) == null && BatBallItem.captured(player.getMainHandItem()) == 1,
             30, "Native bat-ball use must remove the actual target and store one captured bat");
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(0.5, 104, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> BatBallItem.captured(player.getMainHandItem()) == 0
             && player.level().getEntities((Entity) null, AREA, entity -> entity.getType() == net.minecraft.world.entity.EntityTypes.BAT).size() == 1,
             30, "Native release must spawn one real bat and clear the captured count");
@@ -1035,7 +1034,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
     private void shear(final ClientGameTestContext context, final Map<String, Object> row) {
         final UUID target = stageMob(context, "minecraft:sheep", 0.5, 100, 0.2);
         look(context, new Vec3(0.5, 100.6, 0.2));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getEntity(target) instanceof net.minecraft.world.entity.animal.sheep.Sheep sheep && sheep.isSheared(),
             30, "Native Boline interaction must shear the staged sheep");
         check(serverValue(player -> player.getMainHandItem().getDamageValue() == 1), "Shearing spends one Boline durability");
@@ -1047,7 +1046,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
     private void wolfsbane(final ClientGameTestContext context, final Map<String, Object> row) {
         final UUID target = stageMob(context, "warlockery:werewolf", 0.5, 100, 0.2);
         look(context, new Vec3(0.5, 100.8, 0.2));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getEntity(target) instanceof LivingEntity living
             && living.hasEffect(MobEffects.WEAKNESS) && living.getEffect(MobEffects.WEAKNESS).getAmplifier() == 1
             && living.hasEffect(MobEffects.SLOWNESS) && player.getMainHandItem().isEmpty(),
@@ -1062,7 +1061,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         final boolean remote = Set.of("doll", "hexing_doll", "blood_link_doll").contains(name);
         final UUID target = remote ? stageMob(context, "minecraft:cow", 0.5, 100, 0.2) : serverValue(Entity::getUUID);
         look(context, remote ? new Vec3(0.5, 100.6, 0.2) : new Vec3(0.5, 104, 8));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> SympatheticBinding.read(player.getMainHandItem()).filter(binding -> binding.targetId().equals(target)).isPresent(),
             30, "Native doll use must establish the intended self or live-target binding");
         row.put("bound_uuid", target.toString());
@@ -1071,7 +1070,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
         world.getConnection().waitForClientboundPackets();
         if (name.equals("hexing_doll")) {
             look(context, new Vec3(0.5, 105, 8));
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
             waitServer(context, player -> player.level().getEntity(target) instanceof LivingEntity living
                 && living.getHealth() <= living.getMaxHealth() - 4 && player.getMainHandItem().getDamageValue() == 1,
                 30, "Native remote doll prick must damage the bound cow and spend one charge");
@@ -1131,7 +1130,7 @@ public final class AllItemsClientAcceptance implements FabricClientGameTest {
 
     private static void closeScreen(final ClientGameTestContext context) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
             context.waitFor(client -> client.gui.screen() == null, 30);
         }
     }

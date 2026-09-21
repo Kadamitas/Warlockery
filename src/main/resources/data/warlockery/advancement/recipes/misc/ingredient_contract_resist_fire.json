@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_contract_resist_fire"
+        "recipes": "warlockery:ingredient_contract_resist_fire"
       }
     },
     "has_ingredient_0": {

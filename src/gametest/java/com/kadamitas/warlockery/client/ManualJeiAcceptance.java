@@ -9,7 +9,6 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
-import org.lwjgl.glfw.GLFW;
 
 public final class ManualJeiAcceptance implements IModPlugin {
     private static volatile IJeiRuntime runtime;
@@ -23,7 +22,7 @@ public final class ManualJeiAcceptance implements IModPlugin {
     static void run(final ClientGameTestContext context, final Path evidence,
         final List<String> screenshots, final List<String> checks) throws Exception {
         context.runOnClient(client -> { client.options.guiScale().set(2); client.resizeGui(); });
-        context.getInput().pressKey(GLFW.GLFW_KEY_E);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_E);
         context.waitForScreen(InventoryScreen.class);
         context.waitFor(client -> runtime != null && runtime.getIngredientListOverlay().isListDisplayed());
         ManualClientAcceptance.check(context.computeOnClient(client -> runtime.getRecipeManager().createRecipeLookup(
@@ -46,8 +45,8 @@ public final class ManualJeiAcceptance implements IModPlugin {
             ManualClientAcceptance.click(context, search[0], search[1]);
             context.waitFor(client -> runtime.getIngredientListOverlay().hasKeyboardFocus());
             int oldLength = context.computeOnClient(client -> runtime.getIngredientFilter().getFilterText().length());
-            context.getInput().pressKey(GLFW.GLFW_KEY_END);
-            for (int index = 0; index < oldLength; index++) context.getInput().pressKey(GLFW.GLFW_KEY_BACKSPACE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_END);
+            for (int index = 0; index < oldLength; index++) context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_BACKSPACE);
             context.getInput().typeChars(query);
             context.waitFor(client -> runtime.getIngredientFilter().getFilterText().equals(query));
             context.waitTicks(5);
@@ -74,7 +73,7 @@ public final class ManualJeiAcceptance implements IModPlugin {
                 }
             }
             ManualClientAcceptance.check(found, "JEI visibly contains " + item);
-            context.getInput().pressKey(GLFW.GLFW_KEY_R);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_R);
             try {
                 context.waitFor(client -> client.gui.screen() != null
                     && client.gui.screen().getClass().getSimpleName().equals("RecipesGui"));
@@ -86,10 +85,10 @@ public final class ManualJeiAcceptance implements IModPlugin {
             selectCategory(context, item.equals("ingredient_gypsum") ? "Distillery" : "Crafting");
             ManualClientAcceptance.saveScreenshot(context, evidence, "jei-recipe-" + item, screenshots);
             checks.add("Actual JEI recipe key opens recipes for " + item + ".");
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
             context.waitForScreen(InventoryScreen.class);
         }
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
     }
 
     private static void selectCategory(final ClientGameTestContext context, final String expected) {

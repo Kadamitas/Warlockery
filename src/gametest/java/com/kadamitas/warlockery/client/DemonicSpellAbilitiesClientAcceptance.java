@@ -43,7 +43,6 @@ import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Ordinary input binds, feeds and offers all six contracts; observers never cast or inject their effects. */
 public final class DemonicSpellAbilitiesClientAcceptance implements FabricClientGameTest {
@@ -110,7 +109,7 @@ public final class DemonicSpellAbilitiesClientAcceptance implements FabricClient
                         try { screenshot(context, spell.itemId() + "-failure"); } catch (Throwable ignored) { }
                     } finally {
                         if (observation != null) row.put("observation", serverValue(player -> observation.report()));
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
                         observation = null; write(false);
                     }
                 } finally { observation = null; world = null; }
@@ -159,7 +158,7 @@ public final class DemonicSpellAbilitiesClientAcceptance implements FabricClient
         supply(context, ItemStack.EMPTY);
         aimEntity(context, serverValue(player -> observation.target.getUUID()));
         final float before = serverValue(player -> observation.target.getHealth());
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         await(context, player -> player.getLastHurtMob() == observation.target && observation.target.getHealth() < before, 30,
             "An actual bare-hand hit selects the living target as the book instructs");
         // Wait for ordinary knockback to settle, then observe the selected creature's real position.
@@ -292,9 +291,9 @@ public final class DemonicSpellAbilitiesClientAcceptance implements FabricClient
         server(player -> { observation.drops.clear(); player.level().setBlockAndUpdate(ORE, Blocks.IRON_ORE.defaultBlockState()); });
         supply(context, new ItemStack(Items.IRON_PICKAXE)); look(context, Vec3.atCenterOf(ORE));
         check(context.computeOnClient(client -> client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(ORE)), "Native pointer targets staged iron ore");
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         try { await(context, player -> player.level().getBlockState(ORE).isAir(), 160, "Native pickaxe mining actually breaks the ore"); }
-        finally { context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT); }
+        finally { context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT); }
         await(context, player -> !observation.drops.isEmpty(), 30, "Mining produces a real dropped item entity");
         check(serverValue(player -> observation.drops.equals(List.of(expected + "*1"))), "Exact ordinary or smelted drop, with no duplicate raw output");
         row.put(phase, serverValue(player -> List.copyOf(observation.drops)));
@@ -334,7 +333,7 @@ public final class DemonicSpellAbilitiesClientAcceptance implements FabricClient
         }
     }
 
-    private void useImp(final ClientGameTestContext context) { aimEntity(context, serverValue(player -> observation.imp.getUUID())); context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(3); }
+    private void useImp(final ClientGameTestContext context) { aimEntity(context, serverValue(player -> observation.imp.getUUID())); context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(3); }
     private void aimEntity(final ClientGameTestContext context, final UUID id) {
         world.getConnection().waitForClientboundPackets();
         look(context, serverValue(player -> player.level().getEntity(id).getBoundingBox().getCenter()));
@@ -343,7 +342,7 @@ public final class DemonicSpellAbilitiesClientAcceptance implements FabricClient
     private static ItemStack modItem(final String id) { return new ItemStack(ModItems.ALL.get(id).get()); }
     private void supply(final ClientGameTestContext context, final ItemStack item) {
         server(player -> { player.getInventory().clearContent(); player.getInventory().setItem(0, item); player.getInventory().setSelectedSlot(0); player.inventoryMenu.broadcastChanges(); });
-        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(GLFW.GLFW_KEY_1); context.waitTicks(2);
+        world.getConnection().waitForClientboundPackets(); context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1); context.waitTicks(2);
     }
     private static void look(final ClientGameTestContext context, final Vec3 point) {
         context.runOnClient(client -> { final Vec3 delta = point.subtract(client.player.getEyePosition());
@@ -359,7 +358,7 @@ public final class DemonicSpellAbilitiesClientAcceptance implements FabricClient
         final ManualProfile profile = ManualProfile.profiles().stream().filter(book -> book.sections().contains(id)).findFirst().orElseThrow();
         supply(context, modItem(profile.id()));
         context.runOnClient(client -> client.player.setXRot(-70)); context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, id);
         final String body = context.computeOnClient(client -> ManualArticleCatalog.article(profile, id).body().getString());
         final int pages = context.computeOnClient(client -> {
@@ -376,7 +375,7 @@ public final class DemonicSpellAbilitiesClientAcceptance implements FabricClient
             screenshot(context, row.get("item") + "-" + id + "-book-" + page);
         }
         row.put(id + "_guide", Map.of("book", profile.id(), "body", body, "pages_read", pages));
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE); context.waitFor(client -> client.gui.screen() == null);
     }
     private static Object field(final Object object, final String name) {
         try { final var field = object.getClass().getDeclaredField(name); field.setAccessible(true); return field.get(object); }

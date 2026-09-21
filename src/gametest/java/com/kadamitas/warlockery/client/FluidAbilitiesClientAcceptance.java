@@ -37,7 +37,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Rendered native-input checks for every registered arcane-fluid bucket and its contact behavior. */
 public final class FluidAbilitiesClientAcceptance implements FabricClientGameTest {
@@ -133,9 +132,9 @@ public final class FluidAbilitiesClientAcceptance implements FabricClientGameTes
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_9);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_9);
         look(context, new Vec3(0.5, 96, 5));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         check(context.computeOnClient(client -> section.equals(field(client.gui.screen(), "selectedSection"))),
@@ -162,7 +161,7 @@ public final class FluidAbilitiesClientAcceptance implements FabricClientGameTes
         }
         row.put("book_pages_read", pages);
         closeScreen(context);
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         waitServer(context, player -> player.getInventory().getSelectedSlot() == 0, 30,
             "Native hotbar input must return from the book to the ritual tool");
         return body;
@@ -219,7 +218,7 @@ public final class FluidAbilitiesClientAcceptance implements FabricClientGameTes
         });
         pour(context, "buckethollowtears", ModFluids.HOLLOW_TEARS_SOURCE.get());
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); });
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try {
             waitServer(context, player -> player.hasEffect(MobEffects.WEAKNESS)
                     && player.getEffect(MobEffects.WEAKNESS).getAmplifier() == 1
@@ -228,7 +227,7 @@ public final class FluidAbilitiesClientAcceptance implements FabricClientGameTes
                     && living(player, zombie).hasEffect(MobEffects.RESISTANCE),
                 100, "Native movement into Hollow Tears must harm the player while adjacent fluid contact heals and protects undead");
         } finally {
-            context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+            context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         }
         server(player -> player.teleportTo(0.5, 100, 0.5));
         world.getConnection().waitForClientboundPackets();
@@ -243,7 +242,7 @@ public final class FluidAbilitiesClientAcceptance implements FabricClientGameTes
         server(player -> {
             final LivingEntity target = living(player, cow);
             target.setHealth(20.0F);
-            target.invulnerableTime = 0;
+            target.damageCooldownTime = 0;
             target.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
         });
         pour(context, "bucketerosionbrew", ModFluids.EROSION_SOURCE.get());
@@ -295,7 +294,7 @@ public final class FluidAbilitiesClientAcceptance implements FabricClientGameTes
         });
         world.getConnection().waitForClientboundPackets();
         look(context, Vec3.atCenterOf(FLUID_POS.below()).add(0, 0.49, 0));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getFluidState(FLUID_POS).getType() == fluid
                 && player.level().getFluidState(FLUID_POS).isSource()
                 && player.getMainHandItem().is(Items.BUCKET),
@@ -309,7 +308,7 @@ public final class FluidAbilitiesClientAcceptance implements FabricClientGameTes
     ) {
         world.getConnection().waitForClientboundPackets();
         look(context, Vec3.atCenterOf(FLUID_POS));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.getMainHandItem().is(ModItems.ALL.get(itemId).get())
                 && player.getMainHandItem().getCount() == 1
                 && !player.level().getFluidState(FLUID_POS).isSource(),
@@ -386,7 +385,7 @@ public final class FluidAbilitiesClientAcceptance implements FabricClientGameTes
 
     private static void closeScreen(final ClientGameTestContext context) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
             context.waitFor(client -> client.gui.screen() == null, 30);
         }
     }

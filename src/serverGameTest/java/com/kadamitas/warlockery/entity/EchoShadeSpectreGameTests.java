@@ -609,7 +609,7 @@ public final class EchoShadeSpectreGameTests {
             helper.getLevel().getServer().getPlayerList()
                 .placeNewPlayer(connection, player, cookie);
             player.setGameMode(GameType.SURVIVAL);
-            player.setInvulnerable(false);
+            player.setPermanentlyInvulnerable(false);
             final BlockPos absolute = helper.absolutePos(position);
             player.teleportTo(absolute.getX() + 0.5D, absolute.getY(), absolute.getZ() + 0.5D);
             return track(player);

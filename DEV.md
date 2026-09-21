@@ -1,8 +1,11 @@
 # Developing Warlockery
 
-Warlockery is a Fabric mod for Minecraft 26.2. This guide covers local setup, the project layout, common development tasks, testing, and release builds.
+Warlockery is a Fabric mod for Minecraft 26.3. This guide covers local setup, the project layout, common development tasks, testing, and release builds.
 
 ## Requirements
+
+Recipe-viewer development profiles use `-PwarlockeryRecipeViewer=jei` (default), `rrv`, or `none`.
+REI and the previously used unofficial EMI port have no verified Minecraft 26.3 runtime yet; their integration source remains, but those launch profiles fail clearly instead of loading incompatible 26.2 JARs.
 
 - JDK 25
 - Git
@@ -140,14 +143,14 @@ My Warlockery Pack/
       sounds/
 ```
 
-For Minecraft 26.2, a minimal `pack.mcmeta` is:
+For Minecraft 26.3, a minimal `pack.mcmeta` is:
 
 ```json
 {
   "pack": {
     "description": "Custom Warlockery resources",
-    "max_format": 107,
-    "min_format": [107, 1]
+    "max_format": [97, 1],
+    "min_format": [97, 1]
   }
 }
 ```

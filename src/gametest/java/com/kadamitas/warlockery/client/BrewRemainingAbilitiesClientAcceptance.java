@@ -44,7 +44,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 import com.kadamitas.warlockery.brew.BrewPersistentRuntime;
 import com.kadamitas.warlockery.brew.BrewCompatibilityTags;
@@ -150,8 +149,8 @@ public final class BrewRemainingAbilitiesClientAcceptance implements FabricClien
                         try { screenshot(context, id.getPath() + "-failure-in-world"); }
                         catch (Throwable capture) { row.put("screenshot_failure", capture.toString()); }
                     } finally {
-                        context.getInput().releaseKey(GLFW.GLFW_KEY_W);
-                        context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                        context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
                         final ImpactObservation current = observation;
                         if (current != null) row.put("impact_observation", serverValue(player -> current.report()));
                         observation = null;
@@ -218,7 +217,7 @@ public final class BrewRemainingAbilitiesClientAcceptance implements FabricClien
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(90); }); context.waitTicks(2);
         screenshot(context, id.getPath() + "-before-native-throw");
         server(player -> observation.begin());
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> observation.finishedImpact(), 100, "Actual owned thrown brew reaches a normal impact");
         check(serverValue(player -> observation.projectileIds.size() == 1
             && !player.getInventory().getItem(0).is(BuiltInRegistries.ITEM.getValue(id))),
@@ -438,9 +437,9 @@ public final class BrewRemainingAbilitiesClientAcceptance implements FabricClien
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); }); context.waitTicks(2);
         final float before = serverValue(ServerPlayer::getHealth);
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try { await(context, player -> player.getHealth() < before, 45, "Native walk contacts staged cactus and takes normal game damage"); }
-        finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         final float after = serverValue(ServerPlayer::getHealth);
         server(player -> { player.level().setBlockAndUpdate(new BlockPos(0, 100, -4), Blocks.AIR.defaultBlockState());
             player.getAbilities().invulnerable = true; player.onUpdateAbilities(); player.setDeltaMovement(Vec3.ZERO); });
@@ -449,8 +448,8 @@ public final class BrewRemainingAbilitiesClientAcceptance implements FabricClien
     private double walk(final ClientGameTestContext context, final int ticks) {
         context.runOnClient(client -> { client.player.setYRot(0); client.player.setXRot(0); }); context.waitTicks(2);
         final Vec3 before = serverValue(ServerPlayer::position);
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
-        try { context.waitTicks(ticks); } finally { context.getInput().releaseKey(GLFW.GLFW_KEY_W); }
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+        try { context.waitTicks(ticks); } finally { context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W); }
         context.waitTicks(2); return serverValue(player -> player.position().distanceTo(before));
     }
     private static void pool(final ServerPlayer player, final int x) {
@@ -498,7 +497,7 @@ public final class BrewRemainingAbilitiesClientAcceptance implements FabricClien
         world.getConnection().waitForClientboundPackets();
         context.runOnClient(client -> client.player.setXRot(-75));
         context.waitTicks(2);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         final String text = context.computeOnClient(client -> ManualArticleCatalog.article(profile, section).body().getString());
@@ -524,7 +523,7 @@ public final class BrewRemainingAbilitiesClientAcceptance implements FabricClien
         row.put("book_text", text);
         row.put("guide_mapping", "This exact registry item uses BrewKind " + kind.id() + "; canonical section " + section
             + " is read for that shared behavior. This does not assert identical acquisition recipes for aliases.");
-        context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
         context.waitFor(client -> client.gui.screen() == null);
     }
 

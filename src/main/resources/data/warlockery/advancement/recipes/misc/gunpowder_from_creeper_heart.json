@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:gunpowder_from_creeper_heart"
+        "recipes": "warlockery:gunpowder_from_creeper_heart"
       }
     },
     "has_ingredient_0": {

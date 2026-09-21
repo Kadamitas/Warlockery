@@ -149,7 +149,12 @@ public final class BrewItem extends SplashPotionItem {
         return CustomBrewRuntime.read(stack).map(formula -> formula.delivery().lingering()).orElse(false);
     }
 
-    private static Item.Properties configure(final Item.Properties properties, final BrewKind kind) {
+    static Item.Properties configure(final Item.Properties properties, final BrewKind kind) {
+        if (kind.fuelBurnTime() > 0) {
+            properties.component(DataComponents.COOKING_FUEL, new net.minecraft.world.item.component.CookingFuel(
+                new net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt.Constant(kind.fuelBurnTime()),
+                new net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat.Constant(1.0F)));
+        }
         return properties.stacksTo(16)
             .component(DataComponents.POTION_CONTENTS, kind.potionContents())
             .component(DataComponents.POTION_DURATION_SCALE, 1.0F)

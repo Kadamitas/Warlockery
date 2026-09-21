@@ -119,13 +119,13 @@ public final class BrewSatchelItem extends BundleItem {
     private static Optional<ItemStack> selected(final BundleContents contents) {
         final var selected = contents.getSelectedItem();
         return selected == null
-            ? contents.itemCopyStream().findFirst()
+            ? contents.itemCopies().findFirst()
             : Optional.of(selected.create());
     }
 
     private static Optional<ItemStack> extractOne(final ItemStack satchel) {
         final BundleContents contents = satchel.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-        final BundleContents.Mutable mutable = new BundleContents.Mutable(contents);
+        final BundleContents.Mutable mutable = contents.asMutable();
         final ItemStack selected = mutable.removeOne();
         if (selected == null) {
             return Optional.empty();

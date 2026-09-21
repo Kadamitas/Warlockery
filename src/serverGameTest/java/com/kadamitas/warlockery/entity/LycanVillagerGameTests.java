@@ -60,7 +60,8 @@ public final class LycanVillagerGameTests {
     }, lycan -> lycan.getOffers().addAll(LycanVillagerEntity.signatureOffers())); }
     public static void tradeSuccessAwardsFamiliarityOnce(final GameTestHelper h) {
         final LycanVillagerEntity lycan = spawnLycan(h);
-        final ServerPlayer player = (ServerPlayer) h.makeMockServerPlayer(GameType.SURVIVAL);
+        // 26.3 sends refreshed merchant offers during the reputation update on the next AI tick.
+        final ServerPlayer player = com.kadamitas.warlockery.util.GameTestMockPlayers.connect(h, GameType.SURVIVAL);
         SupernaturalState.setForm(player, SupernaturalForm.WEREWOLF);
         lycan.setTradingPlayer(player);
         final MerchantOffer offer = lycan.getOffers().getFirst();
@@ -69,7 +70,7 @@ public final class LycanVillagerGameTests {
         h.runAfterDelay(2L, () -> {
             try { h.assertValueEqual(lycan.sentinelState().points(player.getUUID()),
                 LycanVillagerRules.TRADE_FAMILIARITY_POINTS, "two live notifications inside cooldown award familiarity once"); }
-            finally { lycan.setTradingPlayer(null); lycan.discard(); player.discard(); }
+            finally { lycan.setTradingPlayer(null); lycan.discard(); }
             h.succeed();
         });
     }

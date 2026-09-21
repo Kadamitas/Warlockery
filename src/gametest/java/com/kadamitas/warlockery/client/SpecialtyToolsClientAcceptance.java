@@ -40,7 +40,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /** Rendered-client checks for specialty tools whose useful behavior is not apparent from their item names. */
 public final class SpecialtyToolsClientAcceptance implements FabricClientGameTest {
@@ -140,9 +139,9 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
             player.inventoryMenu.broadcastChanges();
         });
         world.getConnection().waitForClientboundPackets();
-        context.getInput().pressKey(GLFW.GLFW_KEY_9);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_9);
         look(context, new Vec3(0.5, 96, 5));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         context.waitForScreen(ManualScreen.class);
         ManualClientAcceptance.selectSection(context, section);
         check(context.computeOnClient(client -> section.equals(field(client.gui.screen(), "selectedSection"))),
@@ -169,7 +168,7 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
         }
         row.put("book_pages_read", pages);
         closeScreen(context);
-        context.getInput().pressKey(GLFW.GLFW_KEY_1);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1);
         waitServer(context, player -> player.getInventory().getSelectedSlot() == 0, 30,
             "Native hotbar input must return from the book to the specialty tool");
     }
@@ -181,7 +180,7 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
         });
         world.getConnection().waitForClientboundPackets();
         look(context, Vec3.atCenterOf(SNARE_ONE.below()).add(0, 0.49, 0));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getBlockState(SNARE_ONE).is(ModBlocks.ALL.get("crittersnare").get()),
             30, "Native block use must place the empty Critter Snare");
 
@@ -190,34 +189,34 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
                 == CritterSnarePayload.BAT && player.level().getEntity(capturedBat) == null,
             40, "A live bat entering the placed snare must be captured and removed from the world");
         look(context, Vec3.atCenterOf(SNARE_ONE));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         try {
             waitServer(context, player -> player.level().getBlockState(SNARE_ONE).isAir(), 80,
                 "Native mining must break the filled Critter Snare");
         } finally {
-            context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         }
-        context.getInput().holdKey(GLFW.GLFW_KEY_W);
+        context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         try {
             waitServer(context, player -> inventorySlot(player, "crittersnare") >= 0, 60,
                 "Native movement must collect the filled snare item after breaking it");
         } finally {
-            context.getInput().releaseKey(GLFW.GLFW_KEY_W);
+            context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
         }
         final int slot = serverValue(player -> inventorySlot(player, "crittersnare"));
         check(slot >= 0 && slot < 9, "The carried filled snare must occupy a selectable hotbar slot");
-        context.getInput().pressKey(GLFW.GLFW_KEY_1 + slot);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_1 + slot);
         waitServer(context, player -> player.getInventory().getSelectedSlot() == slot, 30,
             "Native hotbar input must select the carried filled snare");
         look(context, Vec3.atCenterOf(SNARE_TWO.below()).add(0, 0.49, 0));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getBlockState(SNARE_TWO).is(ModBlocks.ALL.get("crittersnare").get())
                 && player.level().getBlockState(SNARE_TWO).getValue(CritterSnareBlock.PAYLOAD) == CritterSnarePayload.BAT,
             30, "Native replacement must restore the captured bat payload from the carried item");
         check(serverValue(player -> player.getMainHandItem().isEmpty()),
             "Placing the carried snare must leave the hand empty for release");
         look(context, Vec3.atCenterOf(SNARE_TWO));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> player.level().getBlockState(SNARE_TWO).getValue(CritterSnareBlock.PAYLOAD)
                 == CritterSnarePayload.EMPTY && entities(player, "minecraft:bat").size() == 1,
             30, "Empty-hand use must release the preserved bat and empty the placed snare");
@@ -286,7 +285,7 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
         server(player -> player.level().getEntity(overflow).discard());
         world.getConnection().waitForClientboundPackets();
         look(context, new Vec3(8, 103, 0.5));
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         waitServer(context, player -> SpectralStoneState.read(player.getMainHandItem()).captured().size() == 2
                 && entities(player, "warlockery:spectre").stream()
                     .anyMatch(entity -> CreatureBehaviorState.isOwnedBy(entity, player.getUUID())
@@ -302,7 +301,7 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
             server.setDifficulty(Difficulty.NORMAL, true);
             server.getGameRules().set(GameRules.NATURAL_HEALTH_REGENERATION, false, server);
             player.setHealth(10.0F);
-            player.invulnerableTime = 0;
+            player.damageCooldownTime = 0;
             player.removeAllEffects();
             player.getInventory().setItem(0, new ItemStack(ModItems.ALL.get("boline").get()));
             player.level().setBlockAndUpdate(SAFE_POPPY, ModBlocks.ALL.get("bloodrose").get().defaultBlockState());
@@ -311,12 +310,12 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
         });
         world.getConnection().waitForClientboundPackets();
         look(context, Vec3.atCenterOf(SAFE_POPPY));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         try {
             waitServer(context, player -> player.level().getBlockState(SAFE_POPPY).isAir(), 80,
                 "Native Boline mining must break the staged Blood Poppy");
         } finally {
-            context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         }
         waitServer(context, player -> bloodPoppyDrops(player, SAFE_POPPY) == 1, 30,
             "Safe Boline harvest must produce the Blood Poppy's ordinary block drop");
@@ -325,11 +324,11 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
             "Safe Boline harvest must leave health and effects unchanged while wearing the real tool");
         screenshot(context, "boline-safe-drop-no-harm");
 
-        context.getInput().pressKey(GLFW.GLFW_KEY_2);
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
         waitServer(context, player -> player.getInventory().getSelectedSlot() == 1
                 && player.getMainHandItem().isEmpty(), 30,
             "Native hotbar input must expose an empty hand for the unsafe comparison");
-        server(player -> player.invulnerableTime = 0);
+        server(player -> player.damageCooldownTime = 0);
         final float healthBeforeUnsafe = serverValue(ServerPlayer::getHealth);
         row.put("before_unsafe", serverValue(player -> Map.of(
             "health", player.getHealth(),
@@ -337,23 +336,23 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
             "armor", player.getArmorValue(),
             "difficulty", player.level().getDifficulty().name(),
             "natural_regeneration", player.level().getGameRules().get(GameRules.NATURAL_HEALTH_REGENERATION),
-            "invulnerable_time", player.invulnerableTime,
+            "invulnerable_time", player.damageCooldownTime,
             "effects", player.getActiveEffects().stream().map(Object::toString).toList()
         )));
         writeReport(false);
         look(context, Vec3.atCenterOf(UNSAFE_POPPY));
-        context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         try {
             waitServer(context, player -> player.level().getBlockState(UNSAFE_POPPY).isAir(), 80,
                 "Native empty-hand mining must break the comparison Blood Poppy");
         } finally {
-            context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            context.getInput().releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         }
         final float healthAfterUnsafe = serverValue(ServerPlayer::getHealth);
         row.put("after_unsafe", serverValue(player -> Map.of(
             "health", player.getHealth(),
             "damage", healthBeforeUnsafe - player.getHealth(),
-            "invulnerable_time", player.invulnerableTime,
+            "invulnerable_time", player.damageCooldownTime,
             "effects", player.getActiveEffects().stream().map(Object::toString).toList(),
             "blood_poppy_drops", bloodPoppyDrops(player, UNSAFE_POPPY)
         )));
@@ -399,7 +398,7 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
         look(context, position);
         context.waitFor(client -> client.hitResult instanceof EntityHitResult hit
             && hit.getEntity().getUUID().equals(target), 30);
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
     }
 
     private void resetArena() {
@@ -469,7 +468,7 @@ public final class SpecialtyToolsClientAcceptance implements FabricClientGameTes
 
     private static void closeScreen(final ClientGameTestContext context) {
         if (context.computeOnClient(client -> client.gui.screen() != null)) {
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
             context.waitFor(client -> client.gui.screen() == null, 30);
         }
     }

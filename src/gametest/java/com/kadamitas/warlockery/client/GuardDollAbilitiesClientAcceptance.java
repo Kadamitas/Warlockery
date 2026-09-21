@@ -19,7 +19,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.*;
-import org.lwjgl.glfw.GLFW;
 
 /** Native extension of AllItems: hostile protection, remaining hex actions and repair exhaustion. */
 public final class GuardDollAbilitiesClientAcceptance implements FabricClientGameTest {
@@ -216,17 +215,17 @@ public final class GuardDollAbilitiesClientAcceptance implements FabricClientGam
             client.player.setXRot((float) -Math.toDegrees(Math.atan2(delta.y, Math.hypot(delta.x, delta.z))));
         }); context.waitTicks(3);
         check(context.computeOnClient(client -> client.hitResult instanceof EntityHitResult hit && hit.getEntity().getUUID().equals(target)), "Native pointer selects intended bound player");
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT);
         await(context, player -> SympatheticBinding.read(player.getMainHandItem()).filter(binding -> binding.targetId().equals(target)).isPresent(), "Native entity binding");
     }
     private void air(ClientGameTestContext context, boolean secondary) {
         ready(context);
-        if (secondary) context.getInput().holdKey(GLFW.GLFW_KEY_LEFT_SHIFT);
+        if (secondary) context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
         try {
             context.runOnClient(client -> { client.player.setYRot(180); client.player.setXRot(-60); }); context.waitTicks(5);
             check(context.computeOnClient(client -> client.hitResult != null && client.hitResult.getType() == HitResult.Type.MISS), "Native air-use has no entity or block hit");
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); context.waitTicks(2);
-        } finally { if (secondary) context.getInput().releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT); }
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT); context.waitTicks(2);
+        } finally { if (secondary) context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT); }
     }
     private void ready(ClientGameTestContext context) {
         await(context, player -> player.connection.hasClientLoaded() && !awaitingTeleport(player), "Native player loaded and teleport acknowledged");
