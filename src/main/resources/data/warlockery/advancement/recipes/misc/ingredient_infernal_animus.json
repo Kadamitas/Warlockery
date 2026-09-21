@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_infernal_animus"
+        "recipes": "warlockery:ingredient_infernal_animus"
       }
     },
     "has_ingredient_0": {

@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:glass_goblet"
+        "recipes": "warlockery:glass_goblet"
       }
     },
     "has_ingredient_0": {

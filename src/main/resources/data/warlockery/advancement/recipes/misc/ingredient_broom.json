@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_broom"
+        "recipes": "warlockery:ingredient_broom"
       }
     },
     "has_ingredient_0": {

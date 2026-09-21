@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:earth_guard_doll"
+        "recipes": "warlockery:earth_guard_doll"
       }
     },
     "has_ingredient_0": {

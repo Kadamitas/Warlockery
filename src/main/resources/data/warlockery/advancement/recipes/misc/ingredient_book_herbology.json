@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_book_herbology"
+        "recipes": "warlockery:ingredient_book_herbology"
       }
     },
     "has_ingredient_0": {

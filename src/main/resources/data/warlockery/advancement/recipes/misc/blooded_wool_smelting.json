@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:blooded_wool_smelting"
+        "recipes": "warlockery:blooded_wool_smelting"
       }
     },
     "has_ingredient_0": {

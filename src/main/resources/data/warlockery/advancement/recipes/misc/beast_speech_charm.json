@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:beast_speech_charm"
+        "recipes": "warlockery:beast_speech_charm"
       }
     },
     "has_ingredient_0": {

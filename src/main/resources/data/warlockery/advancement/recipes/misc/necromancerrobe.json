@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:necromancerrobe"
+        "recipes": "warlockery:necromancerrobe"
       }
     },
     "has_ingredient_0": {

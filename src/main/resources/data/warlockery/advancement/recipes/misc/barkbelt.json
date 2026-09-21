@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:barkbelt"
+        "recipes": "warlockery:barkbelt"
       }
     },
     "has_ingredient_0": {

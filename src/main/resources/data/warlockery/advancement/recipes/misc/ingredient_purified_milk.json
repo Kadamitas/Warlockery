@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_purified_milk"
+        "recipes": "warlockery:ingredient_purified_milk"
       }
     },
     "has_ingredient_0": {

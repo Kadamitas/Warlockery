@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:alder_planks"
+        "recipes": "warlockery:alder_planks"
       }
     },
     "has_ingredient_0": {

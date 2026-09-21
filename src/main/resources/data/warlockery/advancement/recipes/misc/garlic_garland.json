@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:garlic_garland"
+        "recipes": "warlockery:garlic_garland"
       }
     },
     "has_ingredient_0": {

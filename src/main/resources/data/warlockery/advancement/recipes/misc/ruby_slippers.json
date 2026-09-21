@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ruby_slippers"
+        "recipes": "warlockery:ruby_slippers"
       }
     },
     "has_ingredient_0": {

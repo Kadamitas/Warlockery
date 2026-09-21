@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:plantmine"
+        "recipes": "warlockery:plantmine"
       }
     },
     "has_ingredient_0": {
