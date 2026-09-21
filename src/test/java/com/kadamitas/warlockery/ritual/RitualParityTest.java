@@ -51,7 +51,10 @@ final class RitualParityTest {
         assertTrue(positions.stream().allMatch(pos -> pos.getZ() < 0 && pos.getY() < 0));
         assertTrue(positions.stream().mapToInt(BlockPos::getZ).min().orElseThrow() <= -12);
         assertTrue(positions.stream().mapToInt(BlockPos::getY).min().orElseThrow() <= -6);
-        assertTrue(tagContains("block", "fissure_breakables", "#minecraft:overworld_carver_replaceables"));
+        assertTrue(tagContains("block", "fissure_breakables", "#minecraft:base_stone_overworld"));
+        assertTrue(tagContains("block", "fissure_breakables", "#minecraft:base_stone_nether"));
+        assertTrue(tagContains("block", "fissure_breakables", "#minecraft:substrate_overworld"));
+        assertTrue(tagContains("block", "fissure_breakables", "minecraft:potent_sulfur"));
     }
 
     @Test

@@ -38,6 +38,22 @@ jobs:
       - name: Validate release Minecraft metadata handling
         run: python3 tools/test_release_compatibility.py
 
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: warlockery-neoforge-diagnostics-${{ github.sha }}
+          path: |
+            build/test-results/**/*
+            build/reports/tests/**/*
+            build/gametest-results.xml
+            build/gametest/logs/**/*
+            build/runGameTestServer/**/*
+            run/logs/**/*
+            .codex-local/client-acceptance/**/*
+          if-no-files-found: warn
+          include-hidden-files: true
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
