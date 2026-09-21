@@ -246,7 +246,8 @@ public final class MimicryGameTests {
         ));
         sleepCancellation.getNavigation().moveTo(sleeper, 1.0D);
         sleepCancellation.setDeltaMovement(0.25D, 0.0D, 0.25D);
-        sleeper.startSleeping(helper.absolutePos(new BlockPos(5, 1, 11)));
+        com.kadamitas.warlockery.util.GameTestMockPlayers.sleepInBed(helper, sleeper,
+            helper.absolutePos(new BlockPos(5, 1, 11)));
         helper.assertTrue(sleeper.isSleeping(), "the cancellation subject entered real sleeping state");
         MimicryRuntime.tick(sleepCancellation, helper.getLevel());
         helper.assertValueEqual(sleepCancellation.mimicCore().counters().cancellations, 1L,

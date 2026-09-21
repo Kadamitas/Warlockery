@@ -412,7 +412,7 @@ public final class HobgoblinJourneyGameTests {
             helper.assertFalse(traveler.canAttack(aggressor),
                 "an unprovoked mob is not prey either");
 
-            traveler.setInvulnerableTime(0);
+            traveler.damageCooldownTime = 0;
             final boolean hurt = traveler.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(aggressor), 2.0F
             );
@@ -427,7 +427,7 @@ public final class HobgoblinJourneyGameTests {
 
             // Follow-up hits need invulnerableTime reset or they land on nothing and the next
             // assertion passes vacuously.
-            traveler.setInvulnerableTime(0);
+            traveler.damageCooldownTime = 0;
             final Zombie other = fixture.spawn(
                 EntityTypes.ZOMBIE, new BlockPos(0, 1, 0), EntitySpawnReason.EVENT
             );
