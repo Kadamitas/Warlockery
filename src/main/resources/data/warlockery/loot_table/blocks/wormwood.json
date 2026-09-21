@@ -1,10 +1,5 @@
 {
   "type": "minecraft:block",
-  "functions": [
-    {
-      "function": "minecraft:explosion_decay"
-    }
-  ],
   "pools": [
     {
       "entries": [
@@ -13,16 +8,19 @@
           "children": [
             {
               "type": "minecraft:item",
-              "conditions": [
-                {
-                  "block": "warlockery:wormwood",
-                  "condition": "minecraft:block_state_property",
-                  "properties": {
-                    "age": "7"
+              "name": "warlockery:ingredient_wormwood",
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
+                  {
+                    "type": "minecraft:match_block",
+                    "blocks": "warlockery:wormwood",
+                    "state": {
+                      "age": "7"
+                    }
                   }
-                }
-              ],
-              "name": "warlockery:ingredient_wormwood"
+                ]
+              }
             },
             {
               "type": "minecraft:item",
@@ -34,34 +32,42 @@
       "rolls": 1
     },
     {
-      "conditions": [
-        {
-          "block": "warlockery:wormwood",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "age": "7"
-          }
-        }
-      ],
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "warlockery:seedswormwood",
+          "modifier": [
             {
               "enchantment": "minecraft:fortune",
               "formula": "minecraft:binomial_with_bonus_count",
-              "function": "minecraft:apply_bonus",
               "parameters": {
                 "extra": 3,
                 "probability": 0.5714286
-              }
+              },
+              "type": "minecraft:apply_bonus"
             }
-          ],
-          "name": "warlockery:seedswormwood"
+          ]
         }
       ],
-      "rolls": 1
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:match_block",
+            "blocks": "warlockery:wormwood",
+            "state": {
+              "age": "7"
+            }
+          }
+        ]
+      }
     }
   ],
-  "random_sequence": "warlockery:blocks/wormwood"
+  "random_sequence": "warlockery:blocks/wormwood",
+  "modifier": [
+    {
+      "type": "minecraft:explosion_decay"
+    }
+  ]
 }

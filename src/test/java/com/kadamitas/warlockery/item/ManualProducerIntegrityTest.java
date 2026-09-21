@@ -100,12 +100,12 @@ final class ManualProducerIntegrityTest {
         final JsonObject pool = loot.getAsJsonArray("pools").get(0).getAsJsonObject();
         final JsonObject entry = pool.getAsJsonArray("entries").get(0).getAsJsonObject();
         assertEquals("warlockery:ingredient_vbook_page", entry.get("name").getAsString());
-        final List<JsonObject> conditions = pool.getAsJsonArray("conditions").asList().stream()
+        final List<JsonObject> conditions = pool.getAsJsonObject("condition").getAsJsonArray("terms").asList().stream()
             .map(JsonElement::getAsJsonObject).toList();
         assertTrue(conditions.stream().anyMatch(condition ->
-            condition.get("condition").getAsString().equals("minecraft:killed_by_player")));
+            condition.get("type").getAsString().equals("minecraft:killed_by_player")));
         final JsonObject chance = conditions.stream().filter(condition ->
-            condition.get("condition").getAsString().equals("minecraft:random_chance_with_enchanted_bonus"))
+            condition.get("type").getAsString().equals("minecraft:random_chance_with_enchanted_bonus"))
             .findFirst().orElseThrow();
         assertEquals("minecraft:looting", chance.get("enchantment").getAsString());
         assertEquals(0.18, chance.get("unenchanted_chance").getAsDouble());

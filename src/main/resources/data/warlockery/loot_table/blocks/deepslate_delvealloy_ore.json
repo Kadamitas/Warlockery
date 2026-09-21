@@ -8,38 +8,41 @@
           "children": [
             {
               "type": "minecraft:item",
-              "conditions": [
-                {
-                  "condition": "minecraft:match_tool",
-                  "predicate": {
-                    "predicates": {
-                      "minecraft:enchantments": [
-                        {
-                          "enchantments": "minecraft:silk_touch",
-                          "levels": {
-                            "min": 1
+              "name": "warlockery:deepslate_delvealloy_ore",
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
+                  {
+                    "predicate": {
+                      "predicates": {
+                        "minecraft:enchantments": [
+                          {
+                            "enchantments": "minecraft:silk_touch",
+                            "levels": {
+                              "min": 1
+                            }
                           }
-                        }
-                      ]
-                    }
+                        ]
+                      }
+                    },
+                    "type": "minecraft:match_tool"
                   }
-                }
-              ],
-              "name": "warlockery:deepslate_delvealloy_ore"
+                ]
+              }
             },
             {
               "type": "minecraft:item",
-              "functions": [
+              "name": "warlockery:raw_delvealloy",
+              "modifier": [
                 {
                   "enchantment": "minecraft:fortune",
                   "formula": "minecraft:ore_drops",
-                  "function": "minecraft:apply_bonus"
+                  "type": "minecraft:apply_bonus"
                 },
                 {
-                  "function": "minecraft:explosion_decay"
+                  "type": "minecraft:explosion_decay"
                 }
-              ],
-              "name": "warlockery:raw_delvealloy"
+              ]
             }
           ]
         }

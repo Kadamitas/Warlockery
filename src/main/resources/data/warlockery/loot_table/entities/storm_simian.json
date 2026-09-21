@@ -5,14 +5,15 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "minecraft:feather",
+          "modifier": [
             {
               "count": {
                 "type": "minecraft:uniform",
                 "max": 2,
                 "min": 0
               },
-              "function": "minecraft:set_count"
+              "type": "minecraft:set_count"
             },
             {
               "count": {
@@ -21,10 +22,9 @@
                 "min": 0
               },
               "enchantment": "minecraft:looting",
-              "function": "minecraft:enchanted_count_increase"
+              "type": "minecraft:enchanted_count_increase"
             }
-          ],
-          "name": "minecraft:feather"
+          ]
         }
       ],
       "rolls": 1

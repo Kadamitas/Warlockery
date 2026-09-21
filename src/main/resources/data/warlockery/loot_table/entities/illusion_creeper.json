@@ -5,14 +5,15 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "minecraft:gunpowder",
+          "modifier": [
             {
               "count": {
                 "type": "minecraft:uniform",
                 "max": 2.0,
                 "min": 0.0
               },
-              "function": "minecraft:set_count"
+              "type": "minecraft:set_count"
             },
             {
               "count": {
@@ -21,37 +22,39 @@
                 "min": 0.0
               },
               "enchantment": "minecraft:looting",
-              "function": "minecraft:enchanted_count_increase"
+              "type": "minecraft:enchanted_count_increase"
             }
-          ],
-          "name": "minecraft:gunpowder"
+          ]
         }
       ],
       "rolls": 1.0
     },
     {
-      "conditions": [
-        {
-          "condition": "minecraft:killed_by_player"
-        },
-        {
-          "condition": "minecraft:random_chance_with_enchanted_bonus",
-          "enchanted_chance": {
-            "type": "minecraft:linear",
-            "base": 0.2,
-            "per_level_above_first": 0.05
-          },
-          "enchantment": "minecraft:looting",
-          "unenchanted_chance": 0.15
-        }
-      ],
       "entries": [
         {
           "type": "minecraft:item",
           "name": "warlockery:ingredient_creeper_heart"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1.0,
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:killed_by_player"
+          },
+          {
+            "enchanted_chance": {
+              "type": "minecraft:linear",
+              "base": 0.2,
+              "per_level_above_first": 0.05
+            },
+            "enchantment": "minecraft:looting",
+            "unenchanted_chance": 0.15,
+            "type": "minecraft:random_chance_with_enchanted_bonus"
+          }
+        ]
+      }
     }
   ],
   "random_sequence": "warlockery:entities/illusion_creeper"
