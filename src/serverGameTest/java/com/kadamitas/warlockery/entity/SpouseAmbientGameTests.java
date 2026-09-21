@@ -57,7 +57,9 @@ public final class SpouseAmbientGameTests {
             player.setLastHurtByMob(null);
             SpouseAmbientRuntime.tick(nami, helper.getLevel(), player);
         });
-        helper.runAfterDelay(360, () -> {
+        // Cooking and the return path are asynchronous. Observe completed delivery within the
+        // existing 450-tick test deadline, not a randomly timed intermediate carrying state.
+        helper.succeedWhen(() -> {
             final int cookedInInventory = player.getInventory().countItem(Items.COOKED_BEEF);
             final int rawInWorld = countWorldItem(helper, Items.BEEF);
             final int cookedInWorld = countWorldItem(helper, Items.COOKED_BEEF);
@@ -69,7 +71,10 @@ public final class SpouseAmbientGameTests {
                     + nami.getPersistentData().getStringOr(SpouseAmbientRuntime.ACTION, "")
                     + ", input=" + furnace.getItem(0)
                     + ", output=" + furnace.getItem(2)
-                    + ", hand=" + nami.getMainHandItem());
+                    + ", hand=" + nami.getMainHandItem()
+                    + ", spousePosition=" + nami.position()
+                    + ", playerPosition=" + player.position()
+                    + ", navigationDone=" + nami.getNavigation().isDone());
             helper.assertValueEqual(
                 rawInWorld + cookedInWorld + rawInFurnace + cookedInFurnace + carriedCooked + cookedInInventory,
                 1,
@@ -77,7 +82,6 @@ public final class SpouseAmbientGameTests {
             );
             helper.assertTrue(nami.getPersistentData().getLongOr(SpouseAmbientRuntime.COOK_READY, 0L)
                 > helper.getLevel().getGameTime(), "successful delivery must persist its long cooking cooldown");
-            helper.succeed();
         });
     }
 
