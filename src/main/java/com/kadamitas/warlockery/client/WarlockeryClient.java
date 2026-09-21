@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderingRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.color.block.BlockTintSource;
@@ -25,12 +26,19 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EntityTypes;
 
 public final class WarlockeryClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ModNetwork.init();
         ModClientNetwork.init();
+        // Fabric supplies the same renderer context for both vanilla player model variants.
+        LivingEntityRenderLayerRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
+            if (type == EntityTypes.PLAYER) {
+                WolfFormAvatarRenderBridge.initialize(context);
+            }
+        });
         ManualScreenBridge.setOpenHandler(ManualScreen::open);
         ModMenus.MACHINES.values().forEach(type -> MenuScreens.register(type.get(), MachineScreen::new));
         MenuScreens.register(ModMenus.DOLL_SHELF.get(), DollShelfScreen::new);

@@ -32,9 +32,25 @@ final class FabricNativeVampireHudContractTest {
             "src", "main", "resources", "warlockery.mixins.json"
         ))).getAsJsonObject();
         assertEquals(7, array(mixins, "mixins").size());
-        assertEquals(4, array(mixins, "client").size());
+        assertEquals(3, array(mixins, "client").size());
         assertTrue(array(mixins, "client").asList().stream()
             .noneMatch(element -> element.getAsString().toLowerCase(java.util.Locale.ROOT).contains("hud")));
+    }
+
+    @Test
+    void transformedAvatarInitializationUsesTheFabricRendererCallback() {
+        final String client = read(CLIENT_SOURCE.resolve("WarlockeryClient.java"));
+        assertTrue(client.contains("LivingEntityRenderLayerRegistrationCallback.EVENT.register("));
+        assertTrue(client.contains("type == EntityTypes.PLAYER"));
+        assertTrue(client.contains("WolfFormAvatarRenderBridge.initialize(context)"));
+        assertFalse(Files.exists(Path.of(
+            "src", "main", "java", "com", "kadamitas", "warlockery", "mixin", "client", "AvatarRendererMixin.java"
+        )));
+        final JsonObject mixins = JsonParser.parseString(read(Path.of(
+            "src", "main", "resources", "warlockery.mixins.json"
+        ))).getAsJsonObject();
+        assertTrue(array(mixins, "client").asList().stream()
+            .noneMatch(element -> element.getAsString().equals("client.AvatarRendererMixin")));
     }
 
     @Test

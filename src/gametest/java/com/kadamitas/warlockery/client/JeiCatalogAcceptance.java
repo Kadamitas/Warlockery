@@ -118,7 +118,12 @@ public final class JeiCatalogAcceptance implements FabricClientGameTest {
                     for (int page = 0; page <= recipes.size(); page++) {
                         context.waitTicks(2);
                         var layouts = context.computeOnClient(client -> visibleLayouts(client.gui.screen()));
-                        List<String> visible = context.computeOnClient(client -> layouts.stream().map(layout -> key(category, layout.getRecipe())).toList());
+                        List<String> visible = context.computeOnClient(client -> layouts.stream().map(layout -> {
+                            if (!layout.getRecipeCategory().getRecipeType().equals(category.getRecipeType()))
+                                throw new AssertionError("Catalog batch " + category.getRecipeType().getUid()
+                                    + " unexpectedly displays " + layout.getRecipeCategory().getRecipeType().getUid());
+                            return key(layout.getRecipeCategory(), layout.getRecipe());
+                        }).toList());
                         if (visible.isEmpty() || visible.stream().allMatch(visited::contains)) break;
                         String shot = "category-" + safe(category.getRecipeType().getUid().toString()) + "-page-" + page;
                         ManualClientAcceptance.saveScreenshot(context, evidence, shot, screenshots);
@@ -127,7 +132,7 @@ public final class JeiCatalogAcceptance implements FabricClientGameTest {
                             for (var layout : layouts) inspectRendered(layout, screenshot);
                         });
                         visited.addAll(visible);
-                        if (page == 0) nativeKeys(context, layouts, category);
+                        if (page == 0) nativeKeys(context, category, recipes);
                         if (visited.size() >= recipes.size()) break;
                         clickField(context, "nextPage");
                         navigation.add("Native next-page click: " + category.getRecipeType().getUid() + " after page " + page);
@@ -253,11 +258,18 @@ public final class JeiCatalogAcceptance implements FabricClientGameTest {
         if (record.expected != null) {
             if (inputs < record.expected.inputSlots) record.problems.add("Expected at least " + record.expected.inputSlots + " input slots; rendered " + inputs);
             for (String output : record.expected.outputs) if (!outputs.contains(output)) record.problems.add("Expected output absent/wrong count: " + output + "; actual " + outputs);
+            // The contract compares item identity and count, not component variants.
+            // JEI expands potions, enchanted books and tipped arrows into many
+            // component variants of the same item. Deduplicate within each slot,
+            // never across slots: repeated recipe inputs must still match separately.
             List<List<String>> actualInputs = new ArrayList<>(slots.stream().filter(slot -> slot.getRole() == RecipeIngredientRole.INPUT)
-                .map(slot -> slot.getItemStacks().map(JeiCatalogAcceptance::stack).sorted().toList()).toList());
+                .map(slot -> slot.getItemStacks().map(JeiCatalogAcceptance::stack).distinct().sorted().toList()).toList());
             for (var alternatives : record.expected.inputAlternatives) {
                 if (alternatives.isEmpty()) record.problems.add("Authoritative input has no resolved item alternatives");
-                if (!actualInputs.remove(alternatives)) record.problems.add("Missing or incorrect input/count/alternatives: " + alternatives);
+                // Dynamic anvil/grindstone definitions also contain component
+                // variants: normalize the authoritative side by the same contract.
+                var expectedAlternatives = alternatives.stream().distinct().sorted().toList();
+                if (!actualInputs.remove(expectedAlternatives)) record.problems.add("Missing or incorrect input/count/alternatives: " + expectedAlternatives);
             }
         } else if (outputs.isEmpty() && !record.category.endsWith("_fuel")) record.problems.add("Dynamic recipe has no item output; needs explicit semantic review");
         List<String> allIngredients = slots.stream().flatMap(slot -> slot.getAllIngredientsList().stream()).map(JeiCatalogAcceptance::ingredient).toList();
@@ -286,36 +298,72 @@ public final class JeiCatalogAcceptance implements FabricClientGameTest {
         record.textBounds.add(Map.of("text", text.getString(), "width", width, "height", height, "wrappedLines", lines));
         if (lines * 11 > height) record.problems.add("Operational instruction clips: " + key + " needs " + lines * 11 + " px; allocated " + height);
     }
-    private void nativeKeys(ClientGameTestContext context, List<IRecipeLayoutDrawable<?>> layouts, IRecipeCategory category) {
+    private void nativeKeys(ClientGameTestContext context, IRecipeCategory category, List<Object> recipes) {
+        List<String> firstPage = context.computeOnClient(client -> visibleLayouts(client.gui.screen()).stream()
+            .map(layout -> key(layout.getRecipeCategory(), layout.getRecipe())).toList());
         for (RecipeIngredientRole role : List.of(RecipeIngredientRole.INPUT, RecipeIngredientRole.OUTPUT)) {
-            int[] point = context.computeOnClient(client -> {
-                for (var layout : layouts) {
-                    var rect = layout.getRect();
-                    for (int y = rect.getY(); y < rect.getY() + rect.getHeight(); y += 8) {
-                        for (int x = rect.getX(); x < rect.getX() + rect.getWidth(); x += 8) {
-                            var slot = layout.getSlotUnderMouse(x, y);
-                            if (slot.isPresent()) {
-                                var observed = slot.get();
-                                Object drawable = invoke(observed, "slot");
-                                if (drawable instanceof mezz.jei.api.gui.ingredient.IRecipeSlotView view && view.getRole() == role && !view.isEmpty()) return new int[] {x, y};
+            try {
+                context.waitTicks(2);
+                int[] point = context.computeOnClient(client -> {
+                    // Back navigation can rebuild layouts; don't reuse stale slot coordinates.
+                    for (var layout : visibleLayouts(client.gui.screen())) {
+                        var rect = layout.getRect();
+                        for (int y = rect.getY(); y < rect.getY() + rect.getHeight(); y += 8) {
+                            for (int x = rect.getX(); x < rect.getX() + rect.getWidth(); x += 8) {
+                                var slot = layout.getSlotUnderMouse(x, y);
+                                if (slot.isPresent()) {
+                                    var observed = slot.get();
+                                    Object drawable = invoke(observed, "slot");
+                                    if (drawable instanceof mezz.jei.api.gui.ingredient.IRecipeSlotView view && view.getRole() == role && !view.isEmpty()) {
+                                        boolean cyclingTag = view.getTagKey().isPresent()
+                                            && view.getDisplayedIngredients().limit(2).count() > 1;
+                                        return new int[] {x, y, cyclingTag ? 1 : 0};
+                                    }
+                                }
                             }
                         }
                     }
+                    return null;
+                });
+                if (point == null) continue;
+                ManualClientAcceptance.cursor(context, point[0], point[1]);
+                context.waitTicks(2);
+                // JEI accepts Shift+R/U only for an active pinned ingredient tooltip.
+                // Ordinary slots use unmodified keys; tagged cycling slots need pause
+                // to select one ingredient rather than browse the whole tag.
+                // Move first so Shift cannot pin an unrelated previous mouse target.
+                if (point[2] != 0) {
+                    context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
+                    context.waitTicks(2);
                 }
-                return null;
-            });
-            if (point == null) continue;
-            ManualClientAcceptance.cursor(context, point[0], point[1]);
-            context.getInput().pressKey(role == RecipeIngredientRole.OUTPUT ? com.mojang.blaze3d.platform.InputConstants.KEY_R : com.mojang.blaze3d.platform.InputConstants.KEY_U);
-            context.waitTicks(2);
-            boolean focused = context.computeOnClient(client -> {
-                var group = (mezz.jei.api.recipe.IFocusGroup) invoke(read(read(client.gui.screen(), "logic"), "state"), "getFocuses");
-                return group.getFocuses(role).findAny().isPresent() && !visibleLayouts(client.gui.screen()).isEmpty();
-            });
-            if (!focused) errors.add("Native recipe/use key failed to establish " + role + " focus for " + category.getRecipeType().getUid());
-            navigation.add("Native " + (role == RecipeIngredientRole.OUTPUT ? "R" : "U") + " from rendered " + category.getRecipeType().getUid() + " " + role);
-            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_BACKSPACE);
-            context.waitTicks(2);
+                boolean hovered = context.computeOnClient(client -> ManualJeiAcceptance.runtime().getIngredientManager()
+                    .getRegisteredIngredientTypes().stream().anyMatch(type -> ManualJeiAcceptance.runtime().getRecipesGui()
+                        .getIngredientUnderMouse(type).isPresent()));
+                if (!hovered) throw new AssertionError("Native key target has no displayed ingredient for "
+                    + category.getRecipeType().getUid() + " " + role);
+                context.getInput().pressKey(role == RecipeIngredientRole.OUTPUT ? com.mojang.blaze3d.platform.InputConstants.KEY_R : com.mojang.blaze3d.platform.InputConstants.KEY_U);
+                context.waitTicks(2);
+                boolean focused = context.computeOnClient(client -> {
+                    var group = (mezz.jei.api.recipe.IFocusGroup) invoke(read(read(client.gui.screen(), "logic"), "state"), "getFocuses");
+                    return group.getFocuses(role).findAny().isPresent() && !visibleLayouts(client.gui.screen()).isEmpty();
+                });
+                if (!focused) errors.add("Native recipe/use key failed to establish " + role + " focus for " + category.getRecipeType().getUid());
+                navigation.add("Native " + (point[2] != 0 ? "Shift+" : "") + (role == RecipeIngredientRole.OUTPUT ? "R" : "U") + " from rendered " + category.getRecipeType().getUid() + " " + role);
+                context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
+                context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_BACKSPACE);
+                context.waitTicks(2);
+            } finally {
+                context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_LSHIFT);
+                // A native focus lookup can enter another category or recipe set.
+                // Restore this audit's explicit batch, rather than assuming JEI's
+                // history returns to that exact subset before the next shortcut/page.
+                context.runOnClient(client -> ManualJeiAcceptance.runtime().getRecipesGui().showRecipes(category, recipes, List.of()));
+                context.waitTicks(2);
+                List<String> restored = context.computeOnClient(client -> visibleLayouts(client.gui.screen()).stream()
+                    .map(layout -> key(layout.getRecipeCategory(), layout.getRecipe())).toList());
+                if (!restored.equals(firstPage))
+                    throw new AssertionError("Failed to restore first catalog page for " + category.getRecipeType().getUid());
+            }
         }
     }
 
