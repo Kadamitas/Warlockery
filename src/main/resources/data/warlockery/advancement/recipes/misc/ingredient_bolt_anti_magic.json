@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_bolt_anti_magic"
+        "recipes": "warlockery:ingredient_bolt_anti_magic"
       }
     },
     "has_ingredient_0": {

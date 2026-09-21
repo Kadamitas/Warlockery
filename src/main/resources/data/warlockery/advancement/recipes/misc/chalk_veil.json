@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:chalk_veil"
+        "recipes": "warlockery:chalk_veil"
       }
     },
     "has_ingredient_0": {

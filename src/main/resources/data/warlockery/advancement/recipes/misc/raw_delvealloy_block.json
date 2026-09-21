@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:raw_delvealloy_block"
+        "recipes": "warlockery:raw_delvealloy_block"
       }
     },
     "has_ingredient_0": {

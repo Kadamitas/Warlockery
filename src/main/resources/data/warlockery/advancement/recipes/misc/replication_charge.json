@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:replication_charge"
+        "recipes": "warlockery:replication_charge"
       }
     },
     "has_ingredient_0": {

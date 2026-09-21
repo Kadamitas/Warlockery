@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_soul_of_the_world"
+        "recipes": "warlockery:ingredient_soul_of_the_world"
       }
     },
     "has_ingredient_0": {

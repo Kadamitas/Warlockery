@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_attuned_stone"
+        "recipes": "warlockery:ingredient_attuned_stone"
       }
     },
     "has_ingredient_0": {

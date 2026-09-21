@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:silver_block"
+        "recipes": "warlockery:silver_block"
       }
     },
     "has_ingredient_0": {

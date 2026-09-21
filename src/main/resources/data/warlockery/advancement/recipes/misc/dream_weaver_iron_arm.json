@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:dream_weaver_iron_arm"
+        "recipes": "warlockery:dream_weaver_iron_arm"
       }
     },
     "has_ingredient_0": {

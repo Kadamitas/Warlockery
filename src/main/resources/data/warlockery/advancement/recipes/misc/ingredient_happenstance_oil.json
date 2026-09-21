@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_happenstance_oil"
+        "recipes": "warlockery:ingredient_happenstance_oil"
       }
     },
     "has_ingredient_0": {

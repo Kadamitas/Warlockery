@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_clay_jar_soft"
+        "recipes": "warlockery:ingredient_clay_jar_soft"
       }
     },
     "has_ingredient_0": {

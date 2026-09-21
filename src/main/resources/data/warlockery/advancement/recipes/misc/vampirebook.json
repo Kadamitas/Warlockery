@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:vampirebook"
+        "recipes": "warlockery:vampirebook"
       }
     },
     "has_ingredient_0": {

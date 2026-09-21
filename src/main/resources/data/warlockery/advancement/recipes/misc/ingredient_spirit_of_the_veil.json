@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "warlockery:ingredient_spirit_of_the_veil"
+        "recipes": "warlockery:ingredient_spirit_of_the_veil"
       }
     },
     "has_ingredient_0": {
