@@ -391,6 +391,9 @@ tasks.named('processGametestResources') {
     filesMatching('fabric.mod.json') {
         filter { line ->
             def selected = [
+                manual: ['ManualClientAcceptance'],
+                jei: ['JeiCatalogAcceptance'],
+                ritual: ['RitualWalkthroughAcceptance'],
                 books: ['AllBooksClientAcceptance'],
                 diagonal_chalk: ['DiagonalChalkClientAcceptance'],
                 louse: ['LouseAbilitiesClientAcceptance'],
@@ -459,6 +462,9 @@ tasks.named('processGametestResources') {
                 machines: ['MachineWalkthroughAcceptance'],
                 catalogue: ['JeiCatalogAcceptance']
             ][clientAcceptanceSuite.get()]
+            if (selected == null && clientAcceptanceSuite.get() != 'all') {
+                throw new GradleException("Unknown client acceptance suite: " + clientAcceptanceSuite.get())
+            }
             if (selected != null && line.contains('"fabric-client-gametest"')) {
                 return '    "fabric-client-gametest": [' + selected.collect { '"com.kadamitas.warlockery.client.' + it + '"' }.join(', ') + '],'
             }

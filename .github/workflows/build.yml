@@ -9,46 +9,39 @@ permissions:
   contents: read
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate complete client-test partitioning
+        run: python3 tools/test_plan_client_acceptance.py
+      - name: Plan all client suites and balanced machine partitions
+        id: plan
+        run: python3 tools/plan_client_acceptance.py --github-output "$GITHUB_OUTPUT"
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-
     steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-
-      - name: Set up Java 25
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 25
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x gradlew
-
+      - uses: gradle/actions/setup-gradle@v4
+      - run: chmod +x gradlew
       - name: Build, test, and package
         run: ./gradlew releaseBundle --stacktrace
-
       - name: Run dedicated-server GameTests
         run: ./gradlew runGametest --stacktrace
-
       - name: Validate release Minecraft metadata handling
         run: python3 tools/test_release_compatibility.py
-
-      - name: Install virtual display and software rendering
+      - name: Record exact bundle source
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb xauth libgl1-mesa-dri libglx-mesa0 libopengl0 libopenal1 mesa-utils mesa-vulkan-drivers
-
-      - name: Run existing rendered-client acceptance tests
-        env:
-          LIBGL_ALWAYS_SOFTWARE: 'true'
-          ALSOFT_DRIVERS: 'null'
-        run: xvfb-run -a -s '-screen 0 1280x800x24' ./gradlew runClientGameTest --max-workers=2 --stacktrace
-
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          printf '%s\n' "$GITHUB_SHA" > release/source-commit.txt
       - name: Upload test diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -61,13 +54,111 @@ jobs:
             build/gametest/logs/**/*
             build/runGameTestServer/**/*
             run/logs/**/*
+          if-no-files-found: warn
+          include-hidden-files: true
+      - name: Stage bundle until every client partition passes
+        uses: actions/upload-artifact@v4
+        with:
+          name: warlockery-staged-${{ github.sha }}
+          path: release/**/*
+          if-no-files-found: error
+
+  client:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: client (${{ matrix.id }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install virtual display and software rendering
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb xauth libgl1-mesa-dri libglx-mesa0 libopengl0 libopenal1 mesa-utils mesa-vulkan-drivers
+      - name: Run unchanged acceptance assertions for this partition
+        env:
+          LIBGL_ALWAYS_SOFTWARE: 'true'
+          ALSOFT_DRIVERS: 'null'
+          CLIENT_SUITE: ${{ matrix.suite }}
+          MACHINE_RECIPES: ${{ matrix.recipe_ids }}
+          MACHINE_REPRESENTATIVES: ${{ matrix.representative_types }}
+          RITUAL_IDS: ${{ matrix.ritual_ids }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          chmod +x gradlew
+          ./gradlew processGametestResources --max-workers=2 --stacktrace "-PwarlockeryClientSuite=$CLIENT_SUITE"
+          python3 - "$CLIENT_SUITE" <<'PY'
+          import json, pathlib, sys
+          classes = {
+              "manual": "ManualClientAcceptance",
+              "jei": "JeiCatalogAcceptance",
+              "ritual": "RitualWalkthroughAcceptance",
+              "machines": "MachineWalkthroughAcceptance",
+          }
+          metadata = json.loads(pathlib.Path("build/resources/gametest/fabric.mod.json").read_text())
+          expected = ["com.kadamitas.warlockery.client." + classes[sys.argv[1]]]
+          actual = metadata["entrypoints"]["fabric-client-gametest"]
+          if actual != expected:
+              raise SystemExit(f"Wrong client test selection: expected {expected}, got {actual}")
+          print("Verified client entrypoint:", expected[0])
+          PY
+          xvfb-run -a -s '-screen 0 1280x800x24' ./gradlew runClientGameTest --max-workers=2 --stacktrace \
+            "-PwarlockeryClientSuite=$CLIENT_SUITE" \
+            "-PwarlockeryMachineRecipeIds=$MACHINE_RECIPES" \
+            "-PwarlockeryMachineRepresentativeTypes=$MACHINE_REPRESENTATIVES" \
+            "-PwarlockeryRitualIds=$RITUAL_IDS"
+      - name: Upload partition diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: warlockery-quilt-client-${{ matrix.id }}-${{ github.sha }}
+          path: |
             .codex-local/client-acceptance/**/*
             .codex-local/new-player-audit/**/*.json
             build/run/clientGameTest/logs/**/*
-          if-no-files-found: warn
+          if-no-files-found: error
           include-hidden-files: true
 
-      - name: Upload build artifacts
+  verified-bundle:
+    needs: [plan, build, client]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download staged production bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: warlockery-staged-${{ github.sha }}
+          path: release
+      - name: Download client evidence from every partition
+        uses: actions/download-artifact@v4
+        with:
+          pattern: warlockery-quilt-client-*-${{ github.sha }}
+          path: client-evidence
+      - name: Verify complete actual recipe and ritual coverage and bundle identity
+        run: |
+          test "$(cat release/source-commit.txt)" = "$GITHUB_SHA"
+          python3 tools/plan_client_acceptance.py --verify-reports client-evidence > release/client-recipe-coverage.json
+          python3 - <<'PY'
+          import hashlib, pathlib
+          checksums = list(pathlib.Path("release").rglob("*.jar.sha256"))
+          if len(checksums) != 2:
+              raise SystemExit(f"Expected production and sources checksums, got {len(checksums)}")
+          for checksum in checksums:
+              expected, filename = checksum.read_text().strip().split(maxsplit=1)
+              artifact = checksum.parent / filename.lstrip("*")
+              actual = hashlib.sha256(artifact.read_bytes()).hexdigest()
+              if actual != expected.lower():
+                  raise SystemExit(f"Checksum mismatch: {artifact}")
+              print("Verified", artifact.name, actual)
+          PY
+      - name: Upload fully verified release bundle
         uses: actions/upload-artifact@v4
         with:
           name: warlockery-${{ github.sha }}

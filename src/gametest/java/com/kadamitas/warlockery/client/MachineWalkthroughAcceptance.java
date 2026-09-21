@@ -580,6 +580,9 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
             Identifier.fromNamespaceAndPath("warlockery", REPRESENTATIVES.get(kind))).orElseThrow().recipe();
         final List<Integer> inputSlots = MachineRecipeSlotPlan.inputSlots(profile, recipe);
         stageMachine(context, profile, recipe);
+        final Set<UUID> existingSpectres = kind.equals("brazier")
+            ? serverValue(player -> nearbySpectres(player).stream().map(net.minecraft.world.entity.Entity::getUUID)
+                .collect(Collectors.toSet())) : Set.of();
         readBook(context, profile, result);
         if (profile.supportsFluids()) {
             context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_2);
@@ -677,10 +680,11 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
             check(serverValue(player -> machine(player).getFluidAmount()) == 1000 - recipe.fluid().orElseThrow().amount(),
                 "Recipe consumes the displayed fluid amount");
         }
+        final List<UUID> summonedSpectres = kind.equals("brazier")
+            ? serverValue(player -> nearbySpectres(player).stream().map(net.minecraft.world.entity.Entity::getUUID)
+                .filter(id -> !existingSpectres.contains(id)).toList()) : List.of();
         if (kind.equals("brazier")) {
-            check(serverValue(player -> !player.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
-                new net.minecraft.world.phys.AABB(MACHINE).inflate(12),
-                mob -> BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString().equals("warlockery:spectre")).isEmpty()),
+            check(!summonedSpectres.isEmpty(),
                 "Brazier live completion summons a spectre; the ash alone is not completion evidence");
         }
         screenshot(context, kind + "-completed-output");
@@ -698,7 +702,24 @@ public final class MachineWalkthroughAcceptance implements FabricClientGameTest 
         result.put("completion", "Actual server tick processing consumed inputs and exact fluid and produced every expected output; "
             + "native output clicks collected results into survival inventory.");
         closeScreen(context);
+        if (!summonedSpectres.isEmpty()) {
+            // Keep the real summon/output assertions above; its mob must not obstruct a later case's native block ray.
+            server(player -> summonedSpectres.forEach(id -> {
+                final var entity = player.level().getEntity(id);
+                if (entity != null) entity.discard();
+            }));
+            world.getConnection().waitForClientboundPackets();
+            check(serverValue(player -> summonedSpectres.stream().allMatch(id -> player.level().getEntity(id) == null)),
+                "Only the representative's observed summoned spectres are removed after its assertions");
+            result.put("fixture_cleanup", "Removed this case's observed summoned spectre UUIDs after live summon and output assertions.");
+        }
         if (kind.equals("silvervat")) passiveSilver(context, result);
+    }
+
+    private static List<net.minecraft.world.entity.Mob> nearbySpectres(final ServerPlayer player) {
+        return player.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
+            new net.minecraft.world.phys.AABB(MACHINE).inflate(12),
+            mob -> BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString().equals("warlockery:spectre"));
     }
 
     private void stageMachine(final ClientGameTestContext context, final MachineProfile profile,
