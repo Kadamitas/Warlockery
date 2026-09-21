@@ -81,8 +81,8 @@ public final class BrewPersistentRuntime {
                 CustomBrewTriggerData.get(level).tick(level);
             }
         });
-        EntityTeleportEvent.EnderEntity.BUS.addListener(
-            (Predicate<EntityTeleportEvent.EnderEntity>) BrewPersistentRuntime::cancelTeleport
+        EntityTeleportEvent.EntityRandom.BUS.addListener(
+            (Predicate<EntityTeleportEvent.EntityRandom>) BrewPersistentRuntime::cancelTeleport
         );
         EntityTeleportEvent.EnderPearl.BUS.addListener(
             (Predicate<EntityTeleportEvent.EnderPearl>) BrewPersistentRuntime::cancelTeleport
