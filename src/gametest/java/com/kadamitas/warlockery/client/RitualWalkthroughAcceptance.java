@@ -72,7 +72,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             report.put("setup", "Isolated survival world: flat stone floor, Circle Magic book, one Golden Chalk, one Ritual Chalk, "
                 + "Arcane Focus, one Coal and one Raw Beef are staged. Six altar blocks and 1000 power are staged through the real altar API. "
                 + "Player/camera alignment is staged at each mark so the test isolates the diagram and actual chalk interaction; walking between marks is not claimed. "
-                + "Between rites, completed outcomes are recorded before previous wards, player effects and motion are cleared; unfinished casts fail isolation. "
+                + "Between rites, completed outcomes are recorded before previous wards, player effects and motion are cleared and the fixture terrain (floor, vent airspace and any generated monument) is reset; unfinished casts fail isolation. "
                 + "No glyph blocks, dropped offerings, ritual session, recipe action, or cooked output are injected. No Ritual Knife attachment is installed.");
             try (var created = context.worldBuilder().create()) {
                 world = created;
@@ -202,11 +202,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             player.level().getEntitiesOfClass(ItemEntity.class, new AABB(CENTER).inflate(20)).forEach(ItemEntity::discard);
             player.level().getEntities((net.minecraft.world.entity.Entity) null, new AABB(CENTER).inflate(20),
                 entity -> entity != player).forEach(net.minecraft.world.entity.Entity::discard);
-            for (int x = -15; x <= 15; x++) for (int z = -15; z <= 15; z++) {
-                player.level().setBlockAndUpdate(new BlockPos(x, CENTER.getY() - 1, z), Blocks.STONE.defaultBlockState());
-                for (int y = CENTER.getY(); y <= CENTER.getY() + 4; y++)
-                    player.level().setBlockAndUpdate(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState());
-            }
+            isolation.put("terrain_reset", resetTerrain(player.level()));
             for (int x = 0; x < 3; x++) for (int z = 0; z < 2; z++) {
                 player.level().setBlockAndUpdate(ALTAR.offset(x, 0, z), ModBlocks.ALTAR.get().defaultBlockState());
             }
@@ -631,6 +627,37 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         passRitual(id, definition.action().equals("summon_item") || definition.action().equals("summon_entity")
             ? "Normal activation completed and produced " + definition.target() + " x" + definition.count()
             : "Normal activation completed and the explicit " + definition.action() + " world-state assertion passed.");
+    }
+
+    /**
+     * Every rite of a partition casts in the same world, so earlier rites leave real terrain behind: the Blood
+     * Audience fixture generates a vanilla Ocean Monument (y 39 to 62) around the heart, Forestation grows
+     * trees and the raise-earth family stacks columns up to sixteen blocks high. Earth's Wrath measures its
+     * vent from the heightmap above the heart and refuses any occupied column, rim or basin block, so leftover
+     * monument roof above the previous five-block clearing made the live cast report "nothing answers". Every
+     * rite therefore starts from the same flat fixture: one stone floor block under the heart and air from
+     * twelve blocks below it to twenty above, plus the whole monument footprint whenever one was generated.
+     */
+    private static Map<String, Integer> resetTerrain(final net.minecraft.server.level.ServerLevel level) {
+        int cleared = 0;
+        final var monument = level.structureManager().getStructureWithPieceAt(CENTER,
+            holder -> holder.is(net.minecraft.world.level.levelgen.structure.BuiltinStructures.OCEAN_MONUMENT));
+        if (monument.isValid()) {
+            final var box = monument.getBoundingBox();
+            for (BlockPos pos : BlockPos.betweenClosed(box.minX() - 12, box.minY(), box.minZ() - 12,
+                    box.maxX() + 12, Math.max(box.maxY(), CENTER.getY() + 20), box.maxZ() + 12)) {
+                if (!level.getBlockState(pos).isAir()
+                        && level.setBlockAndUpdate(pos.immutable(), Blocks.AIR.defaultBlockState())) cleared++;
+            }
+        }
+        for (int x = -15; x <= 15; x++) for (int z = -15; z <= 15; z++) {
+            for (int y = CENTER.getY() - 12; y <= CENTER.getY() + 20; y++) {
+                final BlockPos pos = new BlockPos(x, y, z);
+                final var expected = y == CENTER.getY() - 1 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState();
+                if (level.getBlockState(pos) != expected && level.setBlockAndUpdate(pos, expected)) cleared++;
+            }
+        }
+        return Map.of("blocks", cleared, "monument", monument.isValid() ? 1 : 0);
     }
 
     private void initializeRitualResults() {
@@ -1250,7 +1277,23 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 id + " raises the declared terrain column");
             case "broken_earth" -> check(serverValue(player -> player.level().isEmptyBlock(CENTER.relative(castingDirections.get(id)).below())),
                 "Broken Earth tears open the staged northward stone line");
-            case "earths_wrath" -> check(serverValue(player -> {
+            case "earths_wrath" -> {
+                report.put(id + "_vent_observation", serverValue(player -> {
+                    final Map<String, Object> vent = new LinkedHashMap<>();
+                    vent.put("heightmap_surface", player.level().getHeight(
+                        net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, CENTER.getX(), CENTER.getZ()));
+                    vent.put("column", BlockPos.betweenClosedStream(CENTER.above(), CENTER.above(12))
+                        .map(pos -> pos.getY() + "=" + net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                            .getKey(player.level().getBlockState(pos).getBlock()).getPath()).toList());
+                    vent.put("sources", List.of(CENTER.offset(1, -2, 0), CENTER.offset(-1, -2, 0),
+                        CENTER.offset(0, -2, 1), CENTER.offset(0, -2, -1)).stream().map(pos -> pos.toShortString() + "="
+                            + (player.level().getFluidState(pos).is(net.minecraft.tags.FluidTags.LAVA)
+                                ? (player.level().getFluidState(pos).isSource() ? "lava_source" : "lava_flowing")
+                                : net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                                    .getKey(player.level().getBlockState(pos).getBlock()).getPath())).toList());
+                    return vent;
+                }));
+                check(serverValue(player -> {
                 final var basin = BlockPos.betweenClosedStream(CENTER.above(), CENTER.above(12))
                     .filter(pos -> player.level().getFluidState(pos).is(net.minecraft.tags.FluidTags.LAVA))
                     .map(BlockPos::immutable).findFirst();
@@ -1263,7 +1306,8 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     && List.of(CENTER.offset(1, -2, 0), CENTER.offset(-1, -2, 0),
                         CENTER.offset(0, -2, 1), CENTER.offset(0, -2, -1)).stream()
                         .anyMatch(pos -> !player.level().getFluidState(pos).isSource());
-            }), "Earth's Wrath moves an underground lava source into a contained basalt vent with a magma floor");
+                }), "Earth's Wrath moves an underground lava source into a contained basalt vent with a magma floor");
+            }
             case "ice_sphere" -> check(serverValue(player -> BlockPos.betweenClosedStream(
                     CENTER.offset(-8, -8, -8), CENTER.offset(8, 8, 8))
                 .anyMatch(pos -> player.level().getBlockState(pos).is(Blocks.PACKED_ICE))),
@@ -1368,14 +1412,19 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                         && com.kadamitas.warlockery.entity.CreatureBehaviorState.isOwnedBy(nami, player.getUUID())
                         && nami.getName().getString().equals(bond.orElseThrow().spouseName());
                 }), "Marriage creates a persistent bond with the exact staged Nami partner");
-                requireBoundOutput(id, ModItems.ALL.get("wedding_ring").get(), 1,
+                // The recipe offers two wedding rings with consume=false, so both survive the cast, and the
+                // live action inscribes the couple's names on the first wedding-ring stack it finds; a merged
+                // two-ring stack therefore carries the names on both rings.
+                final Map<String, Integer> rings = observeBoundOutput(id, ModItems.ALL.get("wedding_ring").get(),
                     (player, stack) -> com.kadamitas.warlockery.ritual.marriage.MarriageData.get(player.level())
                         .bond(player.getUUID()).map(bond -> stack.getOrDefault(
                             net.minecraft.core.component.DataComponents.LORE,
                             net.minecraft.world.item.component.ItemLore.EMPTY).lines().stream()
                             .map(Component::getString).anyMatch(line -> line.contains(player.getDisplayName().getString())
-                                && line.contains(bond.spouseName()))).orElse(false),
-                    "preserves exactly one wedding ring bearing both the caster and spouse names");
+                                && line.contains(bond.spouseName()))).orElse(false));
+                check(rings.get("dropped") + rings.get("inventory") == 2 && rings.get("matching") >= 1,
+                    id + " preserves both offered wedding rings and inscribes the caster and spouse names on at least one: "
+                        + rings);
             }
             case "divorce" -> check(serverValue(player ->
                     !com.kadamitas.warlockery.ritual.marriage.MarriageData.get(player.level())
@@ -1916,6 +1965,16 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
     private void requireBoundOutput(final String id, final net.minecraft.world.item.Item item, final int expected,
                                     final java.util.function.BiPredicate<ServerPlayer, ItemStack> matches,
                                     final String description) {
+        final Map<String, Integer> observed = observeBoundOutput(id, item, matches);
+        // The live casting screen does not pause pickup or merging. Observe actual
+        // item quantities in both legitimate locations; never create or move output.
+        check(observed.get("dropped") + observed.get("inventory") == expected
+                && observed.get("matching") == expected,
+            id + " " + description + ": expected=" + expected + ", observed=" + observed);
+    }
+
+    private Map<String, Integer> observeBoundOutput(final String id, final net.minecraft.world.item.Item item,
+                                                    final java.util.function.BiPredicate<ServerPlayer, ItemStack> matches) {
         final Map<String, Integer> observed = serverValue(player -> {
             final var onGround = dropped(player, item).stream().map(ItemEntity::getItem).toList();
             final var inInventory = player.getInventory().getNonEquipmentItems().stream()
@@ -1927,11 +1986,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     .filter(stack -> matches.test(player, stack)).mapToInt(ItemStack::getCount).sum());
         });
         report.put(id + "_bound_output_observation", observed);
-        // The live casting screen does not pause pickup or merging. Observe actual
-        // item quantities in both legitimate locations; never create or move output.
-        check(observed.get("dropped") + observed.get("inventory") == expected
-                && observed.get("matching") == expected,
-            id + " " + description + ": expected=" + expected + ", observed=" + observed);
+        return observed;
     }
 
     private static List<ItemEntity> dropped(final ServerPlayer player, final net.minecraft.world.item.Item item) {
