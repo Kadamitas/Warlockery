@@ -84,7 +84,7 @@ public final class VoidBrambleBlock extends BushBlock {
             level.getRandom().nextIntBetweenInclusive(-VoidBrambleRules.TELEPORT_RADIUS, VoidBrambleRules.TELEPORT_RADIUS)
         );
         final int targetY = serverLevel.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, targetX, targetZ) + 1;
-        if (living.randomTeleport(targetX + 0.5, targetY, targetZ + 0.5, true)) {
+        if (living.randomTeleport(targetX + 0.5, targetY, targetZ + 0.5, true, com.kadamitas.warlockery.util.BlockSupport.NO_ADDITIONAL_TELEPORT_AVOIDANCE)) {
             living.getPersistentData().putLong(
                 TELEPORT_COOLDOWN,
                 level.getGameTime() + VoidBrambleRules.TELEPORT_COOLDOWN_TICKS

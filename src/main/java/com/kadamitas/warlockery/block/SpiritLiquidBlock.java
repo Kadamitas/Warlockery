@@ -52,7 +52,7 @@ public final class SpiritLiquidBlock extends LiquidBlock {
                 living.typeHolder().is(WarlockeryTags.EntityTypes.HOLLOW_TEARS_BENEFICIARIES)
             );
             if (outcome == ArcaneFluidRules.Outcome.HARM) {
-                living.invulnerableTime = 0;
+                living.setInvulnerableTime(0);
                 living.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 1, true, true));
             } else if (outcome == ArcaneFluidRules.Outcome.BENEFIT) {
                 living.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 0, true, true));

@@ -7,8 +7,8 @@
     "minecraft:savanna", "minecraft:mangrove_swamp", "minecraft:swamp", "minecraft:plains"
   ],
   "spawners": [
-    {"type":"warlockery:ent","weight":2,"minCount":1,"maxCount":1},
-    {"type":"warlockery:goblin","weight":3,"minCount":1,"maxCount":3},
-    {"type":"warlockery:hobgoblin","weight":5,"minCount":1,"maxCount":3}
+    {"type":"warlockery:ent","weight":2,"count":1},
+    {"type":"warlockery:goblin","weight":3,"count":{"type":"minecraft:uniform","min_inclusive":1,"max_inclusive":3}},
+    {"type":"warlockery:hobgoblin","weight":5,"count":{"type":"minecraft:uniform","min_inclusive":1,"max_inclusive":3}}
   ]
 }

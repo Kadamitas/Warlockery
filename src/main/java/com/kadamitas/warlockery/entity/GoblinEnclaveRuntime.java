@@ -714,7 +714,7 @@ public final class GoblinEnclaveRuntime {
             return;
         }
         goblin.goblinCounters().editsApplied++;
-        goblin.swing(InteractionHand.MAIN_HAND);
+        goblin.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         original.spawnAfterBreak(level, position, tool, false);
         drops.forEach(stack -> {
             final ItemStack remainder = goblin.getInventory().addItem(stack);
@@ -826,7 +826,7 @@ public final class GoblinEnclaveRuntime {
         }
         consume(goblin, stack -> stack.is(chosen.dirtItem()), GoblinEnclaveRules.HUT_DIRT_COST);
         consume(goblin, stack -> stack.is(chosen.logItem()), GoblinEnclaveRules.HUT_LOG_COST);
-        goblin.swing(InteractionHand.MAIN_HAND);
+        goblin.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         goblin.goblinTransient().plan.hutSite = Optional.empty();
         settle(goblin, level);
     }
@@ -884,7 +884,7 @@ public final class GoblinEnclaveRuntime {
             }
             goblin.goblinCounters().editsApplied++;
         }
-        goblin.swing(InteractionHand.MAIN_HAND);
+        goblin.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         goblin.goblinTransient().plan.tunnel = Optional.empty();
         settle(goblin, level);
     }
@@ -962,7 +962,7 @@ public final class GoblinEnclaveRuntime {
         }
         child.goblinCounters().editsApplied++;
         child.setItemSlot(EquipmentSlot.MAINHAND, flower);
-        child.swing(InteractionHand.MAIN_HAND);
+        child.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         child.goblinTransient().plan.flower = Optional.empty();
         settle(child, level);
     }
@@ -1016,14 +1016,14 @@ public final class GoblinEnclaveRuntime {
         }
         final ItemStack gift = flower.copyWithCount(1);
         if (!player.addItem(gift)) {
-            player.drop(gift, false);
+            player.drop(gift, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
         child.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         child.setGoblinEnclaveState(child.goblinEnclaveState()
             .withChildGiftCooldown(GoblinEnclaveRules.CHILD_GIFT_COOLDOWN_TICKS));
         enclaveKey(child).ifPresent(key -> GoblinEnclaveData.get(level)
             .recordRelation(key, player.getUUID(), RelationEvent.GIFT_RECEIVED));
-        child.swing(InteractionHand.MAIN_HAND);
+        child.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         settle(child, level);
     }
 
@@ -1538,7 +1538,7 @@ public final class GoblinEnclaveRuntime {
         }
         goblin.equipToolSlot(equipped);
         goblin.goblinTransient().miningCooldownTicks = 0;
-        goblin.swing(InteractionHand.MAIN_HAND);
+        goblin.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         if (!previous.isEmpty()) {
             goblin.spawnAtLocation(level, previous);
         }

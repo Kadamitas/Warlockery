@@ -1,7 +1,6 @@
 package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.MagicalPlantBlockFactory.Behavior;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -15,16 +14,10 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public final class GlintWeedBlock extends MagicalPlantBlock {
     public static final BooleanProperty HANGING = BooleanProperty.create("hanging");
-    public static final MapCodec<BushBlock> CODEC = simpleCodec(GlintWeedBlock::new);
 
     public GlintWeedBlock(final BlockBehaviour.Properties properties) {
         super(Behavior.GLINT_WEED, properties);
         registerDefaultState(stateDefinition.any().setValue(HANGING, false));
-    }
-
-    @Override
-    public MapCodec<BushBlock> codec() {
-        return CODEC;
     }
 
     @Override

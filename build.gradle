@@ -119,7 +119,7 @@ abstract class GenerateEmptyGameTestStructure extends DefaultTask {
     }
 }
 
-version = '1.5.5'
+version = '1.5.6'
 group = 'com.kadamitas.warlockery'
 
 base {
@@ -134,13 +134,13 @@ java {
 def generatedGameTestResources = layout.buildDirectory.dir('generated/gameTestResources')
 def generateEmptyGameTestStructure = tasks.register('generateEmptyGameTestStructure', GenerateEmptyGameTestStructure) {
     structureSize.set(3)
-    dataVersion.set(4_903)
+    dataVersion.set(5_023)
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty3x3x3.nbt') })
 }
 
 def generateLargeGameTestStructure = tasks.register('generateLargeGameTestStructure', GenerateEmptyGameTestStructure) {
     structureSize.set(15)
-    dataVersion.set(4_903)
+    dataVersion.set(5_023)
     outputFile.set(generatedGameTestResources.map { it.file('data/warlockery/structure/empty15x15x15.nbt') })
 }
 
@@ -201,7 +201,7 @@ sourceSets.test.compileClasspath += sourceSets.main.output + sourceSets.main.com
 sourceSets.test.runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
 
 neoForge {
-    version = '26.2.0.87'
+    version = '26.3.0.7-beta'
 
     runs {
         configureEach {
@@ -244,15 +244,19 @@ neoForge {
 
 def recipeViewer = providers.gradleProperty('warlockeryRecipeViewer').orElse('jei').get()
 if (!['jei', 'rei', 'rrv', 'emi', 'none'].contains(recipeViewer)) throw new GradleException('Unsupported recipe viewer profile: ' + recipeViewer)
+if (['rei', 'emi'].contains(recipeViewer)) {
+    throw new GradleException(recipeViewer.toUpperCase() + ' has no verified Minecraft 26.3 runtime. Integration source is retained; use jei, rrv, or none until the viewer is updated.')
+}
 
 repositories {
     maven {
         url = 'https://maven.blamejared.com'
-        content { includeGroup 'mezz.jei' }
+        content { includeGroup 'mezz.jei'; includeGroup 'net.mezzdev.config' }
     }
     maven { url = 'https://maven.shedaniel.me' }
     maven { url = 'https://maven.architectury.dev' }
     maven { url = 'https://maven.cassian.cc' }
+    maven { url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
     maven { url = 'https://cursemaven.com'; content { includeGroup 'curse.maven' } }
     mavenCentral()
 }
@@ -264,18 +268,12 @@ configurations {
 dependencies {
     compileOnly 'me.shedaniel:RoughlyEnoughItems-api-neoforge:26.2.820'
     compileOnly 'me.shedaniel:RoughlyEnoughItems-neoforge:26.2.820'
-    compileOnly 'cc.cassian.rrv:reliable-recipe-viewer-neoforge:8.10.4+26.2'
+    compileOnly 'maven.modrinth:5VolwT6c:8.10.5+26.3-neoforge'
     compileOnly('curse.maven:emi-unofficial-port-unstable-1544558:8616659') { transitive = false }
-    if (recipeViewer == 'rei') {
-        localRuntime 'me.shedaniel:RoughlyEnoughItems-neoforge:26.2.820'
-        localRuntime 'dev.architectury:architectury-neoforge:21.0.2'
-        localRuntime 'me.shedaniel.cloth:cloth-config-neoforge:26.2.155'
-    }
-    if (recipeViewer == 'rrv') localRuntime 'cc.cassian.rrv:reliable-recipe-viewer-neoforge:8.10.4+26.2'
-    if (recipeViewer == 'emi') localRuntime 'curse.maven:emi-unofficial-port-unstable-1544558:8616659'
-    compileOnly 'mezz.jei:jei-26.2-common-api:30.15.0.104'
-    compileOnly 'mezz.jei:jei-26.2-neoforge-api:30.15.0.104'
-    if (recipeViewer == 'jei') localRuntime 'mezz.jei:jei-26.2-neoforge:30.15.0.104'
+    if (recipeViewer == 'rrv') localRuntime 'maven.modrinth:5VolwT6c:8.10.5+26.3-neoforge'
+    compileOnly 'mezz.jei:jei-26.3-common-api:31.3.0.17'
+    compileOnly 'mezz.jei:jei-26.3-neoforge-api:31.3.0.17'
+    if (recipeViewer == 'jei') localRuntime 'mezz.jei:jei-26.3-neoforge:31.3.0.17'
     testImplementation platform('org.junit:junit-bom:6.1.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

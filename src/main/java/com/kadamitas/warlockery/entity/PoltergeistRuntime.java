@@ -298,9 +298,7 @@ public final class PoltergeistRuntime {
             poltergeist.getY() + level.getRandom().nextIntBetweenInclusive(
                 -PoltergeistRules.BLINK_VERTICAL, PoltergeistRules.BLINK_VERTICAL),
             poltergeist.getZ() + level.getRandom().nextIntBetweenInclusive(
-                -PoltergeistRules.BLINK_HORIZONTAL, PoltergeistRules.BLINK_HORIZONTAL),
-            true
-        );
+                -PoltergeistRules.BLINK_HORIZONTAL, PoltergeistRules.BLINK_HORIZONTAL), true, com.kadamitas.warlockery.util.BlockSupport.NO_ADDITIONAL_TELEPORT_AVOIDANCE);
     }
 
     // ---------------------------------------------------------------- idle
@@ -576,7 +574,7 @@ public final class PoltergeistRuntime {
             thrown.setDeltaMovement(direction
                 .scale(PoltergeistRules.THROW_HORIZONTAL_SPEED)
                 .add(0.0D, PoltergeistRules.THROW_VERTICAL_SPEED, 0.0D));
-            thrown.hurtMarked = true;
+            thrown.syncVelocity = true;
             poltergeist.poltergeistCounters().velocityWrites++;
             state = state.withEpisode(
                 state.episode().withVelocityWrites(state.episode().velocityWrites() + 1)

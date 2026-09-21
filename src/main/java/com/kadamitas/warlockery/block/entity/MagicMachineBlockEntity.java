@@ -857,7 +857,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             stack,
             level == null || !level.isClientSide(),
             candidate -> MachineRecipeManager.INSTANCE.acceptsInput(profile, slot, candidate),
-            candidate -> level != null && level.fuelValues().isFuel(candidate)
+            candidate -> level != null && com.kadamitas.warlockery.block.entity.CookingFuels.isFuel(candidate)
         );
     }
 
@@ -884,8 +884,8 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
             && (level == null || burnDuration(level, stack) <= 0);
     }
 
-    private static int burnDuration(final Level level, final ItemStack stack) {
-        return stack.getBurnTime(RecipeType.SMELTING, level.fuelValues());
+    private int burnDuration(final Level level, final ItemStack stack) {
+        return CookingFuels.burnDuration(level, stack, this);
     }
 
     public static void registerCapabilities(final RegisterCapabilitiesEvent event) {
@@ -1163,7 +1163,7 @@ public final class MagicMachineBlockEntity extends BaseContainerBlockEntity impl
         recovered.stream().map(ItemStack::copy).forEach(stack -> {
             player.getInventory().add(stack);
             if (!stack.isEmpty()) {
-                player.drop(stack, false);
+                player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
             }
         });
     }

@@ -154,7 +154,7 @@ public final class HedgeCroneEntity extends Monster implements ArcaneCreature {
                 return;
             }
             cooldownTicks = ATTACK_COOLDOWN_TICKS;
-            swing(InteractionHand.MAIN_HAND);
+            swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
             if (doHurtTarget(server, target)) {
                 croneCounters.closeDefenseHits++;
             }

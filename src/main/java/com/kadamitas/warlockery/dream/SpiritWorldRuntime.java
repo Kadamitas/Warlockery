@@ -46,7 +46,7 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.TagValueInput;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -731,7 +731,7 @@ public final class SpiritWorldRuntime {
             return;
         }
         if (!player.getInventory().add(stack)) {
-            player.drop(stack, false);
+            player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
     }
 
@@ -749,7 +749,7 @@ public final class SpiritWorldRuntime {
             .filter(SpiritWorldRuntime::isDreaming)
             .anyMatch(SpiritWorldRuntime::isNightmare);
         final long desired = SpiritWorldRules.dreamClockTime(anyNightmare);
-        if (level.clockManager().getTotalTicks(clock) != desired) {
+        if (level.clockManager().getInstance(clock).totalTicks() != desired) {
             level.clockManager().setTotalTicks(clock, desired);
         }
     }
@@ -813,11 +813,11 @@ public final class SpiritWorldRuntime {
     }
 
     private static void clearExcludedMobs(final ServerLevel level, final BlockPos center) {
-        level.getEntitiesOfClass(EnderMan.class, new AABB(center).inflate(64.0)).stream()
+        level.getEntitiesOfClass(Enderman.class, new AABB(center).inflate(64.0)).stream()
             .filter(enderman -> SpiritWorldRules.excludesFromSpiritWorld(
                 net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(enderman.getType())
             ))
-            .forEach(EnderMan::discard);
+            .forEach(Enderman::discard);
     }
 
     private static void fieryRain(final ServerLevel level, final ServerPlayer player) {

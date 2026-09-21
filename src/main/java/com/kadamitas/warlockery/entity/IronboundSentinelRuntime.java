@@ -578,8 +578,8 @@ public final class IronboundSentinelRuntime {
                 counters.candidateVisits++;
                 visited.add(candidate);
                 return visited.size() >= IronboundSentinelRules.SWEEP_ENTITY_VISITS
-                    ? AbortableIterationConsumer.Continuation.ABORT
-                    : AbortableIterationConsumer.Continuation.CONTINUE;
+                    ? net.minecraft.util.Continuation.ABORT
+                    : net.minecraft.util.Continuation.CONTINUE;
             }
         );
         return visited;
@@ -744,7 +744,7 @@ public final class IronboundSentinelRuntime {
         if (!sentinel.getSensing().hasLineOfSight(subject)) {
             return;
         }
-        sentinel.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        sentinel.swing(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         if (sentinel.doHurtTarget(level, subject)) {
             sentinel.sentinelCounters().repelHits++;
         }

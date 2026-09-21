@@ -274,7 +274,7 @@ public final class HobgoblinEntity extends AbstractGoblinMerchantEntity {
                 return;
             }
             cooldown = COOLDOWN_TICKS;
-            traveler.swing(InteractionHand.MAIN_HAND);
+            traveler.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
             traveler.doHurtTarget(level, target);
         }
     }

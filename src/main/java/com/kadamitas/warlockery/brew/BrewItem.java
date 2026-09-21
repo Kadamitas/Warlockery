@@ -30,7 +30,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.BlockHitResult;
@@ -104,16 +103,6 @@ public final class BrewItem extends SplashPotionItem {
     }
 
     @Override
-    public int getBurnTime(
-        final ItemStack itemStack,
-        final @Nullable RecipeType<?> recipeType,
-        final FuelValues fuelValues
-    ) {
-        final int burnTime = kind.fuelBurnTime();
-        return burnTime > 0 ? burnTime : super.getBurnTime(itemStack, recipeType, fuelValues);
-    }
-
-    @Override
     @SuppressWarnings("deprecation")
     public void appendHoverText(
         final ItemStack stack,
@@ -161,7 +150,12 @@ public final class BrewItem extends SplashPotionItem {
         return CustomBrewRuntime.read(stack).map(formula -> formula.delivery().lingering()).orElse(false);
     }
 
-    private static Item.Properties configure(final Item.Properties properties, final BrewKind kind) {
+    static Item.Properties configure(final Item.Properties properties, final BrewKind kind) {
+        if (kind.fuelBurnTime() > 0) {
+            properties.component(DataComponents.COOKING_FUEL, new net.minecraft.world.item.component.CookingFuel(
+                new net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt.Constant(kind.fuelBurnTime()),
+                new net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat.Constant(1.0F)));
+        }
         return properties.stacksTo(16)
             .component(DataComponents.POTION_CONTENTS, kind.potionContents())
             .component(DataComponents.POTION_DURATION_SCALE, 1.0F)

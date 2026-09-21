@@ -25,7 +25,7 @@ public final class GameTestWorldClock {
     public static void restoreAfterTest(final GameTestHelper helper) {
         final ServerLevel level = helper.getLevel();
         final Holder<WorldClock> clock = level.dimensionType().defaultClock().orElseThrow();
-        final long original = level.clockManager().getTotalTicks(clock);
+        final long original = level.clockManager().getInstance(clock).totalTicks();
         helper.runBeforeTestEnd(() -> level.clockManager().setTotalTicks(clock, original));
     }
 }

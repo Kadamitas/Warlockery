@@ -355,7 +355,7 @@ public final class GoblinPatronGameTests {
             // ---------------- surge
             final Zombie victim = fixture.spawnZombie(new BlockPos(2, 1, 1));
             final Zombie distant = fixture.spawnZombie(new BlockPos(0, 1, 0));
-            distant.setInvulnerable(true);
+            distant.setPermanentlyInvulnerable(true);
             final float victimHealth = victim.getHealth();
             final float distantHealth = distant.getHealth();
             final long editsBefore = warden.patronCounters().worldEdits();
@@ -390,7 +390,7 @@ public final class GoblinPatronGameTests {
             warden.getSensing().tick();
             // Without this the surge's own hit leaves the victim invulnerable, doHurtTarget returns
             // false, and both rider assertions below would pass vacuously on stale state.
-            victim.invulnerableTime = 0;
+            victim.setInvulnerableTime(0);
             victim.clearFire();
             final float beforeMelee = victim.getHealth();
             final boolean navigationIdleBefore = warden.getNavigation().isDone();
@@ -495,7 +495,7 @@ public final class GoblinPatronGameTests {
             // isolation, because stacking reads as correct in every unit test.
             final float raw = 100.0F;
             broker.setHealth(broker.getMaxHealth());
-            broker.invulnerableTime = 0;
+            broker.setInvulnerableTime(0);
             final float healthBeforeWardedHit = broker.getHealth();
             broker.hurtServer(level, level.damageSources().mobAttack(challenger), raw);
             final float wardedLoss = healthBeforeWardedHit - broker.getHealth();
@@ -517,7 +517,7 @@ public final class GoblinPatronGameTests {
             // hammer rider is the only writer of the victim's vertical velocity.
             bystander.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
             bystander.setDeltaMovement(Vec3.ZERO);
-            bystander.invulnerableTime = 0;
+            bystander.setInvulnerableTime(0);
             bystander.clearFire();
             helper.assertTrue(warden.doHurtTarget(level, bystander),
                 "the probe melee must actually be accepted or every rider assertion below is vacuous");

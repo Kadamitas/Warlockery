@@ -731,13 +731,13 @@ public final class ParasyticLouseRuntime {
             louse.getBoundingBox().inflate(ParasyticLouseTenancyRules.SCAN_RADIUS),
             candidate -> {
                 if (!visits.charge()) {
-                    return AbortableIterationConsumer.Continuation.ABORT;
+                    return net.minecraft.util.Continuation.ABORT;
                 }
                 louse.louseCounters().hostRawVisits++;
                 visited.add(candidate);
                 return visits.exhausted()
-                    ? AbortableIterationConsumer.Continuation.ABORT
-                    : AbortableIterationConsumer.Continuation.CONTINUE;
+                    ? net.minecraft.util.Continuation.ABORT
+                    : net.minecraft.util.Continuation.CONTINUE;
             }
         );
         final List<LivingEntity> eligible = new ArrayList<>(visited.size());
@@ -882,18 +882,18 @@ public final class ParasyticLouseRuntime {
             candidate.getBoundingBox().inflate(ParasyticLouseTenancyRules.OCCUPANCY_PROBE_INFLATION),
             other -> {
                 if (!visits.charge()) {
-                    return AbortableIterationConsumer.Continuation.ABORT;
+                    return net.minecraft.util.Continuation.ABORT;
                 }
                 louse.louseCounters().occupancyRawVisits++;
                 if (other != louse
                     && other.tenancy().phase == Phase.FEED
                     && other.tenancy().host.id().filter(hostId::equals).isPresent()) {
                     taken[0] = true;
-                    return AbortableIterationConsumer.Continuation.ABORT;
+                    return net.minecraft.util.Continuation.ABORT;
                 }
                 return visits.exhausted()
-                    ? AbortableIterationConsumer.Continuation.ABORT
-                    : AbortableIterationConsumer.Continuation.CONTINUE;
+                    ? net.minecraft.util.Continuation.ABORT
+                    : net.minecraft.util.Continuation.CONTINUE;
             }
         );
         return taken[0];
@@ -1355,7 +1355,7 @@ public final class ParasyticLouseRuntime {
         final ItemStack captured = new ItemStack(ModItems.ALL.get("louse").get());
         ParasyticLouseItem.writeFromCreature(captured, louse);
         if (!player.getInventory().add(captured)) {
-            player.drop(captured, false);
+            player.drop(captured, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
         louse.louseCounters().capturesByHand++;
         // Full teardown before the entity leaves, so nothing is left written on the former host and

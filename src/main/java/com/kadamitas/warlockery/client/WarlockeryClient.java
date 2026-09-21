@@ -51,7 +51,7 @@ public final class WarlockeryClient {
         NeoForge.EVENT_BUS.addListener((MovementInputUpdateEvent event) ->
             PreyDriveControls.suppressMovement(event));
         NeoForge.EVENT_BUS.addListener((RenderPlayerEvent.Pre<?> event) -> renderWolfAvatar(event));
-        NeoForge.EVENT_BUS.addListener((RenderArmEvent<?> event) -> renderTransformedFirstPersonArm(event));
+        NeoForge.EVENT_BUS.addListener((RenderArmEvent event) -> renderTransformedFirstPersonArm(event));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> clientLogout(event));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn event) ->
             RecipeViewerCatalogSync.beginConnection(event.getConnection()));
@@ -102,7 +102,7 @@ public final class WarlockeryClient {
             return;
         }
         final CameraRenderState cameraState = new CameraRenderState();
-        minecraft.gameRenderer.mainCamera().extractRenderState(cameraState, event.getPartialTick());
+        minecraft.gameRenderer.mainCamera().extractRenderState(cameraState, minecraft.getDeltaTracker());
         switch (PlayerWolfVisualState.shape(player.getUUID())) {
             case WOLF -> wolfFormAvatarRenderer.submitAvatar(
                 player,
@@ -125,7 +125,7 @@ public final class WarlockeryClient {
         event.setCanceled(true);
     }
 
-    private static void renderTransformedFirstPersonArm(final RenderArmEvent<?> event) {
+    private static void renderTransformedFirstPersonArm(final RenderArmEvent event) {
         final Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || wolfFormAvatarRenderer == null || werewolfFormAvatarRenderer == null) {
             return;

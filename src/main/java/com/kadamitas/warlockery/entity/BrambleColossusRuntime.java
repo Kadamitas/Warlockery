@@ -101,7 +101,7 @@ public final class BrambleColossusRuntime {
         var candidates = new ArrayList<LivingEntity>(6);
         level.getEntities().get(EntityTypeTest.forClass(LivingEntity.class), box, e -> {
             mob.colossusCounters().rawVisits++; candidates.add(e);
-            return candidates.size() >= 6 ? AbortableIterationConsumer.Continuation.ABORT : AbortableIterationConsumer.Continuation.CONTINUE;
+            return candidates.size() >= 6 ? net.minecraft.util.Continuation.ABORT : net.minecraft.util.Continuation.CONTINUE;
         });
         candidates.sort(Comparator.<LivingEntity>comparingDouble(mob::distanceToSqr).thenComparing(LivingEntity::getUUID));
         int rays = 0;
@@ -215,8 +215,8 @@ public final class BrambleColossusRuntime {
         int[]visited={0};boolean[]occupied={false};
         level.getEntities().get(EntityTypeTest.forClass(Entity.class),moved,e->{
             visited[0]++;mob.colossusCounters().occupancyVisits++;
-            if(e!=mob&&e.canBeCollidedWith(mob)){occupied[0]=true;return AbortableIterationConsumer.Continuation.ABORT;}
-            return visited[0]>=visitBudget?AbortableIterationConsumer.Continuation.ABORT:AbortableIterationConsumer.Continuation.CONTINUE;
+            if(e!=mob&&e.canBeCollidedWith(mob)){occupied[0]=true;return net.minecraft.util.Continuation.ABORT;}
+            return visited[0]>=visitBudget?net.minecraft.util.Continuation.ABORT:net.minecraft.util.Continuation.CONTINUE;
         });
         mob.colossusCounters().blockReads+=cache.actualReads();
         return new SafeResult(!occupied[0],cache.actualReads(),visited[0]);

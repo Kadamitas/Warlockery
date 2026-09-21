@@ -5,8 +5,7 @@
     {
       "type": "warlockery:owl",
       "weight": 1,
-      "minCount": 1,
-      "maxCount": 1
+      "count":1
     }
   ]
 }

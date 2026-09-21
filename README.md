@@ -2,20 +2,20 @@
 
 [Releases](https://github.com/Kadamitas/Warlockery/releases) | [Issue tracker](https://github.com/Kadamitas/Warlockery/issues) | [MIT license](LICENSE)
 
-Warlockery 1.5.5 is a standalone ritual magic mod by Kadamitas for Minecraft 26.2, Java 25, and NeoForge 26.2.0.64 or newer.
+Warlockery 1.5.6 is a standalone ritual magic mod by Kadamitas for Minecraft 26.3, Java 25, and NeoForge 26.3.0.7-beta or newer.
 
 It adds interactive chalk-circle rites, custom brewing, ritual machines, dolls and links, vampire and werewolf progression, magical creatures, biome-aware Ents, goblin village enclaves, silver hunting equipment, and Netherite-tier Goblinite gear.
 
 ## Installation
 
-1. Install Minecraft 26.2 with Java 25 and NeoForge 26.2.0.64 or newer.
+1. Install Minecraft 26.3 with Java 25 and NeoForge 26.3.0.7-beta or newer.
 2. Download the matching Warlockery release and copy its JAR into the instance or server `mods` folder.
 3. Install the same Warlockery version on the client and server.
 4. Start Minecraft and confirm that Warlockery appears in the Mods screen.
 
-JEI integration is optional and activates when the NeoForge build of JEI 30.15.0 or newer is installed.
+JEI integration is optional and activates when the NeoForge build of JEI 31.3.0.17 or newer is installed.
 
-The normal NeoForge build targets 26.2.0.87 and retains 26.2.0.64 as its minimum compatible version. Other normal 1.5.5 releases target Forge 65.1.0 or newer and Fabric Loader 0.19.5 with Fabric API 0.158.0+26.2. The `1.5.5-LlaGuiT0-26.2.0.45` supporter build remains NeoForge-only and requires NeoForge `[26.2.0.45-beta,26.2.0.46-beta)`.
+Normal 1.5.6 releases target Minecraft 26.3 with Forge 66.0.2, NeoForge 26.3.0.7-beta, Fabric Loader 0.19.5, or Quilt Loader 0.30.1. Fabric and Quilt use Fabric API 0.161.0+26.3. The `1.5.5-LlaGuiT0-26.2.0.45` supporter build remains on Minecraft 26.2, NeoForge-only, and requires NeoForge `[26.2.0.45-beta,26.2.0.46-beta)`.
 
 ## Languages
 

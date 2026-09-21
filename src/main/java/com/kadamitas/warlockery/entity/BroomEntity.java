@@ -29,7 +29,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public final class BroomEntity extends VehicleEntity {
-    private final InterpolationHandler interpolation = new InterpolationHandler(this, 3);
     private FlyingBroomRules.ControlInput controlInput = FlyingBroomRules.ControlInput.IDLE;
     private long lastControlTick = Long.MIN_VALUE;
     private static final EntityDataAccessor<Boolean> DATA_GLIDING = SynchedEntityData.defineId(
@@ -62,7 +61,7 @@ public final class BroomEntity extends VehicleEntity {
     public void tick() {
         super.tick();
         if (level().isClientSide()) {
-            interpolation.interpolate();
+            getInterpolation().interpolate();
             return;
         }
         if (!(getControllingPassenger() instanceof ServerPlayer rider) || !rider.isAlive()) {
@@ -106,7 +105,7 @@ public final class BroomEntity extends VehicleEntity {
         applyEffectsFromBlocks();
         rider.resetFallDistance();
         resetFallDistance();
-        hurtMarked = true;
+        syncVelocity = true;
         if (tickCount % 20 == 0) {
             broom.hurtAndBreak(1, rider, preferredHand());
             setBroomStack(broom);
@@ -166,8 +165,8 @@ public final class BroomEntity extends VehicleEntity {
     }
 
     @Override
-    public InterpolationHandler getInterpolation() {
-        return interpolation;
+    protected InterpolationHandler createInterpolationHandler() {
+        return net.minecraft.world.entity.LinearInterpolationHandler.create(this, 3);
     }
 
     @Override
@@ -269,7 +268,7 @@ public final class BroomEntity extends VehicleEntity {
             if (rider.getInventory().add(broom)) {
                 return;
             }
-            rider.drop(broom, false);
+            rider.drop(broom, false, net.minecraft.util.Prediction.SERVER_ONLY);
             return;
         }
         if (level() instanceof ServerLevel serverLevel) {

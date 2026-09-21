@@ -4,7 +4,6 @@ import com.kadamitas.warlockery.block.entity.MagicMachineBlockEntity;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
 import com.kadamitas.warlockery.registry.ModSounds;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -38,7 +37,6 @@ import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import org.jspecify.annotations.Nullable;
 
 public final class MagicMachineBlock extends BaseEntityBlock {
-    public static final MapCodec<MagicMachineBlock> CODEC = simpleCodec(MagicMachineBlock::new);
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public MagicMachineBlock(final BlockBehaviour.Properties properties) {
@@ -50,11 +48,6 @@ public final class MagicMachineBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(final StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(LIT);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Override

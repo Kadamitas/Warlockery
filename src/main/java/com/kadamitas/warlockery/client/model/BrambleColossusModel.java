@@ -227,7 +227,7 @@ public final class BrambleColossusModel extends EntityModel<BrambleColossusModel
         state.leg = entity.presentationLeg();
         final BrambleColossusRules.Phase phase = entity.presentationPhase();
         state.displaying = phase == BrambleColossusRules.Phase.DISPLAY;
-        state.actionProgress = state.displaying ? 1.0F : entity.getAttackAnim(partialTicks);
+        state.actionProgress = state.displaying ? 1.0F : entity.getSwingAnimation(partialTicks);
     }
 
     public static final class State extends LivingEntityRenderState {

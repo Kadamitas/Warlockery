@@ -12,7 +12,7 @@ iconFile="warlockery-icon.png"
 iconBlur=false
 authors="Kadamitas"
 
-description='''A standalone ritual-magic mod for NeoForge and Minecraft 26.2.
+description='''A standalone ritual-magic mod for NeoForge and Minecraft 26.3.
 Warlockery includes data-driven circles and machines, magical plants, sympathetic magic,
 dolls, supernatural forms, creatures and bosses, goblin raids, peaceful travelling hobgoblins,
 silver-equipped Werewolf Hunters, and modern ore progression.'''
@@ -23,21 +23,21 @@ silver-equipped Werewolf Hunters, and modern ore progression.'''
 [[dependencies.warlockery]]
     modId="neoforge"
     type="required"
-    versionRange="[26.2.0.64,)"
+    versionRange="[26.3.0.7-beta,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.warlockery]]
     modId="jei"
     type="optional"
-    versionRange="[30.15.0,)"
+    versionRange="[31.3.0,)"
     ordering="AFTER"
     side="CLIENT"
 
 [[dependencies.warlockery]]
     modId="minecraft"
     type="required"
-    versionRange="[26.2,26.3)"
+    versionRange="[26.3,26.4)"
     ordering="NONE"
     side="BOTH"
 
@@ -51,7 +51,7 @@ silver-equipped Werewolf Hunters, and modern ore progression.'''
 [[dependencies.warlockery]]
     modId="rrv"
     type="optional"
-    versionRange="[8.10.4,)"
+    versionRange="[8.10.5,)"
     ordering="AFTER"
     side="CLIENT"
 

@@ -639,11 +639,11 @@ public final class CorpseRuntime {
                         counters.safeEntityVisits++;
                         if (entity != body && entity.canBeCollidedWith(body)) {
                             occupied[0] = true;
-                            return AbortableIterationConsumer.Continuation.ABORT;
+                            return net.minecraft.util.Continuation.ABORT;
                         }
                         return visited[0] >= CorpseRules.SAFE_ENTITY_VISITS_PER_CANDIDATE
-                            ? AbortableIterationConsumer.Continuation.ABORT
-                            : AbortableIterationConsumer.Continuation.CONTINUE;
+                            ? net.minecraft.util.Continuation.ABORT
+                            : net.minecraft.util.Continuation.CONTINUE;
                     });
                     searchVisits += visited[0];
                 } else {
@@ -914,7 +914,7 @@ public final class CorpseRuntime {
         }
         final float before = target.getHealth() + target.getAbsorptionAmount();
         counters.attackAttempts++;
-        body.swing(InteractionHand.MAIN_HAND);
+        body.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         final boolean hit = body.doHurtTarget(level, target);
         final float after = target.getHealth() + target.getAbsorptionAmount();
         if (CorpseRules.applySlowness(hit, before, after)) {
@@ -1105,7 +1105,7 @@ public final class CorpseRuntime {
         final List<CorpseRules.ItemCandidate> raw = new ArrayList<>(CorpseRules.MAX_ITEM_CANDIDATES);
         level.getEntities().get(EntityTypeTest.forClass(ItemEntity.class), box, item -> {
             if (!charge(level, CorpseRules.Work.ITEM_VISIT, 1)) {
-                return AbortableIterationConsumer.Continuation.ABORT;
+                return net.minecraft.util.Continuation.ABORT;
             }
             counters.itemCandidatesVisited++;
             raw.add(new CorpseRules.ItemCandidate(
@@ -1115,8 +1115,8 @@ public final class CorpseRuntime {
                 body.distanceToSqr(item)
             ));
             return raw.size() >= CorpseRules.MAX_ITEM_CANDIDATES
-                ? AbortableIterationConsumer.Continuation.ABORT
-                : AbortableIterationConsumer.Continuation.CONTINUE;
+                ? net.minecraft.util.Continuation.ABORT
+                : net.minecraft.util.Continuation.CONTINUE;
         });
         return CorpseRules.selectItem(raw);
     }

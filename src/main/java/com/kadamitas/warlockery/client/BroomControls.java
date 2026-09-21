@@ -8,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import org.lwjgl.glfw.GLFW;
 
 public final class BroomControls {
     private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(
@@ -16,7 +15,7 @@ public final class BroomControls {
     );
     private static final KeyMapping GLIDE = new KeyMapping(
         "key.warlockery.broom_glide",
-        GLFW.GLFW_KEY_LEFT_ALT,
+        com.mojang.blaze3d.platform.InputConstants.KEY_LALT,
         CATEGORY
     );
     private static ControlState lastState = ControlState.IDLE;

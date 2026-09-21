@@ -21,9 +21,8 @@ final class BiomeShiftRuntime {
         final List<ChunkAccess> chunks = BiomeShiftPlan.chunksAround(ChunkPos.containing(center), chunkRadius).stream()
             .map(position -> (ChunkAccess) level.getChunk(position.x(), position.z()))
             .toList();
-        final var sampler = level.getChunkSource().randomState().sampler();
         chunks.forEach(chunk -> {
-            chunk.fillBiomesFromNoise((_, _, _, _) -> target, sampler);
+            chunk.fillBiomesFromNoise((_, _, _) -> target);
             chunk.markUnsaved();
         });
         level.getChunkSource().chunkMap.resendBiomesForChunks(chunks);

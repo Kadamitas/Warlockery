@@ -59,7 +59,8 @@ public class MagicalPlantBlock extends BushBlock {
     }
 
     @Override
-    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+    public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state,
+        final net.minecraft.world.level.block.BonemealSource source) {
         if (!behavior.spreads()) {
             return false;
         }
@@ -73,7 +74,8 @@ public class MagicalPlantBlock extends BushBlock {
         final Level level,
         final RandomSource random,
         final BlockPos pos,
-        final BlockState state
+        final BlockState state,
+        final net.minecraft.world.level.block.BonemealSource source
     ) {
         return behavior.spreads();
     }
@@ -83,7 +85,8 @@ public class MagicalPlantBlock extends BushBlock {
         final ServerLevel level,
         final RandomSource random,
         final BlockPos pos,
-        final BlockState state
+        final BlockState state,
+        final net.minecraft.world.level.block.BonemealSource source
     ) {
         for (int attempt = 0; attempt < 8; attempt++) {
             if (trySpread(level, pos, random)) {

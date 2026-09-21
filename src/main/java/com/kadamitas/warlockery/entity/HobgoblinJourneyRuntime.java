@@ -1197,7 +1197,7 @@ public final class HobgoblinJourneyRuntime {
         }
         if (placed > 0) {
             consume(traveler, stack -> stack.is(ItemTags.DIRT), placed);
-            traveler.swing(InteractionHand.MAIN_HAND);
+            traveler.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
             traveler.journeyCounters().transactionsCommitted++;
         }
     }
@@ -1329,7 +1329,7 @@ public final class HobgoblinJourneyRuntime {
             removed++;
         }
         if (removed > 0) {
-            traveler.swing(InteractionHand.MAIN_HAND);
+            traveler.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         }
     }
 
@@ -1409,7 +1409,7 @@ public final class HobgoblinJourneyRuntime {
             cancelJob(traveler, level, "mining refused");
             return;
         }
-        traveler.swing(InteractionHand.MAIN_HAND);
+        traveler.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         state.spawnAfterBreak(level, position, tool, false);
         drops.forEach(stack -> Block.popResource(level, position, stack));
         if (HobgoblinMiningRules.findsGoblinite(profile, traveler.getRandom().nextFloat())) {
@@ -1563,12 +1563,12 @@ public final class HobgoblinJourneyRuntime {
             return false;
         }
         if (!player.addItem(gift)) {
-            player.drop(gift, false);
+            player.drop(gift, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
         child.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         child.setJourneyState(child.journeyState()
             .withChildGiftCooldown(HobgoblinJourneyRules.CHILD_GIFT_COOLDOWN_TICKS));
-        child.swing(InteractionHand.MAIN_HAND);
+        child.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         return true;
     }
 
@@ -1596,7 +1596,7 @@ public final class HobgoblinJourneyRuntime {
             return;
         }
         child.setItemSlot(EquipmentSlot.MAINHAND, flower);
-        child.swing(InteractionHand.MAIN_HAND);
+        child.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         child.journeyTransient().plan.flower = Optional.empty();
     }
 
@@ -1892,7 +1892,7 @@ public final class HobgoblinJourneyRuntime {
         }
         traveler.equipToolSlot(equipped);
         traveler.journeyTransient().miningCooldownTicks = 0;
-        traveler.swing(InteractionHand.MAIN_HAND);
+        traveler.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         if (!previous.isEmpty()) {
             traveler.spawnAtLocation(level, previous);
         }
@@ -2231,7 +2231,7 @@ public final class HobgoblinJourneyRuntime {
     }
 
     private static boolean standable(final ServerLevel level, final BlockPos position) {
-        return level.getBlockState(position.below()).blocksMotion()
+        return com.kadamitas.warlockery.util.BlockSupport.blocksMotion(level.getBlockState(position.below()))
             && level.getBlockState(position).getCollisionShape(level, position).isEmpty()
             && level.getBlockState(position.above()).getCollisionShape(level, position.above()).isEmpty()
             && level.getFluidState(position).isEmpty();

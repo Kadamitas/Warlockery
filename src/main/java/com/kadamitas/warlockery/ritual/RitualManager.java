@@ -1214,10 +1214,10 @@ public final class RitualManager extends SimpleJsonResourceReloadListener<Ritual
             final BlockState state = level.getBlockState(pos);
             if (!state.is(WarlockeryTags.Blocks.RITUAL_GROWABLES)
                 || !(state.getBlock() instanceof BonemealableBlock growable)
-                || !growable.isValidBonemealTarget(level, pos, state)) {
+                || !growable.isValidBonemealTarget(level, pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION)) {
                 return grew;
             }
-            growable.performBonemeal(level, level.getRandom(), pos, state);
+            growable.performBonemeal(level, level.getRandom(), pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION);
             grew = true;
         }
         return grew;

@@ -261,7 +261,7 @@ public final class EntModel extends EntityModel<EntModel.State> {
     ) {
         state.tint = entity.variant().tint();
         state.variant = entity.variant();
-        state.attackProgress = entity.getAttackAnim(partialTicks);
+        state.attackProgress = entity.getSwingAnimation(partialTicks);
         final EntRules.Phase phase = entity.presentationPhase();
         state.roused = phase == EntRules.Phase.ROUSED
             || phase == EntRules.Phase.WARN

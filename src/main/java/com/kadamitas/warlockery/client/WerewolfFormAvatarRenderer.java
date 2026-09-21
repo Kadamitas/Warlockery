@@ -72,8 +72,8 @@ public final class WerewolfFormAvatarRenderer extends LivingEntityRenderer<
     ) {
         poseStack.pushPose();
         poseStack.translate(arm == HumanoidArm.RIGHT ? -0.08F : 0.08F, -0.22F, -0.32F);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-18.0F));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(arm == HumanoidArm.RIGHT ? -8.0F : 8.0F));
+        poseStack.rotate(Axis.XP.rotationDegrees(-18.0F));
+        poseStack.rotate(Axis.ZP.rotationDegrees(arm == HumanoidArm.RIGHT ? -8.0F : 8.0F));
         poseStack.scale(0.72F, 0.72F, 0.72F);
         submitNodeCollector.submitModelPart(
             model.firstPersonArm(arm),

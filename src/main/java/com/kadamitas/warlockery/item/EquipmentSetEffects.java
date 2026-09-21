@@ -383,9 +383,7 @@ public final class EquipmentSetEffects {
         final boolean moved = player.randomTeleport(
             player.getX() + player.getRandom().nextIntBetweenInclusive(-8, 8),
             player.getY(),
-            player.getZ() + player.getRandom().nextIntBetweenInclusive(-8, 8),
-            true
-        );
+            player.getZ() + player.getRandom().nextIntBetweenInclusive(-8, 8), true, com.kadamitas.warlockery.util.BlockSupport.NO_ADDITIONAL_TELEPORT_AVOIDANCE);
         if (moved) {
             event.setNewDamage(0.0F);
         }
@@ -413,9 +411,9 @@ public final class EquipmentSetEffects {
             .forEach(pos -> {
                 final var state = level.getBlockState(pos);
                 final BonemealableBlock growable = (BonemealableBlock) state.getBlock();
-                if (growable.isValidBonemealTarget(level, pos, state)
-                    && growable.isBonemealSuccess(level, level.getRandom(), pos, state)) {
-                    growable.performBonemeal(level, level.getRandom(), pos, state);
+                if (growable.isValidBonemealTarget(level, pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION)
+                    && growable.isBonemealSuccess(level, level.getRandom(), pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION)) {
+                    growable.performBonemeal(level, level.getRandom(), pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION);
                 }
             });
     }

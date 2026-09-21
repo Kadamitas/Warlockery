@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import org.lwjgl.glfw.GLFW;
 
 public final class SupernaturalControls {
     private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(
@@ -15,12 +14,12 @@ public final class SupernaturalControls {
     );
     private static final KeyMapping CYCLE_POWER = new KeyMapping(
         "key.warlockery.cycle_power",
-        GLFW.GLFW_KEY_V,
+        com.mojang.blaze3d.platform.InputConstants.KEY_V,
         CATEGORY
     );
     private static final KeyMapping ACTIVATE_POWER = new KeyMapping(
         "key.warlockery.activate_power",
-        GLFW.GLFW_KEY_G,
+        com.mojang.blaze3d.platform.InputConstants.KEY_G,
         CATEGORY
     );
 

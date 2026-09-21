@@ -439,9 +439,7 @@ public final class MagicPathRuntime {
             case TELEPORT -> player.randomTeleport(
                 player.getX() + player.getRandom().nextIntBetweenInclusive(-16, 16),
                 player.getY(),
-                player.getZ() + player.getRandom().nextIntBetweenInclusive(-16, 16),
-                true
-            );
+                player.getZ() + player.getRandom().nextIntBetweenInclusive(-16, 16), true, com.kadamitas.warlockery.util.BlockSupport.NO_ADDITIONAL_TELEPORT_AVOIDANCE);
             case LEAPING -> effect(player, MobEffects.JUMP_BOOST, 600, 2);
             case FLIGHT -> effect(player, MobEffects.NIGHT_VISION, 400, 0);
             case AQUATIC -> infernalBlind(player);
@@ -462,7 +460,7 @@ public final class MagicPathRuntime {
         final Vec3 movement = player.getDeltaMovement();
         player.setDeltaMovement(movement.x, Math.max(0.2, movement.y), movement.z);
         player.resetFallDistance();
-        player.hurtMarked = true;
+        player.syncVelocity = true;
     }
 
     /**
@@ -725,8 +723,8 @@ public final class MagicPathRuntime {
             body -> {
                 raw.add(body);
                 return raw.size() >= 64
-                    ? net.minecraft.util.AbortableIterationConsumer.Continuation.ABORT
-                    : net.minecraft.util.AbortableIterationConsumer.Continuation.CONTINUE;
+                    ? net.minecraft.util.Continuation.ABORT
+                    : net.minecraft.util.Continuation.CONTINUE;
             }
         );
         return raw.stream()
@@ -1026,7 +1024,7 @@ public final class MagicPathRuntime {
             return fail(player, MagicPath.SKY, decision);
         }
         player.setDeltaMovement(player.getDeltaMovement().add(0.0, 1.1, 0.0));
-        player.hurtMarked = true;
+        player.syncVelocity = true;
         player.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 300, 0));
         return succeed(player, MagicPath.SKY, decision);
     }

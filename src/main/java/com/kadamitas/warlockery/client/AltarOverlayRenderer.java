@@ -134,8 +134,8 @@ public final class AltarOverlayRenderer implements BlockEntityRenderer<AltarBloc
             final Vec3 position = ATTACHMENT_POSITIONS.get(index);
             poseStack.pushPose();
             poseStack.translate((float) position.x, (float) position.y, (float) position.z);
-            poseStack.mulPose(Axis.YP.rotationDegrees(index * 90.0F));
-            poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+            poseStack.rotate(Axis.YP.rotationDegrees(index * 90.0F));
+            poseStack.rotate(Axis.XP.rotationDegrees(90.0F));
             poseStack.scale(0.38F, 0.38F, 0.38F);
             state.attachments.get(index).submit(
                 poseStack,

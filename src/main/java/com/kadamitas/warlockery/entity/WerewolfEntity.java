@@ -135,7 +135,7 @@ public class WerewolfEntity extends ArcaneMob {
             if (attackCooldown == 0 && lycan.isWithinMeleeAttackRange(target)
                 && lycan.getSensing().hasLineOfSight(target)) {
                 attackCooldown = adjustedTickDelay(20);
-                lycan.swing(InteractionHand.MAIN_HAND);
+                lycan.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
                 lycan.doHurtTarget((ServerLevel) lycan.level(), target);
             }
         }
