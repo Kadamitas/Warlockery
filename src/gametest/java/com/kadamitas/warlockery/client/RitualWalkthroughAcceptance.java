@@ -82,6 +82,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 selectedRituals = selectedRitualIds();
                 report.put("selected_ritual_ids", List.copyOf(selectedRituals));
                 if (selectedRituals.contains("cook_food")) {
+                System.out.println("WARLOCKERY_RITUAL_CASE_START cook_food");
                 final Map<String, Integer> glyphs = readGuide(context, SECTION);
                 checkBookLinks(context);
                 drawCircle(context, glyphs, "cook_food");
@@ -114,22 +115,30 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                 check(!serverValue(player -> RitualSessionData.get(player.level()).isActive(CENTER)),
                     "Ritual casting reaches completion");
                 checkAutomaticCompletion(context, castingScreen, "broiling");
-                check(serverValue(player -> dropped(player, Items.COOKED_BEEF).size()) == 1,
-                    "Real ritual action converts the natively dropped raw beef into cooked beef");
+                requireBoundOutput("cook_food", Items.COOKED_BEEF, 1, (player, stack) -> true,
+                    "Real ritual action produces exactly one cooked beef, on the ground or legitimately collected");
                 check(serverValue(player -> dropped(player, Items.BEEF).isEmpty() && dropped(player, Items.COAL).isEmpty()),
                     "Raw food is converted and the coal offering is consumed");
                 closeScreen(context);
-                screenshot(context, "broiling-cooked-beef-on-ground");
-                final Vec3 cookedPosition = serverValue(player -> dropped(player, Items.COOKED_BEEF).getFirst().position());
-                look(context, cookedPosition);
-                context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
-                try {
-                    context.waitFor(client -> client.player.getInventory().getNonEquipmentItems().stream()
-                        .anyMatch(stack -> stack.is(Items.COOKED_BEEF)), 100);
-                } finally {
-                    context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                screenshot(context, "broiling-output-before-collection");
+                final Vec3 cookedPosition = serverValue(player -> dropped(player, Items.COOKED_BEEF).stream()
+                    .findFirst().map(ItemEntity::position).orElse(null));
+                if (cookedPosition != null) {
+                    look(context, cookedPosition);
+                    context.getInput().holdKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                    try {
+                        context.waitFor(client -> client.player.getInventory().getNonEquipmentItems().stream()
+                            .anyMatch(stack -> stack.is(Items.COOKED_BEEF)), 100);
+                    } finally {
+                        context.getInput().releaseKey(com.mojang.blaze3d.platform.InputConstants.KEY_W);
+                    }
+                    checks.add("Native Begin Rite consumes Coal and converts Raw Beef; normal forward movement collects the Cooked Beef.");
+                } else {
+                    checks.add("Native Begin Rite consumes Coal and converts Raw Beef; ordinary pickup already collected the Cooked Beef before movement was needed.");
                 }
-                checks.add("Native Begin Rite starts the real cast, consumes one dropped Coal, converts dropped Raw Beef, and normal forward movement collects the Cooked Beef.");
+                check(serverValue(player -> player.getInventory().getNonEquipmentItems().stream()
+                    .filter(stack -> stack.is(Items.COOKED_BEEF)).mapToInt(ItemStack::getCount).sum()) == 1,
+                    "Exactly one cooked beef reaches the player's inventory");
                 screenshot(context, "broiling-output-collected");
                 passRitual("cook_food", "Native activation converted dropped raw beef and consumed coal.");
                 }
@@ -673,6 +682,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
             if (id.equals("cook_food") || !selectedRituals.contains(id)
                 || !implementedActions.contains(entry.definition().action())) continue;
             try {
+                System.out.println("WARLOCKERY_RITUAL_CASE_START " + id);
                 extraRite(context, id);
             } catch (Exception | Error failure) {
                 ritualResults.put(id, result("FAILED", failure.toString()));
@@ -701,6 +711,7 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
 
     private void passRitual(final String id, final String evidence) {
         ritualResults.put(id, result("PASSED", evidence));
+        System.out.println("WARLOCKERY_RITUAL_CASE_PASS " + id);
         try {
             writeReport();
         } catch (Exception failure) {
@@ -1257,9 +1268,12 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     CENTER.offset(-8, -8, -8), CENTER.offset(8, 8, 8))
                 .anyMatch(pos -> player.level().getBlockState(pos).is(Blocks.PACKED_ICE))),
                 "Icy Expansion creates a packed-ice shell");
-            case "transpose_ore" -> check(serverValue(player -> player.level().getBlockState(CENTER.offset(0, -3, 0)).is(Blocks.STONE)
-                    && !dropped(player, Items.IRON_ORE).isEmpty()),
-                "Ore transposition replaces staged ore with stone and drops it at the circle");
+            case "transpose_ore" -> {
+                check(serverValue(player -> player.level().getBlockState(CENTER.offset(0, -3, 0)).is(Blocks.STONE)),
+                    "Ore transposition replaces the staged ore block with stone");
+                requireBoundOutput(id, Items.IRON_ORE, 1, (player, stack) -> true,
+                    "relocates exactly one staged iron ore item to the circle or its collecting caster");
+            }
             case "hex" -> {
                 if (id.equals("corrupt_doll")) {
                     check(serverValue(player -> {
@@ -1286,49 +1300,53 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     instanceof net.minecraft.world.entity.LivingEntity living
                         && !com.kadamitas.warlockery.ritual.HexBehaviors.isActive(living, definition.target())),
                 id + " removes its exact persistent hex behavior from the bound victim");
-            case "bind_circle" -> check(serverValue(player ->
-                    dropped(player, ModItems.ALL.get("circletalisman").get()).stream()
-                        .map(ItemEntity::getItem).anyMatch(stack ->
-                            com.kadamitas.warlockery.item.CircleTalismanState.read(stack).isPresent())
-                    && BlockPos.betweenClosedStream(CENTER.offset(-6, -1, -6), CENTER.offset(6, 1, 6))
+            case "bind_circle" -> {
+                requireBoundOutput(id, ModItems.ALL.get("circletalisman").get(), 1,
+                    (player, stack) -> com.kadamitas.warlockery.item.CircleTalismanState.read(stack)
+                        .filter(circle -> circle.glyphs().size()
+                            == 1 + ChalkCircleLayout.canonicalGlyphs(definition.glyphs()).values().stream()
+                                .mapToInt(Integer::intValue).sum()).isPresent(),
+                    "preserves one talisman containing every drawn circle glyph");
+                check(serverValue(player -> BlockPos.betweenClosedStream(CENTER.offset(-6, -1, -6), CENTER.offset(6, 1, 6))
                         .noneMatch(pos -> player.level().getBlockState(pos)
                             .is(com.kadamitas.warlockery.registry.WarlockeryTags.Blocks.CHALK_GLYPHS))),
-                id + " stores the actual drawn circle in the talisman and removes its glyphs");
+                    id + " removes the captured circle's actual glyph blocks");
+            }
             case "bind_entity" -> {
                 if (definition.target().equals("spectral")) {
-                    check(serverValue(player -> dropped(player, ModItems.ALL.get("spectralstone").get()).stream()
-                            .map(ItemEntity::getItem)
-                            .anyMatch(stack -> !com.kadamitas.warlockery.item.SpectralStoneState.read(stack).captured().isEmpty())),
-                        "Spectral binding captures a live spectral creature in the preserved stone");
+                    requireBoundOutput(id, ModItems.ALL.get("spectralstone").get(), 1,
+                        (player, stack) -> com.kadamitas.warlockery.item.SpectralStoneState.read(stack).captured()
+                            .equals(List.of(net.minecraft.resources.Identifier.parse("warlockery:spirit"))),
+                        "preserves one stone containing exactly the staged spirit type");
+                    check(serverValue(player -> player.level().getEntity(actionTargets.get(id)) == null),
+                        "Spectral binding removes the actual captured spirit from the world");
                 } else {
                     check(serverValue(player -> player.level().getEntities(
                             (net.minecraft.world.entity.Entity) null, new AABB(CENTER).inflate(8), entity ->
                                 entity instanceof net.minecraft.world.entity.Mob
                                     && com.kadamitas.warlockery.entity.CreatureBehaviorState.isOwnedBy(entity, player.getUUID()))
                             .stream().anyMatch(entity -> entity.getType() == ModEntities.ALL.get("familiar_cat").get())),
-                        "Familiar binding replaces and binds the staged creature to the caster");
+                        "Familiar binding binds the staged creature to the caster");
                 }
             }
-            case "bind_fetish" -> check(serverValue(player -> dropped(player, targetItem(definition.target())).stream()
-                    .map(ItemEntity::getItem)
-                    .anyMatch(stack -> com.kadamitas.warlockery.block.FetishBindingState.read(stack).isPresent())),
-                id + " creates a fetish carrying the spectral-pattern mode");
-            case "bind_item" -> check(serverValue(player -> dropped(player, targetItem(definition.target())).stream()
-                    .map(ItemEntity::getItem).map(com.kadamitas.warlockery.item.SympatheticBinding::read)
-                    .flatMap(java.util.Optional::stream).anyMatch(binding -> binding.targets(player))),
-                id + " creates the declared item bound to the sampled player");
-            case "bind_waystone" -> check(serverValue(player -> dropped(
-                    player, ModItems.ALL.get("ingredient_waystone_bound").get()).stream()
-                    .map(ItemEntity::getItem).map(com.kadamitas.warlockery.item.WaystoneState::read)
-                    .flatMap(java.util.Optional::stream).anyMatch(location -> location.position().equals(CENTER)
-                        && location.dimension().equals(player.level().dimension().identifier()))),
-                id + " transforms the blank waystone into a live binding to the circle");
-            case "copy_waystone" -> check(serverValue(player -> dropped(
-                    player, ModItems.ALL.get("ingredient_waystone_bound").get()).stream()
-                    .map(ItemEntity::getItem).map(com.kadamitas.warlockery.item.WaystoneState::read)
-                    .flatMap(java.util.Optional::stream)
-                    .filter(location -> location.position().equals(CENTER.offset(12, 0, 0))).count() >= 2),
-                id + " copies the source location into the blank waystone");
+            case "bind_fetish" -> requireBoundOutput(id, targetItem(definition.target()), 1,
+                (player, stack) -> com.kadamitas.warlockery.block.FetishBindingState.read(stack)
+                    .orElse(null) == com.kadamitas.warlockery.block.FetishMode.GHOST_WALKING,
+                "creates exactly one fetish with the staged spectral pattern's Ghost Walking mode");
+            case "bind_item" -> requireBoundOutput(id, targetItem(definition.target()), Math.clamp(definition.count(), 1, 64),
+                (player, stack) -> com.kadamitas.warlockery.item.SympatheticBinding.read(stack)
+                    .filter(binding -> binding.equals(com.kadamitas.warlockery.item.SympatheticBinding.from(player))).isPresent(),
+                "creates the exact declared quantity bound to the sampled player's UUID, name and type");
+            case "bind_waystone" -> requireBoundOutput(id, ModItems.ALL.get("ingredient_waystone_bound").get(), 1,
+                (player, stack) -> com.kadamitas.warlockery.item.WaystoneState.read(stack)
+                    .filter(location -> location.position().equals(CENTER)
+                        && location.dimension().equals(player.level().dimension().identifier())).isPresent(),
+                "transforms exactly one blank waystone into a live binding to the circle");
+            case "copy_waystone" -> requireBoundOutput(id, ModItems.ALL.get("ingredient_waystone_bound").get(), 2,
+                (player, stack) -> com.kadamitas.warlockery.item.WaystoneState.read(stack)
+                    .filter(location -> location.position().equals(CENTER.offset(12, 0, 0))
+                        && location.dimension().equals(player.level().dimension().identifier())).isPresent(),
+                "preserves the source and copies its exact dimension and position into one blank waystone");
             case "teleport_waystone" -> check(serverValue(player ->
                     player.distanceToSqr(Vec3.atBottomCenterOf(CENTER.offset(12, 1, 0))) < 0.01),
                 "Waystone teleport moves the real caster to the recorded destination");
@@ -1340,34 +1358,43 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
                     com.kadamitas.warlockery.transformation.SupernaturalState.getForm(player)
                         == com.kadamitas.warlockery.transformation.SupernaturalForm.NONE),
                 id + " cures the staged supernatural form");
-            case "marriage" -> check(serverValue(player -> {
+            case "marriage" -> {
+                check(serverValue(player -> {
                     final var bond = com.kadamitas.warlockery.ritual.marriage.MarriageData.get(player.level())
                         .bond(player.getUUID());
                     return bond.isPresent() && bond.orElseThrow().isNami()
                         && bond.orElseThrow().partnerUuid().equals(actionTargets.get(id))
                         && player.level().getEntity(actionTargets.get(id)) instanceof com.kadamitas.warlockery.entity.NamiEntity nami
                         && com.kadamitas.warlockery.entity.CreatureBehaviorState.isOwnedBy(nami, player.getUUID())
-                        && nami.getName().getString().equals(bond.orElseThrow().spouseName())
-                        && dropped(player, ModItems.ALL.get("wedding_ring").get()).stream()
-                            .map(ItemEntity::getItem).anyMatch(stack -> stack.getOrDefault(
-                                net.minecraft.core.component.DataComponents.LORE,
-                                net.minecraft.world.item.component.ItemLore.EMPTY).lines().stream()
-                                .map(Component::getString).anyMatch(line -> line.contains(player.getDisplayName().getString())
-                                    && line.contains(bond.orElseThrow().spouseName())));
-                }), "Marriage creates a persistent Nami bond and writes the couple onto a preserved wedding ring");
+                        && nami.getName().getString().equals(bond.orElseThrow().spouseName());
+                }), "Marriage creates a persistent bond with the exact staged Nami partner");
+                requireBoundOutput(id, ModItems.ALL.get("wedding_ring").get(), 1,
+                    (player, stack) -> com.kadamitas.warlockery.ritual.marriage.MarriageData.get(player.level())
+                        .bond(player.getUUID()).map(bond -> stack.getOrDefault(
+                            net.minecraft.core.component.DataComponents.LORE,
+                            net.minecraft.world.item.component.ItemLore.EMPTY).lines().stream()
+                            .map(Component::getString).anyMatch(line -> line.contains(player.getDisplayName().getString())
+                                && line.contains(bond.spouseName()))).orElse(false),
+                    "preserves exactly one wedding ring bearing both the caster and spouse names");
+            }
             case "divorce" -> check(serverValue(player ->
                     !com.kadamitas.warlockery.ritual.marriage.MarriageData.get(player.level())
                         .isMarried(player.getUUID())),
                 "Divorce removes the caster's staged Nami marriage");
-            case "prior_incarnation" -> check(serverValue(player -> {
+            case "prior_incarnation" -> {
+                check(serverValue(player -> {
                     final var lost = player.level().getEntity(actionTargets.get(id));
                     return (lost == null || !lost.isAlive())
                         && com.kadamitas.warlockery.ritual.PriorIncarnationData.get(player.level())
                             .find(player.getUUID()).isEmpty()
-                        && dropped(player, Items.DIAMOND).stream().anyMatch(drop ->
-                            drop.distanceToSqr(Vec3.atBottomCenterOf(CENTER)) < 36.0
-                                && drop.getItem().getCount() == 2);
-                }), "Prior Incarnation relocates the exact recorded death drop to the circle");
+                        && dropped(player, Items.DIAMOND).stream().allMatch(drop ->
+                            drop.distanceToSqr(Vec3.atBottomCenterOf(CENTER)) < 36.0)
+                        && (player.getInventory().getNonEquipmentItems().stream().noneMatch(stack -> stack.is(Items.DIAMOND))
+                            || player.distanceToSqr(Vec3.atBottomCenterOf(CENTER)) < 36.0);
+                }), "Prior Incarnation removes the original death drop and record; recovered items or their collecting caster remain within six blocks of the circle");
+                requireBoundOutput(id, Items.DIAMOND, 2, (player, stack) -> true,
+                    "recovers exactly the two recorded diamonds at the circle, including legitimate caster pickup");
+            }
             case "summon_huntsman" -> check(serverValue(player ->
                     !targetEntities(player, definition.target()).isEmpty()
                         && com.kadamitas.warlockery.ritual.HuntsmanSummoningStructure.positions(CENTER).stream()
@@ -1586,8 +1613,15 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         final List<OfferingEvidence> offerings
     ) {
         offerings.forEach(offering -> {
-            final int remaining = serverValue(player -> dropped(player, offering.item()).stream()
-                .mapToInt(entity -> entity.getItem().getCount()).sum());
+            // These preserved offerings become validated outputs in assertActionOutcome.
+            // Normal pickup after casting must not make an intact output appear consumed.
+            final boolean preservedOutput = !offering.consume() && (
+                (definition.action().equals("bind_circle") && offering.item() == ModItems.ALL.get("circletalisman").get())
+                || (definition.action().equals("bind_entity") && definition.target().equals("spectral")
+                    && offering.item() == ModItems.ALL.get("spectralstone").get())
+                || (definition.action().equals("marriage") && offering.item() == ModItems.ALL.get("wedding_ring").get()));
+            final int remaining = serverValue(player -> preservedOutput ? outputItemCount(player, offering.item())
+                : dropped(player, offering.item()).stream().mapToInt(entity -> entity.getItem().getCount()).sum());
             final boolean transformedOutput = offering.consume()
                 && (definition.action().equals("bind_fetish") || definition.action().equals("bind_item"))
                 && offering.item() == targetItem(definition.target());
@@ -1877,6 +1911,27 @@ public final class RitualWalkthroughAcceptance implements FabricClientGameTest {
         return dropped(player, item).stream().mapToInt(entity -> entity.getItem().getCount()).sum()
             + player.getInventory().getNonEquipmentItems().stream().filter(stack -> stack.is(item))
                 .mapToInt(ItemStack::getCount).sum();
+    }
+
+    private void requireBoundOutput(final String id, final net.minecraft.world.item.Item item, final int expected,
+                                    final java.util.function.BiPredicate<ServerPlayer, ItemStack> matches,
+                                    final String description) {
+        final Map<String, Integer> observed = serverValue(player -> {
+            final var onGround = dropped(player, item).stream().map(ItemEntity::getItem).toList();
+            final var inInventory = player.getInventory().getNonEquipmentItems().stream()
+                .filter(stack -> stack.is(item)).toList();
+            return Map.of(
+                "dropped", onGround.stream().mapToInt(ItemStack::getCount).sum(),
+                "inventory", inInventory.stream().mapToInt(ItemStack::getCount).sum(),
+                "matching", java.util.stream.Stream.concat(onGround.stream(), inInventory.stream())
+                    .filter(stack -> matches.test(player, stack)).mapToInt(ItemStack::getCount).sum());
+        });
+        report.put(id + "_bound_output_observation", observed);
+        // The live casting screen does not pause pickup or merging. Observe actual
+        // item quantities in both legitimate locations; never create or move output.
+        check(observed.get("dropped") + observed.get("inventory") == expected
+                && observed.get("matching") == expected,
+            id + " " + description + ": expected=" + expected + ", observed=" + observed);
     }
 
     private static List<ItemEntity> dropped(final ServerPlayer player, final net.minecraft.world.item.Item item) {
