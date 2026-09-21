@@ -296,7 +296,10 @@ public final class AnimalFamiliarGameTests {
             // the two claims is each species' own footing and predicate.
             fixture.floor(0, 2, 0, 2);
             fixture.placeBlock(new BlockPos(1, 3, 1), Blocks.OAK_LOG);
-            fixture.placeBlock(new BlockPos(2, 2, 1), Blocks.OAK_LEAVES);
+            // A placed canopy, not a naturally decaying leaf: the diagonal owl log does not
+            // connect this leaf to a trunk, so random leaf decay would remove the test's shelter.
+            fixture.placeBlock(new BlockPos(2, 2, 1), Blocks.OAK_LEAVES.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true));
             fixture.placeBlock(new BlockPos(0, 1, 1), Blocks.WATER);
             helper.setTime(6_000L);
 
@@ -307,6 +310,8 @@ public final class AnimalFamiliarGameTests {
 
             helper.runAfterDelay(25L, () -> {
                 try {
+                    helper.assertTrue(helper.getBlockState(new BlockPos(2, 2, 1)).is(Blocks.OAK_LEAVES),
+                        "the fixture's persistent canopy must remain above the toad's shelter");
                     final AnimalFamiliarState owlState = owl.familiarState();
                     final AnimalFamiliarState toadState = toad.familiarState();
                     helper.assertTrue(owlState.home().isPresent(),
@@ -1131,7 +1136,8 @@ public final class AnimalFamiliarGameTests {
             // The toad's shelter: cover overhead AND standing water in reach. The leaves are in the
             // owl's perch tag as well as the toad's, on purpose, so the only thing separating the
             // two answers at this position is the clearance an owl needs and a toad does not.
-            fixture.placeBlock(new BlockPos(1, 2, 2), Blocks.OAK_LEAVES);
+            fixture.placeBlock(new BlockPos(1, 2, 2), Blocks.OAK_LEAVES.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true));
             fixture.placeBlock(new BlockPos(0, 1, 2), Blocks.WATER);
             final BlockPos underTheLeaves = helper.absolutePos(new BlockPos(1, 1, 2));
             helper.assertTrue(AnimalFamiliarRuntime.qualifiesAsHome(AnimalFamiliarSpecies.TOAD,
@@ -1293,8 +1299,12 @@ public final class AnimalFamiliarGameTests {
         }
 
         private void placeBlock(final BlockPos position, final net.minecraft.world.level.block.Block block) {
+            placeBlock(position, block.defaultBlockState());
+        }
+
+        private void placeBlock(final BlockPos position, final BlockState state) {
             final BlockState previous = helper.getBlockState(position);
-            helper.setBlock(position, block.defaultBlockState());
+            helper.setBlock(position, state);
             cleanupActions.add(() -> helper.setBlock(position, previous));
         }
 
