@@ -6,26 +6,29 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "warlockery:snowdoubleslab",
+          "modifier": [
             {
-              "function": "minecraft:set_count",
-              "conditions": [
-                {
-                  "condition": "minecraft:block_state_property",
-                  "block": "warlockery:snowdoubleslab",
-                  "properties": {
-                    "type": "double"
-                  }
-                }
-              ],
               "count": 2.0,
-              "add": false
+              "add": false,
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
+                  {
+                    "type": "minecraft:match_block",
+                    "blocks": "warlockery:snowdoubleslab",
+                    "state": {
+                      "type": "double"
+                    }
+                  }
+                ]
+              },
+              "type": "minecraft:set_count"
             },
             {
-              "function": "minecraft:explosion_decay"
+              "type": "minecraft:explosion_decay"
             }
-          ],
-          "name": "warlockery:snowdoubleslab"
+          ]
         }
       ],
       "rolls": 1.0

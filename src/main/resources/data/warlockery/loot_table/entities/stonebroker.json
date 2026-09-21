@@ -9,24 +9,28 @@
         }
       ],
       "rolls": 1,
-      "conditions": [
-        {
-          "condition": "minecraft:killed_by_player"
-        }
-      ]
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:killed_by_player"
+          }
+        ]
+      }
     },
     {
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "warlockery:ingredient_delvealloynugget",
+          "modifier": [
             {
               "count": {
                 "type": "minecraft:uniform",
                 "max": 3,
                 "min": 1
               },
-              "function": "minecraft:set_count"
+              "type": "minecraft:set_count"
             },
             {
               "count": {
@@ -35,18 +39,20 @@
                 "min": 0
               },
               "enchantment": "minecraft:looting",
-              "function": "minecraft:enchanted_count_increase"
+              "type": "minecraft:enchanted_count_increase"
             }
-          ],
-          "name": "warlockery:ingredient_delvealloynugget"
+          ]
         }
       ],
       "rolls": 1,
-      "conditions": [
-        {
-          "condition": "minecraft:killed_by_player"
-        }
-      ]
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:killed_by_player"
+          }
+        ]
+      }
     }
   ],
   "random_sequence": "warlockery:entities/stonebroker"

@@ -91,7 +91,7 @@ final class ResourceAcquisitionResourcesTest {
     Stream<DynamicTest> everyCropUsesMaturityAndFortune() {
         return FORTUNE_CROPS.stream().map(id -> DynamicTest.dynamicTest(id, () -> {
             final String json = readString(BLOCK_LOOT.resolve(id + ".json"));
-            assertTrue(json.contains("minecraft:block_state_property"));
+            assertTrue(json.contains("minecraft:match_block"));
             assertTrue(json.contains("\"age\": \"7\""));
             assertTrue(json.contains("minecraft:fortune"));
             assertTrue(json.contains("minecraft:explosion_decay"));

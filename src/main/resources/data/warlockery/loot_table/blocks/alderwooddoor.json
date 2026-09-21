@@ -3,22 +3,25 @@
   "pools": [
     {
       "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "condition": "minecraft:block_state_property",
-          "block": "warlockery:alderwooddoor",
-          "properties": {
-            "half": "lower"
-          }
-        }
-      ],
       "entries": [
         {
           "type": "minecraft:item",
           "name": "warlockery:alderwooddoor"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1.0,
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:match_block",
+            "blocks": "warlockery:alderwooddoor",
+            "state": {
+              "half": "lower"
+            }
+          }
+        ]
+      }
     }
   ],
   "random_sequence": "warlockery:blocks/alderwooddoor"

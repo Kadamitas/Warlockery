@@ -1,71 +1,109 @@
 {
-    "type":  "minecraft:block",
-    "pools":  [
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "name": "warlockery:dream_weaver_fasting",
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
                   {
-                      "rolls":  1,
-                      "bonus_rolls":  0,
-                      "entries":  [
-                                      {
-                                          "type": "minecraft:alternatives",
-                                          "children": [
-                                              {
-                                                  "type": "minecraft:item",
-                                                  "name": "warlockery:dream_weaver_fasting",
-                                                  "conditions": [{
-                                                      "condition": "minecraft:block_state_property",
-                                                      "block": "warlockery:dreamcatcher",
-                                                      "properties": {"mode": "fasting"}
-                                                  }]
-                                              },
-                                              {
-                                                  "type": "minecraft:item",
-                                                  "name": "warlockery:dream_weaver_fleet_foot",
-                                                  "conditions": [{
-                                                      "condition": "minecraft:block_state_property",
-                                                      "block": "warlockery:dreamcatcher",
-                                                      "properties": {"mode": "fleet_foot"}
-                                                  }]
-                                              },
-                                              {
-                                                  "type": "minecraft:item",
-                                                  "name": "warlockery:dream_weaver_intensity",
-                                                  "conditions": [{
-                                                      "condition": "minecraft:block_state_property",
-                                                      "block": "warlockery:dreamcatcher",
-                                                      "properties": {"mode": "intensity"}
-                                                  }]
-                                              },
-                                              {
-                                                  "type": "minecraft:item",
-                                                  "name": "warlockery:dream_weaver_iron_arm",
-                                                  "conditions": [{
-                                                      "condition": "minecraft:block_state_property",
-                                                      "block": "warlockery:dreamcatcher",
-                                                      "properties": {"mode": "iron_arm"}
-                                                  }]
-                                              },
-                                              {
-                                                  "type": "minecraft:item",
-                                                  "name": "warlockery:dream_weaver_nightmares",
-                                                  "conditions": [{
-                                                      "condition": "minecraft:block_state_property",
-                                                      "block": "warlockery:dreamcatcher",
-                                                      "properties": {"mode": "nightmares"}
-                                                  }]
-                                              },
-                                              {
-                                                  "type": "minecraft:item",
-                                                  "name": "warlockery:dreamcatcher"
-                                              }
-                                          ]
-                                      }
-                                  ],
-                      "conditions":  [
-                                         {
-                                             "condition":  "minecraft:survives_explosion"
-                                         }
-                                     ]
+                    "type": "minecraft:match_block",
+                    "blocks": "warlockery:dreamcatcher",
+                    "state": {
+                      "mode": "fasting"
+                    }
                   }
-              ],
-    "random_sequence":  "warlockery:blocks/dreamcatcher"
+                ]
+              }
+            },
+            {
+              "type": "minecraft:item",
+              "name": "warlockery:dream_weaver_fleet_foot",
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
+                  {
+                    "type": "minecraft:match_block",
+                    "blocks": "warlockery:dreamcatcher",
+                    "state": {
+                      "mode": "fleet_foot"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "minecraft:item",
+              "name": "warlockery:dream_weaver_intensity",
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
+                  {
+                    "type": "minecraft:match_block",
+                    "blocks": "warlockery:dreamcatcher",
+                    "state": {
+                      "mode": "intensity"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "minecraft:item",
+              "name": "warlockery:dream_weaver_iron_arm",
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
+                  {
+                    "type": "minecraft:match_block",
+                    "blocks": "warlockery:dreamcatcher",
+                    "state": {
+                      "mode": "iron_arm"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "minecraft:item",
+              "name": "warlockery:dream_weaver_nightmares",
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
+                  {
+                    "type": "minecraft:match_block",
+                    "blocks": "warlockery:dreamcatcher",
+                    "state": {
+                      "mode": "nightmares"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "minecraft:item",
+              "name": "warlockery:dreamcatcher"
+            }
+          ]
+        }
+      ],
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:survives_explosion"
+          }
+        ]
+      }
+    }
+  ],
+  "random_sequence": "warlockery:blocks/dreamcatcher"
 }

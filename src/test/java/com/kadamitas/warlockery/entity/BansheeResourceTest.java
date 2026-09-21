@@ -76,7 +76,7 @@ final class BansheeResourceTest {
         final JsonObject pool = loot.getAsJsonArray("pools").get(0).getAsJsonObject();
         assertEquals("warlockery:ingredient_spectral_dust",
             pool.getAsJsonArray("entries").get(0).getAsJsonObject().get("name").getAsString());
-        assertTrue(pool.getAsJsonArray("conditions").toString().contains("killed_by_player"));
+        assertTrue(pool.getAsJsonObject("condition").toString().contains("killed_by_player"));
         assertTagContains(DATA.resolve("tags").resolve("entity_type").resolve("spectral.json"),
             "warlockery:banshee");
         assertTagContains(DATA.resolve("tags").resolve("entity_type").resolve("reagent_sources.json"),
