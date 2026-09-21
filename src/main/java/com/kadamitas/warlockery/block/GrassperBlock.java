@@ -131,14 +131,15 @@ public final class GrassperBlock extends BushBlock {
 
     @Override
     public void playerDestroy(
-        final Level level,
-        final Player player,
+        final net.minecraft.server.level.ServerLevel level,
+        final net.minecraft.server.level.ServerPlayer player,
         final BlockPos pos,
         final BlockState state,
         final @Nullable BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
-        if (level instanceof ServerLevel serverLevel) {
+        final var serverLevel = level;
+        {
             storedDisplay(serverLevel, pos).ifPresent(display -> {
                 Block.popResource(level, pos, display.getSlot(0).get());
                 display.discard();

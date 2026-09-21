@@ -188,17 +188,14 @@ public final class StatueBlock extends Block {
 
     @Override
     public void playerDestroy(
-        final Level level,
-        final Player player,
+        final net.minecraft.server.level.ServerLevel level,
+        final net.minecraft.server.level.ServerPlayer player,
         final BlockPos pos,
         final BlockState state,
         final net.minecraft.world.level.block.entity.BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
-        if (!(level instanceof ServerLevel serverLevel)) {
-            super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
-            return;
-        }
+        final var serverLevel = level;
         if (StatueWardData.WardKind.forProfile(profile).isPresent()) {
             StatueWardData.get(serverLevel).remove(pos);
             super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);

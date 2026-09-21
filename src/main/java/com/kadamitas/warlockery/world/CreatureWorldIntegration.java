@@ -460,7 +460,7 @@ public final class CreatureWorldIntegration {
             if (!level.hasChunkAt(candidate)) continue;
             readBudget[0] -= 3;
             final BlockPos site = surface(level, candidate);
-            if (level.getBlockState(site.below()).blocksMotion()
+            if (com.kadamitas.warlockery.util.BlockSupport.blocksMotion(level.getBlockState(site.below()))
                 && level.getBlockState(site).getCollisionShape(level, site).isEmpty()
                 && level.getBlockState(site.above()).getCollisionShape(level, site.above()).isEmpty()) {
                 return Optional.of(site);
@@ -483,8 +483,8 @@ public final class CreatureWorldIntegration {
         level.getEntities().get(EntityTypeTest.forClass(WerewolfEntity.class), bounds, candidate -> {
             rawLycans.add(candidate);
             return rawLycans.size() >= MAX_RAW_ARMING_VISITS
-                ? AbortableIterationConsumer.Continuation.ABORT
-                : AbortableIterationConsumer.Continuation.CONTINUE;
+                ? net.minecraft.util.Continuation.ABORT
+                : net.minecraft.util.Continuation.CONTINUE;
         });
         final List<WerewolfEntity> retainedLycans = rawLycans.stream()
             .filter(LivingEntity::isAlive)
@@ -499,8 +499,8 @@ public final class CreatureWorldIntegration {
         level.getEntities().get(EntityTypeTest.forClass(Pillager.class), bounds, candidate -> {
             rawPillagers.add(candidate);
             return rawPillagers.size() >= MAX_RAW_ARMING_VISITS
-                ? AbortableIterationConsumer.Continuation.ABORT
-                : AbortableIterationConsumer.Continuation.CONTINUE;
+                ? net.minecraft.util.Continuation.ABORT
+                : net.minecraft.util.Continuation.CONTINUE;
         });
         final List<Pillager> retainedPillagers = rawPillagers.stream()
             .filter(LivingEntity::isAlive)

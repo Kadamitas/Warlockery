@@ -184,11 +184,11 @@ public final class ThornedPursuerRuntime {
             final boolean[] occupied = {false};
             final int[] candidateVisits = {0};
             level.getEntities().get(EntityTypeTest.forClass(Entity.class), moved, entity -> {
-                if (!claim(level, ThornedPursuerRules.Work.SAFE_ENTITY_VISIT)) return AbortableIterationConsumer.Continuation.ABORT;
+                if (!claim(level, ThornedPursuerRules.Work.SAFE_ENTITY_VISIT)) return net.minecraft.util.Continuation.ABORT;
                 candidateVisits[0]++; pursuer.pursuerCounters().safeEntityVisits++;
                 if (entity != pursuer) occupied[0] = true;
                 return occupied[0] || candidateVisits[0] >= 8
-                    ? AbortableIterationConsumer.Continuation.ABORT : AbortableIterationConsumer.Continuation.CONTINUE;
+                    ? net.minecraft.util.Continuation.ABORT : net.minecraft.util.Continuation.CONTINUE;
             });
             totalEntityVisits += candidateVisits[0];
             if (totalEntityVisits > 32) break;
@@ -536,12 +536,12 @@ public final class ThornedPursuerRuntime {
             final int[] visits = {0};
             level.getEntities().get(EntityTypeTest.forClass(Entity.class), wolf.getBoundingBox(), entity -> {
                 if (!claim(level, ThornedPursuerRules.Work.SAFE_ENTITY_VISIT))
-                    return AbortableIterationConsumer.Continuation.ABORT;
+                    return net.minecraft.util.Continuation.ABORT;
                 visits[0]++;
                 if (entity != pursuer && entity.canBeCollidedWith(wolf)) occupied[0] = true;
                 return occupied[0] || visits[0] >= 8
-                    ? AbortableIterationConsumer.Continuation.ABORT
-                    : AbortableIterationConsumer.Continuation.CONTINUE;
+                    ? net.minecraft.util.Continuation.ABORT
+                    : net.minecraft.util.Continuation.CONTINUE;
             });
             if (!haloLoaded || !blocks.withinContract()
                 || !level.getWorldBorder().isWithinBounds(position)

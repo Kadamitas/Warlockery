@@ -173,7 +173,7 @@ public final class EldritchWatcherGameTests {
             }
             final Zombie attacker = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(0, 1, 2), EntitySpawnReason.EVENT);
             attacker.setNoAi(true);
-            watcher.invulnerableTime = 0;
+            watcher.setInvulnerableTime(0);
             helper.assertTrue(watcher.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 1.0F
             ), "the warning fixture needs one real accepted hit");
@@ -217,7 +217,7 @@ public final class EldritchWatcherGameTests {
             EldritchWatcherRuntime.tick(guard, helper.getLevel());
             helper.assertTrue(CreatureBehaviorState.bind(guard, ownerStandIn.getUUID()),
                 "the guard fixture binds the Watcher to a present living owner");
-            ownerStandIn.invulnerableTime = 0;
+            ownerStandIn.setInvulnerableTime(0);
             helper.assertTrue(ownerStandIn.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(attacker), 1.0F
             ), "the guard fixture needs one real accepted hit on the owner");

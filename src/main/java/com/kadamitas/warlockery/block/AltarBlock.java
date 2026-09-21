@@ -4,7 +4,6 @@ import com.kadamitas.warlockery.block.entity.AltarBlockEntity;
 import com.kadamitas.warlockery.item.AttunedStoneItem;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
 import com.kadamitas.warlockery.registry.ModSounds;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import java.util.Map;
@@ -37,7 +36,6 @@ import net.minecraft.sounds.SoundSource;
 import org.jspecify.annotations.Nullable;
 
 public final class AltarBlock extends BaseEntityBlock {
-    public static final MapCodec<AltarBlock> CODEC = simpleCodec(AltarBlock::new);
 
     public static final BooleanProperty NORTH = BlockStateProperties.NORTH;
     public static final BooleanProperty EAST = BlockStateProperties.EAST;
@@ -107,11 +105,6 @@ public final class AltarBlock extends BaseEntityBlock {
             mirrored = mirrored.setValue(CONNECTIONS.get(mirror.mirror(entry.getKey())), state.getValue(entry.getValue()));
         }
         return mirrored;
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Override

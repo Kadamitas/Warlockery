@@ -29,7 +29,7 @@ public final class SpiritWorldGameTests {
 
     public static void entryCreatesStateBodyAndDiagnostic(final GameTestHelper helper) {
         final ServerPlayer player = connectedSurvivalPlayer(helper);
-        player.setInvulnerable(true);
+        player.setPermanentlyInvulnerable(true);
         final ServerLevel source = player.level();
         final int initialTicks = player.tickCount;
         final SpiritWorldRuntime.EntryResult entry = SpiritWorldRuntime.enter(player, false);
@@ -54,7 +54,7 @@ public final class SpiritWorldGameTests {
             "second entry diagnostic"
         );
         final ServerPlayer second = connectedSurvivalPlayer(helper);
-        second.setInvulnerable(true);
+        second.setPermanentlyInvulnerable(true);
         second.teleportTo(session.sourceX() + 0.25, session.sourceY(), session.sourceZ());
         final int secondInitialTicks = second.tickCount;
         helper.assertTrue(SpiritWorldRuntime.enter(second, false).entered(), "second dreamer must enter");
@@ -374,7 +374,7 @@ public final class SpiritWorldGameTests {
         player.getInventory().setItem(0, new ItemStack(cotton, 3));
         player.getInventory().setItem(1, new ItemStack(Items.DIAMOND, 4));
         SpiritWorldRuntime.beginExternalExit(player);
-        final var dropped = player.drop(player.getInventory().getItem(0).split(1), false);
+        final var dropped = player.drop(player.getInventory().getItem(0).split(1), false, net.minecraft.util.Prediction.SERVER_ONLY);
         player.getInventory().getItem(0).shrink(1);
         player.getInventory().setItem(2, new ItemStack(Items.STICK, 2));
         SpiritWorldRuntime.finishExternalTransfer(player, false);
@@ -439,7 +439,7 @@ public final class SpiritWorldGameTests {
         final ServerPlayer player = connectedSurvivalPlayer(helper);
         helper.assertTrue(SpiritWorldRuntime.enter(player, false).entered(), "dream entry must succeed");
         player.setHealth(4.0F);
-        player.invulnerableTime = 0;
+        player.setInvulnerableTime(0);
         player.hurtServer(player.level(), player.damageSources().magic(), 20.0F);
         helper.runAfterDelay(3, () -> {
             helper.assertFalse(SpiritWorldRuntime.isDreaming(player), "fatal dream damage must wake the player");

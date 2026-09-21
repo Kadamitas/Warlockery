@@ -92,10 +92,10 @@ final class PlantMineEffects {
                 if (PlantMineRules.canGrowVegetation(
                     state.is(WarlockeryTags.Blocks.PLANT_MINE_GROWABLES),
                     true,
-                    growable.isValidBonemealTarget(level, pos, state),
-                    growable.isBonemealSuccess(level, level.getRandom(), pos, state)
+                    growable.isValidBonemealTarget(level, pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION),
+                    growable.isBonemealSuccess(level, level.getRandom(), pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION)
                 )) {
-                    growable.performBonemeal(level, level.getRandom(), pos, state);
+                    growable.performBonemeal(level, level.getRandom(), pos, state, net.minecraft.world.level.block.BonemealSource.INTERACTION);
                     grown++;
                 }
             }

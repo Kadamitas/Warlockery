@@ -292,7 +292,7 @@ public final class SupernaturalAdvancement {
 
     private static void grantOrDrop(final Player player, final ItemStack reward) {
         if (!player.getInventory().add(reward)) {
-            player.drop(reward, false);
+            player.drop(reward, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
     }
 

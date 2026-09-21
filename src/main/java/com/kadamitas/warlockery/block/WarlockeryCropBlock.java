@@ -29,14 +29,15 @@ public final class WarlockeryCropBlock extends CropBlock {
 
     @Override
     public void playerDestroy(
-        final Level level,
-        final Player player,
+        final net.minecraft.server.level.ServerLevel level,
+        final net.minecraft.server.level.ServerPlayer player,
         final BlockPos pos,
         final BlockState state,
         final @Nullable BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
-        if (!isMatureMandrake(state) || !(level instanceof ServerLevel serverLevel)) {
+        final var serverLevel = level;
+        if (!isMatureMandrake(state)) {
             super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
             return;
         }

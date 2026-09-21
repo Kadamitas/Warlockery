@@ -60,7 +60,7 @@ public final class MagicalWoodBlockFactory {
                 .randomTicks()
                 .instabreak()
                 .sound(SoundType.GRASS)
-                .pushReaction(PushReaction.DESTROY));
+                .pushReaction(PushReaction.POPPED));
         };
     }
 

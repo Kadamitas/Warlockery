@@ -4,7 +4,6 @@ import com.kadamitas.warlockery.item.RowanKeyItem;
 import com.kadamitas.warlockery.item.RowanKeyState;
 import com.kadamitas.warlockery.registry.ModItems;
 import com.kadamitas.warlockery.registry.WarlockeryTags;
-import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -29,15 +28,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public final class RunedDoorBlock extends DoorBlock {
-    public static final MapCodec<RunedDoorBlock> CODEC = simpleCodec(RunedDoorBlock::new);
 
     public RunedDoorBlock(final BlockBehaviour.Properties properties) {
         super(BlockSetType.OAK, properties);
-    }
-
-    @Override
-    public MapCodec<? extends RunedDoorBlock> codec() {
-        return CODEC;
     }
 
     @Override
@@ -129,13 +122,14 @@ public final class RunedDoorBlock extends DoorBlock {
 
     @Override
     public void playerDestroy(
-        final Level level,
-        final Player player,
+        final net.minecraft.server.level.ServerLevel level,
+        final net.minecraft.server.level.ServerPlayer player,
         final BlockPos pos,
         final BlockState state,
         final @Nullable BlockEntity blockEntity,
         final ItemStack destroyedWith
     ) {
+        final var serverLevel = level;
         if (mayOpen(player, level, lower(state, pos))) {
             super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
             return;

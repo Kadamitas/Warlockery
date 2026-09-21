@@ -108,7 +108,7 @@ public final class WarlockVillagerFarming {
                 }
             });
         level.setBlockAndUpdate(position, crop.defaultBlockState());
-        villager.swing(InteractionHand.MAIN_HAND);
+        villager.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
     }
 
     private static void plant(final Villager villager, final BlockPos position) {
@@ -124,7 +124,7 @@ public final class WarlockVillagerFarming {
             }
             villager.level().setBlockAndUpdate(position, crop.defaultBlockState());
             stack.shrink(1);
-            villager.swing(InteractionHand.MAIN_HAND);
+            villager.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
             return;
         }
     }

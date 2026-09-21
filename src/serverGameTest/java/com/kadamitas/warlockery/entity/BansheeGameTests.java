@@ -188,7 +188,7 @@ public final class BansheeGameTests {
             banshee.setNoAi(true);
             final Zombie hostile = fixture.spawn(EntityTypes.ZOMBIE, new BlockPos(3, 1, 1), EntitySpawnReason.EVENT);
             hostile.setNoAi(true);
-            banshee.invulnerableTime = 0;
+            banshee.setInvulnerableTime(0);
             helper.assertTrue(banshee.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(hostile), 1.0F
             ), "the recoil fixture needs one real accepted hit");
@@ -213,7 +213,7 @@ public final class BansheeGameTests {
             helper.assertTrue(hostile.getHealth() == hostile.getMaxHealth(),
                 "the Banshee deals no damage back");
 
-            banshee.invulnerableTime = 0;
+            banshee.setInvulnerableTime(0);
             helper.assertTrue(banshee.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(hostile), 1.0F
             ), "a second accepted hit inside the cooldown still hurts normally");
@@ -224,7 +224,7 @@ public final class BansheeGameTests {
             villagerVictim.setNoAi(true);
             final Villager villager = fixture.spawn(EntityTypes.VILLAGER, new BlockPos(3, 1, 5), EntitySpawnReason.EVENT);
             villager.setNoAi(true);
-            villagerVictim.invulnerableTime = 0;
+            villagerVictim.setInvulnerableTime(0);
             villagerVictim.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().mobAttack(villager), 1.0F
             );
@@ -233,7 +233,7 @@ public final class BansheeGameTests {
                 "a villager attacker is excluded even when an external mechanic makes it deal damage");
 
             final ServerPlayer creative = fixture.connectedPlayer(new BlockPos(5, 1, 5), GameType.CREATIVE);
-            villagerVictim.invulnerableTime = 0;
+            villagerVictim.setInvulnerableTime(0);
             villagerVictim.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().playerAttack(creative), 1.0F
             );
@@ -244,7 +244,7 @@ public final class BansheeGameTests {
             owned.setNoAi(true);
             final ServerPlayer ownerPlayer = fixture.connectedPlayer(new BlockPos(7, 1, 1), GameType.SURVIVAL);
             CreatureBehaviorState.bind(owned, ownerPlayer.getUUID());
-            owned.invulnerableTime = 0;
+            owned.setInvulnerableTime(0);
             owned.hurtServer(
                 helper.getLevel(), helper.getLevel().damageSources().playerAttack(ownerPlayer), 1.0F
             );
@@ -252,7 +252,7 @@ public final class BansheeGameTests {
                     && !ownerPlayer.hasEffect(MobEffects.WEAKNESS),
                 "the Spectral Stone owner is excluded from the taboo");
 
-            owned.invulnerableTime = 0;
+            owned.setInvulnerableTime(0);
             owned.hurtServer(helper.getLevel(), helper.getLevel().damageSources().cactus(), 1.0F);
             helper.assertTrue(!owned.bansheeState().attacker().present(),
                 "environmental damage never creates attacker state");

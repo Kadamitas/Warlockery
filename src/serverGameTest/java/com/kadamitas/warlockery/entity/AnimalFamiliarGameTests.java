@@ -896,7 +896,7 @@ public final class AnimalFamiliarGameTests {
                     EntityTypes.FROG.create(helper.getLevel(), EntitySpawnReason.EVENT));
                 source.setPos(Vec3.atBottomCenterOf(center.above()));
                 source.setNoAi(true);
-                source.setInvulnerable(true);
+                source.setPermanentlyInvulnerable(true);
                 helper.getLevel().addFreshEntity(source);
                 final var sourceBox = source.getBoundingBox();
                 helper.assertTrue(RitualManager.INSTANCE.activate(

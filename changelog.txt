@@ -1,3 +1,12 @@
+Warlockery 1.5.6
+================
+
+- Updates the active loader editions to Minecraft 26.3; supporter and legacy editions retain their existing Minecraft targets.
+- Preserves magical tree and ore generation while migrating to Minecraft's new world-generation data format.
+- Adapts magical fuel, block drops, creature behavior, broom interpolation, and rendering to the Minecraft 26.3 APIs.
+- Adds compatibility checks that publish each artifact under its actual Minecraft version.
+- JEI integration source is retained, but no verified matching Forge 26.3 JEI runtime is published yet. The development profile defaults to no viewer instead of loading the old 26.2 runtime.
+
 Warlockery 1.5.5
 ================
 

@@ -2,7 +2,6 @@ package com.kadamitas.warlockery.block;
 
 import com.kadamitas.warlockery.block.entity.DollShelfBlockEntity;
 import com.kadamitas.warlockery.registry.ModBlockEntities;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -18,15 +17,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public final class DollShelfBlock extends BaseEntityBlock {
-    public static final MapCodec<DollShelfBlock> CODEC = simpleCodec(DollShelfBlock::new);
 
     public DollShelfBlock(final BlockBehaviour.Properties properties) {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Override

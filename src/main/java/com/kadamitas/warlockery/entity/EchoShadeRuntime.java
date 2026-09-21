@@ -368,7 +368,7 @@ public final class EchoShadeRuntime {
         shade.echoShadeCounters().strikes++;
         shade.setStriking(true);
         try {
-            shade.swing(InteractionHand.MAIN_HAND);
+            shade.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
             shade.doHurtTarget(level, mark);
         } finally {
             shade.setStriking(false);

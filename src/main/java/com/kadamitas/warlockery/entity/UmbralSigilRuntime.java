@@ -522,7 +522,7 @@ public final class UmbralSigilRuntime {
         sigil.sigilCounters().strikes++;
         sigil.setStriking(true);
         try {
-            sigil.swing(InteractionHand.MAIN_HAND);
+            sigil.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
             if (sigil.doHurtTarget(level, subject)) {
                 sigil.sigilCounters().strikesLanded++;
             }

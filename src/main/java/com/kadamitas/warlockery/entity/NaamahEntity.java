@@ -127,7 +127,7 @@ public final class NaamahEntity extends ArcaneMob {
             if (attackCooldown == 0 && naamah.isWithinMeleeAttackRange(target)
                 && naamah.getSensing().hasLineOfSight(target)) {
                 attackCooldown = adjustedTickDelay(20);
-                naamah.swing(InteractionHand.MAIN_HAND);
+                naamah.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
                 naamah.doHurtTarget((ServerLevel)naamah.level(), target);
             }
         }

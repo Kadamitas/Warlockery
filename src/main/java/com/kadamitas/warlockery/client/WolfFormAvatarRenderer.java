@@ -84,8 +84,8 @@ public final class WolfFormAvatarRenderer extends LivingEntityRenderer<
     ) {
         poseStack.pushPose();
         poseStack.translate(arm == HumanoidArm.RIGHT ? -0.12F : 0.12F, -0.18F, -0.38F);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-72.0F));
-        poseStack.mulPose(Axis.YP.rotationDegrees(arm == HumanoidArm.RIGHT ? 16.0F : -16.0F));
+        poseStack.rotate(Axis.XP.rotationDegrees(-72.0F));
+        poseStack.rotate(Axis.YP.rotationDegrees(arm == HumanoidArm.RIGHT ? 16.0F : -16.0F));
         poseStack.scale(0.82F, 0.82F, 0.82F);
         submitNodeCollector.submitModelPart(
             model.firstPersonForeleg(arm),
@@ -108,10 +108,10 @@ public final class WolfFormAvatarRenderer extends LivingEntityRenderer<
         super.setupRotations(state, poseStack, bodyRotation, entityScale);
         if (state.fallFlying()) {
             if (!state.isAutoSpinAttack) {
-                poseStack.mulPose(Axis.XP.rotationDegrees(state.fallFlyingScale() * (-90.0F - state.xRot)));
+                poseStack.rotate(Axis.XP.rotationDegrees(state.fallFlyingScale() * (-90.0F - state.xRot)));
             }
             if (state.applyFlyingYRotation()) {
-                poseStack.mulPose(Axis.YP.rotation(state.flyingYRotation()));
+                poseStack.rotate(Axis.YP.rotation(state.flyingYRotation()));
             }
             return;
         }
@@ -119,7 +119,7 @@ public final class WolfFormAvatarRenderer extends LivingEntityRenderer<
             return;
         }
         final float targetRotation = state.isInWater ? -90.0F - state.xRot : -90.0F;
-        poseStack.mulPose(Axis.XP.rotationDegrees(Mth.lerp(state.swimAmount(), 0.0F, targetRotation)));
+        poseStack.rotate(Axis.XP.rotationDegrees(Mth.lerp(state.swimAmount(), 0.0F, targetRotation)));
         if (state.visuallySwimming()) {
             poseStack.translate(0.0F, -1.0F, 0.3F);
         }
@@ -164,9 +164,9 @@ public final class WolfFormAvatarRenderer extends LivingEntityRenderer<
             root().translateAndRotate(poseStack);
             head.translateAndRotate(poseStack);
             poseStack.translate(mouthPose.translateX(), mouthPose.translateY(), mouthPose.translateZ());
-            poseStack.mulPose(Axis.XP.rotationDegrees(mouthPose.rotateXDegrees()));
-            poseStack.mulPose(Axis.YP.rotationDegrees(mouthPose.rotateYDegrees()));
-            poseStack.mulPose(Axis.ZP.rotationDegrees(mouthPose.rotateZDegrees()));
+            poseStack.rotate(Axis.XP.rotationDegrees(mouthPose.rotateXDegrees()));
+            poseStack.rotate(Axis.YP.rotationDegrees(mouthPose.rotateYDegrees()));
+            poseStack.rotate(Axis.ZP.rotationDegrees(mouthPose.rotateZDegrees()));
             poseStack.scale(mouthPose.scale(), mouthPose.scale(), mouthPose.scale());
         }
 

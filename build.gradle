@@ -58,7 +58,7 @@ abstract class ReleaseBundleTask extends DefaultTask {
     }
 }
 
-version = '1.5.5'
+version = '1.5.6'
 group = 'com.kadamitas.warlockery'
 
 java {
@@ -144,8 +144,11 @@ minecraft {
     }
 }
 
-def recipeViewer = providers.gradleProperty('warlockeryRecipeViewer').orElse('jei').get()
+def recipeViewer = providers.gradleProperty('warlockeryRecipeViewer').orElse('none').get()
 if (!['jei', 'none'].contains(recipeViewer)) throw new GradleException('Unsupported recipe viewer profile: ' + recipeViewer)
+if (recipeViewer == 'jei') {
+    throw new GradleException('No verified Minecraft 26.3 Forge JEI runtime is published. The JEI integration source is retained; use -PwarlockeryRecipeViewer=none until a matching runtime is available.')
+}
 
 repositories {
     minecraft.mavenizer(it)
@@ -153,7 +156,10 @@ repositories {
     maven fg.minecraftLibsMaven
     maven {
         url = 'https://maven.blamejared.com'
-        content { includeGroup 'mezz.jei' }
+        content {
+            includeGroup 'mezz.jei'
+            includeGroup 'net.mezzdev.config'
+        }
     }
     maven { url = 'https://maven.shedaniel.me' }
     maven { url = 'https://maven.architectury.dev' }
@@ -163,9 +169,8 @@ repositories {
 }
 
 dependencies {
-    implementation minecraft.dependency('net.minecraftforge:forge:26.2-65.1.0')
-    compileOnly 'mezz.jei:jei-26.2-common-api:30.15.0.104'
-    if (recipeViewer == 'jei') runtimeOnly 'curse.maven:just-enough-items-for-forge-1656683:8669937'
+    implementation minecraft.dependency('net.minecraftforge:forge:26.3-66.0.2')
+    compileOnly 'mezz.jei:jei-26.3-common-api:31.3.0.17'
     annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.5'
     testImplementation platform('org.junit:junit-bom:6.1.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'

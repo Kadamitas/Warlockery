@@ -110,7 +110,7 @@ final class SpouseCookingMachine {
 
     private static boolean hasFuel(final ServerLevel level, final IItemHandler handler) {
         for (int slot = 0; slot < handler.getSlots(); slot++) {
-            if (level.fuelValues().isFuel(handler.getStackInSlot(slot))) {
+            if (com.kadamitas.warlockery.block.entity.CookingFuels.isFuel(handler.getStackInSlot(slot))) {
                 return true;
             }
         }

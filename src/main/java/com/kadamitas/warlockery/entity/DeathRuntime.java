@@ -418,7 +418,7 @@ public final class DeathRuntime {
             return;
         }
         death.deathCounters().reapAttempts++;
-        death.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        death.swing(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
         death.doHurtTarget(level, subject);
         death.deathCounters().recoveries++;
         death.setDeathState(death.deathState()

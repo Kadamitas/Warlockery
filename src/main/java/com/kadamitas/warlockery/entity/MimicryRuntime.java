@@ -447,7 +447,7 @@ public final class MimicryRuntime {
         final boolean anchorSearch = species == Species.HOLLOW_DECOY && scratch.bound == null;
         level.getEntities().get(EntityTypeTest.forClass(LivingEntity.class), bounds, found -> {
             if (!budget.charge()) {
-                return AbortableIterationConsumer.Continuation.ABORT;
+                return net.minecraft.util.Continuation.ABORT;
             }
             counters.rawVisits++;
             final boolean eligible = eligible(body, found, anchorSearch);
@@ -456,8 +456,8 @@ public final class MimicryRuntime {
                 found.getUUID(), eligible, visible, body.distanceToSqr(found), true
             ));
             return budget.exhausted()
-                ? AbortableIterationConsumer.Continuation.ABORT
-                : AbortableIterationConsumer.Continuation.CONTINUE;
+                ? net.minecraft.util.Continuation.ABORT
+                : net.minecraft.util.Continuation.CONTINUE;
         });
 
         final Optional<Candidate> bound = MimicryRules.bind(inspected, species.bindRadiusSquared());

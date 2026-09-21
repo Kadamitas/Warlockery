@@ -9,7 +9,7 @@ on:
       tag:
         description: GitHub release tag to publish
         required: true
-        default: v1.5.5
+        default: v1.5.6
       loader:
         description: Mod loader versions to publish
         required: true
@@ -106,6 +106,48 @@ jobs:
             --jq .body > artifacts/changelog.md
           test -s artifacts/changelog.md
 
+      - name: Inspect release Minecraft compatibility
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re, tomllib, zipfile
+          targets = set()
+          jars = list(pathlib.Path("artifacts").glob("*.jar"))
+          if not jars:
+              raise SystemExit("No release JARs were downloaded")
+          for jar in jars:
+              with zipfile.ZipFile(jar) as archive:
+                  if "fabric.mod.json" in archive.namelist():
+                      data = json.loads(archive.read("fabric.mod.json"))
+                      if data.get("id") != "warlockery":
+                          raise SystemExit(f"{jar.name}: unexpected mod ID")
+                      constraint = data.get("depends", {}).get("minecraft", "")
+                  else:
+                      name = next((n for n in ("META-INF/neoforge.mods.toml", "META-INF/mods.toml")
+                                   if n in archive.namelist()), None)
+                      if name is None:
+                          raise SystemExit(f"{jar.name}: no supported mod metadata")
+                      data = tomllib.loads(archive.read(name).decode())
+                      constraint = next((d.get("versionRange", "") for d in
+                                         data.get("dependencies", {}).get("warlockery", [])
+                                         if d.get("modId") == "minecraft"), "")
+                  supported = {
+                      "~26.2": "26.2", "[26.2,26.3)": "26.2",
+                      "~26.3": "26.3", "[26.3,26.4)": "26.3",
+                  }
+                  if constraint not in supported:
+                      raise SystemExit(f"{jar.name}: unsupported Minecraft constraint {constraint!r}")
+                  targets.add(supported[constraint])
+          if len(targets) != 1:
+              raise SystemExit("Release JARs target different Minecraft versions")
+          target = targets.pop()
+          if os.environ.get("SUPPORTER_NEOFORGE_ONLY") == "true" and target != "26.2":
+              raise SystemExit("The supporter release must remain on Minecraft 26.2")
+          with open(os.environ["GITHUB_ENV"], "a") as output:
+              output.write(f"MINECRAFT_TARGET={target}\n")
+          print(f"Verified {len(jars)} release JAR(s) for Minecraft {target}")
+          PY
+
       - name: Publish loader versions
         shell: bash
         run: |
@@ -162,12 +204,13 @@ jobs:
               --arg release_type "$release_type" \
               --arg loader "$loader" \
               --argjson dependencies "$dependencies" \
+              --arg minecraft "$MINECRAFT_TARGET" \
               '{
                 name: $name,
                 version_number: $version,
                 changelog: $changelog,
                 dependencies: $dependencies,
-                game_versions: ["26.2"],
+                game_versions: [$minecraft],
                 version_type: $release_type,
                 loaders: [$loader],
                 featured: true,

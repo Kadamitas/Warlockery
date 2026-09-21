@@ -164,7 +164,7 @@ public final class WerewolfPreyDriveRuntime {
             movement.x, movement.z, direction.x, direction.z, movement.y
         );
         player.setDeltaMovement(pursuit.x(), pursuit.vertical(), pursuit.z());
-        player.hurtMarked = true;
+        player.syncVelocity = true;
         player.setSprinting(true);
     }
 

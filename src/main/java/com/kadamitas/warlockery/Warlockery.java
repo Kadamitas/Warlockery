@@ -157,7 +157,7 @@ public final class Warlockery {
         PlayerEvent.Clone.BUS.addListener(HexState::copyAfterClone);
         PlayerEvent.PlayerLoggedInEvent.BUS.addListener(FlyingBroomItem::handleLogin);
         PlayerEvent.PlayerLoggedOutEvent.BUS.addListener(FlyingBroomItem::handleLogout);
-        LOGGER.info("Loading Warlockery for Minecraft 26.2");
+        LOGGER.info("Loading Warlockery for Minecraft 26.3");
     }
 
 }

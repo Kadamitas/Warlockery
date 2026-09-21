@@ -33,9 +33,9 @@ public final class BroomEntityRenderer extends EntityRenderer<BroomEntity, Broom
         final BroomRenderPose pose = state.pose();
         poseStack.pushPose();
         poseStack.translate(0.0F, 0.22F + pose.bob(), 0.0F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(pose.yawDegrees()));
-        poseStack.mulPose(Axis.XP.rotationDegrees(pose.pitchDegrees()));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(pose.rollDegrees()));
+        poseStack.rotate(Axis.YP.rotationDegrees(pose.yawDegrees()));
+        poseStack.rotate(Axis.XP.rotationDegrees(pose.pitchDegrees()));
+        poseStack.rotate(Axis.ZP.rotationDegrees(pose.rollDegrees()));
         poseStack.scale(pose.scale(), pose.scale(), pose.scale());
         state.item.submit(
             poseStack,

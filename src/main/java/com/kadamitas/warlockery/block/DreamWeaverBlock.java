@@ -1,6 +1,5 @@
 package com.kadamitas.warlockery.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -17,17 +16,11 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public final class DreamWeaverBlock extends Block {
-    public static final MapCodec<DreamWeaverBlock> CODEC = simpleCodec(DreamWeaverBlock::new);
     public static final EnumProperty<DreamWeaverMode> MODE = EnumProperty.create("mode", DreamWeaverMode.class);
 
     public DreamWeaverBlock(final BlockBehaviour.Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(MODE, DreamWeaverMode.RESTORATION));
-    }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return CODEC;
     }
 
     @Override

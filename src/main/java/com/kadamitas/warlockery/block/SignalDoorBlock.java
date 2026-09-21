@@ -1,6 +1,5 @@
 package com.kadamitas.warlockery.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
@@ -18,15 +17,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public final class SignalDoorBlock extends DoorBlock {
-    public static final MapCodec<SignalDoorBlock> CODEC = simpleCodec(SignalDoorBlock::new);
 
     public SignalDoorBlock(final BlockBehaviour.Properties properties) {
         super(BlockSetType.OAK, properties);
-    }
-
-    @Override
-    public MapCodec<? extends SignalDoorBlock> codec() {
-        return CODEC;
     }
 
     @Override

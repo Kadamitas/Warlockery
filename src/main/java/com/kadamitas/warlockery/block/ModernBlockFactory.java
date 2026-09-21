@@ -90,26 +90,26 @@ public final class ModernBlockFactory {
         final Specification specification = Optional.ofNullable(SPECIFICATIONS.get(id))
             .orElseThrow(() -> new IllegalArgumentException("Unsupported shaped block: " + id));
         if ("alderwooddoor".equals(id)) {
-            return new SignalDoorBlock(properties.noOcclusion().pushReaction(PushReaction.DESTROY));
+            return new SignalDoorBlock(properties.noOcclusion().pushReaction(PushReaction.POPPED));
         }
         if ("rowanwooddoor".equals(id)) {
-            return new RunedDoorBlock(properties.noOcclusion().pushReaction(PushReaction.DESTROY));
+            return new RunedDoorBlock(properties.noOcclusion().pushReaction(PushReaction.POPPED));
         }
         return switch (specification.shape()) {
             case BUTTON -> new ButtonBlock(specification.blockSetType(), specification.family() == Family.WOOD ? 30 : 20,
-                properties.noCollision().pushReaction(PushReaction.DESTROY));
+                properties.noCollision().pushReaction(PushReaction.POPPED));
             case DOOR -> new DoorBlock(specification.blockSetType(),
-                properties.noOcclusion().pushReaction(PushReaction.DESTROY));
+                properties.noOcclusion().pushReaction(PushReaction.POPPED));
             case FENCE -> "stockade".equals(id) || "icestockade".equals(id)
                 ? new StockadeBlock(properties)
                 : new FenceBlock(properties);
             case FENCE_GATE -> new FenceGateBlock(WoodType.OAK, properties);
             case LADDER -> new WitchLadderBlock(
-                properties.noOcclusion().sound(SoundType.LADDER).pushReaction(PushReaction.DESTROY));
+                properties.noOcclusion().sound(SoundType.LADDER).pushReaction(PushReaction.POPPED));
             case PRESSURE_PLATE -> "icepressureplate".equals(id)
-                ? new IcyPressurePlateBlock(properties.noCollision().pushReaction(PushReaction.DESTROY))
+                ? new IcyPressurePlateBlock(properties.noCollision().pushReaction(PushReaction.POPPED))
                 : new PressurePlateBlock(specification.blockSetType(),
-                    properties.noCollision().pushReaction(PushReaction.DESTROY));
+                    properties.noCollision().pushReaction(PushReaction.POPPED));
             case SLAB -> new SlabBlock(properties);
             case STAIRS -> new StairBlock(specification.family().baseBlock().defaultBlockState(), properties);
         };

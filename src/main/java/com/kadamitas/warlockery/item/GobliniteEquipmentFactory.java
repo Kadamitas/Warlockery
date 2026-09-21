@@ -7,10 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.equipment.ArmorType;
 
@@ -21,12 +18,11 @@ public final class GobliniteEquipmentFactory {
         FactoryCatalog.entry("delvealloysword", properties -> new Item(
             properties.fireResistant().sword(GobliniteMaterials.TOOL, 3.0F, -2.4F)
         )),
-        FactoryCatalog.entry("delvealloyaxe", properties -> new AxeItem(
+        FactoryCatalog.entry("delvealloyaxe", properties -> new Item(properties.fireResistant().axe(
             GobliniteMaterials.TOOL,
             5.0F,
-            -3.0F,
-            properties.fireResistant()
-        )),
+            -3.0F
+        ))),
         FactoryCatalog.entry("delvealloypickaxe", properties -> new Item(
             properties.fireResistant()
                 .component(DataComponents.LORE, new ItemLore(List.of(
@@ -35,18 +31,16 @@ public final class GobliniteEquipmentFactory {
                 )))
                 .pickaxe(GobliniteMaterials.TOOL, 1.0F, -2.8F)
         )),
-        FactoryCatalog.entry("delvealloyshovel", properties -> new ShovelItem(
+        FactoryCatalog.entry("delvealloyshovel", properties -> new Item(properties.fireResistant().shovel(
             GobliniteMaterials.TOOL,
             1.5F,
-            -3.0F,
-            properties.fireResistant()
-        )),
-        FactoryCatalog.entry("delvealloyhoe", properties -> new HoeItem(
+            -3.0F
+        ))),
+        FactoryCatalog.entry("delvealloyhoe", properties -> new Item(properties.fireResistant().hoe(
             GobliniteMaterials.TOOL,
             -4.0F,
-            0.0F,
-            properties.fireResistant()
-        )),
+            0.0F
+        ))),
         FactoryCatalog.entry("delvealloyhelm", properties -> new Item(
             properties.fireResistant().humanoidArmor(GobliniteMaterials.ARMOR, ArmorType.HELMET)
         )),

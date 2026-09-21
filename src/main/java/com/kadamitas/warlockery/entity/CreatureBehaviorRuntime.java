@@ -183,7 +183,7 @@ public final class CreatureBehaviorRuntime {
             // The Darkness rider applies only after the displacement actually succeeded. randomTeleport
             // validates the destination footprint itself and returns false while leaving the victim at
             // the original position, so a rejected displacement adds no rider at all.
-            if (living.randomTeleport(x, living.getY(), z, true)) {
+            if (living.randomTeleport(x, living.getY(), z, true, com.kadamitas.warlockery.util.BlockSupport.NO_ADDITIONAL_TELEPORT_AVOIDANCE)) {
                 living.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 160, 0));
             }
         }
@@ -233,9 +233,7 @@ public final class CreatureBehaviorRuntime {
             creature.randomTeleport(
                 creature.getX() + level.getRandom().nextIntBetweenInclusive(-4, 4),
                 creature.getY() + level.getRandom().nextIntBetweenInclusive(-2, 2),
-                creature.getZ() + level.getRandom().nextIntBetweenInclusive(-4, 4),
-                true
-            );
+                creature.getZ() + level.getRandom().nextIntBetweenInclusive(-4, 4), true, com.kadamitas.warlockery.util.BlockSupport.NO_ADDITIONAL_TELEPORT_AVOIDANCE);
         }
         if (profile.has(Feature.SAFE_BLAST)) {
             MinedrakeCombat.detonate(creature, level);
@@ -782,7 +780,7 @@ public final class CreatureBehaviorRuntime {
         level.getEntitiesOfClass(ItemEntity.class, creature.getBoundingBox().inflate(6.0)).forEach(item -> {
             final Vec3 push = item.position().subtract(creature.position()).normalize().scale(0.25).add(0.0, 0.2, 0.0);
             item.setDeltaMovement(push);
-            item.hurtMarked = true;
+            item.syncVelocity = true;
         });
     }
 

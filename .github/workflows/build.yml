@@ -11,7 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - name: Check out source
@@ -31,6 +31,12 @@ jobs:
 
       - name: Build, test, and package
         run: ./gradlew releaseBundle --stacktrace
+
+      - name: Run dedicated-server GameTests
+        run: ./gradlew runGameTestServer --stacktrace
+
+      - name: Validate release Minecraft metadata handling
+        run: python3 tools/test_release_compatibility.py
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

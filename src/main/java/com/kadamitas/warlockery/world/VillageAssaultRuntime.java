@@ -1031,9 +1031,7 @@ public final class VillageAssaultRuntime {
                 raider.randomTeleport(
                     target.x + raider.getRandom().nextIntBetweenInclusive(-3, 3),
                     target.y,
-                    target.z + raider.getRandom().nextIntBetweenInclusive(-3, 3),
-                    true
-                );
+                    target.z + raider.getRandom().nextIntBetweenInclusive(-3, 3), true, com.kadamitas.warlockery.util.BlockSupport.NO_ADDITIONAL_TELEPORT_AVOIDANCE);
             }
             if (powers.contains(VampireProgressionRules.Ability.BAT_SWARM)
                 && raider.getTarget() != null && raider.distanceToSqr(raider.getTarget()) < 100.0) {

@@ -1698,7 +1698,7 @@ public final class GoblinPatronRuntime {
                 return;
             }
             cooldown = COOLDOWN_TICKS;
-            body.swing(InteractionHand.MAIN_HAND);
+            body.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
             body.doHurtTarget(level, target);
         }
     }

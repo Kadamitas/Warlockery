@@ -301,7 +301,7 @@ public final class GoblinEntity extends AbstractGoblinMerchantEntity {
                 return;
             }
             cooldown = COOLDOWN_TICKS;
-            goblin.swing(InteractionHand.MAIN_HAND);
+            goblin.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
             goblin.doHurtTarget(level, target);
         }
     }
