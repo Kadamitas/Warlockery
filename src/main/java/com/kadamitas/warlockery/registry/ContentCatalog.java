@@ -31,7 +31,7 @@ public final class ContentCatalog {
 
     public static final List<String> ITEMS = words("""
         ritual_knife hedge_crones_hat barkbelt biomenote bitingbelt boline bookbiomes2 brew.fuel brew.water brewbag
-        bucketbrew bucketerosionbrew buckethollowtears bucketspirit canesword cauldronbook chalkheart chalkinfernal chalk_veil
+        bucketbrew bucketerosionbrew buckethollowtears bucketspirit canesword cauldronbook ingredient_book_world_events chalkheart chalkinfernal chalk_veil
         chalkritual circletalisman coffin deathscowl deathsfeet deathshand deathsrobe silver_tongue_charm divinerlava
         divinerwater replication_charge replication_staff earmuffs garlic glassgoblet forgewardens_girdle hornofthehunt werewolf_hunter_boots
         werewolf_hunter_boots_dawn werewolf_hunter_boots_silvered werewolf_hunter_coat werewolf_hunter_coat_dawn werewolf_hunter_coat_silvered werewolf_hunter_hat

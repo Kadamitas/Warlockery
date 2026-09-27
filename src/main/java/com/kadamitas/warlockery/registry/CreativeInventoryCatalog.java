@@ -40,7 +40,7 @@ public final class CreativeInventoryCatalog {
         "cauldronbook", "vampirebook", "bookbiomes2",
         "ingredient_book_biomes", "ingredient_book_burning", "ingredient_book_circle_magic",
         "ingredient_book_distilling", "ingredient_book_herbology", "ingredient_book_infusions",
-        "ingredient_book_oven", "ingredient_book_wands"
+        "ingredient_book_oven", "ingredient_book_wands", "ingredient_book_world_events"
     );
     private static final Set<String> MACHINES = Set.of(
         "alchemical_oven", "altar", "bloodcrucible", "brazier", "cauldron", "daylightcollector",

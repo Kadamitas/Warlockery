@@ -77,10 +77,14 @@ final class ManualProducerIntegrityTest {
 
     @Test
     void everyManualProfileHasExactlyOneSurvivalRoute() {
-        final Set<String> expectedIds = Stream.concat(EXPECTED.keySet().stream(), Stream.of("ingredient_vbook_page"))
+        final Set<String> expectedIds = Stream.concat(
+            EXPECTED.keySet().stream(),
+            Stream.of("ingredient_book_world_events", "ingredient_vbook_page")
+        )
             .collect(Collectors.toUnmodifiableSet());
         assertEquals(expectedIds, ManualProfile.ids());
         EXPECTED.keySet().forEach(id -> assertTrue(Files.exists(RECIPES.resolve(id + ".json")), id));
+        assertTrue(Files.exists(RECIPES.resolve("ingredient_book_world_events.json")));
         assertFalse(Files.exists(RECIPES.resolve("ingredient_vbook_page.json")));
     }
 
@@ -125,6 +129,31 @@ final class ManualProducerIntegrityTest {
             assertFalse(json.get("replace").getAsBoolean());
             assertEquals(List.of(value), strings(json, "values"));
         });
+    }
+
+    @Test
+    void signsAndPortentsHasOneCompletePhysicalProducerContract() {
+        final String id = "ingredient_book_world_events";
+        final JsonObject recipe = read(RECIPES.resolve(id + ".json"));
+        assertEquals("minecraft:crafting_shapeless", recipe.get("type").getAsString());
+        assertEquals(List.of(
+            "#warlockery:manual_reagents/books",
+            "minecraft:compass",
+            "warlockery:ingredient_whiff_of_magic"
+        ), strings(recipe, "ingredients"));
+        assertEquals("warlockery:" + id, recipe.getAsJsonObject("result").get("id").getAsString());
+        assertTrue(Files.exists(Path.of("src/main/resources/assets/warlockery/items", id + ".json")));
+        assertTrue(Files.exists(Path.of("src/main/resources/assets/warlockery/models/item", id + ".json")));
+        assertTrue(Files.exists(RECIPES.resolve(id + ".json")));
+        assertTrue(Files.exists(DATA.resolve("advancement/recipes/misc/" + id + ".json")));
+        List.of("manuals", "guide_books").forEach(tag -> assertTrue(
+            strings(read(DATA.resolve("tags/item/" + tag + ".json")), "values")
+                .contains("warlockery:" + id), tag
+        ));
+        assertTrue(strings(read(Path.of("src/main/resources/data/minecraft/tags/item/bookshelf_books.json")), "values")
+            .contains("warlockery:" + id));
+        final String compatibility = read(DATA.resolve("compatibility/catalog.json")).toString();
+        assertEquals(2, compatibility.split("warlockery:" + id, -1).length - 1);
     }
 
     private static void exactFormula(final String id, final ExpectedRecipe expected) {

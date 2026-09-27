@@ -175,6 +175,7 @@ public record ManualProfile(
         infusionProfile(),
         fumesProfile(),
         symbologyProfile(),
+        worldEventsProfile(),
         profile("ingredient_vbook_page", "torn_page", "immortal_fragment")
     );
     private static final Map<String, ManualProfile> BY_ID = PROFILES.stream()
@@ -350,6 +351,42 @@ public record ManualProfile(
     private static ManualProfile profile(final String id, final String title, final String... sections) {
         final Chapter contents = chapter("contents", "manual.warlockery.chapter.contents", sections);
         return new ManualProfile(id, title, contents.sections(), List.of(contents));
+    }
+
+    private static ManualProfile worldEventsProfile() {
+        final List<Chapter> chapters = List.of(
+            chapter(
+                "settlements",
+                "manual.warlockery.chapter.settlements",
+                "preamble", "goblin_enclaves", "goblin_huts", "goblin_tunnels", "goblin_families",
+                "goblin_children", "hobgoblin_journeys", "hobgoblin_camps", "village_growth",
+                "settlement_fortifications"
+            ),
+            chapter(
+                "assaults_and_hunts",
+                "manual.warlockery.chapter.assaults_and_hunts",
+                "goblin_raids", "vampire_courts", "blood_thralls", "vampire_assaults", "werewolf_packs",
+                "werewolf_assaults", "silver_hunts", "defending_settlements"
+            ),
+            chapter(
+                "creature_habits",
+                "manual.warlockery.chapter.creature_habits",
+                "winter_hearths", "grove_tending", "shiny_curiosity", "night_perches", "pond_rest",
+                "haunted_bells", "storm_rods", "arcane_study", "soul_lantern_vigils", "hay_rest",
+                "village_watches", "familiar_homes", "thorn_gardens", "mirror_gazing", "moon_gazing"
+            ),
+            chapter(
+                "landmarks_and_gatherings",
+                "manual.warlockery.chapter.landmarks_and_gatherings",
+                "stone_circles", "straw_idols", "abandoned_shacks", "circle_mage_gatherings"
+            )
+        );
+        return new ManualProfile(
+            "ingredient_book_world_events",
+            "world_events",
+            chapters.stream().flatMap(chapter -> chapter.sections().stream()).toList(),
+            chapters
+        );
     }
 
     private static ManualProfile ritualProfile() {

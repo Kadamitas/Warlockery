@@ -107,7 +107,9 @@ final class LegacyMagicCatalogTest {
     @Test
     void everyLinkedBookHasItsOwnManualProfile() {
         assertEquals(12, BOOKS.size());
-        assertEquals(Set.copyOf(BOOKS.values()), ManualProfile.ids());
+        assertTrue(ManualProfile.ids().containsAll(BOOKS.values()));
+        assertEquals(Set.of("ingredient_book_world_events"), ManualProfile.ids().stream()
+            .filter(id -> !BOOKS.containsValue(id)).collect(java.util.stream.Collectors.toUnmodifiableSet()));
         BOOKS.forEach((page, id) -> assertFalse(ManualProfile.find(id).orElseThrow().sections().isEmpty(), page));
     }
 
