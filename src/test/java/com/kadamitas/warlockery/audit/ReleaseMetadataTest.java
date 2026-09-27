@@ -29,6 +29,9 @@ final class ReleaseMetadataTest {
         assertEquals(version, promotions.get("26.3-latest").getAsString());
         assertEquals(version, promotions.get("26.3-recommended").getAsString());
         assertTrue(update.getAsJsonObject("26.3").has(version));
+        assertEquals("1.5.7", promotions.get("26.2-latest").getAsString());
+        assertEquals("1.5.7", promotions.get("26.2-recommended").getAsString());
+        assertTrue(update.getAsJsonObject("26.2").has("1.5.7"));
 
         final String changelog = read("changelog.txt");
         assertTrue(changelog.startsWith("Warlockery " + version));
@@ -103,6 +106,18 @@ final class ReleaseMetadataTest {
             assertTrue(contents.contains("\"neoforge\""));
             assertTrue(contents.contains("\"beta\""));
         }
+    }
+
+    @Test
+    void modrinthPublicationStopsWhenExistingVersionsCannotBeRead() throws IOException {
+        final String workflow = read(".github/workflows/publish-modrinth.yml");
+        final String discovery = workflow.substring(workflow.indexOf("if ! existing_versions="),
+            workflow.indexOf("publish_version() {"));
+        assertTrue(discovery.contains("Could not read existing Modrinth versions; publication stopped"));
+        assertTrue(discovery.contains("Invalid Modrinth version list; publication stopped"));
+        assertTrue(discovery.contains("if ! jq --exit-status"));
+        assertEquals(2, discovery.split("exit 1", -1).length - 1);
+        assertFalse(discovery.contains("existing_versions='[]'"));
     }
 
     private static String read(final String relativePath) throws IOException {

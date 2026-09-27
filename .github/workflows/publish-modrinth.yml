@@ -168,8 +168,13 @@ jobs:
               --header "Authorization: $MODRINTH_TOKEN" \
               --header "User-Agent: Kadamitas/Warlockery-GitHub-Actions/1.0" \
               "https://api.modrinth.com/v2/project/${MODRINTH_PROJECT_ID}/version")"; then
-            echo "Existing versions are not readable yet; continuing with an empty draft project"
-            existing_versions='[]'
+            echo "Could not read existing Modrinth versions; publication stopped"
+            exit 1
+          fi
+          if ! jq --exit-status 'type == "array" and all(.[]; type == "object" and (.version_number | type) == "string" and (.loaders | type) == "array" and (.loaders | all(.[]; type == "string")))' \
+              <<< "$existing_versions" > /dev/null; then
+            echo "Invalid Modrinth version list; publication stopped"
+            exit 1
           fi
 
           publish_version() {
