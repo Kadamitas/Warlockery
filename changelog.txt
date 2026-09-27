@@ -1,3 +1,10 @@
+Warlockery 1.5.7-LlaGuiT0-26.2.0.45
+===================================
+
+- Rewrote the ten non-vampire manuals with Witchery-inspired practical guidance and renamed the cauldron volume Warlocks' Brews.
+- Added Signs & Portents, a craftable world-events manual covering settlements, assaults, creature habits, and landmarks.
+- Supporter compatibility release for NeoForge `[26.2.0.45-beta,26.2.0.46-beta)`.
+
 Warlockery 1.5.5-LlaGuiT0-26.2.0.45
 ================
 

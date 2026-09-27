@@ -6,6 +6,10 @@ Use any complete Warlockery manual to open the shared manual library. Search by 
 
 The extended Book of Biomes keeps its special shortcut. Sneak-use it with paper to create a Biome Note. Book-collection mods can store the normal manual items and open this same library when they invoke the stored book. Complete manuals also work in chiseled bookshelves.
 
+## Signs & Portents
+
+Craft `Warlockery: Signs & Portents` from a book accepted by `#warlockery:manual_reagents/books`, a compass, and a Whiff of Magic. Its four chapters record settlements, assaults and hunts, creature habits, and landmarks and gatherings. Settlement works and assaults are persistent world systems; the creature-habit pages describe possible registered activities rather than a schedule or guarantee.
+
 ## Reading status displays
 
 Warlockery systems use server-authored status data. Red lines identify conditions that are absent or incorrect. Yellow lines identify resources that are incomplete. A green check means every required condition is currently satisfied. The display updates when chalk, ingredients, altar power, weather, moon phase, fuel, heat, output space, or nearby entities change.

@@ -12,7 +12,12 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
@@ -27,9 +32,102 @@ final class ManualLibraryTest {
 
     @Test
     void libraryPublishesEveryUniqueProfileAsAnImmutableList() {
-        assertEquals(12, ManualProfile.profiles().size());
-        assertEquals(12, ManualProfile.ids().size());
+        assertEquals(13, ManualProfile.profiles().size());
+        assertEquals(13, ManualProfile.ids().size());
         assertThrows(UnsupportedOperationException.class, () -> ManualProfile.profiles().clear());
+    }
+
+    @Test
+    void signsAndPortentsPublishesTheExactWorldEventReadingOrder() {
+        final ManualProfile profile = ManualProfile.find("ingredient_book_world_events").orElseThrow();
+        final Map<String, List<String>> expected = new java.util.LinkedHashMap<>();
+        expected.put("settlements", List.of(
+            "preamble", "goblin_enclaves", "goblin_huts", "goblin_tunnels", "goblin_families",
+            "goblin_children", "hobgoblin_journeys", "hobgoblin_camps", "village_growth",
+            "settlement_fortifications"
+        ));
+        expected.put("assaults_and_hunts", List.of(
+            "goblin_raids", "vampire_courts", "blood_thralls", "vampire_assaults", "werewolf_packs",
+            "werewolf_assaults", "silver_hunts", "defending_settlements"
+        ));
+        expected.put("creature_habits", List.of(
+            "winter_hearths", "grove_tending", "shiny_curiosity", "night_perches", "pond_rest",
+            "haunted_bells", "storm_rods", "arcane_study", "soul_lantern_vigils", "hay_rest",
+            "village_watches", "familiar_homes", "thorn_gardens", "mirror_gazing", "moon_gazing"
+        ));
+        expected.put("landmarks_and_gatherings", List.of(
+            "stone_circles", "straw_idols", "abandoned_shacks", "circle_mage_gatherings"
+        ));
+
+        assertEquals("world_events", profile.titleKey());
+        assertEquals(expected.keySet().stream().toList(), profile.chapters().stream()
+            .map(ManualProfile.Chapter::id).toList());
+        expected.forEach((chapter, sections) -> assertEquals(
+            sections,
+            profile.chapters().stream().filter(value -> value.id().equals(chapter)).findFirst().orElseThrow().sections()
+        ));
+        assertEquals(37, profile.sections().size());
+        assertEquals(expected.values().stream().flatMap(List::stream).toList(), profile.sections());
+        profile.sections().forEach(section -> assertEquals(
+            "manual.warlockery.world_events." + section,
+            profile.translatedSectionKey(section)
+        ));
+    }
+
+    @Test
+    void signsAndPortentsStatesTheAssaultAndAmbientLimitsExactly() {
+        final JsonObject english = translations();
+        assertTrue(english.get("manual.warlockery.world_events.goblin_huts").getAsString().contains("persistent"));
+        assertTrue(english.get("manual.warlockery.world_events.goblin_tunnels").getAsString().contains("remains"));
+        assertTrue(english.get("manual.warlockery.world_events.hobgoblin_camps").getAsString().contains("reversible"));
+        assertTrue(english.get("manual.warlockery.world_events.blood_thralls").getAsString().contains("already bound"));
+        assertTrue(english.get("manual.warlockery.world_events.vampire_assaults").getAsString()
+            .contains("No villager becomes a Blood Thrall"));
+        assertTrue(english.get("manual.warlockery.world_events.werewolf_assaults").getAsString()
+            .contains("eligible assault objective may be marked"));
+        List.of(
+            "winter_hearths", "grove_tending", "shiny_curiosity", "night_perches", "pond_rest",
+            "haunted_bells", "storm_rods", "arcane_study", "soul_lantern_vigils", "hay_rest",
+            "village_watches", "familiar_homes", "thorn_gardens", "mirror_gazing", "moon_gazing"
+        ).forEach(section -> {
+            final String body = english.get("manual.warlockery.world_events." + section).getAsString();
+            assertTrue(body.contains("may") || body.contains("opportunity") || body.contains("chance"), section);
+            assertFalse(body.contains("will always"), section);
+        });
+    }
+
+    @Test
+    void observationsOfAnImmortalResourcesAndEnglishTextRemainFrozen() throws IOException {
+        assertEquals(Map.of(
+            "src/main/resources/assets/warlockery/items/vampirebook.json", "61C414D69BE7E2EB0DDC7C892691FA7C2E68CBCBCC02785C81B8807801BEDF7A",
+            "src/main/resources/assets/warlockery/models/item/vampirebook.json", "A95871DC70D290BEE6D066E9FAD50E6F8E31CB2CD254ECDD258BDCAC006E3DDD",
+            "src/main/resources/data/warlockery/advancement/recipes/misc/vampirebook.json", "944F580E3F0DCF538A66976EA54869515CFFA7CAD8D933C1F557515C35DDFF39",
+            "src/main/resources/data/warlockery/recipe/vampirebook.json", "ECA6FA3217AD9EF50BD7B9EA24047AD2E43B32C641312E9540B25355717819E3"
+        ), Map.of(
+            "src/main/resources/assets/warlockery/items/vampirebook.json", sha256(Files.readAllBytes(Path.of("src/main/resources/assets/warlockery/items/vampirebook.json"))),
+            "src/main/resources/assets/warlockery/models/item/vampirebook.json", sha256(Files.readAllBytes(Path.of("src/main/resources/assets/warlockery/models/item/vampirebook.json"))),
+            "src/main/resources/data/warlockery/advancement/recipes/misc/vampirebook.json", sha256(Files.readAllBytes(Path.of("src/main/resources/data/warlockery/advancement/recipes/misc/vampirebook.json"))),
+            "src/main/resources/data/warlockery/recipe/vampirebook.json", sha256(Files.readAllBytes(Path.of("src/main/resources/data/warlockery/recipe/vampirebook.json")))
+        ));
+        final JsonObject english = translations();
+        final String immortal = english.entrySet().stream()
+            .filter(entry -> entry.getKey().startsWith("manual.warlockery.immortal."))
+            .sorted(Map.Entry.comparingByKey())
+            .map(entry -> entry.getKey() + "=" + entry.getValue().getAsString())
+            .collect(java.util.stream.Collectors.joining("\n"));
+        assertEquals(38, english.entrySet().stream()
+            .filter(entry -> entry.getKey().startsWith("manual.warlockery.immortal."))
+            .count());
+        assertEquals("279B3D4D6CEBDEE14BB9BE113F93CC2DA585415422A181A3551F85413119960B",
+            sha256(immortal.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private static String sha256(final byte[] bytes) {
+        try {
+            return HexFormat.of().withUpperCase().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+        } catch (NoSuchAlgorithmException exception) {
+            throw new AssertionError(exception);
+        }
     }
 
     @Test
@@ -94,7 +192,11 @@ final class ManualLibraryTest {
             final String opening = profile.id().equals("ingredient_book_circle_magic") ? "chalk" : "preamble";
             assertEquals(opening, profile.sections().getFirst(), profile.id());
             assertEquals(opening, profile.chapters().getFirst().sections().getFirst(), profile.id());
-            assertEquals(List.of("preamble"), profile.chapterFor("preamble").sections(), profile.id());
+            if (profile.id().equals("ingredient_book_world_events")) {
+                assertEquals("settlements", profile.chapterFor("preamble").id());
+            } else {
+                assertEquals(List.of("preamble"), profile.chapterFor("preamble").sections(), profile.id());
+            }
         });
 
         final JsonObject english = translations();

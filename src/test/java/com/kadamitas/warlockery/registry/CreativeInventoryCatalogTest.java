@@ -23,6 +23,8 @@ final class CreativeInventoryCatalogTest {
     void contentIsGroupedByPlayerPurpose() {
         assertEquals(CreativeInventoryCatalog.Section.GETTING_STARTED,
             CreativeInventoryCatalog.section("ingredient_book_herbology"));
+        assertEquals(CreativeInventoryCatalog.Section.GETTING_STARTED,
+            CreativeInventoryCatalog.section("ingredient_book_world_events"));
         assertEquals(CreativeInventoryCatalog.Section.RITUALS,
             CreativeInventoryCatalog.section("broken_hexes_statue"));
         assertEquals(CreativeInventoryCatalog.Section.MACHINES, CreativeInventoryCatalog.section("altar"));

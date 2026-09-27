@@ -47,6 +47,7 @@ final class RequestedIconSemanticsTest {
         "warlockery:item/brew_fuel", Set.of("brew.fuel", "brew_combustion"),
         "warlockery:item/brew_water", Set.of("brew.water", "brew_endless_water"),
         "warlockery:item/ingredient_broom", Set.of("ingredient_broom", "ingredient_broom_enchanted"),
+        "warlockery:item/ingredient_book_biomes", Set.of("ingredient_book_biomes", "ingredient_book_world_events"),
         "warlockery:item/ruby_slippers", Set.of("emberstep_slippers", "ruby_slippers")
     );
     private static final Set<String> REQUESTED_ICONS = Set.of(
