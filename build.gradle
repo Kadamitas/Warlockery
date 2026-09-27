@@ -346,6 +346,7 @@ tasks.named('processGametestResources') {
     filesMatching('fabric.mod.json') {
         filter { line ->
             def selected = [
+                signs_portents: ['SignsPortentsClientAcceptance'],
                 books: ['AllBooksClientAcceptance'],
                 diagonal_chalk: ['DiagonalChalkClientAcceptance'],
                 louse: ['LouseAbilitiesClientAcceptance'],

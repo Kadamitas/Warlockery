@@ -297,7 +297,8 @@
         "warlockery:ingredient_book_herbology",
         "warlockery:ingredient_book_infusions",
         "warlockery:ingredient_book_oven",
-        "warlockery:ingredient_book_wands"
+        "warlockery:ingredient_book_wands",
+        "warlockery:ingredient_book_world_events"
       ]
     },
     {
@@ -314,7 +315,8 @@
         "warlockery:ingredient_book_herbology",
         "warlockery:ingredient_book_infusions",
         "warlockery:ingredient_book_oven",
-        "warlockery:ingredient_book_wands"
+        "warlockery:ingredient_book_wands",
+        "warlockery:ingredient_book_world_events"
       ]
     },
     {

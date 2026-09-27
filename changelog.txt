@@ -1,3 +1,10 @@
+Warlockery 1.5.7
+================
+
+- Reworks the ten non-vampire guides with Witchery-style wording while retaining Warlockery mechanics, and renames the cauldron codex to Warlocks' Brews.
+- Adds Warlockery: Signs & Portents, a four-chapter world-events guide with 37 ordered sections, obtainable by combining a guide-book-tag book, a compass, and a Whiff of Magic.
+- Adds localized fallback entries, catalog and creative-tab placement, recipe discovery, and focused client acceptance coverage for the new guide.
+
 Warlockery 1.5.5
 ================
 
