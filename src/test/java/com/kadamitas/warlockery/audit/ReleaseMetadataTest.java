@@ -22,13 +22,16 @@ final class ReleaseMetadataTest {
         final var matcher = GRADLE_VERSION.matcher(build);
         assertTrue(matcher.find());
         final String version = matcher.group(1);
-        assertEquals("1.5.5", version);
+        assertEquals("1.5.7", version);
 
         final JsonObject update = JsonParser.parseString(read("update.json")).getAsJsonObject();
         final JsonObject promotions = update.getAsJsonObject("promos");
         assertEquals(version, promotions.get("26.2-latest").getAsString());
         assertEquals(version, promotions.get("26.2-recommended").getAsString());
         assertTrue(update.getAsJsonObject("26.2").has(version));
+        assertEquals("1.5.6", promotions.get("26.3-latest").getAsString());
+        assertEquals("1.5.6", promotions.get("26.3-recommended").getAsString());
+        assertTrue(update.getAsJsonObject("26.3").has("1.5.6"));
 
         final String changelog = read("changelog.txt");
         assertTrue(changelog.startsWith("Warlockery " + version));
@@ -95,7 +98,7 @@ final class ReleaseMetadataTest {
             ".github/workflows/publish-modrinth.yml"
         }) {
             final String contents = read(workflow);
-            assertTrue(contents.contains("default: v1.5.5"));
+            assertTrue(contents.contains("default: v1.5.7"));
             assertTrue(contents.contains("- forge"));
             assertTrue(contents.contains("- neoforge"));
             assertTrue(contents.contains("- fabric"));

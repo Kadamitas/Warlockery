@@ -34,6 +34,10 @@ final class ContentCatalogTest {
         assertFalse(items.contains("voodoo_protection_doll"));
         assertFalse(blocks.contains("clever"));
         assertFalse(blocks.contains("slurp"));
+        assertEquals(1, ContentCatalog.ITEMS.stream()
+            .map(ContentCatalog::modernize)
+            .filter("ingredient_book_world_events"::equals)
+            .count());
     }
 
     private static void assertUniqueAndValid(final List<String> ids) {

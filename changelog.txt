@@ -1,3 +1,9 @@
+Warlockery 1.5.7
+================
+
+- Rewrote the ten non-vampire manuals with Witchery-inspired practical guidance and renamed the cauldron volume Warlocks' Brews.
+- Added Signs & Portents, a craftable world-events manual covering settlements, assaults, creature habits, and landmarks.
+
 Warlockery 1.5.5
 ================
 
